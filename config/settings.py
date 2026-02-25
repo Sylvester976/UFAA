@@ -41,6 +41,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'recruitment',
+    'accounts',
+    'roles',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -133,3 +136,7 @@ STATICFILES_DIRS = [
 
 # Where collectstatic will gather files for production (optional now)
 STATIC_ROOT = BASE_DIR / "static_root"
+
+
+
+AUTH_USER_MODEL = "accounts.User"
