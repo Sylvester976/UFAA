@@ -7,148 +7,119 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
   <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}" >
   <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
-  <title>
-    UFAA
-  </title>
-  <!--     Fonts and icons     -->
+  <title>UFAA Job Portal</title>
   <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-  <!-- Nucleo Icons -->
   <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
   <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
-  <!-- Font Awesome Icons -->
   <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
-  <!-- CSS Files -->
   <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css?v=1.0.3' %}" rel="stylesheet" />
+
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
+      padding: 2rem;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .login-card .card-header {
+      padding: 2rem 2rem 0.5rem;
+      background: transparent;
+      border-bottom: none;
+    }
+
+    .login-card .card-body {
+      padding: 1.5rem 2rem;
+    }
+
+    .login-card .card-footer {
+      padding: 0 2rem 2rem;
+      background: transparent;
+      border-top: none;
+      text-align: center;
+    }
+  </style>
 </head>
 
-<body class="">
-  <div class="container position-sticky z-index-sticky top-0">
-    <div class="row">
-      <div class="col-12">
+<body>
+  <div class="login-wrapper">
+    <div class="login-card card">
+      <div class="card-header pb-0 text-center bg-transparent">
+        <img src="{% static 'assets/img/ufaa.png' %}" alt="UFAA Logo" style="max-width: 250px; margin-bottom: 1rem;">
+        <h3 class="font-weight-bolder text-info text-gradient">Welcome</h3>
+        <p class="mb-0">Enter your email and password to sign in</p>
+      </div>
+      <div class="card-body">
+        <form role="form">
+          <label>Email</label>
+          <div class="mb-3">
+            <input type="email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="email-addon">
+          </div>
+          <label>Password</label>
+          <div class="mb-3 input-group">
+            <input type="password" id="passwordInput" class="form-control" placeholder="Password" aria-label="Password">
+            <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
+              <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#999" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <svg id="eyeOffIcon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#999" stroke-width="2" style="display:none;">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18" />
+              </svg>
+            </span>
+          </div>
+          <div class="text-center">
+            <button type="button" class="btn bg-gradient-info w-100 mt-4 mb-0">Sign in</button>
+          </div>
+        </form>
+      </div>
+      <div class="card-footer text-center pt-0 px-lg-2 px-1">
+        <p class="mb-0 text-sm mx-auto">
+          Don't have an account?
+          <a href="javascript:;" class="text-info text-gradient font-weight-bold">Sign up</a>
+        </p>
       </div>
     </div>
   </div>
-  <main class="main-content  mt-0">
-    <section>
-      <div class="page-header min-vh-75">
-        <div class="container">
-          <div class="row">
-            <div class="col-xl-4 col-lg-5 col-md-6 d-flex flex-column mx-auto">
-              <div class="card card-plain mt-8">
-                <div class="card-header pb-0 text-left bg-transparent">
-                  <h3 class="font-weight-bolder text-info text-gradient">Welcome back</h3>
-                  <p class="mb-0">Enter your email and password to sign in</p>
-                </div>
-                <div class="card-body">
-                  <form role="form">
-                    <label>Email</label>
-                    <div class="mb-3">
-                      <input type="email" class="form-control" placeholder="Email" aria-label="Email" aria-describedby="email-addon">
-                    </div>
-                    <label>Password</label>
-                    <div class="mb-3">
-                      <input type="email" class="form-control" placeholder="Password" aria-label="Password" aria-describedby="password-addon">
-                    </div>
-                    <div class="form-check form-switch">
-                      <input class="form-check-input" type="checkbox" id="rememberMe" checked="">
-                      <label class="form-check-label" for="rememberMe">Remember me</label>
-                    </div>
-                    <div class="text-center">
-                      <button type="button" class="btn bg-gradient-info w-100 mt-4 mb-0">Sign in</button>
-                    </div>
-                  </form>
-                </div>
-                <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                  <p class="mb-4 text-sm mx-auto">
-                    Don't have an account?
-                    <a href="javascript:;" class="text-info text-gradient font-weight-bold">Sign up</a>
-                  </p>
-                </div>
-              </div>
-            </div>
-            <div class="col-md-6">
-              <div class="oblique position-absolute top-0 h-100 d-md-block d-none me-n8">
-                <div class="oblique-image bg-cover position-absolute fixed-top ms-auto h-100 z-index-0 ms-n6" style="background-image: url('{% static "assets/img/curved-images/curved6.jpg" %}');"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-  </main>
-  <!-- -------- START FOOTER 3 w/ COMPANY DESCRIPTION WITH LINKS & SOCIAL ICONS & COPYRIGHT ------- -->
-  <footer class="footer py-5">
-    <div class="container">
-      <div class="row">
-        <div class="col-lg-8 mb-4 mx-auto text-center">
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Company
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            About Us
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Team
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Products
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Blog
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-5 me-3 mb-sm-0 mb-2">
-            Pricing
-          </a>
-        </div>
-        <div class="col-lg-8 mx-auto text-center mb-4 mt-2">
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
-            <span class="text-lg fab fa-dribbble"></span>
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
-            <span class="text-lg fab fa-twitter"></span>
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
-            <span class="text-lg fab fa-instagram"></span>
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
-            <span class="text-lg fab fa-pinterest"></span>
-          </a>
-          <a href="javascript:;" target="_blank" class="text-secondary me-xl-4 me-4">
-            <span class="text-lg fab fa-github"></span>
-          </a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="col-8 mx-auto text-center mt-1">
-          <p class="mb-0 text-secondary">
-            Copyright © <script>
-              document.write(new Date().getFullYear())
-            </script> Soft by Creative Tim.
-          </p>
-        </div>
-      </div>
-    </div>
-  </footer>
-  <!-- -------- END FOOTER 3 w/ COMPANY DESCRIPTION WITH LINKS & SOCIAL ICONS & COPYRIGHT ------- -->
-  <!--   Core JS Files   -->
+
   <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
   <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
   <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}../"></script>
-  <script>
-    var win = navigator.platform.indexOf('Win') > -1;
-    if (win && document.querySelector('#sidenav-scrollbar')) {
-      var options = {
-        damping: '0.5'
-      }
-      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-    }
-  </script>
-  <!-- Github buttons -->
+  <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
   <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
   <script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
+<script>
+    function togglePassword() {
+        var input = document.getElementById('passwordInput');
+        var eyeIcon = document.getElementById('eyeIcon');
+        var eyeOffIcon = document.getElementById('eyeOffIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeIcon.style.display = 'none';
+            eyeOffIcon.style.display = 'inline';
+        } else {
+            input.type = 'password';
+            eyeIcon.style.display = 'inline';
+            eyeOffIcon.style.display = 'none';
+        }
+    }
+</script>
 </body>
 
 </html>
