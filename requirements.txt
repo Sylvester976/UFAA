@@ -2,6 +2,7 @@
 django
 python-dotenv
 str2bool
+psycopg2-binary
 
 # UI & Admin UI
 django-jazzmin
