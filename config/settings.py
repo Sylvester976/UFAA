@@ -31,9 +31,6 @@ SECRET_KEY = os.environ['SECRET_KEY']
 DEBUG = str2bool(os.environ.get('DEBUG', 'False'))
 
 ALLOWED_HOSTS = ['*']
-CSRF_TRUSTED_ORIGINS = ['http://localhost:8000', 'http://localhost:5085', 'http://127.0.0.1:8000', 'http://127.0.0.1:5085']
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -43,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'recruitment',
 ]
 
 MIDDLEWARE = [
