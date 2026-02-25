@@ -1,0 +1,93 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+**/__pycache__/
+*_pycache_/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.egg*
+build/
+dist/
+
+# =========================
+# Virtual Environments
+# =========================
+env/
+env/*
+venv/
+venv/*
+.env
+.env.*
+.envs/
+
+# =========================
+# Django
+# =========================
+*.log
+db.sqlite3
+*.sqlite3
+media/
+media_root/
+staticfiles/
+static_root/
+static/profiles/
+
+# =========================
+# Testing & Coverage
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+
+# =========================
+# IDEs
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# System Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Node / Frontend
+# =========================
+node_modules/
+
+# =========================
+# Documentation
+# =========================
+docs/_build/
+
+# =========================
+# Backups
+# =========================
+backup/
+
+# =========================
+# Config / Sensitive
+# =========================
+enc.json
+enc.py
+config.json
+django.txt
+
+# =========================
+# Docker
+# =========================
+.docker/
+Dockerfile
+docker-compose.yml
+docker-compose.override.yml
+docker-compose.override.prod.yml
+docker-compose.prod.yml
+docker-compose.prod.override.yml
+docker-compose.dev.yml
+docker-compose.dev.override.yml
+docker-compose.test.yml
+docker-compose.test.override.yml
