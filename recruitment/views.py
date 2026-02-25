@@ -5,3 +5,6 @@ def index(request):
 
 def register(request):
     return render(request, 'auth/register.html')
+
+def dashboard(request):
+    return render(request, 'hr/dashboard.html')
