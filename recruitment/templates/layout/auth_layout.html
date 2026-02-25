@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}" >
+  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
+  <title>UFAA Job Portal</title>
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
+  <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
+  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css?v=1.0.3' %}" rel="stylesheet" />
+
+  <style>
+    body, html {
+      height: 100%;
+      margin: 0;
+    }
+
+    .login-wrapper {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
+      padding: 2rem;
+    }
+
+
+
+    .login-card {
+      width: 100%;
+      max-width: 420px;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .login-card .card-header {
+      padding: 2rem 2rem 0.5rem;
+      background: transparent;
+      border-bottom: none;
+    }
+
+    .login-card .card-body {
+      padding: 1.5rem 2rem;
+    }
+
+    .login-card .card-footer {
+      padding: 0 2rem 2rem;
+      background: transparent;
+      border-top: none;
+      text-align: center;
+    }
+
+     .login-card2 {
+      width: 100%;
+      max-width: 500px;
+      border-radius: 1rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+      overflow: hidden;
+      background: #fff;
+    }
+
+    .login-card2 .card-header {
+      padding: 2rem 2rem 0.5rem;
+      background: transparent;
+      border-bottom: none;
+    }
+
+    .login-card2 .card-body {
+      padding: 1.5rem 2rem;
+    }
+
+    .login-card2 .card-footer {
+      padding: 0 2rem 2rem;
+      background: transparent;
+      border-top: none;
+      text-align: center;
+    }
+
+
+  </style>
+</head>
+
+<body>
+  {% block content %}
+
+  {% endblock %}
+
+  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+  <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+  <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
+  <script async defer src="https://buttons.github.io/buttons.js"></script>
+  <script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
+  <script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+      var options = {
+        damping: '0.5'
+      }
+      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+  </script>
+<script>
+    function togglePassword() {
+        var input = document.getElementById('passwordInput');
+        var eyeIcon = document.getElementById('eyeIcon');
+        var eyeOffIcon = document.getElementById('eyeOffIcon');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeIcon.style.display = 'none';
+            eyeOffIcon.style.display = 'inline';
+        } else {
+            input.type = 'password';
+            eyeIcon.style.display = 'inline';
+            eyeOffIcon.style.display = 'none';
+        }
+    }
+</script>
+</body>
+
+</html>
