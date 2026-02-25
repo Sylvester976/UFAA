@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.environ['SECRET_KEY']
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = str2bool(os.environ.get('DEBUG', 'False'))
+DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 # Application definition
@@ -78,8 +78,12 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.environ.get('DB_ENGINE', 'django.db.backends.postgresql'),  # reads DB_ENGINE
+        'NAME': os.environ.get('DB_NAME'),
+        'USER': os.environ.get('DB_USERNAME'),
+        'PASSWORD': os.environ.get('DB_PASS'),
+        'HOST': os.environ.get('DB_HOST'),
+        'PORT': os.environ.get('DB_PORT'),
     }
 }
 
@@ -118,4 +122,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/6.0/howto/static-files/
 
-STATIC_URL = 'static/'
+# URL for static files
+STATIC_URL = '/static/'
+
+# Where Django looks for static files in addition to each app's static/
+STATICFILES_DIRS = [
+    BASE_DIR / "static",   # points to project-level static folder
+]
+
+# Where collectstatic will gather files for production (optional now)
+STATIC_ROOT = BASE_DIR / "static_root"
