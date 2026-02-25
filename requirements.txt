@@ -1,0 +1,28 @@
+# Core
+django
+python-dotenv
+str2bool
+
+# UI & Admin UI
+django-jazzmin
+django-admin-soft-dashboard
+
+# Tools
+django-debug-toolbar
+djangorestframework
+requests
+pandas
+graphviz
+astor
+
+# AI
+anthropic
+
+# Deployment
+whitenoise
+gunicorn
+
+# DB
+#psycopg2-binary==2.9.9
+#mysqlclient==2.1.1
+django-dbbackup
