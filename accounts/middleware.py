@@ -1,33 +1,37 @@
 from django.shortcuts import redirect
-from django.urls import reverse
+from django.urls import resolve
 
 class LoginRequiredMiddleware:
-    """
-    Protect all URLs except public ones: login, signup, landing
-    """
+
+    PUBLIC_VIEWS = {
+        'landing',
+        'index',
+        'signup',
+        'authregister',
+        'authlogin',
+        'logout',
+    }
 
     def __init__(self, get_response):
         self.get_response = get_response
-        # Define public URLs by name or path
-        self.PUBLIC_URLS = [
-            '/',                       # landing
-            '/login/',                  # login page
-            '/signup/',                 # registration
-            '/authregister/',           # POST endpoint for registration
-            '/authlogin/',              # POST endpoint for login
-            '/logout/',  # logout route must be public
-        ]
 
     def __call__(self, request):
-        path = request.path_info
 
-        if not any(path.startswith(url) for url in self.PUBLIC_URLS):
-            if 'user_id' not in request.session:
-                # Handle AJAX request separately
-                if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-                    from django.http import JsonResponse
-                    return JsonResponse({'status': 'error', 'message': 'Login required.'}, status=401)
-                return redirect('/login/')
+        # Always allow admin
+        if request.path.startswith('/admin/'):
+            return self.get_response(request)
 
-        response = self.get_response(request)
-        return response
+        try:
+            current_view = resolve(request.path_info).view_name
+        except:
+            current_view = None
+
+        # If public view → allow
+        if current_view in self.PUBLIC_VIEWS:
+            return self.get_response(request)
+
+        # Otherwise require login
+        if not request.session.get('user_id'):
+            return redirect('/login/')
+
+        return self.get_response(request)
