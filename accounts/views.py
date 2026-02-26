@@ -14,9 +14,6 @@ def index(request):
 def register(request):
     return render(request, 'auth/register.html')
 
-def dashboard(request):
-    return render(request, 'hr/dashboard.html')
-
 def save_user_account(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
