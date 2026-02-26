@@ -27,6 +27,7 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
+    national_id = models.CharField(max_length=20)
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=120)
     last_name = models.CharField(max_length=120)
@@ -52,11 +53,11 @@ class User(AbstractBaseUser):
         return self.email
 
 
-class Profile(models.Model):
+class External(models.Model):
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
-        related_name="profile"
+        related_name="external"
     )
 
     national_id = models.CharField(max_length=20)
@@ -70,13 +71,19 @@ class Profile(models.Model):
         return f"{self.user.email}"
     
     
-class EmploymentDetail(models.Model):
+class Internal(models.Model):
     user = models.OneToOneField(
         "accounts.User",
         on_delete=models.CASCADE,
-        related_name="employment_detail"
+        related_name="internal"
     )
 
+    national_id = models.CharField(max_length=20)
+    date_of_birth = models.DateField()
+    gender = models.CharField(max_length=20)
+    ethnic_group = models.CharField(max_length=100)
+    home_county = models.CharField(max_length=100)
+    disability_status = models.BooleanField(default=False)
     job_group = models.CharField(max_length=50)
     designation = models.CharField(max_length=150)
     date_of_appointment = models.DateField()
