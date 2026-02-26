@@ -1,0 +1,46 @@
+{% extends "layout/base.html" %}
+{% block content %}
+
+
+<h2>Step 2: Academic Qualifications</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <input type="text" name="level" placeholder="Level (Primary, Secondary, University)" required>
+    <input type="text" name="institution" placeholder="Institution" required>
+
+    <label>Certificate</label>
+    <input type="file" name="certificate">
+
+    <label>Transcript</label>
+    <input type="file" name="transcript">
+
+    <button type="submit">Add Qualification</button>
+</form>
+
+<hr>
+
+<h3>Your Qualifications</h3>
+
+{% for q in qualifications %}
+    <div>
+        <strong>{{ q.level }}</strong> - {{ q.institution }}
+
+        {% if q.certificate %}
+            <a href="{{ q.certificate.url }}">Certificate</a>
+        {% endif %}
+
+        {% if q.transcript %}
+            <a href="{{ q.transcript.url }}">Transcript</a>
+        {% endif %}
+
+        <a href="{% url 'edit_academic' q.id %}">Edit</a>
+        <a href="{% url 'delete_academic' q.id %}">Delete</a>
+    </div>
+{% empty %}
+    <p>No qualifications added yet.</p>
+{% endfor %}
+
+
+{% endblock %}
