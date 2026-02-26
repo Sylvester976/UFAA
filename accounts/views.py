@@ -102,3 +102,19 @@ def signin(request):
 
     except JobseekerAccount.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'User not found.'})
+
+def logout(request):
+    user_id = request.session.get('user_id')
+    if user_id:
+        try:
+            user = JobseekerAccount.objects.get(id=user_id)
+            # Clear session key in DB
+            user.session_key = None
+            user.save()
+        except JobseekerAccount.DoesNotExist:
+            pass
+
+    # Delete session completely
+    request.session.flush()  # clears all session data
+
+    return redirect('/login/')

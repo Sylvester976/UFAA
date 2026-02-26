@@ -15,6 +15,7 @@ class LoginRequiredMiddleware:
             '/signup/',                 # registration
             '/authregister/',           # POST endpoint for registration
             '/authlogin/',              # POST endpoint for login
+            '/logout/',  # logout route must be public
         ]
 
     def __call__(self, request):
