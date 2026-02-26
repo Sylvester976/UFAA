@@ -10,17 +10,18 @@
                 <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
             </div>
             <div class="card-body">
-                <form role="form" id="RegisterForm" method="post" enctype="multipart/form-data">
+                <form id="signupform" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
                     <label>Name</label>
                     <div class="mb-3">
-                        <input aria-label="Name" type="text" class="form-control" placeholder="Name"
+                        <input aria-label="Name" type="text" class="form-control" placeholder="Name" name="name"
                                aria-describedby="email-addon">
                     </div>
 
                     <label>Email</label>
                     <div class="mb-1">
                         <input aria-describedby="email-addon" aria-label="Email" class="form-control"
-                               placeholder="Email" type="email" id="emailInput" oninput="checkEmail()">
+                               placeholder="Email" type="email" id="emailInput" name="email" oninput="checkEmail()">
                     </div>
 
                     <!-- Email Validation Indicator -->
@@ -30,14 +31,14 @@
 
                     <label>Identification Number</label>
                     <div class="mb-3">
-                        <input aria-label="Identification Number" type="text" class="form-control"
+                        <input aria-label="Identification Number" type="number" class="form-control" name="idno"
                                placeholder="Identification Number">
                     </div>
 
                     <label>Password</label>
                     <div class="mb-1 input-group">
                         <input aria-label="Password" class="form-control" id="passwordInput"
-                               placeholder="Password" type="password" oninput="checkStrength()">
+                               placeholder="Password" type="password" name="password" oninput="checkStrength()">
                         <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
         <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
              viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
@@ -65,7 +66,7 @@
 
                     <label>Confirm Password</label>
                     <div class="mb-1 input-group">
-                        <input aria-label="Confirm Password" class="form-control" id="confirmPasswordInput"
+                        <input aria-label="Confirm Password" class="form-control" id="confirmPasswordInput" name="confirm_password"
                                placeholder="Confirm Password" type="password" oninput="checkMatch()">
                         <span class="input-group-text" onclick="toggleConfirmPassword()"
                               title="Toggle password visibility">

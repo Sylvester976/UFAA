@@ -8,19 +8,20 @@
             <img alt="UFAA Logo" src="{% static 'assets/img/ufaa.png' %}"
                  style="max-width: 250px; margin-bottom: 1rem;">
             <h3 class="font-weight-bolder text-info text-gradient">Welcome</h3>
-            <p class="mb-0">Enter your email and password to sign in</p>
+            <p class="mb-0">Enter your Id Number and Password to sign in</p>
         </div>
         <div class="card-body">
-            <form role="form">
-                <label>Email</label>
-                <div class="mb-3">
-                    <input aria-describedby="email-addon" aria-label="Email" class="form-control" placeholder="Email"
-                           type="email">
-                </div>
+            <form role="form" id="loginform" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+               <label>Identification Number</label>
+                    <div class="mb-3">
+                        <input aria-label="Identification Number" type="number" class="form-control" name="idno"
+                               placeholder="Identification Number">
+                    </div>
                 <label>Password</label>
                 <div class="mb-3 input-group">
                     <input aria-label="Password" class="form-control" id="passwordInput" placeholder="Password"
-                           type="password">
+                           type="password" name="password">
                     <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
               <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
                    viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
@@ -36,7 +37,7 @@
             </span>
                 </div>
                 <div class="text-center">
-                    <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="button">Sign in</button>
+                    <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="submit">Sign in</button>
                 </div>
             </form>
         </div>

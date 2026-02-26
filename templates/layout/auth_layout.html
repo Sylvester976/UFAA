@@ -257,6 +257,130 @@
     }
 
 </script>
+
+{#REGISTER LOGIC#}
+ <script>
+    document.getElementById('signupform').addEventListener('submit', function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we save your details.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+        fetch("{% url 'authregister' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close(); // Close the "Processing..." modal
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Account Registration Successful',
+                        text: data.message
+                    }).then(() => {
+                         window.location.href = "/login/";
+                    });
+
+                } else {
+                    // Display custom error message from User Service
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Account registration failed',
+                        text: data.message || 'Sign Up failed. Please try again.'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'A system error occurred. Please try again later.'
+                });
+                console.error(error);
+                console.log(error);
+            });
+    });
+</script>
+
+{#LOGIN LOGIC #}
+<script>
+    document.getElementById('loginform').addEventListener('submit', function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we log you in.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+        fetch("{% url 'authlogin' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close(); // Close the "Processing..." modal
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Successful',
+                        text: data.message
+                    }).then(() => {
+                         window.location.href = "/hr/dashboard/";
+                    });
+
+                } else {
+                    // Display custom error message from User Service
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login failed',
+                        text: data.message || 'Authentication failed. Please try again.'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'A system error occurred. Please try again later.'
+                });
+                console.error(error);
+            });
+    });
+</script>
+
 </body>
 
 </html>

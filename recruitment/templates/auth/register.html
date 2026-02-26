@@ -9,8 +9,8 @@
                  style="max-width: 250px; margin-bottom: 1rem;">
             <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
         </div>
-        <div class="card-body">
-            <form role="form">
+        <div class="card-body" >
+            <form role="form" id="registerform" method="post">
                 <label>Name</label>
                 <div class="mb-3">
                   <input aria-label="Name" type="text" class="form-control" placeholder="Name"  aria-describedby="email-addon">
@@ -40,7 +40,7 @@
             </span>
                 </div>
                 <div class="text-center">
-                    <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="button">Sign in</button>
+                    <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="submit">Sign up</button>
                 </div>
             </form>
         </div>
@@ -52,4 +52,63 @@
         </div>
     </div>
 </div>
+{#     <script>#}
+{#    document.getElementById('registerform').addEventListener('submit', function (e) {#}
+{#        e.preventDefault();  // Prevent default form submission#}
+{##}
+{#        Swal.fire({#}
+{#            title: 'Processing...',#}
+{#            text: 'Please wait while we save your details.',#}
+{#            icon: 'info',#}
+{#            allowOutsideClick: false,#}
+{#            showConfirmButton: false,#}
+{#            didOpen: () => {#}
+{#                Swal.showLoading();#}
+{#            }#}
+{#        });#}
+{##}
+{#        const form = e.target;#}
+{#        const formData = new FormData(form);#}
+{#        const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;#}
+{##}
+{#        fetch("{% url 'authregister' %}", {#}
+{#            method: 'POST',#}
+{#            headers: {#}
+{#                'X-CSRFToken': csrfToken#}
+{#            },#}
+{#            body: formData#}
+{#        })#}
+{#            .then(res => res.json())#}
+{#            .then(data => {#}
+{#                Swal.close(); // Close the "Processing..." modal#}
+{##}
+{#                if (data.status === 'success') {#}
+{#                    Swal.fire({#}
+{#                        icon: 'success',#}
+{#                        title: 'Registration Successful',#}
+{#                        text: data.message#}
+{#                    }).then(() => {#}
+{#                        window.location.href = "/index/";#}
+{#                    });#}
+{##}
+{#                } else {#}
+{#                    // Display custom error message from User Service#}
+{#                    Swal.fire({#}
+{#                        icon: 'error',#}
+{#                        title: 'Registration Failed',#}
+{#                        text: data.message || 'Authentication failed. Please try again.'#}
+{#                    });#}
+{#                }#}
+{#            })#}
+{#            .catch(error => {#}
+{#                Swal.close();#}
+{#                Swal.fire({#}
+{#                    icon: 'error',#}
+{#                    title: 'Oops...',#}
+{#                    text: 'A system error occurred. Please try again later.'#}
+{#                });#}
+{#                console.error(error);#}
+{#            });#}
+{#    });#}
+{#</script>#}
  {% endblock %}

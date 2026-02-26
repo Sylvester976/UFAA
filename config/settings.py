@@ -54,6 +54,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # Add your custom login middleware here
+    'accounts.middleware.LoginRequiredMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -137,6 +139,8 @@ STATICFILES_DIRS = [
 # Where collectstatic will gather files for production (optional now)
 STATIC_ROOT = BASE_DIR / "static_root"
 
-
-
 AUTH_USER_MODEL = "accounts.User"
+# 10 years in seconds (practically permanent until logout)
+SESSION_COOKIE_AGE = 10 * 365 * 24 * 60 * 60
+SESSION_SAVE_EVERY_REQUEST = False
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
