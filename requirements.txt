@@ -3,6 +3,7 @@ django
 python-dotenv
 str2bool
 psycopg2-binary
+mysqlclient
 
 # UI & Admin UI
 django-jazzmin
