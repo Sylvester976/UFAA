@@ -118,3 +118,71 @@ class JobseekerAccount(models.Model):
 
     def __str__(self):
         return f"{self.id_no} - {self.name}"
+
+
+class JobseekerProfile(models.Model):
+    user = models.OneToOneField(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+
+    first_name = models.CharField(max_length=100)
+    second_name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    gender = models.CharField(max_length=20)
+    ethnic_group = models.CharField(max_length=100)
+    home_county = models.CharField(max_length=100)
+    disability_status = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.user.id_no} Profile"
+    
+    
+class AcademicQualification(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="academic_qualifications"
+    )
+
+    level = models.CharField(max_length=100)  # Primary, Secondary, University
+    certificate = models.FileField(upload_to="academic_certificates/")
+    transcript = models.FileField(upload_to="transcripts/", null=True, blank=True)
+    
+    
+class ProfessionalQualification(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="professional_qualifications"
+    )
+
+    institution = models.CharField(max_length=255)
+    course = models.CharField(max_length=255)
+    completion_date = models.DateField()
+    grade = models.CharField(max_length=50)
+    certificate = models.FileField(upload_to="professional_certificates/")
+    
+class WorkHistory(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="work_history"
+    )
+
+    company = models.CharField(max_length=255)
+    job_title = models.CharField(max_length=255)
+    duties = models.TextField()
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+    exit_reason = models.TextField(null=True, blank=True)
+    
+class AdditionalDetail(models.Model):
+    user = models.OneToOneField(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="additional_detail"
+    )
+
+    cover_letter = models.TextField()
