@@ -1,0 +1,63 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<h3>Profile Completion: {{ completion }}%</h3>
+<h2>Step 4: Work History</h2>
+
+<h3>Profile Completion: {{ completion }}%</h3>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <input type="text" name="company" placeholder="Company" required>
+    <input type="text" name="job_title" placeholder="Job Title" required>
+    <textarea name="duties" placeholder="Duties" required></textarea>
+
+    <label>Start Date</label>
+    <input type="date" name="start_date" required>
+
+    <label>
+        <input type="checkbox" name="is_current" id="currentJob">
+        Current Job
+    </label>
+
+    <div id="exitFields">
+        <label>End Date</label>
+        <input type="date" name="end_date">
+
+        <textarea name="exit_reason" placeholder="Exit Reason"></textarea>
+    </div>
+
+    <button type="submit">Add Work History</button>
+</form>
+
+<hr>
+
+<h3>Your Work History</h3>
+
+{% for job in jobs %}
+    <div>
+        <strong>{{ job.company }}</strong> - {{ job.job_title }}
+
+        {% if job.is_current %}
+            <span style="color:green;">(Current)</span>
+        {% else %}
+            ({{ job.start_date }} - {{ job.end_date }})
+        {% endif %}
+
+        <a href="{% url 'edit_work_history' job.id %}">Edit</a>
+        <a href="{% url 'delete_work_history' job.id %}">Delete</a>
+    </div>
+{% empty %}
+    <p>No work history added yet.</p>
+{% endfor %}
+
+<script>
+    const checkbox = document.getElementById("currentJob");
+    const exitFields = document.getElementById("exitFields");
+
+    checkbox.addEventListener("change", function () {
+        exitFields.style.display = this.checked ? "none" : "block";
+    });
+</script>
+
+{% endblock %}
