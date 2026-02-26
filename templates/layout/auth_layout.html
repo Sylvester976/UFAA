@@ -3,110 +3,143 @@
 <html lang="en">
 
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-  <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}" >
-  <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
-  <title>UFAA Job Portal</title>
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet" />
-  <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet" />
-  <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet" />
-  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
-  <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css?v=1.0.3' %}" rel="stylesheet" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
+    <title>UFAA Job Portal</title>
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600,700" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet"/>
+    <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+    <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css?v=1.0.3' %}" rel="stylesheet"/>
+    <!-- Bootstrap CSS -->
+    <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
 
-  <style>
-    body, html {
-      height: 100%;
-      margin: 0;
-    }
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
 
-    .login-wrapper {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
-      padding: 2rem;
-    }
-
-
-
-    .login-card {
-      width: 100%;
-      max-width: 420px;
-      border-radius: 1rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .login-card .card-header {
-      padding: 2rem 2rem 0.5rem;
-      background: transparent;
-      border-bottom: none;
-    }
-
-    .login-card .card-body {
-      padding: 1.5rem 2rem;
-    }
-
-    .login-card .card-footer {
-      padding: 0 2rem 2rem;
-      background: transparent;
-      border-top: none;
-      text-align: center;
-    }
-
-     .login-card2 {
-      width: 100%;
-      max-width: 500px;
-      border-radius: 1rem;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
-      overflow: hidden;
-      background: #fff;
-    }
-
-    .login-card2 .card-header {
-      padding: 2rem 2rem 0.5rem;
-      background: transparent;
-      border-bottom: none;
-    }
-
-    .login-card2 .card-body {
-      padding: 1.5rem 2rem;
-    }
-
-    .login-card2 .card-footer {
-      padding: 0 2rem 2rem;
-      background: transparent;
-      border-top: none;
-      text-align: center;
-    }
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
+            padding: 2rem;
+        }
 
 
-  </style>
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .login-card .card-header {
+            padding: 2rem 2rem 0.5rem;
+            background: transparent;
+            border-bottom: none;
+        }
+
+        .login-card .card-body {
+            padding: 1.5rem 2rem;
+        }
+
+        .login-card .card-footer {
+            padding: 0 2rem 2rem;
+            background: transparent;
+            border-top: none;
+            text-align: center;
+        }
+
+        .login-card2 {
+            width: 100%;
+            max-width: 500px;
+            border-radius: 1rem;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
+            overflow: hidden;
+            background: #fff;
+            max-height: 100vh;
+            overflow-y: auto;
+        }
+
+        .login-card2 .card-header {
+            padding: 1rem 2rem 0.25rem;
+            background: transparent;
+            border-bottom: none;
+        }
+
+        .login-card2 .card-header img {
+            max-width: 180px;
+            margin-bottom: 0.5rem !important;
+        }
+
+        .login-card2 .card-body {
+            padding: 0.75rem 2rem;
+        }
+
+        .login-card2 .card-body .mb-3 {
+            margin-bottom: 0.5rem !important;
+        }
+
+        .login-card2 .card-body label {
+            margin-bottom: 0.15rem;
+            font-size: 0.85rem;
+        }
+
+        .login-card2 .card-footer {
+            padding: 0.5rem 2rem 1rem;
+            background: transparent;
+            border-top: none;
+            text-align: center;
+        }
+
+        .login-wrapper {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #e0f7fa 0%, #f5f5f5 100%);
+            padding: 1rem;
+        }
+
+
+    </style>
 </head>
 
 <body>
-  {% block content %}
+{% block content %}
 
-  {% endblock %}
+{% endblock %}
 
-  <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
-  <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
-  <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
-  <script async defer src="https://buttons.github.io/buttons.js"></script>
-  <script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
-  <script>
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+<script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
+<script async defer src="{% static 'assets/js/buttons.js' %}"></script>
+<script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
+<!-- Bootstrap JS -->
+<script src="{% static 'assets/js/swal2/bootstrap.bundle.min.js' %}"></script>
+
+<!-- SweetAlert2 JS -->
+<script src="{% static 'assets/js/swal2/swal2.js' %}"></script>
+<script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
-      var options = {
-        damping: '0.5'
-      }
-      Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        var options = {
+            damping: '0.5'
+        }
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
-  </script>
+</script>
 <script>
     function togglePassword() {
         var input = document.getElementById('passwordInput');
@@ -122,7 +155,232 @@
             eyeOffIcon.style.display = 'none';
         }
     }
+
+    function toggleConfirmPassword() {
+        var input = document.getElementById('confirmPasswordInput');
+        var eyeIcon = document.getElementById('eyeIconConfirm');
+        var eyeOffIcon = document.getElementById('eyeOffIconConfirm');
+        if (input.type === 'password') {
+            input.type = 'text';
+            eyeIcon.style.display = 'none';
+            eyeOffIcon.style.display = 'inline';
+        } else {
+            input.type = 'password';
+            eyeIcon.style.display = 'inline';
+            eyeOffIcon.style.display = 'none';
+        }
+    }
+
+    function checkStrength() {
+        const password = document.getElementById('passwordInput').value;
+        const bar = document.getElementById('strengthBar');
+        const text = document.getElementById('strengthText');
+        const wrapper = document.getElementById('strengthWrapper');
+
+        if (password.length === 0) {
+            wrapper.style.display = 'none';
+            return;
+        }
+
+        wrapper.style.display = 'block';
+
+        let score = 0;
+        if (password.length >= 6) score++;
+        if (password.length >= 10) score++;
+        if (/[A-Z]/.test(password)) score++;
+        if (/[0-9]/.test(password)) score++;
+        if (/[^A-Za-z0-9]/.test(password)) score++;
+        if (password.length >= 14 && score >= 4) score++;
+
+        const levels = [
+            {label: '● Too Weak', color: '#ef4444', width: '16%'},
+            {label: '●● Weak', color: '#f97316', width: '32%'},
+            {label: '●●● Moderate', color: '#eab308', width: '52%'},
+            {label: '●●●● Strong', color: '#22c55e', width: '74%'},
+            {label: '●●●●● Very Strong', color: '#0ea5e9', width: '90%'},
+            {label: '●●●●●● Unbreakable', color: '#6366f1', width: '100%'},
+        ];
+
+        const level = levels[Math.min(score, levels.length - 1)];
+        bar.style.width = level.width;
+        bar.style.background = level.color;
+        text.textContent = level.label;
+        text.style.color = level.color;
+
+        // re-check match if confirm has value
+        checkMatch();
+    }
+
+    function checkMatch() {
+        const password = document.getElementById('passwordInput').value;
+        const confirm = document.getElementById('confirmPasswordInput').value;
+        const matchText = document.getElementById('matchText');
+        const matchWrapper = document.getElementById('matchWrapper');
+
+        if (confirm.length === 0) {
+            matchWrapper.style.display = 'none';
+            return;
+        }
+
+        matchWrapper.style.display = 'block';
+
+        if (password === confirm) {
+            matchText.textContent = '✔ Passwords match';
+            matchText.style.color = '#22c55e';
+        } else {
+            matchText.textContent = '✖ Passwords do not match';
+            matchText.style.color = '#ef4444';
+        }
+    }
+
+    function checkEmail() {
+        const email = document.getElementById('emailInput').value;
+        const emailText = document.getElementById('emailText');
+        const emailWrapper = document.getElementById('emailWrapper');
+
+        if (email.length === 0) {
+            emailWrapper.style.display = 'none';
+            return;
+        }
+
+        emailWrapper.style.display = 'block';
+
+        const validFormat = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/.test(email);
+
+        if (validFormat) {
+            emailText.textContent = '✔ Valid email address';
+            emailText.style.color = '#22c55e';
+        } else {
+            emailText.textContent = '✖ Invalid email format';
+            emailText.style.color = '#ef4444';
+        }
+    }
+
 </script>
+
+{#REGISTER LOGIC#}
+ <script>
+    document.getElementById('signupform').addEventListener('submit', function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we save your details.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+        fetch("{% url 'authregister' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close(); // Close the "Processing..." modal
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Account Registration Successful',
+                        text: data.message
+                    }).then(() => {
+                         window.location.href = "/login/";
+                    });
+
+                } else {
+                    // Display custom error message from User Service
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Account registration failed',
+                        text: data.message || 'Sign Up failed. Please try again.'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'A system error occurred. Please try again later.'
+                });
+                console.error(error);
+                console.log(error);
+            });
+    });
+</script>
+
+{#LOGIN LOGIC #}
+<script>
+    document.getElementById('loginform').addEventListener('submit', function (e) {
+        e.preventDefault();  // Prevent default form submission
+
+        Swal.fire({
+            title: 'Processing...',
+            text: 'Please wait while we log you in.',
+            icon: 'info',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const form = e.target;
+        const formData = new FormData(form);
+        const csrfToken = form.querySelector('[name="csrfmiddlewaretoken"]').value;
+
+        fetch("{% url 'authlogin' %}", {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrfToken
+            },
+            body: formData
+        })
+            .then(res => res.json())
+            .then(data => {
+                Swal.close(); // Close the "Processing..." modal
+
+                if (data.status === 'success') {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Login Successful',
+                        text: data.message
+                    }).then(() => {
+                         window.location.href = "/hr/dashboard/";
+                    });
+
+                } else {
+                    // Display custom error message from User Service
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Login failed',
+                        text: data.message || 'Authentication failed. Please try again.'
+                    });
+                }
+            })
+            .catch(error => {
+                Swal.close();
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'A system error occurred. Please try again later.'
+                });
+                console.error(error);
+            });
+    });
+</script>
+
 </body>
 
 </html>

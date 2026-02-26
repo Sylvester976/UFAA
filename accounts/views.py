@@ -1,3 +1,104 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from django.http import JsonResponse
+from django.contrib.auth.hashers import make_password, check_password
+from .models import JobseekerAccount
+from django.db import IntegrityError
+from django.utils import timezone
+from django.contrib.sessions.models import Session
 
-# Create your views here.
+def landing(request):
+    return render(request, 'auth/landing.html')
+def index(request):
+    return render(request, 'auth/login.html')
+
+def register(request):
+    return render(request, 'auth/register.html')
+
+def dashboard(request):
+    return render(request, 'hr/dashboard.html')
+
+def save_user_account(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+    # Get POST data
+    name = request.POST.get('name', '').strip()
+    email = request.POST.get('email', '').strip()
+    idno = request.POST.get('idno', '').strip()
+    password = request.POST.get('password', '')
+    confirm_password = request.POST.get('confirm_password', '')
+
+    # Basic validations
+    if not all([name, email, idno, password, confirm_password]):
+        return JsonResponse({'status': 'error', 'message': 'All fields are required.'})
+
+    if password != confirm_password:
+        return JsonResponse({'status': 'error', 'message': 'Passwords do not match.'})
+
+    # Hash password
+    encrypted_password = make_password(password)
+
+    try:
+        # Save user to DB
+        JobseekerAccount.objects.create(
+            name=name,
+            email=email,
+            id_no=idno,
+            password=encrypted_password,
+            account_type=1,
+            is_active=True,
+            is_verified=False,
+        )
+
+        return JsonResponse({'status': 'success', 'message': 'Registration successful.'})
+
+    except IntegrityError as e:
+        # Check which field caused the integrity error
+        if 'email' in str(e):
+            msg = 'An account with this email already exists.'
+        elif 'id_no' in str(e):
+            msg = 'An account with this ID number already exists.'
+        else:
+            msg = 'Duplicate entry detected.'
+        return JsonResponse({'status': 'error', 'message': msg})
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
+
+def signin(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
+
+    idno = request.POST.get('idno', '').strip()
+    password = request.POST.get('password', '')
+
+    if not idno or not password:
+        return JsonResponse({'status': 'error', 'message': 'ID number and password are required.'})
+
+    try:
+        user = JobseekerAccount.objects.get(id_no=idno)
+
+        if not user.is_active:
+            return JsonResponse({'status': 'error', 'message': 'Account is disabled.'})
+        # if not user.is_verified:
+        #     return JsonResponse({'status': 'error', 'message': 'Please verify your email before logging in.'})
+        if not user.check_password(password):
+            return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
+
+        # Single-session enforcement
+        if user.session_key:
+            try:
+                Session.objects.get(session_key=user.session_key).delete()
+            except Session.DoesNotExist:
+                pass
+
+        # Create new session
+        request.session['user_id'] = user.id
+        user.last_login = timezone.now()
+        user.session_key = request.session.session_key
+        user.save()
+
+        return JsonResponse({'status': 'success', 'message': 'Login successful.'})
+
+    except JobseekerAccount.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': 'User not found.'})

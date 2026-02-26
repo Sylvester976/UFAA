@@ -2,54 +2,104 @@
 {% load static %}
 
 {% block content %}
-  <div class="login-wrapper">
-    <div class="login-card2 card">
-        <div class="card-header pb-0 text-center bg-transparent">
-            <img alt="UFAA Logo" src="{% static 'assets/img/ufaa.png' %}"
-                 style="max-width: 250px; margin-bottom: 1rem;">
-            <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
-        </div>
-        <div class="card-body">
-            <form role="form">
-                <label>Name</label>
-                <div class="mb-3">
-                  <input aria-label="Name" type="text" class="form-control" placeholder="Name"  aria-describedby="email-addon">
-                </div>
+    <div class="login-wrapper">
+        <div class="login-card2 card">
+            <div class="card-header pb-0 text-center bg-transparent">
+                <img alt="UFAA Logo" src="{% static 'assets/img/ufaa.png' %}"
+                     style="max-width: 250px; margin-bottom: 1rem;">
+                <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
+            </div>
+            <div class="card-body">
+                <form id="signupform" method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <label>Name</label>
+                    <div class="mb-3">
+                        <input aria-label="Name" type="text" class="form-control" placeholder="Name" name="name"
+                               aria-describedby="email-addon">
+                    </div>
 
-                <label>Email</label>
-                <div class="mb-3">
-                    <input aria-describedby="email-addon" aria-label="Email" class="form-control" placeholder="Email"
-                           type="email">
-                </div>
-                <label>Password</label>
-                <div class="mb-3 input-group">
-                    <input aria-label="Password" class="form-control" id="passwordInput" placeholder="Password"
-                           type="password">
-                    <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
-              <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
-                   viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round"
-                      stroke-linejoin="round"/>
-              </svg>
-              <svg fill="none" height="18" id="eyeOffIcon" stroke="#999" stroke-width="2"
-                   style="display:none;" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18" stroke-linecap="round"
-                      stroke-linejoin="round"/>
-              </svg>
-            </span>
-                </div>
-                <div class="text-center">
-                    <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="button">Sign in</button>
-                </div>
-            </form>
-        </div>
-        <div class="card-footer text-center pt-0 px-lg-2 px-1">
-            <p class="mb-0 text-sm mx-auto">
-                Already have an account?
-                <a class="text-info text-gradient font-weight-bold" href="{% url 'index' %}">Sign in</a>
-            </p>
+                    <label>Email</label>
+                    <div class="mb-1">
+                        <input aria-describedby="email-addon" aria-label="Email" class="form-control"
+                               placeholder="Email" type="email" id="emailInput" name="email" oninput="checkEmail()">
+                    </div>
+
+                    <!-- Email Validation Indicator -->
+                    <div class="mb-3" id="emailWrapper" style="display:none;">
+                        <small id="emailText" style="font-size: 0.78rem; font-weight: 600;"></small>
+                    </div>
+
+                    <label>Identification Number</label>
+                    <div class="mb-3">
+                        <input aria-label="Identification Number" type="number" class="form-control" name="idno"
+                               placeholder="Identification Number">
+                    </div>
+
+                    <label>Password</label>
+                    <div class="mb-1 input-group">
+                        <input aria-label="Password" class="form-control" id="passwordInput"
+                               placeholder="Password" type="password" name="password" oninput="checkStrength()">
+                        <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
+        <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
+             viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg fill="none" height="18" id="eyeOffIcon" stroke="#999" stroke-width="2"
+             style="display:none;" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </span>
+                    </div>
+
+                    <!-- Strength Bar -->
+                    <div class="mb-3" id="strengthWrapper" style="display:none;">
+                        <div style="height: 6px; background: #e9ecef; border-radius: 4px; overflow: hidden;">
+                            <div id="strengthBar"
+                                 style="height: 100%; width: 0%; border-radius: 4px; transition: width 0.4s ease, background 0.4s ease;"></div>
+                        </div>
+                        <small id="strengthText"
+                               style="font-size: 0.78rem; font-weight: 600; margin-top: 3px; display: block;"></small>
+                    </div>
+
+                    <label>Confirm Password</label>
+                    <div class="mb-1 input-group">
+                        <input aria-label="Confirm Password" class="form-control" id="confirmPasswordInput" name="confirm_password"
+                               placeholder="Confirm Password" type="password" oninput="checkMatch()">
+                        <span class="input-group-text" onclick="toggleConfirmPassword()"
+                              title="Toggle password visibility">
+        <svg fill="none" height="18" id="eyeIconConfirm" stroke="#999" stroke-width="2"
+             viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <svg fill="none" height="18" id="eyeOffIconConfirm" stroke="#999" stroke-width="2"
+             style="display:none;" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+            <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18"
+                  stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+    </span>
+                    </div>
+
+                    <!-- Match Indicator -->
+                    <div class="mb-3" id="matchWrapper" style="display:none;">
+                        <small id="matchText" style="font-size: 0.78rem; font-weight: 600;"></small>
+                    </div>
+
+                    <div class="text-center">
+                        <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="submit">Sign Up</button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                <p class="mb-0 text-sm mx-auto">
+                    Already have an account?
+                    <a class="text-info text-gradient font-weight-bold" href="{% url 'index' %}">Sign in</a>
+                </p>
+            </div>
         </div>
     </div>
-</div>
- {% endblock %}
+{% endblock %}

@@ -1,8 +1,10 @@
 # apps/accounts/models.py
 
 import uuid
-from django.db import models
+
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
+from django.contrib.auth.hashers import make_password, check_password
+from django.db import models
 from django.utils import timezone
 
 
@@ -37,7 +39,6 @@ class User(AbstractBaseUser):
         blank=True,
         related_name="users"
     )
-    
 
     is_active = models.BooleanField(default=True)
     is_superadmin = models.BooleanField(default=False)
@@ -69,8 +70,8 @@ class External(models.Model):
 
     def __str__(self):
         return f"{self.user.email}"
-    
-    
+
+
 class Internal(models.Model):
     user = models.OneToOneField(
         "accounts.User",
@@ -90,3 +91,30 @@ class Internal(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.designation}"
+
+    # this is a model for jobseeker to create their account
+
+class JobseekerAccount(models.Model):
+    email = models.EmailField(unique=True)
+    id_no = models.CharField(max_length=50, unique=True, db_index=True)
+    name = models.CharField(max_length=255)
+
+    password = models.CharField(max_length=255)
+
+    account_type = models.IntegerField(default=1)  # 1 = External, 2 = Internal
+    session_key = models.CharField(max_length=40, blank=True, null=True)
+
+    is_active = models.BooleanField(default=True)
+    is_verified = models.BooleanField(default=False)
+
+    date_joined = models.DateTimeField(default=timezone.now)
+    last_login = models.DateTimeField(null=True, blank=True)
+
+    def set_password(self, raw_password):
+        self.password = make_password(raw_password)
+
+    def check_password(self, raw_password):
+        return check_password(raw_password, self.password)
+
+    def __str__(self):
+        return f"{self.id_no} - {self.name}"
