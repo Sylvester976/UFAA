@@ -8,6 +8,7 @@ from django.contrib.sessions.models import Session
 
 def landing(request):
     return render(request, 'auth/landing.html')
+
 def index(request):
     return render(request, 'auth/login.html')
 

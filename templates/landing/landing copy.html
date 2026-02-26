@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>UFAA | Recruitment Portal</title>
+    <title>TalentBridge | Recruitment Portal</title>
 
     
     <link href="{% static 'assets/css/landing.css' %}" rel="stylesheet" />
@@ -18,123 +18,60 @@
 </head>
 <body>
 
-
-
-<!-- Custom Navbar -->
-<nav class="navbar navbar-expand-lg custom-navbar fixed-top">
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
     <div class="container">
-
-        <!-- Logo + Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" 
-                 alt="Government Logo" 
-                 class="gov-coat me-2">
-        </a>
-
-        <!-- Mobile Toggle Button -->
-        <button class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
-                aria-label="Toggle navigation">
+        <a class="navbar-brand fw-bold" href="#">UFAA</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
             <span class="navbar-toggler-icon"></span>
         </button>
-
-        <!-- Navbar Links -->
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="#jobs">Vacancies</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'signup' %}">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'index' %}">Login</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                <li class="nav-item"><a class="nav-link" href="#jobs">Jobs</a></li>
+                <li class="nav-item"><a class="nav-link" href="#employers">Employers</a></li>
+                <li class="nav-item"><a class="btn btn-primary ms-2" href="#">Sign Up</a></li>
             </ul>
         </div>
-
     </div>
 </nav>
-
 
 <!-- Hero Section -->
 <section class="hero text-center">
     <div class="container">
-        <h1 class="display-4 fw-bold">Apply Now Through our Portal</h1>
+        <h1 class="display-4 fw-bold">Find Your Dream Job Today</h1>
         <p class="lead mb-4">Welcome to the Unclaimed Financial Assets Authority (UFAA) Recruitment Portal</p>
         <div class="row justify-content-center">
             <div class="col-md-8">
                 <div class="input-group input-group-lg">
-                    <input type="text" class="form-control" placeholder="Job title">
-                    <button class="btn btn-primary" style="background-color: #003366; border-color: #003366;">
-                        Search Jobs
-                    </button>
+                    <input type="text" class="form-control" placeholder="Job title or keyword">
+                    <button class="btn btn-primary">Search Jobs</button>
                 </div>
             </div>
         </div>
     </div>
 </section>
 
-
-<!-- Featured Jobs Section -->
-<section id="jobs" class="bg-light py-5">
+<!-- UFAA Recruitment Information Section -->
+<section class="py-5 bg-white">
     <div class="container">
-        <h2 class="text-center mb-5">Vacancies</h2>
-        <div class="alert mt-3" style="background-color: #C39545; color: #fff; border-color: #C39545;">
-            Persons abled differently are encouraged to apply.
-        </div>
+
+        <h2 class="text-center mb-4">
+            Welcome to the Unclaimed Financial Assets Authority (UFAA) Recruitment Portal
+        </h2>
+
+        <p class="lead text-center mb-5">
+            Thank you for your interest in working with the Unclaimed Financial Assets Authority (UFAA). 
+            This portal enables you to register, complete your profile, and submit applications for advertised vacancies.
+        </p>
 
         <div class="alert alert-info">
             <strong>Before you apply:</strong> Please create an account and verify your email address. 
             A verification email will be sent to the address you provide during registration. 
             Click the verification link to activate your account and access the application area.
         </div>
-        
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Frontend Developer</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Marketing Manager</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Data Analyst</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
 
-
-<!-- UFAA Recruitment Information Section -->
-<section class="py-5 bg-white">
-    <div class="container">
-
-        <h2 class="text-center mb-5">Application Steps</h2>
+        <h4 class="mt-5 mb-3">Application Steps</h4>
 
         <div class="mb-4">
             <h5>1. Register and Login</h5>
@@ -171,12 +108,15 @@
             Do not pay anyone claiming to offer recruitment assistance.
         </div>
 
+        <div class="alert alert-success mt-3">
+            Persons abled differently are encouraged to apply.
+        </div>
 
     </div>
 </section>
 
 <!-- Features Section -->
-{% comment %} <section id="features" class="py-5">
+<section id="features" class="py-5">
     <div class="container text-center">
         <h2 class="mb-5">Why Choose UFAA?</h2>
         <div class="row">
@@ -197,7 +137,43 @@
             </div>
         </div>
     </div>
-</section> {% endcomment %}
+</section>
+
+<!-- Featured Jobs Section -->
+<section id="jobs" class="bg-light py-5">
+    <div class="container">
+        <h2 class="text-center mb-5">Featured Jobs</h2>
+        <div class="row">
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Frontend Developer</h5>
+                        <p class="card-text">TechCorp • Remote</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Marketing Manager</h5>
+                        <p class="card-text">BrightMedia • New York</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">Data Analyst</h5>
+                        <p class="card-text">InsightWorks • London</p>
+                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 
 
 <!-- Footer -->
@@ -212,7 +188,7 @@
 </footer>
 
 <!-- Bootstrap JS -->
-<script src="{% static 'assets/npm/dist/js/bootstrap.bundle.min.js' %}"></script>
+<link href="{% static 'assets/npm/bootstrap/bootstrap.min.css' %}" rel="stylesheet" />
 
 </body>
 </html>

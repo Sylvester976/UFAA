@@ -1,0 +1,138 @@
+/* ================================
+   UFAA GOVERNMENT THEME
+================================= */
+
+:root {
+    --ufaa-primary: #003366;
+    --ufaa-secondary: #EBEBEB;
+    --ufaa-light: #f4f6f9;
+    --ufaa-gold: #C9A227;
+    --ufaa-dark: #1c1c1c;
+}
+
+/* Global */
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Segoe UI", Arial, sans-serif;
+    background-color: var(--ufaa-light);
+    color: #333;
+    padding-top: 90px; /* prevents content hiding behind fixed navbar */
+}
+
+/* ================================
+   NAVBAR
+================================= */
+
+.custom-navbar {
+    background-color: #EBEBEB;
+    border-bottom: 3px solid var(--ufaa-gold);
+    padding: 10px 0;
+}
+
+.gov-coat {
+    height: 65px;   /* Bigger logo */
+    width: auto;
+}
+
+.navbar-brand span {
+    font-weight: 600;
+    color: var(--ufaa-primary);
+}
+
+.custom-navbar .nav-link {
+    color: var(--ufaa-dark) !important;   /* Dark by default */
+    font-weight: 500;
+    margin-left: 15px;
+    transition: color 0.3s ease;
+}
+
+.custom-navbar .nav-link:hover {
+    color: var(--ufaa-gold) !important;
+}
+
+/* Mobile menu */
+.navbar-toggler {
+    border: none;
+}
+
+.navbar-toggler:focus {
+    box-shadow: none;
+}
+
+/* ================================
+   HERO
+================================= */
+
+.hero {
+    background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+                url("../img/bg.jpg");
+    background-size: cover;
+    background-position: center;
+    color: white;
+    padding: 120px 0;
+}
+
+/* ================================
+   CARDS
+================================= */
+
+.card {
+    border: none;
+    border-left: 4px solid var(--ufaa-primary);
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.card-title {
+    color: var(--ufaa-primary);
+    font-weight: 600;
+}
+
+/* ================================
+   ALERTS
+================================= */
+
+.alert-info {
+    background-color: #e6f0fa;
+    border-left: 5px solid var(--ufaa-primary);
+    color: #003366;
+}
+
+.alert-warning {
+    background-color: #fff4e5;
+    border-left: 5px solid #cc7a00;
+}
+
+.alert-success {
+    background-color: #e6f7ec;
+    border-left: 5px solid #2e7d32;
+}
+
+/* ================================
+   FOOTER
+================================= */
+
+footer {
+    background: var(--ufaa-primary);
+    color: white;
+}
+
+footer a {
+    color: #ddd;
+}
+
+footer a:hover {
+    color: var(--ufaa-gold);
+}
+
+
+
+
+
+
