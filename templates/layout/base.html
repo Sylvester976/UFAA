@@ -16,6 +16,8 @@
     <!-- SweetAlert2 CSS -->
     <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
+    <link href="{% static 'assets/css/select2.min.css' %}" rel="stylesheet" />
+
 
     <!-- Main CSS -->
     <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
@@ -259,6 +261,10 @@
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
+<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+<script src="{% static 'assets/js/select2.min.js' %}"></script>
+
+
 <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -267,6 +273,15 @@
         }
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
+</script>
+<script>
+   $(document).ready(function () {
+    $('.select2').select2({
+        placeholder: 'Search...',
+        allowClear: true,
+        width: '100%',
+    });
+});
 </script>
 <!-- Github buttons -->
 <script async defer src="https://buttons.github.io/buttons.js"></script>
