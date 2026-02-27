@@ -1,42 +1,9 @@
-from django.shortcuts import render
-
-from django.urls import reverse
-from django.shortcuts import redirect
-
+from .models import Gender
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
 
 def dashboard(request):
     return render(request, 'recruitment/dashboard.html')
-
-def profile(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def qualifications(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def applications(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def status(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def base(request):
-    return render(request, 'layout/base.html')
-
-
-
-def get_logged_in_user(request):
-    user_id = request.session.get("user_id")
-
-    if not user_id:
-        return None
-
-    try:
-        return JobseekerAccount.objects.get(id=user_id)
-    except JobseekerAccount.DoesNotExist:
-        request.session.flush()
-        return None
 
 def get_next_step(user):
     if not hasattr(user, "profile"):
@@ -67,17 +34,11 @@ def enforce_step(user, current_step):
     
 def profile_view(request):
     user_id = request.session.get("user_id")
-
-    if not user_id:
-        return redirect("/login/")
-
-    try:
-        user = JobseekerAccount.objects.get(id=user_id)
-    except JobseekerAccount.DoesNotExist:
-        request.session.flush()
-        return redirect("/login/")
+    user = JobseekerAccount.objects.get(id=user_id)
+    genders = Gender.objects.all()
 
     profile = JobseekerProfile.objects.filter(user=user).first()
+    page = 'Profile'
 
     if request.method == "POST":
         first_name = request.POST.get("first_name")
@@ -111,7 +72,7 @@ def profile_view(request):
 
         return redirect("profile")
 
-    return render(request, "jobseekers/profile.html", {"profile": profile})
+    return render(request, "jobseekers/profile.html", {"profile": profile, "page":page, 'genders': genders,} )
 
 
 def delete_profile(request):
@@ -157,11 +118,7 @@ def calculate_profile_completion(user):
     return int((score / total) * 100)
 
 def academic_qualifications(request):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect("/login/")
 
-    qualifications = AcademicQualification.objects.filter(user=user)
 
     if request.method == "POST":
         AcademicQualification.objects.create(
