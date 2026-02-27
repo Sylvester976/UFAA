@@ -1,3 +1,13 @@
 from django.db import models
 
-# Create your models here.
+
+class Gender(models.Model):
+    name = models.CharField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name        = 'Gender'
+        verbose_name_plural = 'Genders'
+        ordering            = ['name']
+
+    def __str__(self):
+        return self.name
