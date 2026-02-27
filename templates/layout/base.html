@@ -16,7 +16,7 @@
     <!-- SweetAlert2 CSS -->
     <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
-    <link href="{% static 'assets/css/select2.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/css/select2.min.css' %}" rel="stylesheet"/>
 
 
     <!-- Main CSS -->
@@ -275,12 +275,118 @@
     }
 </script>
 <script>
-   $(document).ready(function () {
-    $('.select2').select2({
-        placeholder: 'Search...',
-        allowClear: true,
-        width: '100%',
+    $(document).ready(function () {
+        $('.select2').select2({
+            placeholder: 'Search...',
+            width: '100%',
+        });
     });
+</script>
+<script>
+$(document).ready(function () {
+
+    $('.select2').select2({ width: '100%', placeholder: '--- SELECT AREA ---' });
+
+    // Store all options on load
+    const allConstituencies = [];
+    $('#constituencySelect option[data-county]').each(function () {
+        allConstituencies.push({
+            id:     $(this).val(),
+            name:   $(this).text(),
+            county: $(this).data('county')
+        });
+    });
+
+    const allSubCounties = [];
+    $('#subCountySelect option[data-county]').each(function () {
+        allSubCounties.push({
+            id:     $(this).val(),
+            name:   $(this).text(),
+            county: $(this).data('county')
+        });
+    });
+
+    const allWards = [];
+    $('#wardSelect option[data-constituency]').each(function () {
+        allWards.push({
+            id:           $(this).val(),
+            name:         $(this).text(),
+            constituency: $(this).data('constituency')
+        });
+    });
+
+    // ── Helper: rebuild a select2 dropdown ──
+    function rebuildSelect(selector, options, placeholderText) {
+        $(selector).select2('destroy');
+        $(selector).empty().append(`<option value="">${placeholderText}</option>`);
+        options.forEach(opt => {
+            $(selector).append(`<option value="${opt.id}">${opt.name}</option>`);
+        });
+        $(selector).select2({ width: '100%', placeholder: placeholderText });
+    }
+
+    // ── County → rebuild Constituency + SubCounty, reset Ward ──
+    $('#countySelect').on('change', function () {
+        const countyId = $(this).val();
+
+        // Reset downstream
+        rebuildSelect('#constituencySelect', [], 'Select constituency');
+        rebuildSelect('#subCountySelect',    [], 'Select sub county');
+        rebuildSelect('#wardSelect',         [], 'Select ward');
+
+        if (countyId) {
+            rebuildSelect(
+                '#constituencySelect',
+                allConstituencies.filter(c => c.county == countyId),
+                'Select constituency'
+            );
+            rebuildSelect(
+                '#subCountySelect',
+                allSubCounties.filter(s => s.county == countyId),
+                'Select sub county'
+            );
+        }
+    });
+
+    // ── Constituency → rebuild Ward ──
+    $('#constituencySelect').on('change', function () {
+        const constituencyId = $(this).val();
+
+        rebuildSelect('#wardSelect', [], 'Select ward');
+
+        if (constituencyId) {
+            rebuildSelect(
+                '#wardSelect',
+                allWards.filter(w => w.constituency == constituencyId),
+                'Select ward'
+            );
+        }
+    });
+
+    // ── Restore saved values on edit ──
+    const savedCounty       = "{{ profile.home_county_id|default:'' }}";
+    const savedConstituency = "{{ profile.constituency_id|default:'' }}";
+    const savedSubCounty    = "{{ profile.sub_county_id|default:'' }}";
+    const savedWard         = "{{ profile.ward_id|default:'' }}";
+
+    if (savedCounty) {
+        $('#countySelect').val(savedCounty).trigger('change');
+
+        setTimeout(function () {
+            if (savedConstituency) {
+                $('#constituencySelect').val(savedConstituency).trigger('change');
+            }
+            if (savedSubCounty) {
+                $('#subCountySelect').val(savedSubCounty).trigger('change');
+            }
+            setTimeout(function () {
+                if (savedWard) {
+                    $('#wardSelect').val(savedWard).trigger('change');
+                }
+            }, 150);
+        }, 150);
+    }
+
 });
 </script>
 <!-- Github buttons -->
