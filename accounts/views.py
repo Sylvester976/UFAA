@@ -3,14 +3,22 @@ from django.contrib.sessions.models import Session
 from django.core.mail import EmailMultiAlternatives
 from django.db import IntegrityError
 from django.http import JsonResponse, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from config import settings
 from .models import JobseekerAccount
+from django.contrib.auth import authenticate, login
 
 
+from django.views import View
+from django.contrib import messages
+from django.shortcuts import get_object_or_404
+from .models import User
+from core.mixins import SuperAdminRequiredMixin
+from django.views.generic import CreateView, ListView
+from roles.models import Role
 
 def landing(request):
     return render(request, 'auth/landing.html')
@@ -162,3 +170,106 @@ def send_verification_email(request, user):
     email = EmailMultiAlternatives(subject, '', from_email, to_email)
     email.attach_alternative(html_content, "text/html")
     email.send()
+
+
+# Setup for RBAC
+
+def login_view(request):
+    if request.method == "POST":
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+
+        user = authenticate(request, email=email, password=password)
+
+        if user:
+            login(request, user)
+            return HttpResponse("Logged in successfully")
+
+    return render(request, "roles/login.html")
+
+
+class UserCreateView(SuperAdminRequiredMixin, View):
+    template_name = "accounts/user_form.html"
+
+    def get(self, request):
+        return render(request, self.template_name)
+
+    def post(self, request):
+        email = request.POST.get("email")
+        password = request.POST.get("password")
+        first_name = request.POST.get("first_name")
+        last_name = request.POST.get("last_name")
+        national_id = request.POST.get("national_id")
+
+        if not email or not password:
+            messages.error(request, "Email and password are required")
+            return render(request, self.template_name)
+
+        user = User.objects.create_user(
+            email=email,
+            password=password,
+            first_name=first_name,
+            last_name=last_name,
+            national_id=national_id,
+        )
+
+        messages.success(request, "User created successfully")
+        return redirect("user_list")
+
+class UserListView(SuperAdminRequiredMixin, ListView): 
+    model = User 
+    template_name = "accounts/user_list.html" 
+    context_object_name = "users"
+
+
+def assign_role(request, user_id):
+    user = User.objects.get(id=user_id)
+    roles = Role.objects.all()
+
+    if request.method == "POST":
+        role_ids = request.POST.getlist("role")  # IMPORTANT: getlist()
+
+        user.role.set(role_ids)  # replaces all existing roles
+        user.save()
+
+        return redirect("user_list")
+
+    return render(request, "roles/assign_role_form.html", {
+        "user": user,
+        "roles": roles
+    })
+
+class UserUpdateView(SuperAdminRequiredMixin, View):
+    template_name = "accounts/user_form.html"
+
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        return render(request, self.template_name, {"user_obj": user})
+
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+
+        user.email = request.POST.get("email")
+        user.first_name = request.POST.get("first_name")
+        user.last_name = request.POST.get("last_name")
+        user.national_id = request.POST.get("national_id")
+
+        password = request.POST.get("password")
+        if password:
+            user.set_password(password)
+
+        user.save()
+
+        messages.success(request, "User updated successfully")
+        return redirect("user_list")
+    
+
+class UserDeleteView(SuperAdminRequiredMixin, View):
+    def post(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        user.delete()
+        messages.success(request, "User deleted successfully")
+        return redirect("user_list")
+    
+
+
