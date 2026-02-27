@@ -8,4 +8,5 @@ urlpatterns = [
     path('authregister/', views.save_user_account, name='authregister'),
     path('authlogin/', views.signin, name='authlogin'),
     path('logout/', views.logout, name='logout'),
+    path('verify/<uuid:token>/', views.verify_email, name='verify_email'),
 ]

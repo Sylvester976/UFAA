@@ -1,6 +1,10 @@
+from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.hashers import make_password, check_password
+from django.template.loader import render_to_string
+from django.urls import reverse
+from config import settings
 from .models import JobseekerAccount
 from django.db import IntegrityError
 from django.utils import timezone
@@ -79,7 +83,11 @@ def signin(request):
         if not user.is_active:
             return JsonResponse({'status': 'error', 'message': 'Account is disabled.'})
         # if not user.is_verified:
-        #     return JsonResponse({'status': 'error', 'message': 'Please verify your email before logging in.'})
+        #     send_verification_email(request, user)
+        #     return JsonResponse({
+        #         'status': 'error',
+        #         'message': 'Account not verified. Verification link sent to your email.'
+        #     })
         if not user.check_password(password):
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
 
@@ -116,3 +124,32 @@ def logout(request):
     request.session.flush()  # clears all session data
 
     return redirect('/login/')
+
+def verify_email(request, token):
+    try:
+        user = JobseekerAccount.objects.get(verification_token=token)
+        user.is_verified = True
+        user.save()
+        return HttpResponse("Email verified successfully. You can now login.")
+    except JobseekerAccount.DoesNotExist:
+        return HttpResponse("Invalid or expired verification link.")
+
+def send_verification_email(request, user):
+    verification_url = request.build_absolute_uri(
+        reverse('verify_email', args=[user.verification_token])
+    )
+
+    context = {
+        'user': user,
+        'verification_url': verification_url,
+    }
+
+    subject = "Verify Your Account"
+    from_email = settings.DEFAULT_FROM_EMAIL
+    to_email = [user.email]
+
+    html_content = render_to_string('emails/verification_email.html', context)
+
+    email = EmailMultiAlternatives(subject, '', from_email, to_email)
+    email.attach_alternative(html_content, "text/html")
+    email.send()
