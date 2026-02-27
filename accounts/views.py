@@ -1,34 +1,28 @@
-from django.core.mail import EmailMultiAlternatives
-from django.shortcuts import render, redirect
-from django.http import JsonResponse, HttpResponse
-from django.contrib.auth.hashers import make_password, check_password
-<<<<<<< HEAD
-from django.template.loader import render_to_string
-from django.urls import reverse
-from config import settings
-from .models import JobseekerAccount
-from .models import AdditionalDetail, JobseekerAccount, JobseekerProfile, ProfessionalQualification, WorkHistory
-=======
-from .models import JobseekerAccount
->>>>>>> a674d211efa1e1c1c4631b0e6fa7d731a67b6232
-from django.db import IntegrityError
-from django.utils import timezone
+from django.contrib.auth.hashers import make_password
 from django.contrib.sessions.models import Session
+from django.core.mail import EmailMultiAlternatives
+from django.db import IntegrityError
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.template.loader import render_to_string
+from django.utils import timezone
 
-
-from django.shortcuts import render, redirect
-from .models import JobseekerProfile
+from config import settings
+from .models import AdditionalDetail, ProfessionalQualification, WorkHistory, JobseekerAccount, JobseekerProfile, AcademicQualification
 
 
 
 def landing(request):
     return render(request, 'auth/landing.html')
 
+
 def index(request):
     return render(request, 'auth/login.html')
 
+
 def register(request):
     return render(request, 'auth/register.html')
+
 
 def save_user_account(request):
     if request.method != 'POST':
@@ -78,6 +72,7 @@ def save_user_account(request):
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
 
+
 def signin(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
@@ -120,6 +115,7 @@ def signin(request):
     except JobseekerAccount.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'User not found.'})
 
+
 def logout(request):
     user_id = request.session.get('user_id')
     if user_id:
@@ -136,6 +132,7 @@ def logout(request):
 
     return redirect('/login/')
 
+
 def verify_email(request, token):
     try:
         user = JobseekerAccount.objects.get(verification_token=token)
@@ -144,6 +141,7 @@ def verify_email(request, token):
         return HttpResponse("Email verified successfully. You can now login.")
     except JobseekerAccount.DoesNotExist:
         return HttpResponse("Invalid or expired verification link.")
+
 
 def send_verification_email(request, user):
     verification_url = request.build_absolute_uri(
@@ -166,8 +164,6 @@ def send_verification_email(request, user):
     email.send()
 
 
-<<<<<<< HEAD
-
 def get_logged_in_user(request):
     user_id = request.session.get("user_id")
 
@@ -179,6 +175,7 @@ def get_logged_in_user(request):
     except JobseekerAccount.DoesNotExist:
         request.session.flush()
         return None
+
 
 def get_next_step(user):
     if not hasattr(user, "profile"):
@@ -198,8 +195,10 @@ def get_next_step(user):
 
     return "dashboard"
 
+
 from django.urls import reverse
 from django.shortcuts import redirect
+
 
 def enforce_step(user, current_step):
     next_required = get_next_step(user)
@@ -208,6 +207,7 @@ def enforce_step(user, current_step):
         return redirect(next_required)
 
     return None
+
 
 def profile_view(request):
     user_id = request.session.get("user_id")
@@ -276,7 +276,6 @@ def delete_profile(request):
     return redirect("profile")
 
 
-
 def calculate_profile_completion(user):
     score = 0
     total = 5
@@ -299,6 +298,7 @@ def calculate_profile_completion(user):
             score += 1
 
     return int((score / total) * 100)
+
 
 def academic_qualifications(request):
     user = get_logged_in_user(request)
@@ -358,6 +358,7 @@ def edit_academic(request, pk):
         {"qualification": qualification}
     )
 
+
 def delete_academic(request, pk):
     jobseeker_id = request.session.get("jobseeker_id")
 
@@ -375,6 +376,7 @@ def delete_academic(request, pk):
     qualification.delete()
 
     return redirect("academic_qualifications")
+
 
 def professional_qualifications(request):
     user = get_logged_in_user(request)
@@ -400,6 +402,7 @@ def professional_qualifications(request):
         "qualifications": qualifications,
         "completion": completion
     })
+
 
 def edit_professional(request, pk):
     jobseeker_id = request.session.get("jobseeker_id")
@@ -433,6 +436,7 @@ def edit_professional(request, pk):
         "jobseekers/edit_professional.html",
         {"qualification": qualification}
     )
+
 
 def delete_professional(request, pk):
     jobseeker_id = request.session.get("jobseeker_id")
@@ -486,6 +490,7 @@ def work_history(request):
         "completion": completion
     })
 
+
 def edit_work_history(request, pk):
     jobseeker_id = request.session.get("jobseeker_id")
 
@@ -518,6 +523,7 @@ def edit_work_history(request, pk):
         return redirect("work_history")
 
     return render(request, "jobseekers/edit_work_history.html", {"job": job})
+
 
 def delete_work_history(request, pk):
     jobseeker_id = request.session.get("jobseeker_id")
@@ -576,6 +582,7 @@ def additional_details(request):
 
     return render(request, "jobseekers/additional.html", context)
 
+
 def delete_cv(request):
     jobseeker_id = request.session.get("jobseeker_id")
 
@@ -592,5 +599,3 @@ def delete_cv(request):
         detail.save()
 
     return redirect("additional_details")
-=======
->>>>>>> a674d211efa1e1c1c4631b0e6fa7d731a67b6232
