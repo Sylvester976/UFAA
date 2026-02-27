@@ -178,3 +178,29 @@
     color: #17c1e8;
     font-weight: 600;
 }
+.select2-container {
+    z-index: 9999 !important;
+}
+.dropdown-menu {
+    z-index: 1055 !important;
+}
+.swal2-container {
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.swal2-popup {
+    z-index: 99999 !important;
+    margin: auto !important;
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+}
+
+.swal-popup-fix {
+    margin-top: 0 !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+}

@@ -198,7 +198,7 @@
                             <div class="col-md-6 mb-3">
                                 <label for="ethnic_group" class="form-label text-sm font-weight-bold">Ethnic
                                     Group</label>
-                                <select name="ethnic_group" id="ethnic_group" class="form-control select2">
+                                <select name="ethnic_group" id="ethnic_group" class="form-control">
                                     <option value="" disabled {% if not profile.ethnic_group %}selected{% endif %}>
                                         Select ethnic group
                                     </option>
@@ -214,7 +214,7 @@
                             <!-- Home County -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-sm font-weight-bold">Home County</label>
-                                <select name="home_county" id="countySelect" class="form-control select2">
+                                <select name="home_county" id="countySelect" class="form-control">
                                     <option value="">Select county</option>
                                     {% for county in counties %}
                                         <option value="{{ county.id }}"
@@ -228,7 +228,7 @@
                             <!-- Constituency -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-sm font-weight-bold">Constituency</label>
-                                <select name="constituency" id="constituencySelect" class="form-control select2">
+                                <select name="constituency" id="constituencySelect" class="form-control ">
                                     <option value="">Select constituency</option>
                                     {% for c in constituencies %}
                                         <option value="{{ c.id }}"
@@ -243,7 +243,7 @@
                             <!-- Sub County -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-sm font-weight-bold">Sub County</label>
-                                <select name="sub_county" id="subCountySelect" class="form-control select2">
+                                <select name="sub_county" id="subCountySelect" class="form-control ">
                                     <option value="">Select sub county</option>
                                     {% for s in sub_counties %}
                                         <option value="{{ s.id }}"
@@ -258,7 +258,7 @@
                             <!-- Ward -->
                             <div class="col-md-6 mb-3">
                                 <label class="form-label text-sm font-weight-bold">Ward</label>
-                                <select name="ward" id="wardSelect" class="form-control select2">
+                                <select name="ward" id="wardSelect" class="form-control ">
                                     <option value="">Select ward</option>
                                     {% for ward in wards %}
                                         <option value="{{ ward.id }}"
@@ -437,7 +437,10 @@
                             icon: 'success',
                             title: 'Profile Saved',
                             text: data.message,
-                            confirmButtonText: 'Continue'
+                            confirmButtonText: 'Continue',
+                            scrollbarPadding: false,
+                            heightAuto: false,
+                            position: 'center',
                         }).then(() => {
                             window.location.href = "{% url 'academic_qualifications' %}";
                         });
@@ -445,7 +448,10 @@
                         Swal.fire({
                             icon: 'error',
                             title: 'Save Failed',
-                            text: data.message || 'Please check your inputs and try again.'
+                            text: data.message || 'Please check your inputs and try again.',
+                            scrollbarPadding: false,
+                            heightAuto: false,
+                            position: 'center',
                         });
                     }
                 })
@@ -460,6 +466,99 @@
                 });
         });
     </script>
+    {% block extra_js %}
+        <script>
+            $(document).ready(function () {
+
+                // Only initialize on specific IDs — never use $('select') or $('.select2') globally
+                const select2Config = {
+                    width: '100%',
+                    allowClear: true,
+                    dropdownParent: $('body')  // prevents clipping
+                };
+
+                $('#ethnic_group').select2({...select2Config, placeholder: 'Select ethnic group'});
+                $('#countySelect').select2({...select2Config, placeholder: 'Select county'});
+                $('#constituencySelect').select2({...select2Config, placeholder: 'Select constituency'});
+                $('#subCountySelect').select2({...select2Config, placeholder: 'Select sub county'});
+                $('#wardSelect').select2({...select2Config, placeholder: 'Select ward'});
+
+                // Store all options on load
+                const allConstituencies = [];
+                $('#constituencySelect option[data-county]').each(function () {
+                    allConstituencies.push({id: $(this).val(), name: $(this).text(), county: $(this).data('county')});
+                });
+
+                const allSubCounties = [];
+                $('#subCountySelect option[data-county]').each(function () {
+                    allSubCounties.push({id: $(this).val(), name: $(this).text(), county: $(this).data('county')});
+                });
+
+                const allWards = [];
+                $('#wardSelect option[data-constituency]').each(function () {
+                    allWards.push({
+                        id: $(this).val(),
+                        name: $(this).text(),
+                        constituency: $(this).data('constituency')
+                    });
+                });
+
+                function rebuildSelect(selector, options, placeholderText) {
+                    $(selector).select2('destroy');
+                    $(selector).empty().append(`<option value="">${placeholderText}</option>`);
+                    options.forEach(opt => {
+                        $(selector).append(`<option value="${opt.id}">${opt.name}</option>`);
+                    });
+                    $(selector).select2({
+                        width: '100%',
+                        allowClear: true,
+                        dropdownParent: $('body'),
+                        placeholder: placeholderText
+                    });
+                }
+
+                // County → Constituency + SubCounty
+                $('#countySelect').on('change', function () {
+                    const countyId = $(this).val();
+                    rebuildSelect('#constituencySelect', [], 'Select constituency');
+                    rebuildSelect('#subCountySelect', [], 'Select sub county');
+                    rebuildSelect('#wardSelect', [], 'Select ward');
+
+                    if (countyId) {
+                        rebuildSelect('#constituencySelect', allConstituencies.filter(c => c.county == countyId), 'Select constituency');
+                        rebuildSelect('#subCountySelect', allSubCounties.filter(s => s.county == countyId), 'Select sub county');
+                    }
+                });
+
+                // Constituency → Ward
+                $('#constituencySelect').on('change', function () {
+                    const constituencyId = $(this).val();
+                    rebuildSelect('#wardSelect', [], 'Select ward');
+                    if (constituencyId) {
+                        rebuildSelect('#wardSelect', allWards.filter(w => w.constituency == constituencyId), 'Select ward');
+                    }
+                });
+
+                // Restore saved values
+                const savedCounty = "{{ profile.home_county_id|default:'' }}";
+                const savedConstituency = "{{ profile.constituency_id|default:'' }}";
+                const savedSubCounty = "{{ profile.sub_county_id|default:'' }}";
+                const savedWard = "{{ profile.ward_id|default:'' }}";
+
+                if (savedCounty) {
+                    $('#countySelect').val(savedCounty).trigger('change');
+                    setTimeout(function () {
+                        if (savedConstituency) $('#constituencySelect').val(savedConstituency).trigger('change');
+                        if (savedSubCounty) $('#subCountySelect').val(savedSubCounty).trigger('change');
+                        setTimeout(function () {
+                            if (savedWard) $('#wardSelect').val(savedWard).trigger('change');
+                        }, 150);
+                    }, 150);
+                }
+
+            });
+        </script>
+    {% endblock %}
 
 
 {% endblock %}

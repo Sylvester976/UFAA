@@ -143,25 +143,27 @@
                 <div class="ms-md-auto pe-md-3 d-flex align-items-center">
                 </div>
                 <ul class="navbar-nav  justify-content-end">
-                    <li class="nav-item d-flex align-items-center">
-                        <a href="#" class="nav-link text-body p-0" data-bs-toggle="dropdown">
+                    <li class="nav-item dropdown d-flex align-items-center">
+                        <a href="#"
+                           class="nav-link text-body p-0"
+                           id="userDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
                             <i class="fa fa-user me-1"></i>
-                            {% comment %} {{ request.user.email }} {% endcomment %}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3">
-
+                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
+                            aria-labelledby="userDropdown">
                             <li>
                                 <a class="dropdown-item" href="{% url 'profile' %}">
                                     My Profile
                                 </a>
                             </li>
-
                             <li>
                                 <a class="dropdown-item text-danger" href="{% url 'logout' %}">
                                     Logout
                                 </a>
                             </li>
-
                         </ul>
                     </li>
                     <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
@@ -256,149 +258,31 @@
     </div>
 </main>
 <!--   Core JS Files   -->
+
+<!-- jQuery MUST be first -->
+<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+
+<!-- Bootstrap — only once -->
 <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+
+<!-- Plugins -->
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
-<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+
+<!-- Select2 -->
 <script src="{% static 'assets/js/select2.min.js' %}"></script>
 
-
-<script>
-    var win = navigator.platform.indexOf('Win') > -1;
-    if (win && document.querySelector('#sidenav-scrollbar')) {
-        var options = {
-            damping: '0.5'
-        }
-        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
-    }
-</script>
-<script>
-    $(document).ready(function () {
-        $('.select2').select2({
-            placeholder: 'Search...',
-            width: '100%',
-        });
-    });
-</script>
-<script>
-$(document).ready(function () {
-
-    $('.select2').select2({ width: '100%', placeholder: '--- SELECT AREA ---' });
-
-    // Store all options on load
-    const allConstituencies = [];
-    $('#constituencySelect option[data-county]').each(function () {
-        allConstituencies.push({
-            id:     $(this).val(),
-            name:   $(this).text(),
-            county: $(this).data('county')
-        });
-    });
-
-    const allSubCounties = [];
-    $('#subCountySelect option[data-county]').each(function () {
-        allSubCounties.push({
-            id:     $(this).val(),
-            name:   $(this).text(),
-            county: $(this).data('county')
-        });
-    });
-
-    const allWards = [];
-    $('#wardSelect option[data-constituency]').each(function () {
-        allWards.push({
-            id:           $(this).val(),
-            name:         $(this).text(),
-            constituency: $(this).data('constituency')
-        });
-    });
-
-    // ── Helper: rebuild a select2 dropdown ──
-    function rebuildSelect(selector, options, placeholderText) {
-        $(selector).select2('destroy');
-        $(selector).empty().append(`<option value="">${placeholderText}</option>`);
-        options.forEach(opt => {
-            $(selector).append(`<option value="${opt.id}">${opt.name}</option>`);
-        });
-        $(selector).select2({ width: '100%', placeholder: placeholderText });
-    }
-
-    // ── County → rebuild Constituency + SubCounty, reset Ward ──
-    $('#countySelect').on('change', function () {
-        const countyId = $(this).val();
-
-        // Reset downstream
-        rebuildSelect('#constituencySelect', [], 'Select constituency');
-        rebuildSelect('#subCountySelect',    [], 'Select sub county');
-        rebuildSelect('#wardSelect',         [], 'Select ward');
-
-        if (countyId) {
-            rebuildSelect(
-                '#constituencySelect',
-                allConstituencies.filter(c => c.county == countyId),
-                'Select constituency'
-            );
-            rebuildSelect(
-                '#subCountySelect',
-                allSubCounties.filter(s => s.county == countyId),
-                'Select sub county'
-            );
-        }
-    });
-
-    // ── Constituency → rebuild Ward ──
-    $('#constituencySelect').on('change', function () {
-        const constituencyId = $(this).val();
-
-        rebuildSelect('#wardSelect', [], 'Select ward');
-
-        if (constituencyId) {
-            rebuildSelect(
-                '#wardSelect',
-                allWards.filter(w => w.constituency == constituencyId),
-                'Select ward'
-            );
-        }
-    });
-
-    // ── Restore saved values on edit ──
-    const savedCounty       = "{{ profile.home_county_id|default:'' }}";
-    const savedConstituency = "{{ profile.constituency_id|default:'' }}";
-    const savedSubCounty    = "{{ profile.sub_county_id|default:'' }}";
-    const savedWard         = "{{ profile.ward_id|default:'' }}";
-
-    if (savedCounty) {
-        $('#countySelect').val(savedCounty).trigger('change');
-
-        setTimeout(function () {
-            if (savedConstituency) {
-                $('#constituencySelect').val(savedConstituency).trigger('change');
-            }
-            if (savedSubCounty) {
-                $('#subCountySelect').val(savedSubCounty).trigger('change');
-            }
-            setTimeout(function () {
-                if (savedWard) {
-                    $('#wardSelect').val(savedWard).trigger('change');
-                }
-            }, 150);
-        }, 150);
-    }
-
-});
-</script>
-<!-- Github buttons -->
-<script async defer src="https://buttons.github.io/buttons.js"></script>
-<!-- Control Center for Soft Dashboard: parallax effects, scripts for the example pages etc -->
-<script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
-<!-- Bootstrap JS -->
-<script src="{% static 'assets/js/swal2/bootstrap.bundle.min.js' %}"></script>
-
-<!-- SweetAlert2 JS -->
+<!-- SweetAlert2 — only once -->
 <script src="{% static 'assets/js/swal2/swal2.js' %}"></script>
+
+<!-- Soft UI Dashboard -->
+<script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
+
+<!-- Autologout -->
 <script src="{% static 'assets/js/autologout.js' %}"></script>
+
 <script>
     window.appConfig = {
         csrfToken: '{{ csrf_token }}',
@@ -406,6 +290,16 @@ $(document).ready(function () {
         loginUrl: '{% url "index" %}',
     };
 </script>
+
+<script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+        var options = {damping: '0.5'}
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+</script>
+
+{% block extra_js %}{% endblock %}
 
 
 </body>
