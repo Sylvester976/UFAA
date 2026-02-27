@@ -1,4 +1,4 @@
-from .models import Gender
+from .models import Gender, EthnicGroup
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
 
@@ -36,6 +36,7 @@ def profile_view(request):
     user_id = request.session.get("user_id")
     user = JobseekerAccount.objects.get(id=user_id)
     genders = Gender.objects.all()
+    ethnic_groups = EthnicGroup.objects.all()
 
     profile = JobseekerProfile.objects.filter(user=user).first()
     page = 'Profile'
@@ -72,7 +73,7 @@ def profile_view(request):
 
         return redirect("profile")
 
-    return render(request, "jobseekers/profile.html", {"profile": profile, "page":page, 'genders': genders,} )
+    return render(request, "jobseekers/profile.html", {"profile": profile, "page":page, 'genders': genders,'ethnic_groups': ethnic_groups,} )
 
 
 def delete_profile(request):

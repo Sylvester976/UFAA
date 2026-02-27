@@ -157,10 +157,19 @@
 
                             <!-- Ethnic Group -->
                             <div class="col-md-6 mb-3">
-                                <label class="form-label text-sm font-weight-bold">Ethnic Group</label>
-                                <input type="text" name="ethnic_group" class="form-control"
-                                       placeholder="Enter ethnic group"
-                                       value="{{ profile.ethnic_group|default:'' }}">
+                                <label for="ethnic_group" class="form-label text-sm font-weight-bold">Ethnic
+                                    Group</label>
+                                <select name="ethnic_group" id="ethnic_group" class="form-control select2">
+                                    <option value="" disabled {% if not profile.ethnic_group %}selected{% endif %}>
+                                        Select ethnic group
+                                    </option>
+                                    {% for group in ethnic_groups %}
+                                        <option value="{{ group.id }}"
+                                                {% if profile.ethnic_group_id == group.id %}selected{% endif %}>
+                                            {{ group.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
                             </div>
 
                             <!-- Home County -->

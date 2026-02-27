@@ -92,3 +92,89 @@
 .modal-footer {
     border-top: 1px solid #f0f0f0;
 }
+
+/* ─── Select2 Soft UI Styling ────────────────────────────── */
+.select2-container--default .select2-selection--single {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem !important;
+    height: calc(1.5em + 1rem + 2px);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: #344767;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    background: #ffffff;
+    border-color: #17c1e8 !important;
+    box-shadow: 0 0 0 3px rgba(23, 193, 232, 0.12) !important;
+    outline: none;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #344767;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    padding-left: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #adb5bd;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    top: 0;
+    right: 8px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    color: #adb5bd;
+    font-size: 1rem;
+    margin-right: 6px;
+}
+
+/* Dropdown */
+.select2-dropdown {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+    overflow: hidden;
+}
+
+/* Search box inside dropdown */
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #e9ecef;
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.83rem;
+    color: #344767;
+    outline: none;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #17c1e8;
+    box-shadow: 0 0 0 2px rgba(23, 193, 232, 0.12);
+}
+
+/* Options */
+.select2-container--default .select2-results__option {
+    padding: 0.45rem 0.9rem;
+    color: #344767;
+    font-size: 0.83rem;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: linear-gradient(310deg, #2dce89, #17c1e8);
+    color: #fff;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background: #f0fbff;
+    color: #17c1e8;
+    font-weight: 600;
+}
