@@ -9,35 +9,6 @@ from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile
 def dashboard(request):
     return render(request, 'recruitment/dashboard.html')
 
-def profile(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def qualifications(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def applications(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def status(request):
-    return render(request, 'recruitment/dashboard.html')
-
-def base(request):
-    return render(request, 'layout/base.html')
-
-
-
-def get_logged_in_user(request):
-    user_id = request.session.get("user_id")
-
-    if not user_id:
-        return None
-
-    try:
-        return JobseekerAccount.objects.get(id=user_id)
-    except JobseekerAccount.DoesNotExist:
-        request.session.flush()
-        return None
-
 def get_next_step(user):
     if not hasattr(user, "profile"):
         return "profile"
@@ -157,11 +128,7 @@ def calculate_profile_completion(user):
     return int((score / total) * 100)
 
 def academic_qualifications(request):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect("/login/")
 
-    qualifications = AcademicQualification.objects.filter(user=user)
 
     if request.method == "POST":
         AcademicQualification.objects.create(
