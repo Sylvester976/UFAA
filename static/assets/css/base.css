@@ -1,0 +1,142 @@
+
+
+
+
+
+/* ====== Global Layout ====== */
+body {
+    background: #f4f6f9;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    margin: 0;
+}
+
+.container {
+    max-width: 900px;
+    margin: 40px auto;
+    background: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+/* ====== Headings ====== */
+h2 {
+    margin-bottom: 10px;
+    color: #1f2937;
+}
+
+h3 {
+    color: #6b7280;
+    font-weight: 500;
+}
+
+/* ====== Progress Bar ====== */
+.progress-wrapper {
+    background: #e5e7eb;
+    border-radius: 20px;
+    height: 12px;
+    margin-bottom: 25px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #2563eb, #4f46e5);
+    transition: width 0.3s ease;
+}
+
+/* ====== Form Styling ====== */
+form {
+    margin-top: 20px;
+}
+
+label {
+    display: block;
+    margin-top: 15px;
+    margin-bottom: 5px;
+    font-weight: 600;
+    color: #374151;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="date"],
+input[type="file"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+}
+
+textarea {
+    resize: vertical;
+}
+
+/* ====== Buttons ====== */
+button {
+    margin-top: 20px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    background: #2563eb;
+    color: white;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+button.danger {
+    background: #dc2626;
+}
+
+button.danger:hover {
+    background: #b91c1c;
+}
+
+/* ====== Cards (for lists like qualifications/work history) ====== */
+.card {
+    padding: 15px 20px;
+    background: #f9fafb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card strong {
+    color: #111827;
+}
+
+.card a {
+    margin-left: 10px;
+    font-size: 14px;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.card a:hover {
+    text-decoration: underline;
+}
+
+/* ====== Divider ====== */
+hr {
+    margin: 30px 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
