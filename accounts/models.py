@@ -134,6 +134,9 @@ class JobseekerProfile(models.Model):
     gender = models.IntegerField(null=True)
     ethnic_group = models.IntegerField(null=True)
     home_county = models.IntegerField(null=True)
+    home_constituency = models.IntegerField(null=True)
+    home_sub_county = models.IntegerField(null=True)
+    home_ward = models.IntegerField(null=True)
     disability_status = models.IntegerField(null=True)
 
     def __str__(self):
