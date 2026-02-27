@@ -118,3 +118,119 @@ class JobseekerAccount(models.Model):
 
     def __str__(self):
         return f"{self.id_no} - {self.name}"
+
+
+class JobseekerProfile(models.Model):
+    user = models.OneToOneField(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="profile"
+    )
+
+    first_name = models.CharField(max_length=100)
+    second_name = models.CharField(max_length=100)
+    date_of_birth = models.DateField()
+    gender = models.CharField(max_length=20)
+    ethnic_group = models.CharField(max_length=100)
+    home_county = models.CharField(max_length=100)
+    disability_status = models.CharField(max_length=100)
+
+    def __str__(self):
+        return f"{self.user.id_no} Profile"
+    
+    
+class AcademicQualification(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="academic_qualifications"
+    )
+
+    level = models.CharField(max_length=100)  # Primary, Secondary, University
+    institution = models.CharField(max_length=255, null=True)
+
+    certificate = models.FileField(
+        upload_to="academic_certificates/",
+        null=True,
+        blank=True
+    )
+
+    transcript = models.FileField(
+        upload_to="academic_transcripts/",
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.id_no} - {self.level}"
+    
+ 
+class ProfessionalQualification(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="professional_qualifications"
+    )
+
+    institution = models.CharField(max_length=255)
+    course = models.CharField(max_length=255)
+    completion_date = models.DateField()
+    grade = models.CharField(max_length=50)
+
+    certificate = models.FileField(
+        upload_to="professional_certificates/",
+        null=True,
+        blank=True
+    )
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.id_no} - {self.course}"
+       
+
+class WorkHistory(models.Model):
+    user = models.ForeignKey(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="work_history"
+    )
+
+    company = models.CharField(max_length=255)
+    job_title = models.CharField(max_length=255)
+    duties = models.TextField()
+
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+
+    is_current = models.BooleanField(default=False)
+
+    exit_reason = models.TextField(null=True, blank=True)
+
+    created_at = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"{self.user.id_no} - {self.company}"
+   
+
+class AdditionalDetail(models.Model):
+    user = models.OneToOneField(
+        JobseekerAccount,
+        on_delete=models.CASCADE,
+        related_name="additional_detail"
+    )
+
+    cover_letter = models.TextField(null=True, blank=True)
+
+    cv = models.FileField(
+        upload_to="cv_uploads/",
+        null=True,
+        blank=True
+    )
+
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"{self.user.id_no} Additional Details"

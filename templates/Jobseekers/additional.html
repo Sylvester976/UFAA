@@ -1,0 +1,37 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<h3>Profile Completion: {{ completion }}%</h3>
+
+<h2>Step 5: Additional Details</h2>
+
+<h3>Profile Completion: {{ completion }}%</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <label>Cover Letter</label>
+    <textarea name="cover_letter" rows="8">
+        {{ detail.cover_letter|default:'' }}
+    </textarea>
+
+    <label>Upload CV</label>
+    <input type="file" name="cv">
+
+    {% if detail and detail.cv %}
+        <p>
+            Current CV:
+            <a href="{{ detail.cv.url }}">Download</a>
+        </p>
+
+        <a href="{% url 'delete_cv' %}">Delete CV</a>
+    {% endif %}
+
+    <br><br>
+
+    <button type="submit">
+        {% if detail %} Update {% else %} Save {% endif %}
+    </button>
+</form>
+
+
+{% endblock %}

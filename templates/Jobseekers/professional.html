@@ -1,0 +1,43 @@
+{% extends "layout/base.html" %}
+{% block content %}
+<h3>Profile Completion: {{ completion }}%</h3>
+<h2>Step 3: Professional Qualifications</h2>
+
+<h3>Profile Completion: {{ completion }}%</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <input type="text" name="institution" placeholder="Institution" required>
+    <input type="text" name="course" placeholder="Course" required>
+    <input type="date" name="completion_date" required>
+    <input type="text" name="grade" placeholder="Grade">
+
+    <label>Certificate</label>
+    <input type="file" name="certificate">
+
+    <button type="submit">Add Qualification</button>
+</form>
+
+<hr>
+
+<h3>Your Professional Qualifications</h3>
+
+{% for q in qualifications %}
+    <div>
+        <strong>{{ q.course }}</strong> - {{ q.institution }}
+        ({{ q.completion_date }})
+
+        {% if q.certificate %}
+            <a href="{{ q.certificate.url }}">Certificate</a>
+        {% endif %}
+
+        <a href="{% url 'edit_professional' q.id %}">Edit</a>
+        <a href="{% url 'delete_professional' q.id %}">Delete</a>
+    </div>
+{% empty %}
+    <p>No professional qualifications added yet.</p>
+{% endfor %}
+
+
+{% endblock %}
