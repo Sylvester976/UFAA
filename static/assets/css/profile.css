@@ -1,0 +1,94 @@
+/* ─── Tab Cards ─────────────────────────────────────────── */
+#profileTabs {
+    gap: 8px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#profileTabs .nav-item .nav-link {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 0.75rem !important;
+    color: #67748e;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.55rem 1rem;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    text-decoration: none;
+}
+
+#profileTabs .nav-item .nav-link i {
+    font-size: 0.78rem;
+}
+
+#profileTabs .nav-item .nav-link:hover {
+    background: #f0fbff;
+    color: #17c1e8;
+    border-color: #17c1e8;
+    box-shadow: 0 4px 12px rgba(23, 193, 232, 0.15);
+    transform: translateY(-1px);
+}
+
+#profileTabs .nav-item .nav-link.active {
+    background: linear-gradient(310deg, #2dce89, #17c1e8) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(23, 193, 232, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ─── Content Card ───────────────────────────────────────── */
+.profile-content-card {
+    background: #ffffff !important;
+    border-top-left-radius: 0.25rem !important;
+    border-top-right-radius: 0.75rem !important;
+    border-bottom-left-radius: 0.75rem !important;
+    border-bottom-right-radius: 0.75rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    margin-top: 10px;
+}
+
+/* ─── Form Controls ──────────────────────────────────────── */
+.profile-content-card .form-control {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    color: #344767;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-content-card .form-control:focus {
+    background: #ffffff;
+    border-color: #17c1e8;
+    box-shadow: 0 0 0 3px rgba(23, 193, 232, 0.12);
+}
+
+.profile-content-card .form-label {
+    color: #344767;
+    margin-bottom: 0.3rem;
+}
+
+/* ─── Progress Bar ───────────────────────────────────────── */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 1rem;
+}
+
+/* ─── Modal ──────────────────────────────────────────────── */
+.modal-content {
+    border-radius: 0.75rem;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-footer {
+    border-top: 1px solid #f0f0f0;
+}

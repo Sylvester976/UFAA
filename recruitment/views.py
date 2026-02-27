@@ -1,8 +1,4 @@
-from django.shortcuts import render
-
-from django.urls import reverse
-from django.shortcuts import redirect
-
+from .models import Gender
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
 
@@ -38,17 +34,11 @@ def enforce_step(user, current_step):
     
 def profile_view(request):
     user_id = request.session.get("user_id")
-
-    if not user_id:
-        return redirect("/login/")
-
-    try:
-        user = JobseekerAccount.objects.get(id=user_id)
-    except JobseekerAccount.DoesNotExist:
-        request.session.flush()
-        return redirect("/login/")
+    user = JobseekerAccount.objects.get(id=user_id)
+    genders = Gender.objects.all()
 
     profile = JobseekerProfile.objects.filter(user=user).first()
+    page = 'Profile'
 
     if request.method == "POST":
         first_name = request.POST.get("first_name")
@@ -82,7 +72,7 @@ def profile_view(request):
 
         return redirect("profile")
 
-    return render(request, "jobseekers/profile.html", {"profile": profile})
+    return render(request, "jobseekers/profile.html", {"profile": profile, "page":page, 'genders': genders,} )
 
 
 def delete_profile(request):

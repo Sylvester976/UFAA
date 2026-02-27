@@ -24912,6 +24912,11 @@ pre[class*="language-"] {
   width: 11px;
 }
 
+.card-header.bg-transparent {
+    background-color: transparent !important;
+    border-bottom: none;
+}
+
 /* MS supports */
 @supports (-ms-overflow-style: none) {
   .ps {

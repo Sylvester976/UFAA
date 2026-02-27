@@ -1,62 +1,349 @@
 {% extends "layout/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+{% endblock %}
+
 {% block content %}
-<h3>Profile Completion: {{ completion }}%</h3>
-<h2>Step 1: Basic Details</h2>
+    <div class="row">
+        <div class="col-12 mt-4">
 
-<form method="POST">
-    {% csrf_token %}
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between mb-3">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">My Profile</h6>
+                    <p class="text-sm text-secondary mb-0">Complete all steps to finish your profile</p>
+                </div>
+                <span class="badge bg-gradient-info px-3 py-2">
+                <i class="fas fa-tasks me-1"></i> Profile: {{ completion }}% Complete
+            </span>
+            </div>
 
-    <label>First Name</label>
-    <input type="text" name="first_name"
-           value="{{ profile.first_name|default:'' }}" required>
+            <!-- Progress Bar -->
+            <div class="mb-4">
+                <div class="progress" style="height: 6px;">
+                    <div class="progress-bar bg-gradient-info" role="progressbar"
+                         style="width: {{ completion }}%;"
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
+                </div>
+            </div>
 
-    <label>Second Name</label>
-    <input type="text" name="second_name"
-           value="{{ profile.second_name|default:'' }}" required>
+            <!-- Tabs Navigation -->
+            <ul class="nav d-flex flex-wrap mb-0" id="profileTabs">
 
-    <label>Email</label>
-    <input type="email" name="email"
-           value="{{ profile.email|default:'' }}" required>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'profile' %}">
+                        <i class="fas fa-user me-2"></i>Basic Details
+                    </a>
+                </li>
 
-    <label>ID Number</label>
-    <input type="text" name="id_no"
-           value="{{ profile.id_no|default:'' }}" required>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                        <i class="fas fa-graduation-cap me-2"></i>Academic Qualifications
+                    </a>
+                </li>
 
-    <label>Date of Birth</label>
-    <input type="date" name="date_of_birth"
-           value="{{ profile.date_of_birth|date:'Y-m-d' }}" required>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                        <i class="fas fa-certificate me-2"></i>Professional Qualifications
+                    </a>
+                </li>
 
-    <label>Gender</label>
-    <input type="text" name="gender"
-           value="{{ profile.gender|default:'' }}">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'work_history' %}">
+                        <i class="fas fa-briefcase me-2"></i>Work History
+                    </a>
+                </li>
 
-    <label>Ethnic Group</label>
-    <input type="text" name="ethnic_group"
-           value="{{ profile.ethnic_group|default:'' }}">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'additional_details' %}">
+                        <i class="fas fa-info-circle me-2"></i>Additional Details
+                    </a>
+                </li>
 
-    <label>Home County</label>
-    <input type="text" name="home_county"
-           value="{{ profile.home_county|default:'' }}">
+            </ul>
 
-    <label>Disability Status</label>
-    <input type="text" name="disability_status"
-           value="{{ profile.disability_status|default:'' }}">
+            <!-- Content Card -->
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body">
 
-    <br><br>
+                    <h6 class="font-weight-bolder mb-1">Step 1: Basic Details</h6>
+                    <p class="text-sm text-secondary mb-4">Fill in your personal information below</p>
 
-    <button type="submit">
-        {% if profile %} Update Profile {% else %} Save Profile {% endif %}
-    </button>
-</form>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <div class="row">
 
-{% if profile %}
-    <br>
-    <form method="POST" action="{% url 'delete_profile' %}">
-        {% csrf_token %}
-        <button type="submit" style="color:red;">
-            Delete Profile
-        </button>
-    </form>
-{% endif %}
+                            <!-- ID Number -->
+                            <div class="col-md-6 mb-3">
+                                <label for="id_no" class="form-label text-sm font-weight-bold">
+                                    ID Number <span class="text-danger">*</span>
+                                </label>
+                                <input type="number" name="id_no" id="id_no" class="form-control"
+                                       placeholder="Enter ID number"
+                                       value="{{ profile.id_no|default:'' }}" required readonly>
+                            </div>
+
+                            <!-- Salutation -->
+                            <div class="col-md-6 mb-3">
+                                <label for="salutation" class="form-label text-sm font-weight-bold">
+                                    Salutation <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="salutation" name="salutation" class="form-control"
+                                       placeholder="Enter salutation e.g. Mr/Mrs/Sir/OGW/ENG/Dr"
+                                       value="" required>
+                            </div>
+
+                            <!-- Surname -->
+                            <div class="col-md-6 mb-3">
+                                <label for="surname" class="form-label text-sm font-weight-bold">
+                                    Surname <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="surname" name="surname" class="form-control"
+                                       placeholder="Enter surname"
+                                       value="{{ profile.first_name|default:'' }}" required>
+                            </div>
+
+
+                            <!-- First Name -->
+                            <div class="col-md-6 mb-3">
+                                <label for="first_name" class="form-label text-sm font-weight-bold">
+                                    First Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="first_name" name="first_name" class="form-control"
+                                       placeholder="Enter first name"
+                                       value="{{ profile.first_name|default:'' }}" required>
+                            </div>
+
+                            <!-- Other Names -->
+                            <div class="col-md-6 mb-3">
+                                <label for="second_name" class="form-label text-sm font-weight-bold">
+                                    Other Names
+                                </label>
+                                <input type="text" name="second_name" id="second_name" class="form-control"
+                                       placeholder="Enter Other names"
+                                       value="{{ profile.second_name|default:'' }}">
+                            </div>
+
+                            <!-- Date of Birth -->
+                            <div class="col-md-6 mb-3">
+                                <label for="date_of_birth" class="form-label text-sm font-weight-bold">
+                                    Date of Birth <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" name="date_of_birth" id="date_of_birth" class="form-control"
+                                       value="{{ profile.date_of_birth|date:'Y-m-d' }}" required>
+                                <small id="dobError" class="text-danger" style="display:none; font-size:0.78rem;">
+                                    <i class="fas fa-exclamation-circle me-1"></i>
+                                    <span id="dobErrorMsg"></span>
+                                </small>
+                            </div>
+
+                            <!-- Gender -->
+                            <div class="col-md-6 mb-3">
+                                <label for="gender" class="form-label text-sm font-weight-bold">Gender</label>
+                                <select name="gender" id="gender" class="form-control">
+                                    <option value="" disabled {% if not profile.gender %}selected{% endif %}>Select
+                                        gender
+                                    </option>
+                                    {% for gender in genders %}
+                                        <option value="{{ gender.id }}"
+                                                {% if profile.gender_id == gender.id %}selected{% endif %}>
+                                            {{ gender.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Ethnic Group -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-sm font-weight-bold">Ethnic Group</label>
+                                <input type="text" name="ethnic_group" class="form-control"
+                                       placeholder="Enter ethnic group"
+                                       value="{{ profile.ethnic_group|default:'' }}">
+                            </div>
+
+                            <!-- Home County -->
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label text-sm font-weight-bold">Home County</label>
+                                <input type="text" name="home_county" class="form-control"
+                                       placeholder="Enter home county"
+                                       value="{{ profile.home_county|default:'' }}">
+                            </div>
+
+                            <!-- Disability Status -->
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label text-sm font-weight-bold">Disability Status</label>
+                                <select name="disability_status" class="form-control">
+                                    <option value="" disabled {% if not profile.disability_status %}selected{% endif %}>
+                                        Select disability status
+                                    </option>
+                                    <option value="None"
+                                            {% if profile.disability_status == 'None' %}selected{% endif %}>None
+                                    </option>
+                                    <option value="Physical"
+                                            {% if profile.disability_status == 'Physical' %}selected{% endif %}>Physical
+                                    </option>
+                                    <option value="Visual"
+                                            {% if profile.disability_status == 'Visual' %}selected{% endif %}>Visual
+                                    </option>
+                                    <option value="Hearing"
+                                            {% if profile.disability_status == 'Hearing' %}selected{% endif %}>Hearing
+                                    </option>
+                                    <option value="Other"
+                                            {% if profile.disability_status == 'Other' %}selected{% endif %}>Other
+                                    </option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            {% if profile %}
+                                <button type="button" class="btn btn-outline-danger btn-sm"
+                                        data-bs-toggle="modal" data-bs-target="#deleteModal">
+                                    <i class="fas fa-trash me-1"></i> Delete Profile
+                                </button>
+                            {% else %}
+                                <div></div>
+                            {% endif %}
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn bg-gradient-info mb-0">
+                                    <i class="fas fa-save me-1"></i>
+                                    {% if profile %} Update Profile {% else %} Save Profile {% endif %}
+                                </button>
+                                <a href="{% url 'academic_qualifications' %}" class="btn bg-gradient-secondary mb-0">
+                                    Next <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    {% if profile %}
+        <div class="modal fade" id="deleteModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h6 class="modal-title">
+                            <i class="fas fa-exclamation-triangle text-danger me-2"></i>Confirm Delete
+                        </h6>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body text-sm">
+                        Are you sure you want to delete your profile? This action <strong>cannot be undone</strong>.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel
+                        </button>
+                        <form method="POST" action="{% url 'delete_profile' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash me-1"></i> Yes, Delete
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    <script>
+        const dobInput = document.getElementById('date_of_birth');
+        const dobError = document.getElementById('dobError');
+        const dobErrorMsg = document.getElementById('dobErrorMsg');
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0); // normalize to midnight
+
+        // Boundaries
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        const minDate = new Date(today.getFullYear() - 60, today.getMonth(), today.getDate() + 1);
+
+        dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+        dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+
+        function validateDOB() {
+            const value = dobInput.value.trim();
+
+            // Empty check
+            if (!value) {
+                dobErrorMsg.textContent = 'Date of birth is required.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Date of birth is required.');
+                return false;
+            }
+
+            // Format check — must be a real date in YYYY-MM-DD
+            const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+            if (!dateRegex.test(value)) {
+                dobErrorMsg.textContent = 'Enter a valid date in YYYY-MM-DD format.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Invalid date format.');
+                return false;
+            }
+
+            const selected = new Date(value);
+            selected.setHours(0, 0, 0, 0);
+
+            // Check if it's actually a real date (e.g. not 2024-13-45)
+            if (isNaN(selected.getTime())) {
+                dobErrorMsg.textContent = 'Enter a valid date.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Invalid date.');
+                return false;
+            }
+
+            // Future date check
+            if (selected > today) {
+                dobErrorMsg.textContent = 'Date of birth cannot be in the future.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Date of birth cannot be in the future.');
+                return false;
+            }
+
+            // Under 18 check
+            if (selected > maxDate) {
+                dobErrorMsg.textContent = 'You must be at least 18 years old.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('You must be at least 18 years old.');
+                return false;
+            }
+
+            // Over 60 check
+            if (selected < minDate) {
+                dobErrorMsg.textContent = 'Age must be under 60 years.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Age must be under 60 years.');
+                return false;
+            }
+
+            // All good
+            dobError.style.display = 'none';
+            dobInput.setCustomValidity('');
+            return true;
+        }
+
+        // Validate as they type
+        dobInput.addEventListener('input', validateDOB);
+
+        // Validate when they leave the field
+        dobInput.addEventListener('blur', validateDOB);
+
+        // Validate on form submit — block if invalid
+        dobInput.closest('form').addEventListener('submit', function (e) {
+            if (!validateDOB()) {
+                e.preventDefault();
+                dobInput.focus();
+            }
+        });
+    </script>
 
 {% endblock %}
