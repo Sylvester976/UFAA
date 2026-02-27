@@ -120,6 +120,10 @@ def calculate_profile_completion(user):
 
 def academic_qualifications(request):
 
+    user_id = request.session.get("user_id")
+    completion = 0  # Default value
+    
+    user = JobseekerAccount.objects.get(id=user_id)
 
     if request.method == "POST":
         AcademicQualification.objects.create(
@@ -130,10 +134,20 @@ def academic_qualifications(request):
         )
         return redirect("academic_qualifications")
 
-    completion = calculate_profile_completion(user)
+    try:
+        user = JobseekerAccount.objects.get(id=user_id)
+        profile = JobseekerProfile.objects.filter(user=user).first()
+
+        if profile:
+            profile.delete()
+
+        completion = calculate_profile_completion(user)
+
+    except JobseekerAccount.DoesNotExist:
+        pass
 
     return render(request, "jobseekers/academic.html", {
-        "qualifications": qualifications,
+        "qualifications": AcademicQualification.objects.filter(user_id=user_id),
         "completion": completion
     })
     
@@ -191,7 +205,12 @@ def delete_academic(request, pk):
     return redirect("academic_qualifications")
 
 def professional_qualifications(request):
-    user = get_logged_in_user(request)
+    
+    user_id = request.session.get("user_id")
+    completion = 0  # Default value
+    
+    user = JobseekerAccount.objects.get(id=user_id)
+    
     if not user:
         return redirect("/login/")
 
@@ -268,7 +287,12 @@ def delete_professional(request, pk):
 
 
 def work_history(request):
-    user = get_logged_in_user(request)
+    
+    user_id = request.session.get("user_id")
+    completion = 0  # Default value
+    
+    user = JobseekerAccount.objects.get(id=user_id)
+    
     if not user:
         return redirect("/login/")
 
