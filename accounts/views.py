@@ -19,6 +19,8 @@ from .models import User
 from core.mixins import SuperAdminRequiredMixin
 from django.views.generic import CreateView, ListView
 from roles.models import Role
+from django.http import HttpResponse
+from accounts.permissions import permission_required
 
 def landing(request):
     return render(request, 'auth/landing.html')
@@ -272,4 +274,13 @@ class UserDeleteView(SuperAdminRequiredMixin, View):
         return redirect("user_list")
     
 
+# Sample permissions view for reference
+@permission_required("view_dashboard")
+def protected_dashboard(request):
+    return HttpResponse("Welcome to protected dashboard")
 
+
+
+@permission_required("view_dashboard")
+def test_dashbord(request):
+    return render(request, 'accounts/test_dashbord.html')
