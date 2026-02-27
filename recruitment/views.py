@@ -1,6 +1,7 @@
-from .models import Gender, EthnicGroup
+from .models import Gender, EthnicGroup, County, Constituency, SubCounty, Ward, JobSeekerProfile
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
+from django.http import JsonResponse
 
 def dashboard(request):
     return render(request, 'recruitment/dashboard.html')
@@ -33,48 +34,84 @@ def enforce_step(user, current_step):
     return None
     
 def profile_view(request):
-    user_id = request.session.get("user_id")
-    user = JobseekerAccount.objects.get(id=user_id)
-    genders = Gender.objects.all()
-    ethnic_groups = EthnicGroup.objects.all()
+    user_id = request.session.get('user_id')
 
-    profile = JobseekerProfile.objects.filter(user=user).first()
-    page = 'Profile'
+    if not user_id:
+        return redirect('index')
 
-    if request.method == "POST":
-        first_name = request.POST.get("first_name")
-        second_name = request.POST.get("second_name")
-        date_of_birth = request.POST.get("date_of_birth")
-        gender = request.POST.get("gender")
-        ethnic_group = request.POST.get("ethnic_group")
-        home_county = request.POST.get("home_county")
-        disability_status = request.POST.get("disability_status")
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
 
-        if profile:
-            profile.first_name = first_name
-            profile.second_name = second_name
-            profile.date_of_birth = date_of_birth
-            profile.gender = gender
-            profile.ethnic_group = ethnic_group
-            profile.home_county = home_county
+    profile, created = JobSeekerProfile.objects.get_or_create(user=user)
+    completion = calculate_profile_completion(user)
+
+    if request.method == 'POST':
+        try:
+            salutation        = request.POST.get('salutation', '')
+            surname           = request.POST.get('surname', '').strip()
+            first_name        = request.POST.get('first_name', '').strip()
+            second_name       = request.POST.get('second_name', '').strip()
+            email             = request.POST.get('email', '').strip()
+            id_no             = request.POST.get('id_no', '').strip()
+            date_of_birth     = request.POST.get('date_of_birth') or None
+            gender_id         = request.POST.get('gender') or None
+            ethnic_group_id   = request.POST.get('ethnic_group') or None
+            home_county_id    = request.POST.get('home_county') or None
+            constituency_id   = request.POST.get('constituency') or None
+            sub_county_id     = request.POST.get('sub_county') or None
+            ward_id           = request.POST.get('ward') or None
+            disability_status = request.POST.get('disability_status', '').strip()
+
+            # Validation
+            if not first_name:
+                return JsonResponse({'status': 'error', 'message': 'First name is required.'})
+            if not surname:
+                return JsonResponse({'status': 'error', 'message': 'Surname name is required.'})
+            if not email:
+                return JsonResponse({'status': 'error', 'message': 'Email is required.'})
+            if not id_no:
+                return JsonResponse({'status': 'error', 'message': 'ID number is required.'})
+            if not date_of_birth:
+                return JsonResponse({'status': 'error', 'message': 'Date of birth is required.'})
+
+            # Save
+            profile.surname           = surname
+            profile.salutation        = salutation
+            profile.first_name        = first_name
+            profile.second_name       = second_name
+            profile.email             = email
+            profile.id_no             = id_no
+            profile.date_of_birth     = date_of_birth
+            profile.gender_id         = gender_id
+            profile.ethnic_group_id   = ethnic_group_id
+            profile.home_county_id    = home_county_id
+            profile.constituency_id   = constituency_id
+            profile.sub_county_id     = sub_county_id
+            profile.ward_id           = ward_id
             profile.disability_status = disability_status
             profile.save()
-        else:
-            profile = JobseekerProfile.objects.create(
-                user=user,
-                first_name=first_name,
-                second_name=second_name,
-                date_of_birth=date_of_birth,
-                gender=gender,
-                ethnic_group=ethnic_group,
-                home_county=home_county,
-                disability_status=disability_status
-            )
 
-        return redirect("profile")
+            return JsonResponse({'status': 'success', 'message': 'Profile saved successfully.'})
 
-    return render(request, "jobseekers/profile.html", {"profile": profile, "page":page, 'genders': genders,'ethnic_groups': ethnic_groups,} )
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
+    context = {
+        'profile':        profile,
+        'user':           user,
+        'page':           'Profile',
+        'counties':       County.objects.all(),
+        'constituencies': Constituency.objects.all(),
+        'sub_counties':   SubCounty.objects.all(),
+        'wards':          Ward.objects.all(),
+        'genders':        Gender.objects.all(),
+        'ethnic_groups':  EthnicGroup.objects.all(),
+        'completion':     completion,
+    }
+
+    return render(request, 'jobseekers/profile.html', context)
 
 def delete_profile(request):
     user_id = request.session.get("user_id")
@@ -84,7 +121,7 @@ def delete_profile(request):
 
     try:
         user = JobseekerAccount.objects.get(id=user_id)
-        profile = JobseekerProfile.objects.filter(user=user).first()
+        profile = JobSeekerProfile.objects.filter(user=user).first()
 
         if profile:
             profile.delete()
@@ -97,59 +134,56 @@ def delete_profile(request):
 
 def calculate_profile_completion(user):
     score = 0
-    total = 5
+    total = 100
 
-    if hasattr(user, "profile"):
-        score += 1
+    # ── Section 1: Basic Details (40 points) ──────────────────
+    # Each field worth points, adds up to 40
+    if hasattr(user, 'profile'):
+        profile = user.profile
+        fields = [
+            profile.salutation,
+            profile.surname,
+            profile.first_name,
+            profile.date_of_birth,
+            profile.gender_id,
+            profile.ethnic_group_id,
+            profile.home_county_id,
+            profile.constituency_id,
+            profile.disability_status,
+        ]
+        filled        = sum(1 for f in fields if f)
+        field_score   = int((filled / len(fields)) * 40)
+        score        += field_score
 
-    if user.academic_qualifications.exists():
-        score += 1
+    # ── Section 2: Academic Qualifications (15 points) ────────
+    if hasattr(user, 'academic_qualifications') and user.academic_qualifications.exists():
+        score += 15
 
-    if user.professional_qualifications.exists():
-        score += 1
+    # ── Section 3: Professional Qualifications (15 points) ────
+    if hasattr(user, 'professional_qualifications') and user.professional_qualifications.exists():
+        score += 15
 
-    if user.work_history.exists():
-        score += 1
+    # ── Section 4: Work History (15 points) ───────────────────
+    if hasattr(user, 'work_history') and user.work_history.exists():
+        score += 15
 
-    if hasattr(user, "additional_detail"):
+    # ── Section 5: Additional Details (15 points) ─────────────
+    if hasattr(user, 'additional_detail'):
         detail = user.additional_detail
-        if detail.cover_letter or detail.cv:
-            score += 1
+        if detail.cover_letter:
+            score += 7
+        if detail.cv:
+            score += 8
 
-    return int((score / total) * 100)
+    return min(int(score), 100)
 
 def academic_qualifications(request):
 
-    user_id = request.session.get("user_id")
-    completion = 0  # Default value
-    
-    user = JobseekerAccount.objects.get(id=user_id)
 
     if request.method == "POST":
-        AcademicQualification.objects.create(
-            user=user,
-            level=request.POST.get("level"),
-            certificate=request.FILES.get("certificate"),
-            transcript=request.FILES.get("transcript"),
-        )
-        return redirect("academic_qualifications")
-
-    try:
-        user = JobseekerAccount.objects.get(id=user_id)
-        profile = JobseekerProfile.objects.filter(user=user).first()
-
-        if profile:
-            profile.delete()
-
-        completion = calculate_profile_completion(user)
-
-    except JobseekerAccount.DoesNotExist:
         pass
 
-    return render(request, "jobseekers/academic.html", {
-        "qualifications": AcademicQualification.objects.filter(user_id=user_id),
-        "completion": completion
-    })
+    return render(request, "jobseekers/academic.html", )
     
 
 def edit_academic(request, pk):
@@ -205,12 +239,7 @@ def delete_academic(request, pk):
     return redirect("academic_qualifications")
 
 def professional_qualifications(request):
-    
-    user_id = request.session.get("user_id")
-    completion = 0  # Default value
-    
-    user = JobseekerAccount.objects.get(id=user_id)
-    
+    user = get_logged_in_user(request)
     if not user:
         return redirect("/login/")
 
@@ -287,12 +316,7 @@ def delete_professional(request, pk):
 
 
 def work_history(request):
-    
-    user_id = request.session.get("user_id")
-    completion = 0  # Default value
-    
-    user = JobseekerAccount.objects.get(id=user_id)
-    
+    user = get_logged_in_user(request)
     if not user:
         return redirect("/login/")
 
