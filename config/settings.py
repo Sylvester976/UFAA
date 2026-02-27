@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Add your custom login middleware here
     'accounts.middleware.LoginRequiredMiddleware',
+    'core.middleware.RBACMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'

@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views import (UserListView, UserCreateView, UserUpdateView, UserDeleteView, assign_role,)
+from .views import (UserListView, UserCreateView, UserUpdateView, UserDeleteView, assign_role, test_dashbord)
 
 urlpatterns = [
     path('', views.landing, name='landing'),
@@ -20,4 +20,6 @@ urlpatterns = [
     
     # path("users/<int:user_id>/assign-role/", assign_role, name="assign_role"),
     path("users/<uuid:user_id>/assign-role/", assign_role, name="assign_role"),
+    
+    path("test/", views.test_dashbord, name="test_dashbord"),
 ]

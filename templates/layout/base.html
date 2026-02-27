@@ -28,7 +28,7 @@
       <a class="navbar-brand m-0" href="{% url 'dashboard' %}" target="_blank">
         <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" class="navbar-brand-img h-100" alt="main_logo">
         <span class="ms-1 font-weight-bold">
-            {{ request.user.get_full_name|default:request.user.username }}
+            {{ request.user.email|default:request.user.email }}
         </span>
       </a>
     </div>
@@ -124,7 +124,7 @@
             <li class="nav-item d-flex align-items-center">
                <a href="#" class="nav-link text-body p-0" data-bs-toggle="dropdown">
                         <i class="fa fa-user me-1"></i>
-                        {{ request.user.username }}
+                        {{ request.user.email }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end px-2 py-3">
 
