@@ -1,0 +1,35 @@
+{% block content %}
+
+<div class="container mt-4">
+  <h3>Roles</h3>
+  <a href="{% url 'role_create' %}" class="btn btn-primary mb-2">Create</a>
+
+  <ul class="list-group">
+    {% for role in roles %}
+    <li
+      class="list-group-item d-flex justify-content-between align-items-center"
+    >
+      {{ role.name }} {% if perms.yourapp.delete_role %}
+      <a href="{% url 'role_delete' role.id %}" class="btn btn-danger btn-sm">
+        Delete
+      </a>
+      {% endif %}
+
+      
+    <a href="{% url 'role_update' role.pk %}">Edit</a>
+
+    <form action="{% url 'role_delete' role.pk %}" 
+            method="POST" 
+            style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+
+    </li>
+    {% empty %}
+    <li class="list-group-item">No roles found.</li>
+    {% endfor %}
+  </ul>
+</div>
+
+{% endblock %}

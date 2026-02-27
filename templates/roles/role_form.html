@@ -1,0 +1,43 @@
+<form method="post">
+    {% csrf_token %}
+
+    <div>
+        <label for="id_name">Name</label>
+        <input 
+            type="text" 
+            name="name" 
+            id="id_name" 
+            maxlength="150" 
+            required
+        >
+    </div>
+
+    <div>
+        <label for="id_description">Description</label>
+        <textarea 
+            name="description" 
+            id="id_description"
+            rows="4"
+        ></textarea>
+    </div>
+
+    <div>
+        <label>Permissions</label>
+
+        {% for permission in permissions %}
+            <div>
+                <input 
+                    type="checkbox" 
+                    name="permissions" 
+                    value="{{ permission.id }}" 
+                    id="perm_{{ permission.id }}"
+                >
+                <label for="perm_{{ permission.id }}">
+                    {{ permission.name }}
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="submit">Save Role</button>
+</form>
