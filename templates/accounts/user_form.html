@@ -1,0 +1,33 @@
+
+
+{% block content %}
+<h2>
+    {% if user_obj %} Edit User {% else %} Create User {% endif %}
+</h2>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <label>Email</label>
+    <input type="email" name="email" 
+        value="{{ user_obj.email|default:'' }}" required>
+
+    <label>First Name</label>
+    <input type="text" name="first_name" 
+        value="{{ user_obj.first_name|default:'' }}">
+
+    <label>Last Name</label>
+    <input type="text" name="last_name" 
+        value="{{ user_obj.last_name|default:'' }}">
+
+    <label>National ID</label>
+    <input type="text" name="national_id" 
+        value="{{ user_obj.national_id|default:'' }}">
+
+    <label>Password (leave blank if updating)</label>
+    <input type="password" name="password">
+
+    <button type="submit">Save</button>
+</form>
+
+{% endblock %}

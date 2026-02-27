@@ -1,0 +1,15 @@
+
+{% block content %}
+<h2>Role Hierarchy</h2>
+
+<ul>
+    {% for role in roles %}
+        <li>
+            {{ role.name }}
+            {% if role.parent %}
+                → inherits {{ role.parent.name }}
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+{% endblock %}

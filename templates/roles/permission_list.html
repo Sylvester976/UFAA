@@ -1,0 +1,25 @@
+{% block content %}
+<div class="container mt-4">
+  <h3>Permissions</h3>
+  <a href="{% url 'permission_create' %}" class="btn btn-primary mb-2"
+    >Create</a>
+    
+  <ul class="list-group">
+    {% for permission in permissions %}
+    <li class="list-group-item">
+      {{ permission.name }} ({{ permission.code }})
+    </li>
+    <a href="{% url 'permission_update' permission.pk %}">Edit</a>
+
+    <form action="{% url 'permission_delete' permission.pk %}" 
+          method="POST" 
+          style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
+
