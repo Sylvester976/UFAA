@@ -2,11 +2,15 @@ from django.core.mail import EmailMultiAlternatives
 from django.shortcuts import render, redirect
 from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.hashers import make_password, check_password
+<<<<<<< HEAD
 from django.template.loader import render_to_string
 from django.urls import reverse
 from config import settings
 from .models import JobseekerAccount
 from .models import AdditionalDetail, JobseekerAccount, JobseekerProfile, ProfessionalQualification, WorkHistory
+=======
+from .models import JobseekerAccount
+>>>>>>> a674d211efa1e1c1c4631b0e6fa7d731a67b6232
 from django.db import IntegrityError
 from django.utils import timezone
 from django.contrib.sessions.models import Session
@@ -16,9 +20,6 @@ from django.shortcuts import render, redirect
 from .models import JobseekerProfile
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from .models import AcademicQualification
-from accounts.models import JobseekerAccount
 
 def landing(request):
     return render(request, 'auth/landing.html')
@@ -165,6 +166,7 @@ def send_verification_email(request, user):
     email.send()
 
 
+<<<<<<< HEAD
 
 def get_logged_in_user(request):
     user_id = request.session.get("user_id")
@@ -590,3 +592,5 @@ def delete_cv(request):
         detail.save()
 
     return redirect("additional_details")
+=======
+>>>>>>> a674d211efa1e1c1c4631b0e6fa7d731a67b6232
