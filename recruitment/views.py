@@ -774,3 +774,4 @@ def vacancy_detail(request, vacancy_id):
     return render(request, 'recruitment/hr/vacancy_detail.html', {
         'vacancy': vacancy
     })
+    
