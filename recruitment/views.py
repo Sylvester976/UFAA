@@ -2,25 +2,18 @@ import json
 from datetime import datetime
 
 from django.contrib import messages
-from .models import Gender, EthnicGroup, County, Constituency, PanelAssignment, SubCounty, Ward, JobSeekerProfile
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
-from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
-from django.http import JsonResponse
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
-
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 from django.http import FileResponse, Http404
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-
 from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
 from core.decorators import role_required
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
+from .models import PanelAssignment
 from .models import Vacancy
 
 
@@ -883,7 +876,7 @@ def vacancy_detail(request, vacancy_id):
         'vacancy': vacancy
     })
 
-    
+
 # @login_required
 # @role_required(['applicant', 'officer'])
 def apply_for_vacancy(request, vacancy_id):
@@ -929,6 +922,7 @@ def apply_for_vacancy(request, vacancy_id):
 
     return render(request, 'recruitment/applicant/apply.html', {'vacancy': vacancy})
 
+
 @login_required
 # @role_required(['hod_hr'])
 def hr_view_applications(request, vacancy_id):
@@ -944,7 +938,8 @@ def hr_view_applications(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
-    
+
+
 @login_required
 # @role_required(['hod_hr'])
 def start_longlisting(request, vacancy_id):
@@ -959,6 +954,7 @@ def start_longlisting(request, vacancy_id):
 
     messages.success(request, "Longlisting stage started.")
     return redirect('hr_view_applications', vacancy_id=vacancy.id)
+
 
 @login_required
 @role_required(['hod_hr'])
@@ -987,12 +983,13 @@ def shortlist_candidates(request, vacancy_id):
 
         vacancy.status = 'shortlisting'
         vacancy.save()
-    
+
     return render(request, 'recruitment/hr/shortlist.html', {
         'vacancy': vacancy,
         'applications': applications
     })
-    
+
+
 @login_required
 @role_required(['hod_hr'])
 def appoint_panelists(request, vacancy_id):
