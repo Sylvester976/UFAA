@@ -17,4 +17,17 @@ urlpatterns = [
     
     path("additional/", views.additional_details, name="additional_details"),
     path("additional/delete-cv/", views.delete_cv, name="delete_cv"),
+    
+    # HR
+    path("hr/dashboard/", views.hr_dashboard, name="hr_dashboard"),
+    path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),
+    path('vacancy/<int:vacancy_id>/download/', views.download_vacancy_pdf, name='download_vacancy_pdf'),
+    
+    path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),
+    path('hr/vacancy/<int:vacancy_id>/edit/', views.update_vacancy, name='update_vacancy'),
+    path('hr/vacancy/<int:vacancy_id>/delete/', views.delete_vacancy, name='delete_vacancy'),
+    path('hr/vacancy/<int:vacancy_id>/publish/', views.publish_vacancy, name='publish_vacancy'),
+
+    # Applicants public vacancy detail
+    path('vacancy/<int:vacancy_id>/', views.vacancy_detail, name='vacancy_detail'),
 ]

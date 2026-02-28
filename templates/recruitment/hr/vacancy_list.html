@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h3>Available Vacancies</h3>
+
+{% for vacancy in vacancies %}
+    <div class="card mb-3">
+        <div class="card-body">
+            <h5>{{ vacancy.title }}</h5>
+            <p>Ref: {{ vacancy.reference_number }}</p>
+            <p>Valid Until: {{ vacancy.valid_until }}</p>
+
+            <a href="{% url 'vacancy_detail' vacancy.id %}">
+                View Details
+            </a>
+        </div>
+    </div>
+{% empty %}
+    <p>No open vacancies.</p>
+{% endfor %}
+
+{% endblock %}

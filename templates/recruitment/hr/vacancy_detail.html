@@ -1,0 +1,20 @@
+
+{% block content %}
+
+<h3>{{ vacancy.title }}</h3>
+
+<p><strong>Reference:</strong> {{ vacancy.reference_number }}</p>
+<p><strong>Description:</strong></p>
+<p>{{ vacancy.description }}</p>
+
+<a href="{{ vacancy.advert_pdf.url }}" target="_blank">
+    Download Advert PDF
+</a>
+
+<hr>
+
+<a href="{% url 'index' %}" class="btn btn-primary">
+    Apply Now
+</a>
+
+{% endblock %}
