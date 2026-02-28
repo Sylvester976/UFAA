@@ -1,4 +1,5 @@
 import json
+import os
 from datetime import datetime
 
 from django.contrib import messages
@@ -12,7 +13,7 @@ from django.utils import timezone
 from accounts.models import JobseekerAccount
 from core.decorators import role_required
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification, WorkHistory
+    ProfessionalQualification, WorkHistory, AdditionalDetail
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .models import PanelAssignment
@@ -364,7 +365,7 @@ def calculate_profile_completion(user):
     # ── Section 1: Basic Details (40 points) ──────────────────
     if hasattr(user, 'profile'):
         profile = user.profile
-        fields = [
+        fields  = [
             profile.salutation,
             profile.surname,
             profile.first_name,
@@ -375,8 +376,8 @@ def calculate_profile_completion(user):
             profile.constituency_id,
             profile.disability_status,
         ]
-        filled  = sum(1 for f in fields if f)
-        score  += int((filled / len(fields)) * 40)
+        filled = sum(1 for f in fields if f)
+        score += int((filled / len(fields)) * 40)
 
     # ── Section 2: Academic Qualifications (15 points) ────────
     if AcademicQualification.objects.filter(user=user).exists():
@@ -387,16 +388,18 @@ def calculate_profile_completion(user):
         score += 15
 
     # ── Section 4: Work History (15 points) ───────────────────
-    if hasattr(user, 'work_history') and user.work_history.exists():
+    if WorkHistory.objects.filter(user=user).exists():
         score += 15
 
     # ── Section 5: Additional Details (15 points) ─────────────
-    if hasattr(user, 'additional_detail'):
-        detail = user.additional_detail
-        if detail.cover_letter:
-            score += 7
-        if detail.cv:
-            score += 8
+    detail = AdditionalDetail.objects.filter(user=user).first()
+    if detail:
+        if detail.cv:              score += 5   # CV uploaded
+        if detail.cover_letter:    score += 4   # cover letter written
+        if detail.linkedin_url:    score += 2   # LinkedIn added
+        if detail.availability:    score += 2   # availability set
+        if detail.languages:       score += 2   # languages added
+                                                # total = 15
 
     return min(int(score), 100)
 
@@ -607,7 +610,7 @@ def work_history_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
@@ -617,7 +620,7 @@ def work_history_view(request):
         if action == 'delete':
             try:
                 job_id = request.POST.get('job_id')
-                job    = WorkHistory.objects.filter(id=job_id, user=user).first()
+                job = WorkHistory.objects.filter(id=job_id, user=user).first()
                 if not job:
                     return JsonResponse({'status': 'error',
                                          'message': 'Record not found.'})
@@ -630,16 +633,16 @@ def work_history_view(request):
         # ── EDIT ─────────────────────────────────────────────
         if action == 'edit':
             try:
-                job_id    = request.POST.get('job_id')
-                job       = WorkHistory.objects.filter(id=job_id, user=user).first()
+                job_id = request.POST.get('job_id')
+                job = WorkHistory.objects.filter(id=job_id, user=user).first()
                 if not job:
                     return JsonResponse({'status': 'error',
                                          'message': 'Record not found.'})
 
-                job_title   = request.POST.get('job_title', '').strip()
-                company     = request.POST.get('company', '').strip()
+                job_title = request.POST.get('job_title', '').strip()
+                company = request.POST.get('company', '').strip()
                 start_month = request.POST.get('start_month', '').strip()
-                start_year  = request.POST.get('start_year', '').strip()
+                start_year = request.POST.get('start_year', '').strip()
 
                 if not job_title:
                     return JsonResponse({'status': 'error',
@@ -660,23 +663,23 @@ def work_history_view(request):
                     ).exclude(id=job_id).update(is_current=False)
 
                 end_month_raw = request.POST.get('end_month', '').strip()
-                end_year_raw  = request.POST.get('end_year', '').strip()
+                end_year_raw = request.POST.get('end_year', '').strip()
 
-                job.job_title       = job_title
-                job.company         = company
+                job.job_title = job_title
+                job.company = company
                 job.employment_type = request.POST.get('employment_type', '').strip()
-                job.start_month     = int(start_month)
-                job.start_year      = int(start_year)
-                job.end_month       = int(end_month_raw) if end_month_raw and not is_current else None
-                job.end_year        = int(end_year_raw)  if end_year_raw  and not is_current else None
-                job.is_current      = is_current
-                job.duties          = request.POST.get('duties', '').strip()
-                job.exit_reason     = '' if is_current else request.POST.get('exit_reason', '').strip()
-                job.country         = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                job.start_month = int(start_month)
+                job.start_year = int(start_year)
+                job.end_month = int(end_month_raw) if end_month_raw and not is_current else None
+                job.end_year = int(end_year_raw) if end_year_raw and not is_current else None
+                job.is_current = is_current
+                job.duties = request.POST.get('duties', '').strip()
+                job.exit_reason = '' if is_current else request.POST.get('exit_reason', '').strip()
+                job.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
                 job.save()
 
                 return JsonResponse({
-                    'status':  'success',
+                    'status': 'success',
                     'message': 'Work history updated successfully.',
                     'job': _job_to_dict(job),
                 })
@@ -695,17 +698,17 @@ def work_history_view(request):
             saved = []
 
             for j in jobs_data:
-                job_title   = j.get('job_title', '').strip()
-                company     = j.get('company', '').strip()
+                job_title = j.get('job_title', '').strip()
+                company = j.get('company', '').strip()
                 start_month = j.get('start_month', '')
-                start_year  = j.get('start_year', '')
+                start_year = j.get('start_year', '')
 
                 if not job_title or not company or not start_month or not start_year:
                     continue
 
-                is_current    = j.get('is_current', False)
+                is_current = j.get('is_current', False)
                 end_month_raw = j.get('end_month', '')
-                end_year_raw  = j.get('end_year', '')
+                end_year_raw = j.get('end_year', '')
 
                 if is_current:
                     WorkHistory.objects.filter(
@@ -713,18 +716,18 @@ def work_history_view(request):
                     ).update(is_current=False)
 
                 job = WorkHistory.objects.create(
-                    user            = user,
-                    job_title       = job_title,
-                    company         = company,
-                    employment_type = j.get('employment_type', '').strip(),
-                    start_month     = int(start_month),
-                    start_year      = int(start_year),
-                    end_month       = int(end_month_raw) if end_month_raw and not is_current else None,
-                    end_year        = int(end_year_raw)  if end_year_raw  and not is_current else None,
-                    is_current      = is_current,
-                    duties          = j.get('duties', '').strip(),
-                    exit_reason     = '' if is_current else j.get('exit_reason', '').strip(),
-                    country         = j.get('country', 'Kenya').strip() or 'Kenya',
+                    user=user,
+                    job_title=job_title,
+                    company=company,
+                    employment_type=j.get('employment_type', '').strip(),
+                    start_month=int(start_month),
+                    start_year=int(start_year),
+                    end_month=int(end_month_raw) if end_month_raw and not is_current else None,
+                    end_year=int(end_year_raw) if end_year_raw and not is_current else None,
+                    is_current=is_current,
+                    duties=j.get('duties', '').strip(),
+                    exit_reason='' if is_current else j.get('exit_reason', '').strip(),
+                    country=j.get('country', 'Kenya').strip() or 'Kenya',
                 )
                 saved.append(_job_to_dict(job))
 
@@ -733,9 +736,9 @@ def work_history_view(request):
                                      'message': 'No valid entries saved. Check required fields.'})
 
             return JsonResponse({
-                'status':  'success',
+                'status': 'success',
                 'message': f'{len(saved)} work history record(s) saved successfully.',
-                'saved':   saved,
+                'saved': saved,
             })
 
         except Exception as e:
@@ -746,15 +749,15 @@ def work_history_view(request):
     existing = WorkHistory.objects.filter(user=user)
 
     context = {
-        'profile':          profile,
-        'user':             user,
-        'page':             'Work History',
-        'existing':         existing,
-        'completion':       completion,
-        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'profile': profile,
+        'user': user,
+        'page': 'Work History',
+        'existing': existing,
+        'completion': completion,
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': existing.exists(),
-        'has_additional':   hasattr(user, 'additional_detail'),
+        'has_additional': hasattr(user, 'additional_detail'),
     }
     return render(request, 'jobseekers/work_history.html', context)
 
@@ -762,8 +765,8 @@ def work_history_view(request):
 def _job_to_dict(job):
     """Serialise a WorkHistory instance for JSON responses."""
     MONTHS = {
-        1: 'Jan', 2: 'Feb',  3: 'Mar', 4: 'Apr',
-        5: 'May', 6: 'Jun',  7: 'Jul', 8: 'Aug',
+        1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr',
+        5: 'May', 6: 'Jun', 7: 'Jul', 8: 'Aug',
         9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec',
     }
     start_display = f"{MONTHS.get(job.start_month, '')} {job.start_year}"
@@ -775,25 +778,137 @@ def _job_to_dict(job):
         end_display = '—'
 
     return {
-        'id':               job.id,
-        'job_title':        job.job_title,
-        'company':          job.company,
-        'employment_type':  job.employment_type or '',
-        'start_month':      job.start_month,
-        'start_year':       job.start_year,
-        'end_month':        job.end_month or '',
-        'end_year':         job.end_year or '',
-        'is_current':       job.is_current,
-        'duties':           job.duties or '',
-        'exit_reason':      job.exit_reason or '',
-        'country':          job.country,
-        'start_display':    start_display,
-        'end_display':      end_display,
+        'id': job.id,
+        'job_title': job.job_title,
+        'company': job.company,
+        'employment_type': job.employment_type or '',
+        'start_month': job.start_month,
+        'start_year': job.start_year,
+        'end_month': job.end_month or '',
+        'end_year': job.end_year or '',
+        'is_current': job.is_current,
+        'duties': job.duties or '',
+        'exit_reason': job.exit_reason or '',
+        'country': job.country,
+        'start_display': start_display,
+        'end_display': end_display,
     }
 
 
 # ── Additional Details ───────────────────────────────────────
+def additional_details_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
 
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+    detail = AdditionalDetail.objects.filter(user=user).first()
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'save')
+
+        # ── DELETE CV ─────────────────────────────────────────
+        if action == 'delete_cv':
+            try:
+                if detail and detail.cv:
+                    if os.path.isfile(detail.cv.path):
+                        os.remove(detail.cv.path)
+                    detail.cv = None
+                    detail.save()
+                return JsonResponse({'status': 'success',
+                                     'message': 'CV removed successfully.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── SAVE / UPDATE ─────────────────────────────────────
+        try:
+            cover_letter = request.POST.get('cover_letter', '').strip()
+            linkedin_url = request.POST.get('linkedin_url', '').strip()
+            portfolio_url = request.POST.get('portfolio_url', '').strip()
+            languages_raw = request.POST.get('languages', '').strip()
+            availability = request.POST.get('availability', '').strip()
+            salary_raw = request.POST.get('expected_salary', '').strip()
+            cv_file = request.FILES.get('cv')
+
+            # Validate CV if uploaded
+            if cv_file:
+                ext = '.' + cv_file.name.split('.')[-1].lower()
+                if ext != '.pdf':
+                    return JsonResponse({'status': 'error',
+                                         'message': 'CV must be a PDF file.'})
+                if cv_file.size > 2 * 1024 * 1024:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'CV must be smaller than 2MB.'})
+
+            # Clean languages — remove blanks, de-dupe
+            languages = ', '.join(
+                dict.fromkeys(
+                    l.strip().title()
+                    for l in languages_raw.split(',')
+                    if l.strip()
+                )
+            )
+
+            expected_salary = int(salary_raw) if salary_raw.isdigit() else None
+
+            if detail:
+                # Replace CV file if new one uploaded
+                if cv_file:
+                    if detail.cv and os.path.isfile(detail.cv.path):
+                        os.remove(detail.cv.path)
+                    detail.cv = cv_file
+
+                detail.cover_letter = cover_letter
+                detail.linkedin_url = linkedin_url
+                detail.portfolio_url = portfolio_url
+                detail.languages = languages
+                detail.availability = availability
+                detail.expected_salary = expected_salary
+                detail.save()
+            else:
+                detail = AdditionalDetail.objects.create(
+                    user=user,
+                    cv=cv_file,
+                    cover_letter=cover_letter,
+                    linkedin_url=linkedin_url,
+                    portfolio_url=portfolio_url,
+                    languages=languages,
+                    availability=availability,
+                    expected_salary=expected_salary,
+                )
+
+            new_completion = calculate_profile_completion(user)
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Additional details saved successfully.',
+                'cv_filename': detail.cv.name.split('/')[-1] if detail.cv else None,
+                'cv_url': detail.cv.url if detail.cv else None,
+                'completion': new_completion,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
+
+    context = {
+        'profile': profile,
+        'user': user,
+        'page': 'Additional Details',
+        'detail': detail,
+        'completion': completion,
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_additional': detail is not None,
+    }
+    return render(request, 'jobseekers/additional.html', context)
 
 
 @login_required
