@@ -319,3 +319,59 @@ class ProfessionalQualification(models.Model):
 
     class Meta:
         ordering = ['-year_obtained']
+
+class WorkHistory(models.Model):
+
+    EMPLOYMENT_TYPES = [
+        ('Full-time',   'Full-time'),
+        ('Part-time',   'Part-time'),
+        ('Contract',    'Contract'),
+        ('Internship',  'Internship'),
+        ('Volunteer',   'Volunteer'),
+        ('Attachment',  'Attachment'),
+    ]
+
+    MONTHS = [
+        (1, 'January'),   (2, 'February'),  (3, 'March'),
+        (4, 'April'),     (5, 'May'),       (6, 'June'),
+        (7, 'July'),      (8, 'August'),    (9, 'September'),
+        (10, 'October'),  (11, 'November'), (12, 'December'),
+    ]
+
+    user            = models.ForeignKey(
+                          'accounts.JobseekerAccount',
+                          on_delete=models.CASCADE,
+                          related_name='work_history'
+                      )
+    job_title       = models.CharField(max_length=255)
+    company         = models.CharField(max_length=255)
+    employment_type = models.CharField(max_length=50, blank=True, choices=EMPLOYMENT_TYPES)
+    start_month     = models.PositiveIntegerField()
+    start_year      = models.PositiveIntegerField()
+    end_month       = models.PositiveIntegerField(null=True, blank=True)
+    end_year        = models.PositiveIntegerField(null=True, blank=True)
+    is_current      = models.BooleanField(default=False)
+    duties          = models.TextField(blank=True)
+    exit_reason     = models.CharField(max_length=255, blank=True)
+    country         = models.CharField(max_length=100, default='Kenya')
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_year', '-start_month']
+
+    def __str__(self):
+        return f"{self.job_title} at {self.company}"
+
+    @property
+    def start_display(self):
+        month_name = dict(self.MONTHS).get(self.start_month, '')
+        return f"{month_name} {self.start_year}"
+
+    @property
+    def end_display(self):
+        if self.is_current:
+            return 'Present'
+        if self.end_month and self.end_year:
+            month_name = dict(self.MONTHS).get(self.end_month, '')
+            return f"{month_name} {self.end_year}"
+        return '—'

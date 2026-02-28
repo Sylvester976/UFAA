@@ -12,7 +12,7 @@ from django.utils import timezone
 from accounts.models import JobseekerAccount
 from core.decorators import role_required
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification
+    ProfessionalQualification, WorkHistory
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .models import PanelAssignment
@@ -597,124 +597,203 @@ def professional_qualifications_view(request):
     return render(request, 'jobseekers/professional.html', context)
 
 
-# ── Work History ─────────────────────────────────────────────
-def work_history(request):
-    user = get_logged_in_user(request)
-    if not user:
+def work_history_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
         return redirect('index')
 
-    jobs = WorkHistory.objects.filter(user=user).order_by('-start_date')
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
 
-    if request.method == 'POST':
-        is_current = request.POST.get('is_current') == 'on'
-        if is_current:
-            WorkHistory.objects.filter(user=user, is_current=True).update(is_current=False)
-
-        WorkHistory.objects.create(
-            user=user,
-            company=request.POST.get('company'),
-            job_title=request.POST.get('job_title'),
-            duties=request.POST.get('duties'),
-            start_date=request.POST.get('start_date'),
-            end_date=None if is_current else request.POST.get('end_date'),
-            exit_reason=None if is_current else request.POST.get('exit_reason'),
-            is_current=is_current,
-        )
-        return redirect('work_history')
-
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
-    return render(request, 'jobseekers/work_history.html', {
-        'jobs': jobs,
-        'completion': completion,
-    })
-
-
-def edit_work_history(request, pk):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
-
-    job = get_object_or_404(WorkHistory, pk=pk, user=user)
 
     if request.method == 'POST':
-        job.company = request.POST.get('company')
-        job.job_title = request.POST.get('job_title')
-        job.duties = request.POST.get('duties')
-        job.start_date = request.POST.get('start_date')
-        is_current = request.POST.get('is_current') == 'on'
+        action = request.POST.get('action', 'save')
 
-        if is_current:
-            WorkHistory.objects.filter(user=user, is_current=True).exclude(pk=job.pk).update(is_current=False)
-            job.end_date = None
-            job.exit_reason = None
-        else:
-            job.end_date = request.POST.get('end_date')
-            job.exit_reason = request.POST.get('exit_reason')
+        # ── DELETE ───────────────────────────────────────────
+        if action == 'delete':
+            try:
+                job_id = request.POST.get('job_id')
+                job    = WorkHistory.objects.filter(id=job_id, user=user).first()
+                if not job:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Record not found.'})
+                job.delete()
+                return JsonResponse({'status': 'success',
+                                     'message': 'Work history deleted successfully.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
 
-        job.is_current = is_current
-        job.save()
-        return redirect('work_history')
+        # ── EDIT ─────────────────────────────────────────────
+        if action == 'edit':
+            try:
+                job_id    = request.POST.get('job_id')
+                job       = WorkHistory.objects.filter(id=job_id, user=user).first()
+                if not job:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Record not found.'})
 
-    return render(request, 'jobseekers/edit_work_history.html', {'job': job})
+                job_title   = request.POST.get('job_title', '').strip()
+                company     = request.POST.get('company', '').strip()
+                start_month = request.POST.get('start_month', '').strip()
+                start_year  = request.POST.get('start_year', '').strip()
+
+                if not job_title:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Job title is required.'})
+                if not company:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Employer / company is required.'})
+                if not start_month or not start_year:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Start month and year are required.'})
+
+                is_current = request.POST.get('is_current') == 'true'
+
+                # If marking as current, unset any other current job
+                if is_current:
+                    WorkHistory.objects.filter(
+                        user=user, is_current=True
+                    ).exclude(id=job_id).update(is_current=False)
+
+                end_month_raw = request.POST.get('end_month', '').strip()
+                end_year_raw  = request.POST.get('end_year', '').strip()
+
+                job.job_title       = job_title
+                job.company         = company
+                job.employment_type = request.POST.get('employment_type', '').strip()
+                job.start_month     = int(start_month)
+                job.start_year      = int(start_year)
+                job.end_month       = int(end_month_raw) if end_month_raw and not is_current else None
+                job.end_year        = int(end_year_raw)  if end_year_raw  and not is_current else None
+                job.is_current      = is_current
+                job.duties          = request.POST.get('duties', '').strip()
+                job.exit_reason     = '' if is_current else request.POST.get('exit_reason', '').strip()
+                job.country         = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                job.save()
+
+                return JsonResponse({
+                    'status':  'success',
+                    'message': 'Work history updated successfully.',
+                    'job': _job_to_dict(job),
+                })
+
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── SAVE NEW ─────────────────────────────────────────
+        try:
+            jobs_data = json.loads(request.POST.get('jobs', '[]'))
+
+            if not jobs_data:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Please add at least one work history entry.'})
+
+            saved = []
+
+            for j in jobs_data:
+                job_title   = j.get('job_title', '').strip()
+                company     = j.get('company', '').strip()
+                start_month = j.get('start_month', '')
+                start_year  = j.get('start_year', '')
+
+                if not job_title or not company or not start_month or not start_year:
+                    continue
+
+                is_current    = j.get('is_current', False)
+                end_month_raw = j.get('end_month', '')
+                end_year_raw  = j.get('end_year', '')
+
+                if is_current:
+                    WorkHistory.objects.filter(
+                        user=user, is_current=True
+                    ).update(is_current=False)
+
+                job = WorkHistory.objects.create(
+                    user            = user,
+                    job_title       = job_title,
+                    company         = company,
+                    employment_type = j.get('employment_type', '').strip(),
+                    start_month     = int(start_month),
+                    start_year      = int(start_year),
+                    end_month       = int(end_month_raw) if end_month_raw and not is_current else None,
+                    end_year        = int(end_year_raw)  if end_year_raw  and not is_current else None,
+                    is_current      = is_current,
+                    duties          = j.get('duties', '').strip(),
+                    exit_reason     = '' if is_current else j.get('exit_reason', '').strip(),
+                    country         = j.get('country', 'Kenya').strip() or 'Kenya',
+                )
+                saved.append(_job_to_dict(job))
+
+            if not saved:
+                return JsonResponse({'status': 'error',
+                                     'message': 'No valid entries saved. Check required fields.'})
+
+            return JsonResponse({
+                'status':  'success',
+                'message': f'{len(saved)} work history record(s) saved successfully.',
+                'saved':   saved,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
+
+    # ── GET ───────────────────────────────────────────────────
+    existing = WorkHistory.objects.filter(user=user)
+
+    context = {
+        'profile':          profile,
+        'user':             user,
+        'page':             'Work History',
+        'existing':         existing,
+        'completion':       completion,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': existing.exists(),
+        'has_additional':   hasattr(user, 'additional_detail'),
+    }
+    return render(request, 'jobseekers/work_history.html', context)
 
 
-def delete_work_history(request, pk):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
+def _job_to_dict(job):
+    """Serialise a WorkHistory instance for JSON responses."""
+    MONTHS = {
+        1: 'Jan', 2: 'Feb',  3: 'Mar', 4: 'Apr',
+        5: 'May', 6: 'Jun',  7: 'Jul', 8: 'Aug',
+        9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec',
+    }
+    start_display = f"{MONTHS.get(job.start_month, '')} {job.start_year}"
+    if job.is_current:
+        end_display = 'Present'
+    elif job.end_month and job.end_year:
+        end_display = f"{MONTHS.get(job.end_month, '')} {job.end_year}"
+    else:
+        end_display = '—'
 
-    job = get_object_or_404(WorkHistory, pk=pk, user=user)
-    job.delete()
-    return redirect('work_history')
+    return {
+        'id':               job.id,
+        'job_title':        job.job_title,
+        'company':          job.company,
+        'employment_type':  job.employment_type or '',
+        'start_month':      job.start_month,
+        'start_year':       job.start_year,
+        'end_month':        job.end_month or '',
+        'end_year':         job.end_year or '',
+        'is_current':       job.is_current,
+        'duties':           job.duties or '',
+        'exit_reason':      job.exit_reason or '',
+        'country':          job.country,
+        'start_display':    start_display,
+        'end_display':      end_display,
+    }
 
 
 # ── Additional Details ───────────────────────────────────────
-def additional_details(request):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
 
-    detail = AdditionalDetail.objects.filter(user=user).first()
-
-    if request.method == 'POST':
-        cover_letter = request.POST.get('cover_letter')
-        cv_file = request.FILES.get('cv')
-
-        if detail:
-            detail.cover_letter = cover_letter
-            if cv_file:
-                if detail.cv:
-                    detail.cv.delete(save=False)
-                detail.cv = cv_file
-            detail.save()
-        else:
-            AdditionalDetail.objects.create(
-                user=user,
-                cover_letter=cover_letter,
-                cv=cv_file,
-            )
-        return redirect('additional_details')
-
-    completion = calculate_profile_completion(user)
-    return render(request, 'jobseekers/additional.html', {
-        'detail': detail,
-        'completion': completion,
-    })
-
-
-def delete_cv(request):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
-
-    detail = AdditionalDetail.objects.filter(user=user).first()
-    if detail and detail.cv:
-        detail.cv.delete(save=False)
-        detail.cv = None
-        detail.save()
-
-    return redirect('additional_details')
-    return redirect("additional_details")
 
 
 @login_required
