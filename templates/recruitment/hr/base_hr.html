@@ -1,0 +1,38 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}HR{% endblock %}</title>
+    <link href="{% static 'css/bootstrap.min.css' %}" rel="stylesheet">
+</head>
+<body>
+
+{% include 'includes/navbar.html' %}
+
+{% if messages %}
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+      {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2 bg-light vh-100 p-3">
+            <h6>HR Menu</h6>
+            <ul class="nav flex-column">
+                <li class="nav-item"><a href="{% url 'hr_dashboard' %}" class="nav-link">Dashboard</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Manage Users</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Vacancies</a></li>
+                <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
+            </ul>
+        </div>
+        <div class="col-10 p-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

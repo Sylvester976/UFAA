@@ -1,0 +1,57 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+
+{% block title %}HR Dashboard{% endblock %}
+
+{% block content %}
+<h2>HR Dashboard</h2>
+
+<div class="row mt-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <h6>Open Vacancies</h6>
+                <h3>{{ open_vacancies_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-warning text-dark">
+            <div class="card-body">
+                <h6>Pending CEO Approval</h6>
+                <h3>{{ pending_ceo_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h6>Appointments Completed</h6>
+                <h3>{{ appointed_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'create_vacancy' %}" class="btn btn-success mb-3">
+    + Create Vacancy
+</a>
+
+{% for vacancy in vacancies %}
+<tr>
+    <td>{{ vacancy.title }}</td>
+    <td>{{ vacancy.reference_number }}</td>
+    <td>{{ vacancy.status }}</td>
+    <td>
+
+        {% if vacancy.status == 'draft' %}
+            <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
+            <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
+            <a href="{% url 'publish_vacancy' vacancy.id %}">Publish</a>
+        {% endif %}
+
+    </td>
+</tr>
+{% endfor %}
+{% endblock %}

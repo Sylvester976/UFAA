@@ -1,0 +1,12 @@
+{% extends 'ceo/base_ceo.html' %}
+
+{% block content %}
+<h2>CEO Dashboard</h2>
+
+<div class="card mt-4">
+    <div class="card-body">
+        <h6>Vacancies Awaiting Approval</h6>
+        <h3>{{ pending_approval_count }}</h3>
+    </div>
+</div>
+{% endblock %}

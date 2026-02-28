@@ -1,6 +1,15 @@
-from .models import Gender, EthnicGroup
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
+
+from django.contrib.auth.decorators import login_required
+from .models import Vacancy
+from core.decorators import permission_required, role_required
+from django.db.models import Avg
+from django.contrib import messages
+from django.utils import timezone
+from datetime import datetime
+from django.http import FileResponse, Http404
 
 def dashboard(request):
     return render(request, 'recruitment/dashboard.html')
@@ -430,3 +439,309 @@ def delete_cv(request):
         detail.save()
 
     return redirect("additional_details")
+
+
+
+@login_required
+@role_required(['hod_hr'])
+# @permission_required("view_reports")
+def hr_dashboard(request):
+    vacancies = Vacancy.objects.all()  # Or filter(status='draft') if you only want drafts
+    context = {
+        'vacancies': vacancies,
+        'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
+        'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
+        'appointed_count': Vacancy.objects.filter(status='appointed').count(),
+    }
+    return render(request, 'recruitment/hr/dashboard.html', context)
+
+@login_required
+@role_required(['panelist'])
+def panelist_dashboard(request):
+    assigned = Vacancy.objects.filter(panel_assignments__panelist=request.user)
+
+    context = {
+        'assigned_vacancies_count': assigned.count()
+    }
+    return render(request, 'panelist/dashboard.html', context)
+
+@login_required
+@role_required(['officer'])
+def officer_dashboard(request):
+    context = {
+        'internal_vacancies_count': Vacancy.objects.filter(status='open').count(),
+        'my_applications_count': request.user.application_set.count()
+    }
+    return render(request, 'officer/dashboard.html', context)
+
+@login_required
+@role_required(['ceo'])
+def ceo_dashboard(request):
+    context = {
+        'pending_approval_count': Vacancy.objects.filter(status='pending_ceo_approval').count()
+    }
+    return render(request, 'ceo/dashboard.html', context)
+
+
+
+@login_required
+@role_required(['panelist'])
+def submit_score(request, application_id):
+    application = get_object_or_404(Application, id=application_id)
+
+    if request.method == 'POST':
+        score = request.POST.get('score')
+        remarks = request.POST.get('remarks')
+
+        InterviewScore.objects.update_or_create(
+            application=application,
+            panelist=request.user,
+            defaults={'score': score, 'remarks': remarks}
+        )
+
+        return redirect('panelist_dashboard')
+    
+
+
+@login_required
+@role_required(['hod_hr'])
+def generate_ranking(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    applications = Application.objects.filter(
+        vacancy=vacancy,
+        status='interviewed'
+    ).annotate(
+        avg_score=Avg('scores__score')
+    ).order_by('-avg_score')
+
+    return render(request, 'recruitment/hr/top_three.html', {'applications': applications})
+
+@login_required
+@role_required(['ceo'])
+def ceo_approve(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if request.method == 'POST':
+        application_id = request.POST.get('application_id')
+        reason = request.POST.get('reason', '')
+
+        selected = Application.objects.get(id=application_id)
+
+        is_override = selected.status != 'selected_top_three'
+
+        CEODecision.objects.create(
+            vacancy=vacancy,
+            selected_application=selected,
+            approved_by=request.user,
+            is_override=is_override,
+            reason=reason if is_override else ''
+        )
+
+        vacancy.status = 'approved'
+        vacancy.save()
+
+        return redirect('ceo_dashboard')
+    
+@login_required
+@role_required(['hod_hr'])
+def appoint_candidate(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    ceo_decision = CEODecision.objects.get(vacancy=vacancy)
+
+    Appointment.objects.create(
+        vacancy=vacancy,
+        application=ceo_decision.selected_application,
+        appointed_by=request.user
+    )
+
+    ceo_decision.selected_application.status = 'selected'
+    ceo_decision.selected_application.save()
+
+    Application.objects.filter(
+        vacancy=vacancy
+    ).exclude(
+        id=ceo_decision.selected_application.id
+    ).update(status='not_selected')
+
+    vacancy.status = 'appointed'
+    vacancy.save()
+
+    return redirect('hr_dashboard')
+
+
+
+@login_required
+@role_required(['hod_hr'])
+def create_vacancy(request):
+
+    if request.method == 'POST':
+        title = request.POST.get('title')
+        reference_number = request.POST.get('reference_number')
+        description = request.POST.get('description')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        advert_pdf = request.FILES.get('advert_pdf')
+
+        # ---- Validation ----
+
+        if not all([title, reference_number, description, start_date, end_date]):
+            messages.error(request, "All fields are required.")
+            return redirect('create_vacancy')
+
+        # Validate PDF
+        if advert_pdf:
+            if not advert_pdf.name.lower().endswith('.pdf'):
+                messages.error(request, "Only PDF files are allowed.")
+                return redirect('create_vacancy')
+
+        # Validate Dates
+        try:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Invalid date format.")
+            return redirect('create_vacancy')
+
+        today = timezone.now().date()
+
+        if start_date < today:
+            messages.error(request, "Start date cannot be in the past.")
+            return redirect('create_vacancy')
+
+        if end_date <= start_date:
+            messages.error(request, "End date must be after start date.")
+            return redirect('create_vacancy')
+
+        # Prevent duplicate reference numbers
+        if Vacancy.objects.filter(reference_number=reference_number).exists():
+            messages.error(request, "Reference number already exists.")
+            return redirect('create_vacancy')
+
+        # ---- Save Vacancy ----
+        Vacancy.objects.create(
+            title=title,
+            reference_number=reference_number,
+            description=description,
+            advert_pdf=advert_pdf,
+            start_date=start_date,
+            end_date=end_date,
+            created_by=request.user,
+            status='draft'
+        )
+
+        messages.success(request, "Vacancy created successfully as Draft.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/create_vacancy.html')
+
+
+def download_vacancy_pdf(request, vacancy_id):
+    try:
+        vacancy = Vacancy.objects.get(id=vacancy_id)
+        if not vacancy.advert_pdf:
+            raise Http404("PDF not found")
+        return FileResponse(vacancy.advert_pdf.open(), as_attachment=True)
+    except Vacancy.DoesNotExist:
+        raise Http404("Vacancy not found")
+
+
+@login_required
+@role_required(['hod_hr'])
+def update_vacancy(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'draft':
+        messages.error(request, "Only draft vacancies can be edited.")
+        return redirect('hr_dashboard')
+
+    if request.method == 'POST':
+        # Get values from HTML form
+        title = request.POST.get('title')
+        reference_number = request.POST.get('reference_number')
+        description = request.POST.get('description')
+        start_date = request.POST.get('start_date')
+        end_date = request.POST.get('end_date')
+        advert_pdf = request.FILES.get('advert_pdf')
+
+        # --- Basic validation ---
+        if not all([title, reference_number, description, start_date, end_date]):
+            messages.error(request, "All fields are required.")
+            return redirect('update_vacancy', vacancy_id=vacancy.id)
+
+        try:
+            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
+            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+        except ValueError:
+            messages.error(request, "Invalid date format.")
+            return redirect('update_vacancy', vacancy_id=vacancy.id)
+
+        today = timezone.now().date()
+        if start_date < today:
+            messages.error(request, "Start date cannot be in the past.")
+            return redirect('update_vacancy', vacancy_id=vacancy.id)
+        if end_date <= start_date:
+            messages.error(request, "End date must be after start date.")
+            return redirect('update_vacancy', vacancy_id=vacancy.id)
+
+        # Update the vacancy
+        vacancy.title = title
+        vacancy.reference_number = reference_number
+        vacancy.description = description
+        vacancy.start_date = start_date
+        vacancy.end_date = end_date
+        if advert_pdf:
+            if not advert_pdf.name.lower().endswith('.pdf'):
+                messages.error(request, "Only PDF files are allowed.")
+                return redirect('update_vacancy', vacancy_id=vacancy.id)
+            vacancy.advert_pdf = advert_pdf
+
+        vacancy.save()
+        messages.success(request, "Vacancy updated successfully.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/update_vacancy.html', {'vacancy': vacancy})
+
+@login_required
+@role_required(['hod_hr'])
+def delete_vacancy(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'draft':
+        messages.error(request, "Only draft vacancies can be deleted.")
+        return redirect('hr_dashboard')
+
+    if request.method == 'POST':
+        vacancy.delete()
+        messages.success(request, "Vacancy deleted successfully.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/confirm_delete.html', {'vacancy': vacancy})
+
+@login_required
+@role_required(['hod_hr'])
+def publish_vacancy(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'draft':
+        messages.error(request, "Only draft vacancies can be published.")
+        return redirect('hr_dashboard')
+
+    vacancy.status = 'open'
+    vacancy.save()
+    messages.success(request, "Vacancy published successfully.")
+    return redirect('hr_dashboard')
+
+
+
+def vacancy_detail(request, vacancy_id):
+    vacancy = get_object_or_404(
+        Vacancy,
+        id=vacancy_id,
+        status='open'
+    )
+
+    return render(request, 'recruitment/hr/vacancy_detail.html', {
+        'vacancy': vacancy
+    })
