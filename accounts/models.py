@@ -120,35 +120,6 @@ class JobseekerAccount(models.Model):
         return f"{self.id_no} - {self.name}"
 
 
-
-    
-    
-class AcademicQualification(models.Model):
-    user = models.ForeignKey(
-        JobseekerAccount,
-        on_delete=models.CASCADE,
-        related_name="academic_qualifications"
-    )
-
-    level = models.CharField(max_length=100)  # Primary, Secondary, University
-    institution = models.CharField(max_length=255, null=True)
-
-    certificate = models.FileField(
-        upload_to="academic_certificates/",
-        null=True,
-        blank=True
-    )
-
-    transcript = models.FileField(
-        upload_to="academic_transcripts/",
-        null=True,
-        blank=True
-    )
-
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"{self.user.id_no} - {self.level}"
     
  
 class ProfessionalQualification(models.Model):

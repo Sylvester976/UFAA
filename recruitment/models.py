@@ -1,10 +1,7 @@
+import uuid
 from django.db import models
 from accounts.models import JobseekerAccount
-
-from django.db import models
 from django.conf import settings
-from django.utils import timezone
-
 from django.utils import timezone
 from django.db.models import Avg
 
@@ -106,8 +103,78 @@ class JobSeekerProfile(models.Model):
 
     def __str__(self):
         return f'{self.user.name} — Profile'
-    
-    
+
+class EducationLevel(models.Model):
+    name                = models.CharField(max_length=100, unique=True)
+    rank                = models.IntegerField(unique=True)  # 1 = highest, 8 = lowest
+    is_higher_education = models.BooleanField(default=False)
+    is_foreign          = models.BooleanField(default=False)
+
+    class Meta:
+        verbose_name        = 'Education Level'
+        verbose_name_plural = 'Education Levels'
+        ordering            = ['rank']
+
+    def __str__(self):
+        return self.name
+
+
+class AcademicQualification(models.Model):
+    user            = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='academic_qualifications')
+    education_level = models.ForeignKey(EducationLevel, on_delete=models.PROTECT)
+    institution     = models.CharField(max_length=255)
+    field_of_study  = models.CharField(max_length=255, blank=True, null=True)
+    country         = models.CharField(max_length=100, default='Kenya')
+    year_completed  = models.IntegerField()
+    grade           = models.CharField(max_length=100, blank=True, null=True)
+    cert_number     = models.CharField(max_length=100, blank=True, null=True)
+    date_added      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Academic Qualification'
+        verbose_name_plural = 'Academic Qualifications'
+        ordering            = ['education_level__rank']
+
+    def __str__(self):
+        return f'{self.user.name} — {self.education_level.name} — {self.institution}'
+
+
+class DocumentType(models.Model):
+    name        = models.CharField(max_length=100, unique=True)
+    description = models.TextField(blank=True, null=True)
+
+    class Meta:
+        verbose_name        = 'Document Type'
+        verbose_name_plural = 'Document Types'
+        ordering            = ['name']
+
+    def __str__(self):
+        return self.name
+
+
+class Document(models.Model):
+    user          = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='documents')
+    profile       = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
+    document_type = models.ForeignKey(DocumentType, on_delete=models.PROTECT)
+    file          = models.FileField(upload_to='documents/%Y/%m/')
+    unique_ref    = models.CharField(max_length=100, unique=True, editable=False)
+    uploaded_at   = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        verbose_name        = 'Document'
+        verbose_name_plural = 'Documents'
+        ordering            = ['-uploaded_at']
+
+    def save(self, *args, **kwargs):
+        if not self.unique_ref:
+            # Format: UFAA-USERID-DOCTYPE-UUID
+            self.unique_ref = f'UFAA-{self.user_id}-{self.document_type_id}-{uuid.uuid4().hex[:8].upper()}'
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f'{self.unique_ref} — {self.document_type.name}'
+
+
 
 class Vacancy(models.Model):
 
@@ -115,7 +182,7 @@ class Vacancy(models.Model):
         ('external', 'External'),
         ('internal', 'Internal'),
     ]
-    
+
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('open', 'Open'),
@@ -152,7 +219,7 @@ class Vacancy(models.Model):
 
     def __str__(self):
         return f"{self.title} ({self.reference_number})"
-    
+
     vacancy_type = models.CharField(
         max_length=20,
         choices=TYPE_CHOICES,
@@ -163,7 +230,7 @@ class Vacancy(models.Model):
         if self.status == 'open' and self.end_date < timezone.now().date():
             self.status = 'closed'
             self.save()
-            
+
 
 
 class Application(models.Model):
@@ -195,10 +262,10 @@ class Application(models.Model):
 
     def __str__(self):
         return f"{self.applicant} - {self.vacancy}"
-    
+
     class Meta:
         unique_together = ('vacancy', 'applicant')
-    
+
 
 class PanelAssignment(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')
@@ -206,7 +273,7 @@ class PanelAssignment(models.Model):
 
     class Meta:
         unique_together = ('vacancy', 'panelist')
-        
+
 class InterviewScore(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='scores')
     panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -222,7 +289,7 @@ class TieBreakDecision(models.Model):
     decided_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     reason = models.TextField()
     decided_at = models.DateTimeField(auto_now_add=True)
-    
+
 class CEODecision(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
     selected_application = models.ForeignKey(Application, on_delete=models.CASCADE)
@@ -230,7 +297,7 @@ class CEODecision(models.Model):
     is_override = models.BooleanField(default=False)
     reason = models.TextField(blank=True)
     approved_at = models.DateTimeField(auto_now_add=True)
-    
+
 class Appointment(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
     application = models.ForeignKey(Application, on_delete=models.CASCADE)

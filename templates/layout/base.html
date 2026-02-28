@@ -143,6 +143,9 @@
                            data-bs-toggle="dropdown"
                            aria-expanded="false">
                             <i class="fa fa-user me-1"></i>
+                            {% if logged_user %}
+                                {{ logged_user.name }}
+                            {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
                             aria-labelledby="userDropdown">
