@@ -48,7 +48,7 @@ class Vacancy(models.Model):
     title = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
     description = models.TextField()
-    advert_pdf = models.FileField(upload_to='vacancy_adverts/')
+    advert_pdf = models.FileField(upload_to='media/vacancy_adverts/')
 
     start_date = models.DateField(null=True, blank=True)
     end_date = models.DateField(null=True, blank=True)
@@ -87,7 +87,7 @@ class Application(models.Model):
 
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    cv = models.FileField(upload_to='cvs/')
+    cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
@@ -135,4 +135,4 @@ class Appointment(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE)
     appointed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     appointed_at = models.DateTimeField(auto_now_add=True)
-    appointment_letter = models.FileField(upload_to='appointments/', blank=True, null=True)
+    appointment_letter = models.FileField(upload_to='media/appointments/', blank=True, null=True)
