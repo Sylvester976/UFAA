@@ -95,36 +95,22 @@
         </div>
         
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Frontend Developer</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
+            {% for vacancy in vacancies %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ vacancy.title }}</h5>
+                            <p class="card-text">• Ref: {{ vacancy.reference_number }}</p>
+                            {% if vacancy.advert_pdf %}
+                                <a href="{{ vacancy.advert_pdf.url }}" class="btn btn-outline-primary btn-sm" target="_blank">Download</a>
+                            {% endif %}
+                            <a href="{% url 'vacancy_detail' vacancy.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Marketing Manager</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Data Analyst</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
+            {% empty %}
+                <p class="text-center">No vacancies are currently available. Please check back later.</p>
+            {% endfor %}
         </div>
     </div>
 </section>

@@ -22,9 +22,23 @@ from roles.models import Role
 from django.http import HttpResponse
 from accounts.permissions import permission_required
 
-def landing(request):
-    return render(request, 'auth/landing.html')
+from django.shortcuts import render
+from django.utils import timezone
+from recruitment.models import Vacancy  # import your model
 
+from django.shortcuts import render
+from django.utils import timezone
+from recruitment.models import Vacancy
+
+def landing(request):
+    today = timezone.now().date()
+    # Only show vacancies that start today or later
+    vacancies = Vacancy.objects.filter(
+        status='open',
+        start_date__gte=today
+    ).order_by('start_date')  # earliest starting first
+
+    return render(request, 'auth/landing.html', {'vacancies': vacancies})
 
 def index(request):
     return render(request, 'auth/login.html')

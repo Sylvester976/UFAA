@@ -1,0 +1,25 @@
+{% extends 'officer/base_officer.html' %}
+
+{% block content %}
+<h2>Officer Dashboard</h2>
+
+<div class="row mt-4">
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h6>Active Internal Vacancies</h6>
+                <h3>{{ internal_vacancies_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card bg-secondary text-white">
+            <div class="card-body">
+                <h6>My Applications</h6>
+                <h3>{{ my_applications_count }}</h3>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

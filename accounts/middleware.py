@@ -12,6 +12,8 @@ class LoginRequiredMiddleware:
         'logout',
         'verify_email',
         'send_verification_email',
+        'vacancy_detail',
+        'login_view',
 
     }
 

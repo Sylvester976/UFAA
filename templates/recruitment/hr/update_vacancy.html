@@ -1,0 +1,45 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<h3>Edit Vacancy</h3>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <div class="mb-3">
+        <label>Title</label>
+        <input type="text" name="title" value="{{ vacancy.title }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Reference Number</label>
+        <input type="text" name="reference_number" value="{{ vacancy.reference_number }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea name="description" class="form-control" required>{{ vacancy.description }}</textarea>
+    </div>
+
+    <div class="mb-3">
+        <label>Start Date</label>
+        <input type="date" name="start_date" value="{{ vacancy.start_date }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>End Date</label>
+        <input type="date" name="end_date" value="{{ vacancy.end_date }}" class="form-control" required>
+    </div>
+
+    <div class="mb-3">
+        <label>Advert PDF (Leave blank to keep existing)</label>
+        <input type="file" name="advert_pdf" class="form-control">
+        {% if vacancy.advert_pdf %}
+            <small>Current file: <a href="{{ vacancy.advert_pdf.url }}" target="_blank">Download</a></small>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update Vacancy</button>
+</form>
+
+{% endblock %}
