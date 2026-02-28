@@ -7,10 +7,7 @@ urlpatterns = [
     path("profile/", views.profile_view, name="profile"),
     path("profile/delete/", views.delete_profile, name="delete_profile"),
     path("academic/", views.academic_qualifications_view, name="academic_qualifications"),
-    path("professional/", views.professional_qualifications, name="professional_qualifications"),
-    path("professional/edit/<int:pk>/", views.edit_professional, name="edit_professional"),
-    path("professional/delete/<int:pk>/", views.delete_professional, name="delete_professional"),  
-    
+    path("professional/", views.professional_qualifications_view, name="professional_qualifications"),
     path("work-history/", views.work_history, name="work_history"),
     path("work-history/edit/<int:pk>/", views.edit_work_history, name="edit_work_history"),
     path("work-history/delete/<int:pk>/", views.delete_work_history, name="delete_work_history"),

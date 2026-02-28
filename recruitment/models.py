@@ -304,3 +304,18 @@ class Appointment(models.Model):
     appointed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     appointed_at = models.DateTimeField(auto_now_add=True)
     appointment_letter = models.FileField(upload_to='media/appointments/', blank=True, null=True)
+
+class ProfessionalQualification(models.Model):
+    user              = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE,
+                                          related_name='professional_qualifications')
+    qualification     = models.CharField(max_length=255)          # e.g. CPA, PMP
+    awarding_body     = models.CharField(max_length=255)          # institution
+    year_obtained     = models.PositiveIntegerField()
+    expiry_year       = models.PositiveIntegerField(null=True, blank=True)
+    grade             = models.CharField(max_length=100, blank=True)
+    cert_number       = models.CharField(max_length=100, blank=True)
+    country           = models.CharField(max_length=100, default='Kenya')
+    created_at        = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year_obtained']

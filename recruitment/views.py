@@ -8,9 +8,11 @@ from django.http import FileResponse, Http404
 from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
+
+from accounts.models import JobseekerAccount
 from core.decorators import role_required
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
+    ProfessionalQualification
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .models import PanelAssignment
@@ -359,6 +361,7 @@ def delete_profile(request):
 def calculate_profile_completion(user):
     score = 0
 
+    # ── Section 1: Basic Details (40 points) ──────────────────
     if hasattr(user, 'profile'):
         profile = user.profile
         fields = [
@@ -372,18 +375,22 @@ def calculate_profile_completion(user):
             profile.constituency_id,
             profile.disability_status,
         ]
-        filled = sum(1 for f in fields if f)
-        score += int((filled / len(fields)) * 40)
+        filled  = sum(1 for f in fields if f)
+        score  += int((filled / len(fields)) * 40)
 
-    if hasattr(user, 'academic_qualifications') and user.academic_qualifications.exists():
+    # ── Section 2: Academic Qualifications (15 points) ────────
+    if AcademicQualification.objects.filter(user=user).exists():
         score += 15
 
-    if hasattr(user, 'professional_qualifications') and user.professional_qualifications.exists():
+    # ── Section 3: Professional Qualifications (15 points) ────
+    if ProfessionalQualification.objects.filter(user=user).exists():
         score += 15
 
+    # ── Section 4: Work History (15 points) ───────────────────
     if hasattr(user, 'work_history') and user.work_history.exists():
         score += 15
 
+    # ── Section 5: Additional Details (15 points) ─────────────
     if hasattr(user, 'additional_detail'):
         detail = user.additional_detail
         if detail.cover_letter:
@@ -394,60 +401,200 @@ def calculate_profile_completion(user):
     return min(int(score), 100)
 
 
-# ── Professional Qualifications ──────────────────────────────
-def professional_qualifications(request):
-    user = get_logged_in_user(request)
-    if not user:
+def professional_qualifications_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
         return redirect('index')
 
-    qualifications = ProfessionalQualification.objects.filter(user=user)
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
 
-    if request.method == 'POST':
-        ProfessionalQualification.objects.create(
-            user=user,
-            institution=request.POST.get('institution'),
-            course=request.POST.get('course'),
-            completion_date=request.POST.get('completion_date'),
-            grade=request.POST.get('grade'),
-            certificate=request.FILES.get('certificate'),
-        )
-        return redirect('professional_qualifications')
-
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
-    return render(request, 'jobseekers/professional.html', {
-        'qualifications': qualifications,
-        'completion': completion,
-    })
-
-
-def edit_professional(request, pk):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
-
-    qualification = get_object_or_404(ProfessionalQualification, pk=pk, user=user)
 
     if request.method == 'POST':
-        qualification.institution = request.POST.get('institution')
-        qualification.course = request.POST.get('course')
-        qualification.completion_date = request.POST.get('completion_date')
-        qualification.grade = request.POST.get('grade')
-        if request.FILES.get('certificate'):
-            qualification.certificate = request.FILES.get('certificate')
-        qualification.save()
-        return redirect('professional_qualifications')
+        action = request.POST.get('action', 'save')
 
-    return render(request, 'jobseekers/edit_professional.html', {'qualification': qualification})
+        # ── DELETE ───────────────────────────────────────────
+        if action == 'delete':
+            try:
+                qual_id = request.POST.get('qual_id')
+                qual = ProfessionalQualification.objects.filter(
+                    id=qual_id, user=user).first()
+                if not qual:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Qualification not found.'})
+                qual.delete()
+                return JsonResponse({'status': 'success',
+                                     'message': 'Qualification deleted successfully.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
 
+        # ── EDIT ─────────────────────────────────────────────
+        if action == 'edit':
+            try:
+                qual_id = request.POST.get('qual_id')
+                qual = ProfessionalQualification.objects.filter(
+                    id=qual_id, user=user).first()
+                if not qual:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Qualification not found.'})
 
-def delete_professional(request, pk):
-    user = get_logged_in_user(request)
-    if not user:
-        return redirect('index')
+                qualification = request.POST.get('qualification', '').strip()
+                awarding_body = request.POST.get('awarding_body', '').strip()
+                year_obtained = request.POST.get('year_obtained', '').strip()
 
-    qualification = get_object_or_404(ProfessionalQualification, pk=pk, user=user)
-    qualification.delete()
-    return redirect('professional_qualifications')
+                if not qualification:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Qualification name is required.'})
+                if not awarding_body:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Awarding body is required.'})
+                if not year_obtained:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Year obtained is required.'})
+
+                expiry_raw = request.POST.get('expiry_year', '').strip()
+
+                qual.qualification = qualification
+                qual.awarding_body = awarding_body
+                qual.year_obtained = year_obtained
+                qual.expiry_year = int(expiry_raw) if expiry_raw else None
+                qual.grade = request.POST.get('grade', '').strip()
+                qual.cert_number = request.POST.get('cert_number', '').strip()
+                qual.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                qual.save()
+
+                # New documents uploaded during edit
+                files = request.FILES.getlist('edit_files')
+                doc_types = request.POST.getlist('edit_doc_types')
+
+                for i, file in enumerate(files):
+                    doc_type_id = doc_types[i] if i < len(doc_types) else None
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    if file and doc_type:
+                        Document.objects.create(
+                            user=user,
+                            profile=profile,
+                            document_type=doc_type,
+                            file=file,
+                        )
+
+                doc_count = Document.objects.filter(user=user).count()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Qualification updated successfully.',
+                    'qual': {
+                        'id': qual.id,
+                        'qualification': qual.qualification,
+                        'awarding_body': qual.awarding_body,
+                        'year_obtained': qual.year_obtained,
+                        'expiry_year': qual.expiry_year or '',
+                        'grade': qual.grade or '',
+                        'cert_number': qual.cert_number or '',
+                        'country': qual.country,
+                        'doc_count': doc_count,
+                    }
+                })
+
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── SAVE NEW ─────────────────────────────────────────
+        try:
+            qualifications = json.loads(request.POST.get('qualifications', '[]'))
+
+            if not qualifications:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Please add at least one qualification.'})
+
+            saved = []
+
+            for idx, q in enumerate(qualifications):
+                qualification = q.get('qualification', '').strip()
+                awarding_body = q.get('awarding_body', '').strip()
+                year_obtained = q.get('year_obtained', '')
+                expiry_raw = q.get('expiry_year', '')
+
+                if not qualification or not awarding_body or not year_obtained:
+                    continue
+
+                qual = ProfessionalQualification.objects.create(
+                    user=user,
+                    qualification=qualification,
+                    awarding_body=awarding_body,
+                    year_obtained=year_obtained,
+                    expiry_year=int(expiry_raw) if expiry_raw else None,
+                    grade=q.get('grade', '').strip(),
+                    cert_number=q.get('cert_number', '').strip(),
+                    country=q.get('country', 'Kenya').strip() or 'Kenya',
+                )
+
+                # Documents per qualification
+                files = request.FILES.getlist(f'qual_files_{idx}')
+                doc_types = request.POST.getlist(f'qual_doc_types_{idx}')
+                doc_count = 0
+
+                for i, file in enumerate(files):
+                    doc_type_id = doc_types[i] if i < len(doc_types) else None
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    if file and doc_type:
+                        Document.objects.create(
+                            user=user,
+                            profile=profile,
+                            document_type=doc_type,
+                            file=file,
+                        )
+                        doc_count += 1
+
+                saved.append({
+                    'id': qual.id,
+                    'qualification': qual.qualification,
+                    'awarding_body': qual.awarding_body,
+                    'year_obtained': qual.year_obtained,
+                    'expiry_year': qual.expiry_year or '',
+                    'grade': qual.grade or '',
+                    'cert_number': qual.cert_number or '',
+                    'country': qual.country,
+                    'doc_count': doc_count,
+                })
+
+            if not saved:
+                return JsonResponse({'status': 'error',
+                                     'message': 'No valid qualifications saved. '
+                                                'Check all required fields.'})
+
+            return JsonResponse({
+                'status': 'success',
+                'message': f'{len(saved)} qualification(s) saved successfully.',
+                'saved': saved,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
+
+    # ── GET ───────────────────────────────────────────────────
+    existing = ProfessionalQualification.objects.filter(user=user)
+
+    context = {
+        'profile': profile,
+        'user': user,
+        'page': 'Professional Qualifications',
+        'document_types': DocumentType.objects.all(),
+        'existing': existing,
+        'completion': completion,
+        'has_academic': user.academic_qualifications.exists()
+        if hasattr(user, 'academic_qualifications') else False,
+        'has_professional': existing.exists(),
+        'has_work_history': user.work_history.exists()
+        if hasattr(user, 'work_history') else False,
+        'has_additional': hasattr(user, 'additional_detail'),
+    }
+    return render(request, 'jobseekers/professional.html', context)
 
 
 # ── Work History ─────────────────────────────────────────────
