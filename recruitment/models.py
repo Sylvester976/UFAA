@@ -191,6 +191,9 @@ class Application(models.Model):
     def __str__(self):
         return f"{self.applicant} - {self.vacancy}"
     
+    class Meta:
+        unique_together = ('vacancy', 'applicant')
+    
 
 class PanelAssignment(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')

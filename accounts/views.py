@@ -32,11 +32,26 @@ from recruitment.models import Vacancy
 
 def landing(request):
     today = timezone.now().date()
+    
+    # Close vacancies whose end date is today
+    Vacancy.objects.filter(
+        status='open',
+        end_date=today
+    ).update(status='closed')
+        
     # Only show vacancies that start today or later
     vacancies = Vacancy.objects.filter(
         status='open',
         start_date__gte=today
     ).order_by('start_date')  # earliest starting first
+        
+    # Retrieve all vacancies for rendering
+    # vacancies = Vacancy.objects.all()
+                
+    # # External users should NOT see internal vacancies
+    # # To be moved to the jobseeker dashboard
+    # if request.user.role == 'applicant':
+    #     vacancies = vacancies.filter(vacancy_type='external')
 
     return render(request, 'auth/landing.html', {'vacancies': vacancies})
 
