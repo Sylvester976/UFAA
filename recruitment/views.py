@@ -250,7 +250,9 @@ def delete_academic(request, pk):
     return redirect("academic_qualifications")
 
 def professional_qualifications(request):
-    user = get_logged_in_user(request)
+    
+    jobseeker_id = request.session.get("jobseeker_id")
+    user = JobseekerAccount.objects.get(id=jobseeker_id)
     if not user:
         return redirect("/login/")
 
@@ -327,7 +329,8 @@ def delete_professional(request, pk):
 
 
 def work_history(request):
-    user = get_logged_in_user(request)
+    jobseeker_id = request.session.get("jobseeker_id")
+    user = JobseekerAccount.objects.get(id=jobseeker_id)
     if not user:
         return redirect("/login/")
 
