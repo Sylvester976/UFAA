@@ -247,6 +247,11 @@ class Application(models.Model):
 
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    # applicant = models.ForeignKey(
+    #     'accounts.JobseekerAccount',   # app_name.ModelName
+    #     on_delete=models.CASCADE,
+    #     related_name='applications'
+    # )
     cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')

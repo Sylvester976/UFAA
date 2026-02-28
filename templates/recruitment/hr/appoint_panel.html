@@ -1,0 +1,14 @@
+<form method="POST">
+    {% csrf_token %}
+
+    {% for panelist in panelists %}
+        <div>
+            <input type="checkbox"
+                   name="panelists"
+                   value="{{ panelist.id }}">
+            {{ panelist.get_full_name }}
+        </div>
+    {% endfor %}
+
+    <button type="submit">Appoint Panel</button>
+</form>

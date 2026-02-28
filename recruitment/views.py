@@ -2,6 +2,13 @@ import json
 from datetime import datetime
 
 from django.contrib import messages
+from .models import Gender, EthnicGroup, County, Constituency, PanelAssignment, SubCounty, Ward, JobSeekerProfile
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
+from django.shortcuts import render, redirect, get_object_or_404
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
+from django.http import JsonResponse
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
 from django.http import FileResponse, Http404
@@ -874,4 +881,147 @@ def vacancy_detail(request, vacancy_id):
 
     return render(request, 'recruitment/hr/vacancy_detail.html', {
         'vacancy': vacancy
+    })
+
+    
+# @login_required
+# @role_required(['applicant', 'officer'])
+def apply_for_vacancy(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    # # Check if vacancy is open
+    # if not vacancy.is_open():
+    #     messages.error(request, "This vacancy is no longer open.")
+    #     return redirect('public_vacancies')
+
+    # # Restrict internal vacancies
+    # if vacancy.vacancy_type == 'internal' and request.user.role == 'applicant':
+    #     messages.error(request, "You cannot apply for internal vacancies.")
+    #     return redirect('public_vacancies')
+
+    # # Prevent duplicate application (DB + view)
+    # if Application.objects.filter(vacancy=vacancy, applicant=request.user).exists():
+    #     messages.error(request, "You have already applied for this vacancy.")
+    #     return redirect('public_vacancies')
+
+    if request.method == 'POST':
+        cv_file = request.FILES.get('cv')
+        cover_letter = request.POST.get('cover_letter', '').strip()
+
+        # Validate CV
+        if not cv_file:
+            messages.error(request, "Please upload your CV.")
+        elif not cv_file.name.lower().endswith('.pdf'):
+            messages.error(request, "CV must be a PDF.")
+        elif not cover_letter:
+            messages.error(request, "Cover letter cannot be empty.")
+        else:
+            # Save application
+            application = Application(
+                vacancy=vacancy,
+                applicant=request.user,
+                cv=cv_file,
+                cover_letter=cover_letter
+            )
+            application.save()
+            messages.success(request, "Application submitted successfully.")
+            return redirect('dashboard')
+
+    return render(request, 'recruitment/applicant/apply.html', {'vacancy': vacancy})
+
+@login_required
+# @role_required(['hod_hr'])
+def hr_view_applications(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status not in ['closed', 'longlisting', 'shortlisting', 'interviews']:
+        messages.error(request, "Applications not available for review yet.")
+        return redirect('hr_dashboard')
+
+    applications = Application.objects.filter(vacancy=vacancy)
+
+    return render(request, 'recruitment/hr/view_applications.html', {
+        'vacancy': vacancy,
+        'applications': applications
+    })
+    
+@login_required
+# @role_required(['hod_hr'])
+def start_longlisting(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'closed':
+        messages.error(request, "Vacancy must be closed before longlisting.")
+        return redirect('hr_dashboard')
+
+    vacancy.status = 'longlisting'
+    vacancy.save()
+
+    messages.success(request, "Longlisting stage started.")
+    return redirect('hr_view_applications', vacancy_id=vacancy.id)
+
+@login_required
+@role_required(['hod_hr'])
+def shortlist_candidates(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'longlisting':
+        messages.error(request, "Not in longlisting stage.")
+        return redirect('hr_dashboard')
+
+    applications = Application.objects.filter(vacancy=vacancy)
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_applications')
+
+        if not selected_ids:
+            messages.error(request, "You must select at least one candidate.")
+            return redirect('shortlist_candidates', vacancy_id=vacancy.id)
+
+        Application.objects.filter(vacancy=vacancy).update(status='submitted')
+
+        Application.objects.filter(
+            id__in=selected_ids,
+            vacancy=vacancy
+        ).update(status='shortlisted')
+
+        vacancy.status = 'shortlisting'
+        vacancy.save()
+    
+    return render(request, 'recruitment/hr/shortlist.html', {
+        'vacancy': vacancy,
+        'applications': applications
+    })
+    
+@login_required
+@role_required(['hod_hr'])
+def appoint_panelists(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'shortlisting':
+        messages.error(request, "Complete shortlisting first.")
+        return redirect('hr_dashboard')
+
+    panelists = request.user.objects.filter(role='panelist')
+
+    if request.method == 'POST':
+        selected_panelists = request.POST.getlist('panelists')
+
+        PanelAssignment.objects.filter(vacancy=vacancy).delete()
+
+        for pid in selected_panelists:
+            PanelAssignment.objects.create(
+                vacancy=vacancy,
+                panelist_id=pid
+            )
+
+        vacancy.status = 'interviews'
+        vacancy.save()
+
+        messages.success(request, "Panel appointed. Interview stage started.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/appoint_panel.html', {
+        'vacancy': vacancy,
+        'panelists': panelists
     })
