@@ -28,8 +28,94 @@ def get_logged_in_user(request):
     return JobseekerAccount.objects.filter(id=user_id).first()
 
 
+# ── In recruitment/views.py ───────────────────────────────────
+# Add/replace dashboard_view:
+
 def dashboard(request):
-    return render(request, 'jobseekers/dashboard.html', {'page': 'Dashboard'})
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+    detail     = AdditionalDetail.objects.filter(user=user).first()
+
+    academic_count     = AcademicQualification.objects.filter(user=user).count()
+    professional_count = ProfessionalQualification.objects.filter(user=user).count()
+    work_history       = WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
+    work_count         = work_history.count()
+
+    # Profile completion breakdown per section (for donut chart)
+    sections = {
+        'Basic Details':       min(int(_basic_score(profile) / 40 * 100), 100) if profile else 0,
+        'Academic':            100 if academic_count > 0 else 0,
+        'Professional':        100 if professional_count > 0 else 0,
+        'Work History':        100 if work_count > 0 else 0,
+        'Additional Details':  _additional_score(detail),
+    }
+
+    # Incomplete sections — things to nudge user to complete
+    incomplete = []
+    if not profile or not profile.first_name:
+        incomplete.append({'label': 'Complete your basic details', 'url': 'profile', 'icon': 'fa-user'})
+    if academic_count == 0:
+        incomplete.append({'label': 'Add academic qualifications', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
+    if professional_count == 0:
+        incomplete.append({'label': 'Add professional qualifications', 'url': 'professional_qualifications', 'icon': 'fa-certificate'})
+    if work_count == 0:
+        incomplete.append({'label': 'Add work history', 'url': 'work_history', 'icon': 'fa-briefcase'})
+    if not detail or not detail.cv:
+        incomplete.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
+
+    context = {
+        'user':              user,
+        'profile':           profile,
+        'detail':            detail,
+        'completion':        completion,
+        'academic_count':    academic_count,
+        'professional_count':professional_count,
+        'work_count':        work_count,
+        'work_history':      work_history[:5],      # last 5 jobs for timeline
+        'sections':          sections,
+        'incomplete':        incomplete,
+        'has_academic':      academic_count > 0,
+        'has_professional':  professional_count > 0,
+        'has_work_history':  work_count > 0,
+        'has_additional':    detail is not None,
+        'page':              'Dashboard',
+    }
+    return render(request, 'jobseekers/dashboard.html', context)
+
+
+def _basic_score(profile):
+    """Return the raw basic-details score (0–40)."""
+    if not profile:
+        return 0
+    fields = [
+        profile.salutation, profile.surname, profile.first_name,
+        profile.date_of_birth, profile.gender_id, profile.ethnic_group_id,
+        profile.home_county_id, profile.constituency_id, profile.disability_status,
+    ]
+    filled = sum(1 for f in fields if f)
+    return int((filled / len(fields)) * 40)
+
+
+def _additional_score(detail):
+    """Return additional-details completion as 0–100."""
+    if not detail:
+        return 0
+    score = 0
+    if detail.cv:           score += 5
+    if detail.cover_letter: score += 4
+    if detail.linkedin_url: score += 2
+    if detail.availability: score += 2
+    if detail.languages:    score += 2
+    return min(int(score / 15 * 100), 100)
 
 
 def get_next_step(user):
@@ -65,68 +151,93 @@ def profile_view(request):
         return redirect('index')
 
     profile, created = JobSeekerProfile.objects.get_or_create(user=user)
-    completion = calculate_profile_completion(user)
+    completion       = calculate_profile_completion(user)
 
     if request.method == 'POST':
         try:
-            salutation = request.POST.get('salutation', '')
-            surname = request.POST.get('surname', '').strip()
-            first_name = request.POST.get('first_name', '').strip()
-            second_name = request.POST.get('second_name', '').strip()
-            email = request.POST.get('email', '').strip()
-            id_no = request.POST.get('id_no', '').strip()
-            date_of_birth = request.POST.get('date_of_birth') or None
-            gender_id = request.POST.get('gender') or None
-            ethnic_group_id = request.POST.get('ethnic_group') or None
-            home_county_id = request.POST.get('home_county') or None
-            constituency_id = request.POST.get('constituency') or None
-            sub_county_id = request.POST.get('sub_county') or None
-            ward_id = request.POST.get('ward') or None
+            salutation        = request.POST.get('salutation', '').strip()
+            surname           = request.POST.get('surname', '').strip()
+            first_name        = request.POST.get('first_name', '').strip()
+            second_name       = request.POST.get('second_name', '').strip()
+            id_no             = request.POST.get('id_no', '').strip()
+            date_of_birth     = request.POST.get('date_of_birth') or None
+            gender_id         = request.POST.get('gender') or None
+            ethnic_group_id   = request.POST.get('ethnic_group') or None
+            home_county_id    = request.POST.get('home_county') or None
+            constituency_id   = request.POST.get('constituency') or None
+            sub_county_id     = request.POST.get('sub_county') or None
+            ward_id           = request.POST.get('ward') or None
             disability_status = request.POST.get('disability_status', '').strip()
+            disability_other  = request.POST.get('disability_other', '').strip()
+            is_employee       = request.POST.get('is_employee') == 'true'
+            employee_number   = request.POST.get('employee_number', '').strip()
 
+            # ── Validations ───────────────────────────────────
             if not first_name:
-                return JsonResponse({'status': 'error', 'message': 'First name is required.'})
+                return JsonResponse({'status': 'error',
+                                     'message': 'First name is required.'})
             if not surname:
-                return JsonResponse({'status': 'error', 'message': 'Surname is required.'})
-            if not email:
-                return JsonResponse({'status': 'error', 'message': 'Email is required.'})
+                return JsonResponse({'status': 'error',
+                                     'message': 'Surname is required.'})
             if not id_no:
-                return JsonResponse({'status': 'error', 'message': 'ID number is required.'})
+                return JsonResponse({'status': 'error',
+                                     'message': 'ID number is required.'})
             if not date_of_birth:
-                return JsonResponse({'status': 'error', 'message': 'Date of birth is required.'})
+                return JsonResponse({'status': 'error',
+                                     'message': 'Date of birth is required.'})
+            if is_employee and not employee_number:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Please enter your UFAA employee number.'})
+            if disability_status == 'Other' and not disability_other:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Please describe your disability.'})
 
-            profile.surname = surname
-            profile.salutation = salutation
-            profile.first_name = first_name
-            profile.second_name = second_name
-            profile.email = email
-            profile.id_no = id_no
-            profile.date_of_birth = date_of_birth
-            profile.gender_id = gender_id
-            profile.ethnic_group_id = ethnic_group_id
-            profile.home_county_id = home_county_id
-            profile.constituency_id = constituency_id
-            profile.sub_county_id = sub_county_id
-            profile.ward_id = ward_id
+            # ── Save profile ──────────────────────────────────
+            profile.salutation        = salutation
+            profile.surname           = surname
+            profile.first_name        = first_name
+            profile.second_name       = second_name
+            profile.email             = user.email   # always from account
+            profile.id_no             = id_no
+            profile.date_of_birth     = date_of_birth
+            profile.gender_id         = gender_id
+            profile.ethnic_group_id   = ethnic_group_id
+            profile.home_county_id    = home_county_id
+            profile.constituency_id   = constituency_id
+            profile.sub_county_id     = sub_county_id
+            profile.ward_id           = ward_id
             profile.disability_status = disability_status
+            profile.disability_other  = disability_other if disability_status == 'Other' else ''
+            profile.employee_number   = employee_number if is_employee else ''
             profile.save()
 
-            return JsonResponse({'status': 'success', 'message': 'Profile saved successfully.'})
+            # ── Save is_employee on account ───────────────────
+            user.is_employee = is_employee
+            user.save(update_fields=['is_employee'])
+
+            return JsonResponse({'status': 'success',
+                                 'message': 'Profile saved successfully.',
+                                 'completion': calculate_profile_completion(user)})
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
 
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Profile',
-        'counties': County.objects.all(),
-        'constituencies': Constituency.objects.all(),
-        'sub_counties': SubCounty.objects.all(),
-        'wards': Ward.objects.all(),
-        'genders': Gender.objects.all(),
-        'ethnic_groups': EthnicGroup.objects.all(),
-        'completion': completion,
+        'profile':          profile,
+        'user':             user,
+        'page':             'Profile',
+        'counties':         County.objects.all(),
+        'constituencies':   Constituency.objects.all(),
+        'sub_counties':     SubCounty.objects.all(),
+        'wards':            Ward.objects.all(),
+        'genders':          Gender.objects.all(),
+        'ethnic_groups':    EthnicGroup.objects.all(),
+        'completion':       completion,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
     }
     return render(request, 'jobseekers/profile.html', context)
 

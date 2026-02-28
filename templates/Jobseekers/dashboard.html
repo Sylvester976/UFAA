@@ -1,453 +1,759 @@
 {% extends "layout/base.html" %}
-{% include "includes/messages.html" %}
 {% load static %}
-{% block content %}
 
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+<style>
+/* ══════════════════════════════════════════════════
+   UFAA Dashboard — Soft UI Aesthetic
+   Mobile-first, matches Soft UI Dashboard theme
+══════════════════════════════════════════════════ */
 
-    <div class="row mt-4">
-        <div class="col-lg-7 mb-lg-0 mb-4">
-            <div class="card">
-                <div class="card-body p-3">
-                    <div class="row">
-                        <div class="col-lg-6">
-                            <div class="d-flex flex-column h-100">
-                                <p class="mb-1 pt-2 text-bold">Built by developers</p>
-                                <h5 class="font-weight-bolder">Soft UI Dashboard</h5>
-                                <p class="mb-5">From colors, cards, typography to complex elements, you will find the
-                                    full documentation.</p>
-                                <a class="text-body text-sm font-weight-bold mb-0 icon-move-right mt-auto"
-                                   href="javascript:">
-                                    Read More
-                                    <i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="col-lg-5 ms-auto text-center mt-5 mt-lg-0">
-                            <div class="bg-gradient-primary border-radius-lg h-100">
-                                <img src="{% static 'assets/img/shapes/waves-white.svg' %}"
-                                     class="position-absolute h-100 w-50 top-0 d-lg-block d-none" alt="waves">
-                                <div class="position-relative d-flex align-items-center justify-content-center h-100">
-                                    <img class="w-100 position-relative z-index-2 pt-4"
-                                         src="{% static 'assets/img/illustrations/rocket-white.png' %}" alt="rocket">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-5">
-            <div class="card h-100 p-3">
-                <div class="overflow-hidden position-relative border-radius-lg bg-cover h-100"
-                     style="background-image: url('../assets/img/ivancik.jpg');">
-                    <span class="mask bg-gradient-dark"></span>
-                    <div class="card-body position-relative z-index-1 d-flex flex-column h-100 p-3">
-                        <h5 class="text-white font-weight-bolder mb-4 pt-2">Work with the rockets</h5>
-                        <p class="text-white">Wealth creation is an evolutionarily recent positive-sum game. It is all
-                            about who take the opportunity first.</p>
-                        <a class="text-white text-sm font-weight-bold mb-0 icon-move-right mt-auto" href="javascript:">
-                            Read More
-                            <i class="fas fa-arrow-right text-sm ms-1" aria-hidden="true"></i>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+/* ── Stat cards ─────────────────────────────────── */
+.stat-card {
+    background: #fff;
+    border-radius: 1rem;
+    padding: 1rem 1.25rem;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border: none;
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none;
+    color: inherit;
+    height: 100%;
+}
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+    color: inherit;
+}
+.stat-icon-box {
+    width: 52px; height: 52px;
+    border-radius: 0.85rem;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.25rem; color: #fff; flex-shrink: 0;
+}
+.stat-val { font-size: 1.5rem; font-weight: 700; color: #344767; line-height: 1; margin-bottom: 2px; }
+.stat-lbl { font-size: 0.7rem; color: #8392ab; font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; }
+.stat-chg { font-size: 0.72rem; font-weight: 600; }
 
-    <div class="row my-4">
-        <div class="col-lg-8 col-md-6 mb-md-0 mb-4">
-            <div class="card">
-                <div class="card-header pb-0">
-                    <div class="row">
-                        <div class="col-lg-6 col-7">
-                            <h6>Projects</h6>
-                            <p class="text-sm mb-0">
-                                <i class="fa fa-check text-info" aria-hidden="true"></i>
-                                <span class="font-weight-bold ms-1">30 done</span> this month
-                            </p>
-                        </div>
-                        <div class="col-lg-6 col-5 my-auto text-end">
-                            <div class="dropdown float-lg-end pe-4">
-                                <a class="cursor-pointer" id="dropdownTable" data-bs-toggle="dropdown"
-                                   aria-expanded="false">
-                                    <i class="fa fa-ellipsis-v text-secondary"></i>
-                                </a>
-                                <ul class="dropdown-menu px-2 py-3 ms-sm-n4 ms-n5" aria-labelledby="dropdownTable">
-                                    <li><a class="dropdown-item border-radius-md" href="javascript:">Action</a></li>
-                                    <li><a class="dropdown-item border-radius-md" href="javascript:">Another action</a>
-                                    </li>
-                                    <li><a class="dropdown-item border-radius-md" href="javascript:">Something else
-                                        here</a></li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body px-0 pb-2">
-                    <div class="table-responsive">
-                        <table class="table align-items-center mb-0">
-                            <thead>
-                            <tr>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    Companies
-                                </th>
-                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">
-                                    Members
-                                </th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    Budget
-                                </th>
-                                <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
-                                    Completion
-                                </th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src="{% static 'assets/img/small-logos/logo-xd.svg' %}"
-                                                 class="avatar avatar-sm me-3" alt="xd">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Soft UI XD Version</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                                            <img src="{% static 'assets/img/team-1.jpg' %}" alt="team1">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                                            <img src="{% static 'assets/img/team-2.jpg' %}" alt="team2">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                                            <img src="{% static 'assets/img/team-3.jpg' %}" alt="team3">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="team4">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> $14,000 </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">60%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-info w-60" role="progressbar"
-                                                 aria-valuenow="60" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src="{% static 'assets/img/small-logos/logo-atlassian.svg' %}"
-                                                 class="avatar avatar-sm me-3" alt="atlassian">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Add Progress Track</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                                            <img src="{% static 'assets/img/team-2.jpg' %}" alt="team5">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="team6">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> $3,000 </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">10%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-info w-10" role="progressbar"
-                                                 aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src="{% static 'assets/img/small-logos/logo-slack.svg' %}"
-                                                 class="avatar avatar-sm me-3" alt="team7">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Fix Platform Errors</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                                            <img src="{% static 'assets/img/team-3.jpg' %}" alt="team8">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                                            <img src="{% static 'assets/img/team-1.jpg' %}" alt="team9">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> Not set </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">100%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-success w-100" role="progressbar"
-                                                 aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src=" {% static 'assets/img/small-logos/logo-spotify.svg' %} "
-                                                 class="avatar avatar-sm me-3" alt="spotify">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Launch our Mobile App</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="user1">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Romina Hadid">
-                                            <img src="{% static 'assets/img/team-3.jpg' %}" alt="user2">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Alexander Smith">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="user3">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                                            <img src="{% static 'assets/img/team-1.jpg' %}" alt="user4">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> $20,500 </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">100%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-success w-100" role="progressbar"
-                                                 aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src="{% static 'assets/img/small-logos/logo-jira.svg' %}"
-                                                 class="avatar avatar-sm me-3" alt="jira">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Add the New Pricing Page</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="user5">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> $500 </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">25%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-info w-25" role="progressbar"
-                                                 aria-valuenow="25" aria-valuemin="0" aria-valuemax="25"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>
-                                    <div class="d-flex px-2 py-1">
-                                        <div>
-                                            <img src="{% static 'assets/img/small-logos/logo-invision.svg' %}"
-                                                 class="avatar avatar-sm me-3" alt="invision">
-                                        </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="mb-0 text-sm">Redesign New Online Shop</h6>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>
-                                    <div class="avatar-group mt-2">
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Ryan Tompson">
-                                            <img src="{% static 'assets/img/team-1.jpg' %}" alt="user6">
-                                        </a>
-                                        <a href="javascript:" class="avatar avatar-xs rounded-circle"
-                                           data-bs-toggle="tooltip" data-bs-placement="bottom" title="Jessica Doe">
-                                            <img src="{% static 'assets/img/team-4.jpg' %}" alt="user7">
-                                        </a>
-                                    </div>
-                                </td>
-                                <td class="align-middle text-center text-sm">
-                                    <span class="text-xs font-weight-bold"> $2,000 </span>
-                                </td>
-                                <td class="align-middle">
-                                    <div class="progress-wrapper w-75 mx-auto">
-                                        <div class="progress-info">
-                                            <div class="progress-percentage">
-                                                <span class="text-xs font-weight-bold">40%</span>
-                                            </div>
-                                        </div>
-                                        <div class="progress">
-                                            <div class="progress-bar bg-gradient-info w-40" role="progressbar"
-                                                 aria-valuenow="40" aria-valuemin="0" aria-valuemax="40"></div>
-                                        </div>
-                                    </div>
-                                </td>
-                            </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-lg-4 col-md-6">
-            <div class="card h-100">
-                <div class="card-header pb-0">
-                    <h6>Orders overview</h6>
-                    <p class="text-sm">
-                        <i class="fa fa-arrow-up text-success" aria-hidden="true"></i>
-                        <span class="font-weight-bold">24%</span> this month
-                    </p>
-                </div>
-                <div class="card-body p-3">
-                    <div class="timeline timeline-one-side">
-                        <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="ni ni-bell-55 text-success text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">$2400, Design changes</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">22 DEC 7:20 PM</p>
-                            </div>
-                        </div>
-                        <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="ni ni-html5 text-danger text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">New order #1832412</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 11 PM</p>
-                            </div>
-                        </div>
-                        <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="ni ni-cart text-info text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">Server payments for April</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">21 DEC 9:34 PM</p>
-                            </div>
-                        </div>
-                        <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="ni ni-credit-card text-warning text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">New card added for order
-                                    #4395133</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">20 DEC 2:20 AM</p>
-                            </div>
-                        </div>
-                        <div class="timeline-block mb-3">
-                  <span class="timeline-step">
-                    <i class="ni ni-key-25 text-primary text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">Unlock packages for development</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">18 DEC 4:54 AM</p>
-                            </div>
-                        </div>
-                        <div class="timeline-block">
-                  <span class="timeline-step">
-                    <i class="ni ni-money-coins text-dark text-gradient"></i>
-                  </span>
-                            <div class="timeline-content">
-                                <h6 class="text-dark text-sm font-weight-bold mb-0">New order #9583120</h6>
-                                <p class="text-secondary font-weight-bold text-xs mt-1 mb-0">17 DEC</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+/* ── Welcome banner ─────────────────────────────── */
+.welcome-banner {
+    background: linear-gradient(310deg, #141727 0%, #3a416f 100%);
+    border-radius: 1rem;
+    overflow: hidden;
+    position: relative;
+    border: none;
+    box-shadow: 0 8px 32px rgba(20,23,39,0.3);
+}
+.welcome-banner::before {
+    content:''; position:absolute; top:-40px; right:-40px;
+    width:200px; height:200px; border-radius:50%;
+    background:rgba(255,255,255,0.04);
+}
+.welcome-banner::after {
+    content:''; position:absolute; bottom:-50px; right:80px;
+    width:140px; height:140px; border-radius:50%;
+    background:rgba(255,255,255,0.03);
+}
 
+/* ── Avatar ─────────────────────────────────────── */
+.avatar-initials {
+    border-radius: 50%;
+    background: linear-gradient(310deg, #2dce89, #17c1e8);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; color: #fff; flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(23,193,232,0.35);
+}
 
+/* ── Donut ──────────────────────────────────────── */
+.donut-wrap { position:relative; display:inline-flex; align-items:center; justify-content:center; }
+.donut-label { position:absolute; text-align:center; pointer-events:none; }
+.donut-pct { font-size:1.4rem; font-weight:800; color:#344767; line-height:1; }
+.donut-sub { font-size:0.62rem; color:#8392ab; text-transform:uppercase; letter-spacing:0.05em; }
+
+/* ── Section progress bars ──────────────────────── */
+.sec-row { margin-bottom: 0.6rem; }
+.sec-head { display:flex; justify-content:space-between; margin-bottom:3px; }
+.sec-name { font-size:0.73rem; font-weight:600; color:#344767; }
+.sec-pct  { font-size:0.7rem; font-weight:700; color:#67748e; }
+.sec-track { height:5px; background:#e9ecef; border-radius:1rem; overflow:hidden; }
+.sec-fill  { height:100%; border-radius:1rem; transition: width 1s cubic-bezier(.4,0,.2,1); }
+
+/* ── Work timeline ──────────────────────────────── */
+.wh-timeline { position:relative; padding-left:1.75rem; }
+.wh-timeline::before {
+    content:''; position:absolute; left:9px; top:8px; bottom:8px;
+    width:2px; background:linear-gradient(180deg,#17c1e8,#2dce89,#e9ecef);
+    border-radius:2px;
+}
+.wh-item { position:relative; margin-bottom:1.15rem; }
+.wh-item:last-child { margin-bottom:0; }
+.wh-dot {
+    position:absolute; left:-1.41rem; top:5px;
+    width:12px; height:12px; border-radius:50%;
+    background:#17c1e8; border:2px solid #fff;
+    box-shadow:0 0 0 2px #17c1e8;
+}
+.wh-dot.current { background:#2dce89; box-shadow:0 0 0 2px #2dce89; }
+.wh-title   { font-size:0.82rem; font-weight:700; color:#344767; margin:0 0 1px; }
+.wh-company { font-size:0.74rem; color:#67748e; margin-bottom:1px; }
+.wh-period  { font-size:0.69rem; color:#adb5bd; }
+
+/* ── Nudge items ────────────────────────────────── */
+.nudge-item {
+    display:flex; align-items:center; gap:0.7rem;
+    padding:0.6rem 0.8rem; border-radius:0.65rem;
+    background:#f8f9fa; border-left:3px solid #17c1e8;
+    margin-bottom:0.45rem; text-decoration:none;
+    color:#344767; font-size:0.79rem; font-weight:500;
+    transition:all 0.2s;
+}
+.nudge-item:hover { background:#e0f7fc; color:#0e7490; transform:translateX(4px); }
+.nudge-icon {
+    width:28px; height:28px; border-radius:0.5rem;
+    background:linear-gradient(310deg,#17c1e8,#2dce89);
+    display:flex; align-items:center; justify-content:center;
+    color:#fff; font-size:0.7rem; flex-shrink:0;
+}
+
+/* ── Profile detail rows ────────────────────────── */
+.pd-row {
+    display:flex; align-items:flex-start; gap:0.7rem;
+    padding:0.5rem 0; border-bottom:1px solid #f8f9fa;
+}
+.pd-row:last-child { border-bottom:none; }
+.pd-icon {
+    width:28px; height:28px; border-radius:0.5rem;
+    background:#f0fbff; color:#17c1e8;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.68rem; flex-shrink:0;
+}
+.pd-lbl { font-size:0.67rem; color:#adb5bd; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:1px; }
+.pd-val { font-size:0.79rem; font-weight:600; color:#344767; }
+
+/* ── Quick links ────────────────────────────────── */
+.quick-card {
+    background:#fff; border-radius:0.85rem; padding:0.85rem 0.5rem;
+    border:1px solid #f0f0f0; text-align:center;
+    text-decoration:none; color:#344767;
+    display:flex; flex-direction:column; align-items:center; gap:0.45rem;
+    transition:all 0.2s; box-shadow:0 2px 8px rgba(0,0,0,0.04);
+    height:100%;
+}
+.quick-card:hover {
+    transform:translateY(-3px); color:#17c1e8;
+    box-shadow:0 8px 24px rgba(0,0,0,0.1); border-color:#17c1e8;
+}
+.qc-icon {
+    width:38px; height:38px; border-radius:0.6rem;
+    display:flex; align-items:center; justify-content:center;
+    font-size:0.95rem; color:#fff;
+}
+.qc-lbl { font-size:0.7rem; font-weight:600; line-height:1.2; }
+
+/* ── Shared card ────────────────────────────────── */
+.dash-card {
+    background:#fff; border-radius:1rem; border:none;
+    box-shadow:0 4px 20px rgba(0,0,0,0.06);
+}
+.dash-card .card-header {
+    background:transparent; border-bottom:1px solid #f8f9fa;
+    padding:1rem 1.25rem 0.8rem;
+}
+.dash-card .card-body { padding:1.1rem 1.25rem; }
+.ch-title { font-size:0.82rem; font-weight:700; color:#344767; margin:0; }
+.ch-sub   { font-size:0.71rem; color:#8392ab; margin:0; }
+
+/* ── Mobile ─────────────────────────────────────── */
+@media (max-width:576px) {
+    .stat-card { padding:0.8rem 0.9rem; }
+    .stat-icon-box { width:44px; height:44px; font-size:1rem; }
+    .stat-val { font-size:1.25rem; }
+    .dash-card .card-body { padding:0.9rem 1rem; }
+    .dash-card .card-header { padding:0.8rem 1rem; }
+}
+</style>
 {% endblock %}
 
+{% block content %}
+<div class="container-fluid py-3 px-2 px-md-3">
 
+    <!-- ── ROW 1: Welcome + Donut ── -->
+    <div class="row g-3 mb-3">
+
+        <!-- Welcome Banner -->
+        <div class="col-12 col-lg-7">
+            <div class="welcome-banner h-100">
+                <div class="card-body p-4 position-relative" style="z-index:1;">
+                    <div class="d-flex align-items-center gap-3 mb-3 flex-wrap">
+                        <div class="avatar-initials"
+                             style="width:60px;height:60px;font-size:1.3rem;">
+                            {% if profile and profile.first_name %}
+                                {{ profile.first_name.0|upper }}{% if profile.surname %}{{ profile.surname.0|upper }}{% endif %}
+                            {% else %}?{% endif %}
+                        </div>
+                        <div>
+                            <p class="text-white mb-0 opacity-7" style="font-size:0.78rem;">
+                                Welcome back,
+                            </p>
+                            <h5 class="text-white font-weight-bolder mb-0">
+                                {% if profile and profile.first_name %}
+                                    {{ profile.salutation }} {{ profile.first_name }} {{ profile.surname }}
+                                {% else %}
+                                    Complete your profile
+                                {% endif %}
+                            </h5>
+                            <p class="text-white mb-0 opacity-7"
+                               style="font-size:0.75rem;">{{ user.email }}</p>
+                        </div>
+                    </div>
+
+                    {% if user.is_employee and profile and profile.employee_number %}
+                    <div class="mb-3">
+                        <span class="badge"
+                              style="background:rgba(255,255,255,0.12);
+                                     color:#fff; font-size:0.7rem;
+                                     border:1px solid rgba(255,255,255,0.2);
+                                     border-radius:0.5rem; padding:0.3rem 0.65rem;">
+                            <i class="fas fa-id-badge me-1"></i>
+                            UFAA Staff · {{ profile.employee_number }}
+                        </span>
+                    </div>
+                    {% endif %}
+
+                    <p class="text-white mb-1 opacity-8" style="font-size:0.8rem;">
+                        {% if completion == 100 %}
+                            🎉 Profile complete — ready to apply!
+                        {% else %}
+                            Profile {{ completion }}% complete
+                        {% endif %}
+                    </p>
+                    <div class="progress mb-4"
+                         style="height:6px; background:rgba(255,255,255,0.15); border-radius:1rem;">
+                        <div class="progress-bar"
+                             style="width:{{ completion }}%;
+                                    background:linear-gradient(90deg,#17c1e8,#2dce89);
+                                    border-radius:1rem;"></div>
+                    </div>
+
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if completion < 100 %}
+                        <a href="{% url 'profile' %}" class="btn btn-sm mb-0"
+                           style="background:rgba(255,255,255,0.15); color:#fff;
+                                  border:1px solid rgba(255,255,255,0.25);
+                                  font-size:0.78rem; border-radius:0.65rem;">
+                            <i class="fas fa-user-edit me-1"></i> Complete Profile
+                        </a>
+                        {% endif %}
+                        {% if detail and detail.cv %}
+                        <a href="{{ detail.cv.url }}" target="_blank"
+                           class="btn btn-sm mb-0"
+                           style="background:rgba(45,206,137,0.2); color:#fff;
+                                  border:1px solid rgba(45,206,137,0.35);
+                                  font-size:0.78rem; border-radius:0.65rem;">
+                            <i class="fas fa-download me-1"></i> Download CV
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donut + Breakdown -->
+        <div class="col-12 col-lg-5">
+            <div class="dash-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="ch-title">Profile Completion</p>
+                        <p class="ch-sub">Section by section</p>
+                    </div>
+                    <span class="badge px-2 py-1
+                        {% if completion == 100 %}bg-gradient-success
+                        {% elif completion >= 60 %}bg-gradient-info
+                        {% elif completion >= 30 %}bg-gradient-warning
+                        {% else %}bg-gradient-danger{% endif %}"
+                          style="font-size:0.68rem;">
+                        {{ completion }}%
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                        <div class="donut-wrap flex-shrink-0">
+                            <canvas id="completionDonut" width="130" height="130"></canvas>
+                            <div class="donut-label">
+                                <div class="donut-pct">{{ completion }}%</div>
+                                <div class="donut-sub">Done</div>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1" style="min-width:130px;">
+                            {% for name, pct in sections.items %}
+                            <div class="sec-row">
+                                <div class="sec-head">
+                                    <span class="sec-name">{{ name }}</span>
+                                    <span class="sec-pct">{{ pct }}%</span>
+                                </div>
+                                <div class="sec-track">
+                                    <div class="sec-fill"
+                                         style="width:{{ pct }}%;
+                                                background:{% if pct == 100 %}linear-gradient(90deg,#2dce89,#17c1e8){% elif pct > 0 %}linear-gradient(90deg,#f5a623,#fbcf33){% else %}#e9ecef{% endif %};">
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── ROW 2: Stat Cards ── -->
+    <div class="row g-3 mb-3">
+        <div class="col-6 col-md-3">
+            <a href="{% url 'academic_qualifications' %}" class="stat-card">
+                <div>
+                    <div class="stat-val">{{ academic_count }}</div>
+                    <div class="stat-lbl">Academic</div>
+                    <div class="stat-chg {% if academic_count > 0 %}text-success{% else %}text-danger{% endif %} mt-1">
+                        {% if academic_count > 0 %}
+                            <i class="fas fa-check-circle me-1"></i>Added
+                        {% else %}
+                            <i class="fas fa-plus-circle me-1"></i>Add now
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-icon-box"
+                     style="background:linear-gradient(310deg,#2dce89,#17c1e8);">
+                    <i class="fas fa-graduation-cap"></i>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'professional_qualifications' %}" class="stat-card">
+                <div>
+                    <div class="stat-val">{{ professional_count }}</div>
+                    <div class="stat-lbl">Professional</div>
+                    <div class="stat-chg {% if professional_count > 0 %}text-success{% else %}text-warning{% endif %} mt-1">
+                        {% if professional_count > 0 %}
+                            <i class="fas fa-check-circle me-1"></i>Added
+                        {% else %}
+                            <i class="fas fa-plus-circle me-1"></i>Optional
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-icon-box"
+                     style="background:linear-gradient(310deg,#f5a623,#f76b1c);">
+                    <i class="fas fa-certificate"></i>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'work_history' %}" class="stat-card">
+                <div>
+                    <div class="stat-val">{{ work_count }}</div>
+                    <div class="stat-lbl">Work History</div>
+                    <div class="stat-chg {% if work_count > 0 %}text-success{% else %}text-warning{% endif %} mt-1">
+                        {% if work_count > 0 %}
+                            <i class="fas fa-check-circle me-1"></i>Added
+                        {% else %}
+                            <i class="fas fa-plus-circle me-1"></i>Optional
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-icon-box"
+                     style="background:linear-gradient(310deg,#3a416f,#627594);">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a href="{% url 'additional_details' %}" class="stat-card">
+                <div>
+                    <div class="stat-val">
+                        {% if detail and detail.cv %}
+                            <i class="fas fa-check-circle" style="color:#2dce89;font-size:1.3rem;"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle" style="color:#f5365c;font-size:1.3rem;"></i>
+                        {% endif %}
+                    </div>
+                    <div class="stat-lbl">CV / Resume</div>
+                    <div class="stat-chg {% if detail and detail.cv %}text-success{% else %}text-danger{% endif %} mt-1">
+                        {% if detail and detail.cv %}
+                            <i class="fas fa-check me-1"></i>Uploaded
+                        {% else %}
+                            <i class="fas fa-upload me-1"></i>Upload now
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="stat-icon-box"
+                     style="background:linear-gradient(310deg,#f5365c,#f56036);">
+                    <i class="fas fa-file-pdf"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- ── ROW 3: Timeline | Profile Details | To-Do + Quick Links ── -->
+    <div class="row g-3">
+
+        <!-- Career Timeline -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="dash-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="ch-title">Career Timeline</p>
+                        <p class="ch-sub">
+                            {% if work_count > 0 %}
+                                {{ work_count }} position{{ work_count|pluralize }}
+                            {% else %}No history yet{% endif %}
+                        </p>
+                    </div>
+                    <a href="{% url 'work_history' %}" class="btn btn-outline-info btn-xs mb-0">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body">
+                    {% if work_history %}
+                    <div class="wh-timeline">
+                        {% for job in work_history %}
+                        <div class="wh-item">
+                            <div class="wh-dot {% if job.is_current %}current{% endif %}"></div>
+                            <div class="d-flex align-items-start justify-content-between gap-2">
+                                <div>
+                                    <p class="wh-title">{{ job.job_title }}</p>
+                                    <p class="wh-company">
+                                        <i class="fas fa-building me-1"
+                                           style="font-size:0.58rem;"></i>
+                                        {{ job.company }}
+                                    </p>
+                                    <p class="wh-period">
+                                        {{ job.start_display }} →
+                                        {% if job.is_current %}
+                                            <span style="color:#2dce89;font-weight:700;">Present</span>
+                                        {% else %}{{ job.end_display }}{% endif %}
+                                    </p>
+                                </div>
+                                {% if job.is_current %}
+                                <span class="badge bg-gradient-success"
+                                      style="font-size:0.58rem;white-space:nowrap;">
+                                    Current
+                                </span>
+                                {% elif job.employment_type %}
+                                <span class="badge"
+                                      style="background:#f0f0f0;color:#67748e;
+                                             font-size:0.58rem;white-space:nowrap;">
+                                    {{ job.employment_type }}
+                                </span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if work_count > 5 %}
+                    <div class="text-center pt-3">
+                        <a href="{% url 'work_history' %}"
+                           class="text-info text-sm font-weight-bold">
+                            View all {{ work_count }}
+                            <i class="fas fa-arrow-right ms-1"
+                               style="font-size:0.68rem;"></i>
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% else %}
+                    <div class="text-center py-4">
+                        <div style="font-size:2rem;opacity:0.18;margin-bottom:0.5rem;">
+                            <i class="fas fa-briefcase"></i>
+                        </div>
+                        <p class="text-secondary text-sm mb-2">No experience added yet</p>
+                        <a href="{% url 'work_history' %}"
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-plus me-1"></i> Add Experience
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Profile Details -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="dash-card h-100">
+                <div class="card-header d-flex align-items-center justify-content-between">
+                    <div>
+                        <p class="ch-title">Personal Details</p>
+                        <p class="ch-sub">Your profile at a glance</p>
+                    </div>
+                    <a href="{% url 'profile' %}"
+                       class="btn btn-outline-info btn-xs mb-0">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0 px-3 pb-3 pt-2">
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-id-card"></i></div>
+                        <div>
+                            <div class="pd-lbl">ID Number</div>
+                            <div class="pd-val">{{ profile.id_no|default:'—' }}</div>
+                        </div>
+                    </div>
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-birthday-cake"></i></div>
+                        <div>
+                            <div class="pd-lbl">Date of Birth</div>
+                            <div class="pd-val">{{ profile.date_of_birth|date:'d M Y'|default:'—' }}</div>
+                        </div>
+                    </div>
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-venus-mars"></i></div>
+                        <div>
+                            <div class="pd-lbl">Gender</div>
+                            <div class="pd-val">{{ profile.gender|default:'—' }}</div>
+                        </div>
+                    </div>
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <div class="pd-lbl">Home County</div>
+                            <div class="pd-val">{{ profile.home_county|default:'—' }}</div>
+                        </div>
+                    </div>
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-calendar-check"></i></div>
+                        <div>
+                            <div class="pd-lbl">Availability</div>
+                            <div class="pd-val">
+                                {% if detail and detail.availability %}
+                                    {{ detail.availability }}
+                                {% else %}—{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-money-bill-wave"></i></div>
+                        <div>
+                            <div class="pd-lbl">Expected Salary</div>
+                            <div class="pd-val">
+                                {% if detail and detail.expected_salary %}
+                                    KES {{ detail.expected_salary|floatformat:'0' }}
+                                {% else %}—{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% if detail and detail.languages %}
+                    <div class="pd-row">
+                        <div class="pd-icon"><i class="fas fa-language"></i></div>
+                        <div>
+                            <div class="pd-lbl">Languages</div>
+                            <div class="d-flex flex-wrap gap-1 mt-1">
+                                {% for lang in detail.languages_list %}
+                                <span class="badge"
+                                      style="background:#e0f7fc;color:#0e7490;
+                                             font-size:0.63rem;">
+                                    {{ lang }}
+                                </span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if detail and detail.linkedin_url %}
+                    <div class="pd-row">
+                        <div class="pd-icon"
+                             style="background:#e8f4fd;color:#0a66c2;">
+                            <i class="fab fa-linkedin-in"></i>
+                        </div>
+                        <div>
+                            <div class="pd-lbl">LinkedIn</div>
+                            <a href="{{ detail.linkedin_url }}" target="_blank"
+                               class="pd-val text-info"
+                               style="font-size:0.74rem;word-break:break-all;">
+                                View Profile
+                                <i class="fas fa-external-link-alt ms-1"
+                                   style="font-size:0.58rem;"></i>
+                            </a>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- To-Do + Quick Links -->
+        <div class="col-12 col-lg-4">
+
+            <!-- To-Do -->
+            <div class="dash-card mb-3">
+                <div class="card-header">
+                    <p class="ch-title">
+                        {% if incomplete %}
+                            <i class="fas fa-exclamation-circle text-warning me-1"></i>
+                            Still To Do
+                            <span class="badge bg-gradient-warning ms-1"
+                                  style="font-size:0.6rem;">
+                                {{ incomplete|length }}
+                            </span>
+                        {% else %}
+                            <i class="fas fa-check-circle text-success me-1"></i>
+                            All Done!
+                        {% endif %}
+                    </p>
+                    <p class="ch-sub">
+                        {% if incomplete %}
+                            {{ incomplete|length }} item(s) left
+                        {% else %}
+                            Your profile is 100% complete
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="card-body">
+                    {% if incomplete %}
+                        {% for item in incomplete %}
+                        <a href="{% url item.url %}" class="nudge-item">
+                            <div class="nudge-icon">
+                                <i class="fas {{ item.icon }}"></i>
+                            </div>
+                            <span>{{ item.label }}</span>
+                            <i class="fas fa-chevron-right ms-auto"
+                               style="font-size:0.58rem;color:#adb5bd;"></i>
+                        </a>
+                        {% endfor %}
+                    {% else %}
+                        <div class="text-center py-3">
+                            <i class="fas fa-check-circle text-success"
+                               style="font-size:2rem;"></i>
+                            <p class="text-sm text-secondary mt-2 mb-0 font-weight-bold">
+                                Ready to apply for jobs!
+                            </p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Links -->
+            <div class="dash-card">
+                <div class="card-header">
+                    <p class="ch-title">Quick Access</p>
+                    <p class="ch-sub">Jump to any section</p>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        <div class="col-4">
+                            <a href="{% url 'profile' %}" class="quick-card">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#2dce89,#17c1e8);">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <span class="qc-lbl">Profile</span>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'academic_qualifications' %}" class="quick-card">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#17c1e8,#5e72e4);">
+                                    <i class="fas fa-graduation-cap"></i>
+                                </div>
+                                <span class="qc-lbl">Academic</span>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'professional_qualifications' %}" class="quick-card">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#f5a623,#f76b1c);">
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <span class="qc-lbl">Certs</span>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'work_history' %}" class="quick-card">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#3a416f,#627594);">
+                                    <i class="fas fa-briefcase"></i>
+                                </div>
+                                <span class="qc-lbl">Work</span>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <a href="{% url 'additional_details' %}" class="quick-card">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#f5365c,#f56036);">
+                                    <i class="fas fa-file-pdf"></i>
+                                </div>
+                                <span class="qc-lbl">CV</span>
+                            </a>
+                        </div>
+                        <div class="col-4">
+                            <div class="quick-card"
+                                 style="opacity:0.4;cursor:not-allowed;"
+                                 title="Coming soon">
+                                <div class="qc-icon"
+                                     style="background:linear-gradient(310deg,#8392ab,#344767);">
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <span class="qc-lbl">Jobs</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+(function () {
+    const raw = {
+        {% for name, pct in sections.items %}"{{ name }}": {{ pct }},{% endfor %}
+    };
+    const weights     = [40, 15, 15, 15, 15];
+    const names       = Object.keys(raw);
+    const pcts        = Object.values(raw);
+    const contributed = pcts.map((p, i) => parseFloat(((p / 100) * weights[i]).toFixed(2)));
+    const remaining   = parseFloat(Math.max(
+        100 - contributed.reduce((a, b) => a + b, 0), 0
+    ).toFixed(2));
+
+    const COLORS = ['#17c1e8','#2dce89','#f5a623','#627594','#f56036'];
+
+    new Chart(
+        document.getElementById('completionDonut').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+            labels: [...names, 'Remaining'],
+            datasets: [{
+                data:            [...contributed, remaining],
+                backgroundColor: [...COLORS, '#f0f2f5'],
+                borderWidth:     3,
+                borderColor:     '#ffffff',
+                hoverOffset:     5,
+            }]
+        },
+        options: {
+            cutout:    '70%',
+            responsive: false,
+            animation: { animateRotate: true, duration: 1000 },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: function (ctx) {
+                            if (ctx.label === 'Remaining') return ' Incomplete';
+                            const pct = Math.round((ctx.raw / weights[ctx.dataIndex]) * 100);
+                            return ` ${ctx.label}: ${pct}%`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
+{% endblock %}

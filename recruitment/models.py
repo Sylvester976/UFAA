@@ -94,6 +94,8 @@ class JobSeekerProfile(models.Model):
     sub_county          = models.ForeignKey(SubCounty, on_delete=models.SET_NULL, null=True, blank=True)
     ward                = models.ForeignKey(Ward, on_delete=models.SET_NULL, null=True, blank=True)
     disability_status   = models.CharField(max_length=50, blank=True, null=True)
+    disability_other = models.CharField(max_length=255, blank=True, null=True)
+    employee_number = models.CharField(max_length=50, blank=True, null=True)
     date_created        = models.DateTimeField(auto_now_add=True)
     date_updated        = models.DateTimeField(auto_now=True)
 
