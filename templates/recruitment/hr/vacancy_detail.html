@@ -7,14 +7,19 @@
 <p><strong>Description:</strong></p>
 <p>{{ vacancy.description }}</p>
 
-<a href="{{ vacancy.advert_pdf.url }}" target="_blank">
+{% comment %} <a href="{{ vacancy.advert_pdf.url }}" target="_blank">
     Download Advert PDF
-</a>
+</a> {% endcomment %}
 
 <hr>
+{% if vacancy.status == "open" %}
+    <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+       class="btn btn-primary">
+        Apply Now
+    </a>
+{% else %}
+    <span class="badge bg-danger">Closed</span>
+{% endif %}
 
-<a href="{% url 'index' %}" class="btn btn-primary">
-    Apply Now
-</a>
 
 {% endblock %}
