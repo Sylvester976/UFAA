@@ -120,24 +120,7 @@ class JobseekerAccount(models.Model):
         return f"{self.id_no} - {self.name}"
 
 
-class JobseekerProfile(models.Model):
-    user = models.OneToOneField(
-        JobseekerAccount,
-        on_delete=models.CASCADE,
-        related_name="profile"
-    )
-    salutation = models.CharField(max_length=255, null=True)
-    surname = models.CharField(max_length=255, null=True)
-    first_name = models.CharField(max_length=255)
-    second_name = models.CharField(max_length=255)
-    date_of_birth = models.DateField()
-    gender = models.IntegerField(null=True)
-    ethnic_group = models.IntegerField(null=True)
-    home_county = models.IntegerField(null=True)
-    disability_status = models.IntegerField(null=True)
 
-    def __str__(self):
-        return f"{self.user.id_no} Profile"
     
     
 class AcademicQualification(models.Model):
