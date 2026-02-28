@@ -1,42 +1,968 @@
 {% extends "layout/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+{% endblock %}
+
 {% block content %}
-<h3>Profile Completion: {{ completion }}%</h3>
-<h2>Step 3: Professional Qualifications</h2>
+<div class="row">
+    <div class="col-12 mt-4">
 
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 font-weight-bolder">Professional Qualifications</h6>
+                <p class="text-sm text-secondary mb-0">Add your professional certifications, licences and memberships</p>
+            </div>
+            <span class="badge px-3 py-2
+                {% if completion == 100 %}bg-gradient-success
+                {% elif completion >= 60 %}bg-gradient-info
+                {% elif completion >= 30 %}bg-gradient-warning
+                {% else %}bg-gradient-danger{% endif %}">
+                <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
+            </span>
+        </div>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
+        <!-- Progress Bar -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-secondary" style="font-size:0.75rem;">
+                    {% if completion == 100 %}🎉 Profile complete!
+                    {% elif completion >= 60 %}Almost there — keep going!
+                    {% elif completion >= 30 %}Good start — more to fill in.
+                    {% else %}Just getting started...{% endif %}
+                </small>
+                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
+            </div>
+            <div class="progress" style="height:8px; border-radius:1rem;">
+                <div class="progress-bar
+                    {% if completion == 100 %}bg-gradient-success
+                    {% elif completion >= 60 %}bg-gradient-info
+                    {% elif completion >= 30 %}bg-gradient-warning
+                    {% else %}bg-gradient-danger{% endif %}"
+                     role="progressbar"
+                     style="width:{{ completion }}%; transition:width 0.6s ease;"
+                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+        </div>
 
-    <input type="text" name="institution" placeholder="Institution" required>
-    <input type="text" name="course" placeholder="Course" required>
-    <input type="date" name="completion_date" required>
-    <input type="text" name="grade" placeholder="Grade">
+        <!-- Tabs -->
+        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="fas fa-user me-1"></i>
+                    <span class="d-none d-sm-inline">Basic Details</span>
+                    {% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                    <i class="fas fa-graduation-cap me-1"></i>
+                    <span class="d-none d-sm-inline">Academic</span>
+                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'professional_qualifications' %}">
+                    <i class="fas fa-certificate me-1"></i>
+                    <span class="d-none d-sm-inline">Professional</span>
+                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'work_history' %}">
+                    <i class="fas fa-briefcase me-1"></i>
+                    <span class="d-none d-sm-inline">Work History</span>
+                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'additional_details' %}">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <span class="d-none d-sm-inline">Additional</span>
+                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+        </ul>
 
-    <label>Certificate</label>
-    <input type="file" name="certificate">
+        <!-- Content Card -->
+        <div class="card mb-4 profile-content-card">
+            <div class="card-body p-3 p-md-4">
 
-    <button type="submit">Add Qualification</button>
-</form>
+                <h6 class="font-weight-bolder mb-1">Step 3: Professional Qualifications</h6>
+                <p class="text-sm text-secondary mb-4">
+                    Add all your professional certifications, licences, memberships and short courses.
+                    This section is optional — click <strong>Next</strong> to skip.
+                </p>
 
-<hr>
+                <!-- ── Add Qualification Form ── -->
+                <div class="acad-add-card mb-4">
+                    <div class="acad-add-header">
+                        <i class="fas fa-plus-circle me-2"></i> Add Professional Qualification
+                    </div>
+                    <div class="acad-add-body">
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Qualification / Certification <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="f_qualification" class="form-control"
+                                       placeholder="e.g. CPA, ACCA, PMP, CFA, CIPS">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Awarding Body / Institution <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="f_awarding_body" class="form-control"
+                                       placeholder="e.g. ICPAK, ACCA Global, PMI">
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Year Obtained <span class="text-danger">*</span>
+                                </label>
+                                <select id="f_year_obtained" class="form-control">
+                                    <option value="">Year</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Expiry Year
+                                    <span class="text-secondary" style="font-size:0.7rem;">(if applicable)</span>
+                                </label>
+                                <select id="f_expiry_year" class="form-control">
+                                    <option value="">No expiry</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label text-sm font-weight-bold">Grade / Score</label>
+                                <input type="text" id="f_grade" class="form-control"
+                                       placeholder="e.g. Pass, Merit, 85%">
+                            </div>
+                            <div class="col-12 col-md-3">
+                                <label class="form-label text-sm font-weight-bold">Certificate / Membership No.</label>
+                                <input type="text" id="f_cert_number" class="form-control"
+                                       placeholder="Cert / membership no.">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">Country</label>
+                                <input type="text" id="f_country" class="form-control"
+                                       value="Kenya" placeholder="Country">
+                            </div>
+                        </div>
 
-<h3>Your Professional Qualifications</h3>
+                        <!-- Attachments -->
+                        <div class="mb-3">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-paperclip me-1"></i> Attachments
+                            </label>
+                            <p class="text-secondary mb-2" style="font-size:0.76rem;">
+                                PDF, PNG, JPG or JPEG only — max 2MB each
+                            </p>
+                            <div id="qualDropZone" class="drop-zone-sm">
+                                <i class="fas fa-cloud-upload-alt me-2 text-info"></i>
+                                <span class="text-sm">Drag & drop or</span>
+                                <label for="qualFileInput"
+                                       class="btn btn-outline-info btn-xs ms-2 mb-0"
+                                       style="cursor:pointer; font-size:0.75rem; padding:0.2rem 0.6rem;">
+                                    Browse
+                                </label>
+                                <input type="file" id="qualFileInput" multiple
+                                       accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+                            </div>
+                            <div id="qualFileList" class="mt-2"></div>
+                        </div>
 
-{% for q in qualifications %}
-    <div>
-        <strong>{{ q.course }}</strong> - {{ q.institution }}
-        ({{ q.completion_date }})
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-info btn-sm"
+                                    onclick="addQualToList()">
+                                <i class="fas fa-plus me-1"></i> Add to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
-        {% if q.certificate %}
-            <a href="{{ q.certificate.url }}">Certificate</a>
-        {% endif %}
+                <!-- ── Pending List ── -->
+                <div id="pendingContainer" style="display:none;" class="mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                        <h6 class="font-weight-bolder mb-0 text-sm">
+                            <i class="fas fa-list me-2 text-info"></i>Qualifications Ready to Save
+                        </h6>
+                        <span id="pendingCount" class="badge bg-gradient-info px-2 py-1"></span>
+                    </div>
+                    <div id="pendingList"></div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-outline-info btn-sm"
+                                onclick="saveAllQualifications()">
+                            <i class="fas fa-save me-1"></i> Save All
+                        </button>
+                    </div>
+                </div>
 
-        <a href="{% url 'edit_professional' q.id %}">Edit</a>
-        <a href="{% url 'delete_professional' q.id %}">Delete</a>
+                <!-- ── Saved Table ── -->
+                <div class="mt-2" id="savedSection"
+                     style="{% if not existing %}display:none;{% endif %}">
+                    <h6 class="font-weight-bolder mb-3">
+                        <i class="fas fa-history me-2 text-success"></i>Saved Qualifications
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle" id="savedTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width:140px;">Qualification</th>
+                                    <th style="min-width:140px;">Awarding Body</th>
+                                    <th class="d-none d-sm-table-cell">Year</th>
+                                    <th class="d-none d-md-table-cell">Expiry</th>
+                                    <th class="d-none d-md-table-cell">Grade</th>
+                                    <th class="d-none d-md-table-cell">Country</th>
+                                    <th>Docs</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="savedTableBody">
+                                {% for q in existing %}
+                                <tr id="row_{{ q.id }}">
+                                    <td>
+                                        <span class="badge bg-gradient-info"
+                                              style="font-size:0.7rem; white-space:normal;">
+                                            {{ q.qualification }}
+                                        </span>
+                                    </td>
+                                    <td class="text-sm">{{ q.awarding_body }}</td>
+                                    <td class="d-none d-sm-table-cell text-sm">{{ q.year_obtained }}</td>
+                                    <td class="d-none d-md-table-cell text-sm">
+                                        {% if q.expiry_year %}
+                                            <span class="badge bg-gradient-warning"
+                                                  style="font-size:0.65rem;">
+                                                {{ q.expiry_year }}
+                                            </span>
+                                        {% else %}—{% endif %}
+                                    </td>
+                                    <td class="d-none d-md-table-cell text-sm">{{ q.grade|default:'—' }}</td>
+                                    <td class="d-none d-md-table-cell text-sm">{{ q.country }}</td>
+                                    <td>
+                                        <span class="badge bg-gradient-secondary"
+                                              style="font-size:0.68rem;">0 file(s)</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button"
+                                                    class="btn btn-outline-info btn-xs"
+                                                    title="Edit"
+                                                    onclick="editQualification(
+                                                        {{ q.id }},
+                                                        '{{ q.qualification|escapejs }}',
+                                                        '{{ q.awarding_body|escapejs }}',
+                                                        '{{ q.year_obtained }}',
+                                                        '{{ q.expiry_year|default:'' }}',
+                                                        '{{ q.grade|default:''|escapejs }}',
+                                                        '{{ q.cert_number|default:''|escapejs }}',
+                                                        '{{ q.country|escapejs }}'
+                                                    )">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-xs"
+                                                    title="Delete"
+                                                    onclick="deleteQualification({{ q.id }}, '{{ q.qualification|escapejs }}')">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── Nav Buttons ── -->
+                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                    <a href="{% url 'academic_qualifications' %}"
+                       class="btn btn-outline-secondary btn-sm mb-0">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </a>
+                    <a href="{% url 'work_history' %}"
+                       class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                        Next <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
     </div>
-{% empty %}
-    <p>No professional qualifications added yet.</p>
-{% endfor %}
+</div>
 
+<!-- ── Edit Modal ── -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title font-weight-bolder mb-0">
+                    <i class="fas fa-edit me-2"></i> Edit Professional Qualification
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit_qual_id">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">
+                            Qualification / Certification <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" id="edit_qualification" class="form-control"
+                               placeholder="e.g. CPA, ACCA, PMP">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">
+                            Awarding Body / Institution <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" id="edit_awarding_body" class="form-control"
+                               placeholder="e.g. ICPAK, PMI">
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-sm font-weight-bold">
+                            Year Obtained <span class="text-danger">*</span>
+                        </label>
+                        <select id="edit_year_obtained" class="form-control"></select>
+                    </div>
+                    <div class="col-6 col-md-3">
+                        <label class="form-label text-sm font-weight-bold">Expiry Year</label>
+                        <select id="edit_expiry_year" class="form-control"></select>
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label text-sm font-weight-bold">Grade / Score</label>
+                        <input type="text" id="edit_grade" class="form-control"
+                               placeholder="e.g. Pass, 85%">
+                    </div>
+                    <div class="col-12 col-md-3">
+                        <label class="form-label text-sm font-weight-bold">Certificate / Membership No.</label>
+                        <input type="text" id="edit_cert_number" class="form-control">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">Country</label>
+                        <input type="text" id="edit_country" class="form-control">
+                    </div>
+                </div>
 
+                <div class="mt-4">
+                    <label class="form-label text-sm font-weight-bold">
+                        <i class="fas fa-paperclip me-1"></i> Add More Documents
+                    </label>
+                    <p class="text-secondary mb-2" style="font-size:0.76rem;">
+                        PDF, PNG, JPG or JPEG only — max 2MB each
+                    </p>
+                    <div id="editDropZone" class="drop-zone-sm">
+                        <i class="fas fa-cloud-upload-alt me-2 text-info"></i>
+                        <span class="text-sm">Drag & drop or</span>
+                        <label for="editFileInput"
+                               class="btn btn-outline-info btn-xs ms-2 mb-0"
+                               style="cursor:pointer;">Browse</label>
+                        <input type="file" id="editFileInput" multiple
+                               accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
+                    </div>
+                    <div id="editFileList" class="mt-2"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-info btn-sm"
+                        onclick="submitEdit()">
+                    <i class="fas fa-save me-1"></i> Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// ── Data from Django ─────────────────────────────────────────
+const docTypes = [
+    {% for dtype in document_types %}
+    { id: {{ dtype.id }}, name: "{{ dtype.name }}" },
+    {% endfor %}
+];
+
+// ── State ────────────────────────────────────────────────────
+let pendingQuals  = [];   // { fields, files: [{file, docTypeId, fileId}] }
+let qualFiles     = [];   // files for current item being built
+let editFiles     = [];
+const ALLOWED_EXT = ['.pdf', '.png', '.jpg', '.jpeg'];
+const MAX_SIZE    = 2 * 1024 * 1024;
+const CSRF        = '{{ csrf_token }}';
+
+// ── Shared Helpers ───────────────────────────────────────────
+function fileIcon(filename) {
+    return filename.split('.').pop().toLowerCase() === 'pdf'
+        ? '<i class="fas fa-file-pdf file-icon pdf"></i>'
+        : '<i class="fas fa-file-image file-icon image"></i>';
+}
+
+function fileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+}
+
+function docTypeOptions() {
+    return `<option value="">Doc type</option>` +
+        docTypes.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+}
+
+function validateFile(file, existingList) {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+        Swal.fire({ icon: 'error', title: 'Invalid File Type',
+            text: `"${file.name}" — only PDF, PNG, JPG, JPEG allowed.`,
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return false;
+    }
+    if (file.size > MAX_SIZE) {
+        Swal.fire({ icon: 'error', title: 'File Too Large',
+            text: `"${file.name}" exceeds 2MB.`,
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return false;
+    }
+    if (existingList.some(f => f.file.name === file.name && f.file.size === file.size)) {
+        Swal.fire({ icon: 'warning', title: 'Duplicate',
+            text: `"${file.name}" already added.`,
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return false;
+    }
+    return true;
+}
+
+function buildFileRow(file, fileId, onChangeFn, onRemoveFn) {
+    const el     = document.createElement('div');
+    el.className = 'file-item';
+    el.id        = fileId;
+    el.innerHTML = `
+        ${fileIcon(file.name)}
+        <div class="file-info">
+            <div class="file-name">${file.name}</div>
+            <div class="file-meta">${fileSize(file.size)}</div>
+        </div>
+        <div class="file-doctype">
+            <select class="form-control"
+                    onchange="${onChangeFn}('${fileId}', this.value)">
+                ${docTypeOptions()}
+            </select>
+        </div>
+        <button type="button" class="remove-btn"
+                onclick="${onRemoveFn}('${fileId}')">
+            <i class="fas fa-times"></i>
+        </button>`;
+    return el;
+}
+
+function buildTableRow(q) {
+    const esc     = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const expiry  = q.expiry_year
+        ? `<span class="badge bg-gradient-warning" style="font-size:0.65rem;">${q.expiry_year}</span>`
+        : '—';
+    return `
+        <td>
+            <span class="badge bg-gradient-info"
+                  style="font-size:0.7rem; white-space:normal;">
+                ${q.qualification}
+            </span>
+        </td>
+        <td class="text-sm">${q.awarding_body}</td>
+        <td class="d-none d-sm-table-cell text-sm">${q.year_obtained}</td>
+        <td class="d-none d-md-table-cell text-sm">${expiry}</td>
+        <td class="d-none d-md-table-cell text-sm">${q.grade || '—'}</td>
+        <td class="d-none d-md-table-cell text-sm">${q.country}</td>
+        <td>
+            <span class="badge bg-gradient-secondary" style="font-size:0.68rem;">
+                ${q.doc_count} file(s)
+            </span>
+        </td>
+        <td>
+            <div class="d-flex gap-1">
+                <button type="button" class="btn btn-outline-info btn-xs" title="Edit"
+                        onclick="editQualification(
+                            ${q.id},
+                            '${esc(q.qualification)}',
+                            '${esc(q.awarding_body)}',
+                            '${q.year_obtained}',
+                            '${q.expiry_year || ''}',
+                            '${esc(q.grade)}',
+                            '${esc(q.cert_number)}',
+                            '${esc(q.country)}'
+                        )">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs" title="Delete"
+                        onclick="deleteQualification(${q.id}, '${esc(q.qualification)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>`;
+}
+
+// ── Year Populators ──────────────────────────────────────────
+function populateYears(elId, selected, includeNoExpiry) {
+    const sel = document.getElementById(elId);
+    const cur = new Date().getFullYear();
+    sel.innerHTML = includeNoExpiry
+        ? '<option value="">No expiry</option>'
+        : '<option value="">Year</option>';
+    // Expiry goes forward 20 years; obtained goes backward
+    const end   = includeNoExpiry ? cur + 20 : cur;
+    const start = includeNoExpiry ? cur : 1960;
+    if (includeNoExpiry) {
+        for (let y = start; y <= end; y++) {
+            sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+        }
+    } else {
+        for (let y = end; y >= start; y--) {
+            sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+        }
+    }
+}
+
+populateYears('f_year_obtained', null, false);
+populateYears('f_expiry_year',   null, true);
+
+// ── Qual Drop Zone ───────────────────────────────────────────
+const qualDropZone  = document.getElementById('qualDropZone');
+const qualFileInput = document.getElementById('qualFileInput');
+
+qualDropZone.addEventListener('dragover', e => {
+    e.preventDefault(); qualDropZone.classList.add('dragover');
+});
+qualDropZone.addEventListener('dragleave', () => qualDropZone.classList.remove('dragover'));
+qualDropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    qualDropZone.classList.remove('dragover');
+    handleQualFiles(Array.from(e.dataTransfer.files));
+});
+qualDropZone.addEventListener('click', function (e) {
+    if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') qualFileInput.click();
+});
+qualFileInput.addEventListener('change', function () {
+    handleQualFiles(Array.from(this.files));
+    this.value = '';
+});
+
+function handleQualFiles(files) {
+    files.forEach(file => {
+        if (!validateFile(file, qualFiles)) return;
+        const fileId = 'qf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        qualFiles.push({ file, fileId, docTypeId: '' });
+        document.getElementById('qualFileList')
+            .appendChild(buildFileRow(file, fileId, 'updateQualFileType', 'removeQualFile'));
+    });
+}
+
+function updateQualFileType(fileId, value) {
+    const f = qualFiles.find(f => f.fileId === fileId);
+    if (f) f.docTypeId = value;
+}
+
+function removeQualFile(fileId) {
+    qualFiles = qualFiles.filter(f => f.fileId !== fileId);
+    document.getElementById(fileId)?.remove();
+}
+
+// ── Add to Pending ───────────────────────────────────────────
+function addQualToList() {
+    const qualification = document.getElementById('f_qualification').value.trim();
+    const awarding_body = document.getElementById('f_awarding_body').value.trim();
+    const year_obtained = document.getElementById('f_year_obtained').value;
+    const expiry_year   = document.getElementById('f_expiry_year').value;
+
+    if (!qualification) {
+        Swal.fire({ icon: 'error', title: 'Qualification Required',
+            text: 'Please enter the qualification / certification name.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!awarding_body) {
+        Swal.fire({ icon: 'error', title: 'Awarding Body Required',
+            text: 'Please enter the awarding body or institution.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!year_obtained) {
+        Swal.fire({ icon: 'error', title: 'Year Required',
+            text: 'Please select the year obtained.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    for (const f of qualFiles) {
+        if (!f.docTypeId) {
+            Swal.fire({ icon: 'warning', title: 'Document Type Required',
+                text: `Please select a document type for "${f.file.name}".`,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+            return;
+        }
+    }
+
+    pendingQuals.push({
+        fields: {
+            qualification,
+            awarding_body,
+            year_obtained,
+            expiry_year,
+            grade:       document.getElementById('f_grade').value.trim(),
+            cert_number: document.getElementById('f_cert_number').value.trim(),
+            country:     document.getElementById('f_country').value.trim() || 'Kenya',
+        },
+        files: [...qualFiles],
+    });
+
+    // Reset form
+    document.getElementById('f_qualification').value = '';
+    document.getElementById('f_awarding_body').value = '';
+    document.getElementById('f_year_obtained').value = '';
+    document.getElementById('f_expiry_year').value   = '';
+    document.getElementById('f_grade').value         = '';
+    document.getElementById('f_cert_number').value   = '';
+    document.getElementById('f_country').value       = 'Kenya';
+    qualFiles = [];
+    document.getElementById('qualFileList').innerHTML = '';
+
+    renderPendingList();
+}
+
+// ── Render Pending List ──────────────────────────────────────
+function renderPendingList() {
+    const container = document.getElementById('pendingContainer');
+    const list      = document.getElementById('pendingList');
+    const countEl   = document.getElementById('pendingCount');
+
+    if (pendingQuals.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'block';
+    countEl.textContent     = `${pendingQuals.length} item(s)`;
+    list.innerHTML          = '';
+
+    pendingQuals.forEach((p, idx) => {
+        const fileInfo = p.files.length > 0
+            ? `<span class="badge bg-gradient-secondary ms-2" style="font-size:0.68rem;">${p.files.length} file(s)</span>`
+            : '';
+        const expiry = p.fields.expiry_year
+            ? ` · Expires <strong>${p.fields.expiry_year}</strong>`
+            : '';
+
+        list.innerHTML += `
+            <div class="pending-item" id="pending_${idx}">
+                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
+                            <span class="badge bg-gradient-info px-2 py-1" style="font-size:0.75rem;">
+                                <i class="fas fa-certificate me-1"></i>${p.fields.qualification}
+                            </span>
+                            ${fileInfo}
+                        </div>
+                        <div class="text-sm text-secondary">
+                            <strong>${p.fields.awarding_body}</strong>
+                            · ${p.fields.year_obtained}
+                            ${expiry}
+                            ${p.fields.grade ? ' · ' + p.fields.grade : ''}
+                        </div>
+                    </div>
+                    <button type="button"
+                            class="btn btn-outline-danger btn-xs pending-remove-btn"
+                            onclick="removePending(${idx})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+    });
+}
+
+function removePending(idx) {
+    pendingQuals.splice(idx, 1);
+    renderPendingList();
+}
+
+// ── Save All ─────────────────────────────────────────────────
+function saveAllQualifications() {
+    if (pendingQuals.length === 0) return;
+
+    Swal.fire({
+        title: 'Saving...', text: 'Please wait.',
+        icon: 'info', allowOutsideClick: false,
+        showConfirmButton: false, position: 'center',
+        scrollbarPadding: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action', 'save');
+    formData.append('qualifications', JSON.stringify(
+        pendingQuals.map(p => p.fields)
+    ));
+    formData.append('qual_count', pendingQuals.length);
+
+    pendingQuals.forEach((p, idx) => {
+        p.files.forEach(f => {
+            formData.append(`qual_files_${idx}`, f.file);
+            formData.append(`qual_doc_types_${idx}`, f.docTypeId);
+        });
+    });
+
+    fetch("{% url 'professional_qualifications' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+            Swal.fire({
+                icon: 'success', title: 'Saved!',
+                text: data.message, confirmButtonText: 'OK',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(() => {
+                if (data.saved) {
+                    const tbody = document.getElementById('savedTableBody');
+                    data.saved.forEach(q => {
+                        const existing = document.getElementById(`row_${q.id}`);
+                        if (existing) existing.remove();
+                        const tr  = document.createElement('tr');
+                        tr.id     = `row_${q.id}`;
+                        tr.innerHTML = buildTableRow(q);
+                        tbody.appendChild(tr);
+                    });
+                    document.getElementById('savedSection').style.display = 'block';
+                }
+                pendingQuals = [];
+                renderPendingList();
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Save Failed',
+                text: data.message,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'System Error',
+            text: 'Something went wrong. Please try again.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+    });
+}
+
+// ── Edit Qualification ───────────────────────────────────────
+function editQualification(id, qualification, awardbody, yearObtained, expiryYear, grade, certNumber, country) {
+    document.getElementById('edit_qual_id').value         = id;
+    document.getElementById('edit_qualification').value   = qualification;
+    document.getElementById('edit_awarding_body').value   = awardbody;
+    document.getElementById('edit_grade').value           = grade;
+    document.getElementById('edit_cert_number').value     = certNumber;
+    document.getElementById('edit_country').value         = country;
+
+    populateYears('edit_year_obtained', yearObtained, false);
+    populateYears('edit_expiry_year',   expiryYear,   true);
+
+    editFiles = [];
+    document.getElementById('editFileList').innerHTML = '';
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+// Edit drop zone
+const editDropZone  = document.getElementById('editDropZone');
+const editFileInput = document.getElementById('editFileInput');
+
+editDropZone.addEventListener('dragover', e => {
+    e.preventDefault(); editDropZone.classList.add('dragover');
+});
+editDropZone.addEventListener('dragleave', () => editDropZone.classList.remove('dragover'));
+editDropZone.addEventListener('drop', function (e) {
+    e.preventDefault();
+    editDropZone.classList.remove('dragover');
+    handleEditFiles(Array.from(e.dataTransfer.files));
+});
+editDropZone.addEventListener('click', function (e) {
+    if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') editFileInput.click();
+});
+editFileInput.addEventListener('change', function () {
+    handleEditFiles(Array.from(this.files));
+    this.value = '';
+});
+
+function handleEditFiles(files) {
+    files.forEach(file => {
+        if (!validateFile(file, editFiles)) return;
+        const fileId = 'ef_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+        editFiles.push({ file, fileId, docTypeId: '' });
+        document.getElementById('editFileList')
+            .appendChild(buildFileRow(file, fileId, 'updateEditFileType', 'removeEditFile'));
+    });
+}
+
+function updateEditFileType(fileId, value) {
+    const f = editFiles.find(f => f.fileId === fileId);
+    if (f) f.docTypeId = value;
+}
+
+function removeEditFile(fileId) {
+    editFiles = editFiles.filter(f => f.fileId !== fileId);
+    document.getElementById(fileId)?.remove();
+}
+
+function submitEdit() {
+    const qualId        = document.getElementById('edit_qual_id').value;
+    const qualification = document.getElementById('edit_qualification').value.trim();
+    const awarding_body = document.getElementById('edit_awarding_body').value.trim();
+    const year_obtained = document.getElementById('edit_year_obtained').value;
+
+    if (!qualification) {
+        Swal.fire({ icon: 'error', title: 'Qualification Required',
+            text: 'Please enter the qualification name.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!awarding_body) {
+        Swal.fire({ icon: 'error', title: 'Awarding Body Required',
+            text: 'Please enter the awarding body.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!year_obtained) {
+        Swal.fire({ icon: 'error', title: 'Year Required',
+            text: 'Please select the year obtained.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    for (const f of editFiles) {
+        if (!f.docTypeId) {
+            Swal.fire({ icon: 'warning', title: 'Document Type Required',
+                text: `Please select a document type for "${f.file.name}".`,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+            return;
+        }
+    }
+
+    Swal.fire({
+        title: 'Updating...', icon: 'info',
+        allowOutsideClick: false, showConfirmButton: false,
+        position: 'center', scrollbarPadding: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action',         'edit');
+    formData.append('qual_id',        qualId);
+    formData.append('qualification',  qualification);
+    formData.append('awarding_body',  awarding_body);
+    formData.append('year_obtained',  year_obtained);
+    formData.append('expiry_year',    document.getElementById('edit_expiry_year').value);
+    formData.append('grade',          document.getElementById('edit_grade').value.trim());
+    formData.append('cert_number',    document.getElementById('edit_cert_number').value.trim());
+    formData.append('country',        document.getElementById('edit_country').value.trim() || 'Kenya');
+
+    editFiles.forEach(f => {
+        formData.append('edit_files',     f.file);
+        formData.append('edit_doc_types', f.docTypeId);
+    });
+
+    fetch("{% url 'professional_qualifications' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+            const row = document.getElementById(`row_${qualId}`);
+            if (row && data.qual) row.innerHTML = buildTableRow(data.qual);
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            Swal.fire({
+                icon: 'success', title: 'Updated!',
+                text: data.message, timer: 1800,
+                showConfirmButton: false,
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Update Failed',
+                text: data.message,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'System Error',
+            text: 'Something went wrong. Please try again.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+    });
+}
+
+// ── Delete Qualification ─────────────────────────────────────
+function deleteQualification(qualId, qualName) {
+    Swal.fire({
+        icon:              'warning',
+        title:             'Delete Qualification',
+        html:              `Are you sure you want to delete <strong>${qualName}</strong>?<br>
+                            <small class="text-secondary">This cannot be undone.</small>`,
+        showCancelButton:  true,
+        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
+        cancelButtonText:  'Cancel',
+        confirmButtonColor:'#ef4444',
+        cancelButtonColor: '#8392ab',
+        position:          'center',
+        scrollbarPadding:  false,
+        heightAuto:        false,
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Deleting...', icon: 'info',
+            allowOutsideClick: false, showConfirmButton: false,
+            position: 'center', scrollbarPadding: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', CSRF);
+        formData.append('action',  'delete');
+        formData.append('qual_id', qualId);
+
+        fetch("{% url 'professional_qualifications' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF },
+            body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+            Swal.close();
+            if (data.status === 'success') {
+                document.getElementById(`row_${qualId}`)?.remove();
+                if (document.querySelectorAll('#savedTableBody tr').length === 0) {
+                    document.getElementById('savedSection').style.display = 'none';
+                }
+                Swal.fire({
+                    icon: 'success', title: 'Deleted',
+                    text: 'Qualification removed successfully.',
+                    timer: 1500, showConfirmButton: false,
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Delete Failed',
+                    text: data.message,
+                    position: 'center', scrollbarPadding: false, heightAuto: false });
+            }
+        })
+        .catch(() => {
+            Swal.close();
+            Swal.fire({ icon: 'error', title: 'System Error',
+                text: 'Something went wrong. Please try again.',
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        });
+    });
+}
+</script>
 {% endblock %}
