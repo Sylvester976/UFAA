@@ -105,6 +105,7 @@ class JobseekerAccount(models.Model):
     verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     is_active = models.BooleanField(default=True)
+    is_employee = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(default=timezone.now)

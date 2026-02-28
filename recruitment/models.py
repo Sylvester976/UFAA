@@ -94,6 +94,8 @@ class JobSeekerProfile(models.Model):
     sub_county          = models.ForeignKey(SubCounty, on_delete=models.SET_NULL, null=True, blank=True)
     ward                = models.ForeignKey(Ward, on_delete=models.SET_NULL, null=True, blank=True)
     disability_status   = models.CharField(max_length=50, blank=True, null=True)
+    disability_other = models.CharField(max_length=255, blank=True, null=True)
+    employee_number = models.CharField(max_length=50, blank=True, null=True)
     date_created        = models.DateTimeField(auto_now_add=True)
     date_updated        = models.DateTimeField(auto_now=True)
 
@@ -375,3 +377,43 @@ class WorkHistory(models.Model):
             month_name = dict(self.MONTHS).get(self.end_month, '')
             return f"{month_name} {self.end_year}"
         return '—'
+
+class AdditionalDetail(models.Model):
+
+    AVAILABILITY_CHOICES = [
+        ('Immediately',    'Immediately'),
+        ('1 Month Notice', '1 Month Notice'),
+        ('2 Months Notice','2 Months Notice'),
+        ('3 Months Notice','3 Months Notice'),
+        ('Not Available',  'Not Available'),
+    ]
+
+    user            = models.OneToOneField(
+                          'accounts.JobseekerAccount',
+                          on_delete=models.CASCADE,
+                          related_name='additional_detail'
+                      )
+    cv              = models.FileField(upload_to='cvs/', null=True, blank=True)
+    cover_letter    = models.TextField(blank=True)
+    linkedin_url    = models.URLField(max_length=300, blank=True)
+    portfolio_url   = models.URLField(max_length=300, blank=True)
+    languages       = models.CharField(max_length=500, blank=True)  # comma-separated
+    availability    = models.CharField(max_length=50, blank=True,
+                          choices=AVAILABILITY_CHOICES)
+    expected_salary = models.PositiveIntegerField(null=True, blank=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Additional Details — {self.user}"
+
+    @property
+    def cv_filename(self):
+        if self.cv:
+            return self.cv.name.split('/')[-1]
+        return None
+
+    @property
+    def languages_list(self):
+        if self.languages:
+            return [l.strip() for l in self.languages.split(',') if l.strip()]
+        return []

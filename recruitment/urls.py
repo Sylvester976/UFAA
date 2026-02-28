@@ -9,10 +9,7 @@ urlpatterns = [
     path("academic/", views.academic_qualifications_view, name="academic_qualifications"),
     path("professional/", views.professional_qualifications_view, name="professional_qualifications"),
     path("work-history/", views.work_history_view, name="work_history"),
-
-    # path("additional/", views.additional_details, name="additional_details"),
-    # path("additional/delete-cv/", views.delete_cv, name="delete_cv"),
-    
+    path("additional/", views.additional_details_view, name="additional_details"),
     # HR DASHBOARD
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
 

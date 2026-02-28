@@ -5,244 +5,249 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mt-4">
+    <div class="row">
+        <div class="col-12 mt-4">
 
-        <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-            <div>
-                <h6 class="mb-0 font-weight-bolder">Work History</h6>
-                <p class="text-sm text-secondary mb-0">Add your employment history starting with the most recent</p>
-            </div>
-            <span class="badge px-3 py-2
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">Work History</h6>
+                    <p class="text-sm text-secondary mb-0">Add your employment history starting with the most recent</p>
+                </div>
+                <span class="badge px-3 py-2
                 {% if completion == 100 %}bg-gradient-success
                 {% elif completion >= 60 %}bg-gradient-info
                 {% elif completion >= 30 %}bg-gradient-warning
                 {% else %}bg-gradient-danger{% endif %}">
                 <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
             </span>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <small class="text-secondary" style="font-size:0.75rem;">
-                    {% if completion == 100 %}🎉 Profile complete!
-                    {% elif completion >= 60 %}Almost there — keep going!
-                    {% elif completion >= 30 %}Good start — more to fill in.
-                    {% else %}Just getting started...{% endif %}
-                </small>
-                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
             </div>
-            <div class="progress" style="height:8px; border-radius:1rem;">
-                <div class="progress-bar
+
+            <!-- Progress Bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-secondary" style="font-size:0.75rem;">
+                        {% if completion == 100 %}🎉 Profile complete!
+                        {% elif completion >= 60 %}Almost there — keep going!
+                        {% elif completion >= 30 %}Good start — more to fill in.
+                        {% else %}Just getting started...{% endif %}
+                    </small>
+                    <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
+                </div>
+                <div class="progress" style="height:8px; border-radius:1rem;">
+                    <div class="progress-bar
                     {% if completion == 100 %}bg-gradient-success
                     {% elif completion >= 60 %}bg-gradient-info
                     {% elif completion >= 30 %}bg-gradient-warning
                     {% else %}bg-gradient-danger{% endif %}"
-                     role="progressbar"
-                     style="width:{{ completion }}%; transition:width 0.6s ease;"
-                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                         role="progressbar"
+                         style="width:{{ completion }}%; transition:width 0.6s ease;"
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabs -->
-        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'profile' %}">
-                    <i class="fas fa-user me-1"></i>
-                    <span class="d-none d-sm-inline">Basic Details</span>
-                    {% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'academic_qualifications' %}">
-                    <i class="fas fa-graduation-cap me-1"></i>
-                    <span class="d-none d-sm-inline">Academic</span>
-                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'professional_qualifications' %}">
-                    <i class="fas fa-certificate me-1"></i>
-                    <span class="d-none d-sm-inline">Professional</span>
-                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'work_history' %}">
-                    <i class="fas fa-briefcase me-1"></i>
-                    <span class="d-none d-sm-inline">Work History</span>
-                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'additional_details' %}">
-                    <i class="fas fa-info-circle me-1"></i>
-                    <span class="d-none d-sm-inline">Additional</span>
-                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-        </ul>
+            <!-- Tabs -->
+            <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profile' %}">
+                        <i class="fas fa-user me-1"></i>
+                        <span class="d-none d-sm-inline">Basic Details</span>
+                        {% if completion >= 40 %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        <span class="d-none d-sm-inline">Academic</span>
+                        {% if has_academic %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                        <i class="fas fa-certificate me-1"></i>
+                        <span class="d-none d-sm-inline">Professional</span>
+                        {% if has_professional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'work_history' %}">
+                        <i class="fas fa-briefcase me-1"></i>
+                        <span class="d-none d-sm-inline">Work History</span>
+                        {% if has_work_history %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'additional_details' %}">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <span class="d-none d-sm-inline">Additional</span>
+                        {% if has_additional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+            </ul>
 
-        <!-- Content Card -->
-        <div class="card mb-4 profile-content-card">
-            <div class="card-body p-3 p-md-4">
+            <!-- Content Card -->
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body p-3 p-md-4">
 
-                <h6 class="font-weight-bolder mb-1">Step 4: Work History</h6>
-                <p class="text-sm text-secondary mb-4">
-                    Add your employment history. This section is optional — click
-                    <strong>Next</strong> to skip.
-                </p>
+                    <h6 class="font-weight-bolder mb-1">Step 4: Work History</h6>
+                    <p class="text-sm text-secondary mb-4">
+                        Add your employment history. This section is optional — click
+                        <strong>Next</strong> to skip.
+                    </p>
 
-                <!-- ── Add Job Form ── -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-plus-circle me-2"></i> Add Work Experience
-                    </div>
-                    <div class="acad-add-body">
-                        <div class="row g-3 mb-3">
-
-                            <!-- Job Title -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Job Title <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" id="f_job_title" class="form-control"
-                                       placeholder="e.g. Senior Accountant, ICT Officer">
-                            </div>
-
-                            <!-- Company -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Employer / Company <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" id="f_company" class="form-control"
-                                       placeholder="e.g. Kenya Revenue Authority">
-                            </div>
-
-                            <!-- Employment Type -->
-                            <div class="col-12 col-md-4">
-                                <label class="form-label text-sm font-weight-bold">Employment Type</label>
-                                <select id="f_employment_type" class="form-control">
-                                    <option value="">Select type</option>
-                                    <option>Full-time</option>
-                                    <option>Part-time</option>
-                                    <option>Contract</option>
-                                    <option>Internship</option>
-                                    <option>Volunteer</option>
-                                    <option>Attachment</option>
-                                </select>
-                            </div>
-
-                            <!-- Country -->
-                            <div class="col-12 col-md-4">
-                                <label class="form-label text-sm font-weight-bold">Country</label>
-                                <input type="text" id="f_country" class="form-control"
-                                       value="Kenya" placeholder="Country">
-                            </div>
-
-                            <!-- Current Job Toggle -->
-                            <div class="col-12 col-md-4 d-flex align-items-end">
-                                <div class="form-check form-switch mb-0 pb-2">
-                                    <input class="form-check-input" type="checkbox"
-                                           id="f_is_current" role="switch"
-                                           onchange="toggleCurrentJob(this.checked)">
-                                    <label class="form-check-label text-sm font-weight-bold ms-2"
-                                           for="f_is_current">
-                                        I currently work here
-                                    </label>
-                                </div>
-                            </div>
-
-                            <!-- Start Month + Year -->
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Start Month <span class="text-danger">*</span>
-                                </label>
-                                <select id="f_start_month" class="form-control">
-                                    <option value="">Month</option>
-                                </select>
-                            </div>
-                            <div class="col-6 col-md-3">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Start Year <span class="text-danger">*</span>
-                                </label>
-                                <select id="f_start_year" class="form-control">
-                                    <option value="">Year</option>
-                                </select>
-                            </div>
-
-                            <!-- End Month + Year (hidden when current) -->
-                            <div class="col-6 col-md-3" id="endMonthWrap">
-                                <label class="form-label text-sm font-weight-bold">End Month</label>
-                                <select id="f_end_month" class="form-control">
-                                    <option value="">Month</option>
-                                </select>
-                            </div>
-                            <div class="col-6 col-md-3" id="endYearWrap">
-                                <label class="form-label text-sm font-weight-bold">End Year</label>
-                                <select id="f_end_year" class="form-control">
-                                    <option value="">Year</option>
-                                </select>
-                            </div>
-
-                            <!-- Duties -->
-                            <div class="col-12">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Key Duties / Responsibilities
-                                </label>
-                                <textarea id="f_duties" class="form-control" rows="3"
-                                          placeholder="Briefly describe your main duties and achievements..."></textarea>
-                            </div>
-
-                            <!-- Reason for Leaving -->
-                            <div class="col-12" id="exitReasonWrap">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Reason for Leaving
-                                </label>
-                                <input type="text" id="f_exit_reason" class="form-control"
-                                       placeholder="e.g. Contract ended, Career growth, Relocation">
-                            </div>
-
+                    <!-- ── Add Job Form ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-plus-circle me-2"></i> Add Work Experience
                         </div>
+                        <div class="acad-add-body">
+                            <div class="row g-3 mb-3">
 
-                        <div class="d-flex justify-content-end">
+                                <!-- Job Title -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Job Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="f_job_title" class="form-control"
+                                           placeholder="e.g. Senior Accountant, ICT Officer">
+                                </div>
+
+                                <!-- Company -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Employer / Company <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="f_company" class="form-control"
+                                           placeholder="e.g. Kenya Revenue Authority">
+                                </div>
+
+                                <!-- Employment Type -->
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label text-sm font-weight-bold">Employment Type</label>
+                                    <select id="f_employment_type" class="form-control">
+                                        <option value="">Select type</option>
+                                        <option>Full-time</option>
+                                        <option>Part-time</option>
+                                        <option>Contract</option>
+                                        <option>Internship</option>
+                                        <option>Volunteer</option>
+                                        <option>Attachment</option>
+                                    </select>
+                                </div>
+
+                                <!-- Country -->
+                                <div class="col-12 col-md-4">
+                                    <label class="form-label text-sm font-weight-bold">Country</label>
+                                    <input type="text" id="f_country" class="form-control"
+                                           value="Kenya" placeholder="Country">
+                                </div>
+
+                                <!-- Current Job Toggle -->
+                                <div class="col-12 col-md-4 d-flex align-items-end">
+                                    <div class="form-check form-switch mb-0 pb-2">
+                                        <input class="form-check-input" type="checkbox"
+                                               id="f_is_current" role="switch"
+                                               onchange="toggleCurrentJob(this.checked)">
+                                        <label class="form-check-label text-sm font-weight-bold ms-2"
+                                               for="f_is_current">
+                                            I currently work here
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Start Month + Year -->
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Start Month <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="f_start_month" class="form-control">
+                                        <option value="">Month</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-3">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Start Year <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="f_start_year" class="form-control">
+                                        <option value="">Year</option>
+                                    </select>
+                                </div>
+
+                                <!-- End Month + Year (hidden when current) -->
+                                <div class="col-6 col-md-3" id="endMonthWrap">
+                                    <label class="form-label text-sm font-weight-bold">End Month</label>
+                                    <select id="f_end_month" class="form-control">
+                                        <option value="">Month</option>
+                                    </select>
+                                </div>
+                                <div class="col-6 col-md-3" id="endYearWrap">
+                                    <label class="form-label text-sm font-weight-bold">End Year</label>
+                                    <select id="f_end_year" class="form-control">
+                                        <option value="">Year</option>
+                                    </select>
+                                </div>
+
+                                <!-- Duties -->
+                                <div class="col-12">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Key Duties / Responsibilities
+                                    </label>
+                                    <textarea id="f_duties" class="form-control" rows="3"
+                                              placeholder="Briefly describe your main duties and achievements..."></textarea>
+                                </div>
+
+                                <!-- Reason for Leaving -->
+                                <div class="col-12" id="exitReasonWrap">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Reason for Leaving
+                                    </label>
+                                    <input type="text" id="f_exit_reason" class="form-control"
+                                           placeholder="e.g. Contract ended, Career growth, Relocation">
+                                </div>
+
+                            </div>
+
+                            <div class="d-flex justify-content-end">
+                                <button type="button" class="btn btn-outline-info btn-sm"
+                                        onclick="addJobToList()">
+                                    <i class="fas fa-plus me-1"></i> Add to List
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Pending List ── -->
+                    <div id="pendingContainer" style="display:none;" class="mb-4">
+                        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                            <h6 class="font-weight-bolder mb-0 text-sm">
+                                <i class="fas fa-list me-2 text-info"></i>Jobs Ready to Save
+                            </h6>
+                            <span id="pendingCount" class="badge bg-gradient-info px-2 py-1"></span>
+                        </div>
+                        <div id="pendingList"></div>
+                        <div class="d-flex justify-content-end mt-3">
                             <button type="button" class="btn btn-outline-info btn-sm"
-                                    onclick="addJobToList()">
-                                <i class="fas fa-plus me-1"></i> Add to List
+                                    onclick="saveAllJobs()">
+                                <i class="fas fa-save me-1"></i> Save All
                             </button>
                         </div>
                     </div>
-                </div>
 
-                <!-- ── Pending List ── -->
-                <div id="pendingContainer" style="display:none;" class="mb-4">
-                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
-                        <h6 class="font-weight-bolder mb-0 text-sm">
-                            <i class="fas fa-list me-2 text-info"></i>Jobs Ready to Save
+                    <!-- ── Saved Table ── -->
+                    <div class="mt-2" id="savedSection"
+                         style="{% if not existing %}display:none;{% endif %}">
+                        <h6 class="font-weight-bolder mb-3">
+                            <i class="fas fa-history me-2 text-success"></i>Saved Work History
                         </h6>
-                        <span id="pendingCount" class="badge bg-gradient-info px-2 py-1"></span>
-                    </div>
-                    <div id="pendingList"></div>
-                    <div class="d-flex justify-content-end mt-3">
-                        <button type="button" class="btn btn-outline-info btn-sm"
-                                onclick="saveAllJobs()">
-                            <i class="fas fa-save me-1"></i> Save All
-                        </button>
-                    </div>
-                </div>
-
-                <!-- ── Saved Table ── -->
-                <div class="mt-2" id="savedSection"
-                     style="{% if not existing %}display:none;{% endif %}">
-                    <h6 class="font-weight-bolder mb-3">
-                        <i class="fas fa-history me-2 text-success"></i>Saved Work History
-                    </h6>
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle" id="savedTable">
-                            <thead class="table-light">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle" id="savedTable">
+                                <thead class="table-light">
                                 <tr>
                                     <th style="min-width:130px;">Job Title</th>
                                     <th style="min-width:130px;">Employer</th>
@@ -252,262 +257,263 @@
                                     <th class="d-none d-md-table-cell">Country</th>
                                     <th>Action</th>
                                 </tr>
-                            </thead>
-                            <tbody id="savedTableBody">
+                                </thead>
+                                <tbody id="savedTableBody">
                                 {% for j in existing %}
-                                <tr id="row_{{ j.id }}">
-                                    <td class="text-sm font-weight-bold">{{ j.job_title }}</td>
-                                    <td class="text-sm">{{ j.company }}</td>
-                                    <td class="d-none d-md-table-cell text-sm">
-                                        {% if j.employment_type %}
-                                            <span class="badge bg-gradient-secondary"
-                                                  style="font-size:0.65rem;">
+                                    <tr id="row_{{ j.id }}">
+                                        <td class="text-sm font-weight-bold">{{ j.job_title }}</td>
+                                        <td class="text-sm">{{ j.company }}</td>
+                                        <td class="d-none d-md-table-cell text-sm">
+                                            {% if j.employment_type %}
+                                                <span class="badge bg-gradient-secondary"
+                                                      style="font-size:0.65rem;">
                                                 {{ j.employment_type }}
                                             </span>
-                                        {% else %}—{% endif %}
-                                    </td>
-                                    <td class="d-none d-sm-table-cell text-sm">
-                                        {{ j.start_display }}
-                                    </td>
-                                    <td class="d-none d-sm-table-cell text-sm">
-                                        {% if j.is_current %}
-                                            <span class="badge bg-gradient-success"
-                                                  style="font-size:0.65rem;">Present</span>
-                                        {% else %}
-                                            {{ j.end_display }}
-                                        {% endif %}
-                                    </td>
-                                    <td class="d-none d-md-table-cell text-sm">{{ j.country }}</td>
-                                    <td>
-                                        <div class="d-flex gap-1">
-                                            <button type="button"
-                                                    class="btn btn-outline-info btn-xs"
-                                                    title="Edit"
-                                                    onclick="editJob(
-                                                        {{ j.id }},
-                                                        '{{ j.job_title|escapejs }}',
-                                                        '{{ j.company|escapejs }}',
-                                                        '{{ j.employment_type|default:''|escapejs }}',
-                                                        {{ j.start_month }},
-                                                        {{ j.start_year }},
-                                                        '{{ j.end_month|default:'' }}',
-                                                        '{{ j.end_year|default:'' }}',
-                                                        {{ j.is_current|yesno:'true,false' }},
-                                                        '{{ j.duties|default:''|escapejs }}',
-                                                        '{{ j.exit_reason|default:''|escapejs }}',
-                                                        '{{ j.country|escapejs }}'
-                                                    )">
-                                                <i class="fas fa-edit"></i>
-                                            </button>
-                                            <button type="button"
-                                                    class="btn btn-outline-danger btn-xs"
-                                                    title="Delete"
-                                                    onclick="deleteJob({{ j.id }}, '{{ j.job_title|escapejs }}')">
-                                                <i class="fas fa-trash"></i>
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
+                                            {% else %}—{% endif %}
+                                        </td>
+                                        <td class="d-none d-sm-table-cell text-sm">
+                                            {{ j.start_display }}
+                                        </td>
+                                        <td class="d-none d-sm-table-cell text-sm">
+                                            {% if j.is_current %}
+                                                <span class="badge bg-gradient-success"
+                                                      style="font-size:0.65rem;">Present</span>
+                                            {% else %}
+                                                {{ j.end_display }}
+                                            {% endif %}
+                                        </td>
+                                        <td class="d-none d-md-table-cell text-sm">{{ j.country }}</td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <button type="button"
+                                                        class="btn btn-outline-info btn-xs"
+                                                        title="Edit"
+                                                        onclick="editJob(
+                                                                {{ j.id }},
+                                                                '{{ j.job_title|escapejs }}',
+                                                                '{{ j.company|escapejs }}',
+                                                                '{{ j.employment_type|default:''|escapejs }}',
+                                                                {{ j.start_month }},
+                                                                {{ j.start_year }},
+                                                                '{{ j.end_month|default:'' }}',
+                                                                '{{ j.end_year|default:'' }}',
+                                                                {{ j.is_current|yesno:'true,false' }},
+                                                                '{{ j.duties|default:''|escapejs }}',
+                                                                '{{ j.exit_reason|default:''|escapejs }}',
+                                                                '{{ j.country|escapejs }}'
+                                                                )">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button"
+                                                        class="btn btn-outline-danger btn-xs"
+                                                        title="Delete"
+                                                        onclick="deleteJob({{ j.id }}, '{{ j.job_title|escapejs }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
                                 {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ── Nav Buttons ── -->
-                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
-                    <a href="{% url 'professional_qualifications' %}"
-                       class="btn btn-outline-secondary btn-sm mb-0">
-                        <i class="fas fa-arrow-left me-1"></i> Back
-                    </a>
-                    <a href="{% url 'additional_details' %}"
-                       class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
-                        Next <i class="fas fa-arrow-right ms-1"></i>
-                    </a>
-                </div>
-
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ── Edit Modal ── -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title font-weight-bolder mb-0">
-                    <i class="fas fa-edit me-2"></i> Edit Work Experience
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit_job_id">
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">
-                            Job Title <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" id="edit_job_title" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">
-                            Employer / Company <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" id="edit_company" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <label class="form-label text-sm font-weight-bold">Employment Type</label>
-                        <select id="edit_employment_type" class="form-control">
-                            <option value="">Select type</option>
-                            <option>Full-time</option>
-                            <option>Part-time</option>
-                            <option>Contract</option>
-                            <option>Internship</option>
-                            <option>Volunteer</option>
-                            <option>Attachment</option>
-                        </select>
-                    </div>
-                    <div class="col-12 col-md-4">
-                        <label class="form-label text-sm font-weight-bold">Country</label>
-                        <input type="text" id="edit_country" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-4 d-flex align-items-end">
-                        <div class="form-check form-switch mb-0 pb-2">
-                            <input class="form-check-input" type="checkbox"
-                                   id="edit_is_current" role="switch"
-                                   onchange="toggleEditCurrentJob(this.checked)">
-                            <label class="form-check-label text-sm font-weight-bold ms-2"
-                                   for="edit_is_current">
-                                Currently work here
-                            </label>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label text-sm font-weight-bold">
-                            Start Month <span class="text-danger">*</span>
-                        </label>
-                        <select id="edit_start_month" class="form-control"></select>
+
+                    <!-- ── Nav Buttons ── -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                        <a href="{% url 'professional_qualifications' %}"
+                           class="btn btn-outline-secondary btn-sm mb-0">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                        <a href="{% url 'additional_details' %}"
+                           class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                            Next <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
                     </div>
-                    <div class="col-6 col-md-3">
-                        <label class="form-label text-sm font-weight-bold">
-                            Start Year <span class="text-danger">*</span>
-                        </label>
-                        <select id="edit_start_year" class="form-control"></select>
-                    </div>
-                    <div class="col-6 col-md-3" id="editEndMonthWrap">
-                        <label class="form-label text-sm font-weight-bold">End Month</label>
-                        <select id="edit_end_month" class="form-control"></select>
-                    </div>
-                    <div class="col-6 col-md-3" id="editEndYearWrap">
-                        <label class="form-label text-sm font-weight-bold">End Year</label>
-                        <select id="edit_end_year" class="form-control"></select>
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label text-sm font-weight-bold">
-                            Key Duties / Responsibilities
-                        </label>
-                        <textarea id="edit_duties" class="form-control" rows="3"></textarea>
-                    </div>
-                    <div class="col-12" id="editExitReasonWrap">
-                        <label class="form-label text-sm font-weight-bold">Reason for Leaving</label>
-                        <input type="text" id="edit_exit_reason" class="form-control"
-                               placeholder="e.g. Contract ended, Career growth">
-                    </div>
+
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm"
-                        data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-outline-info btn-sm"
-                        onclick="submitEdit()">
-                    <i class="fas fa-save me-1"></i> Update
-                </button>
             </div>
         </div>
     </div>
-</div>
+
+    <!-- ── Edit Modal ── -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title font-weight-bolder mb-0">
+                        <i class="fas fa-edit me-2"></i> Edit Work Experience
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_job_id">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                Job Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="edit_job_title" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                Employer / Company <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" id="edit_company" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-sm font-weight-bold">Employment Type</label>
+                            <select id="edit_employment_type" class="form-control">
+                                <option value="">Select type</option>
+                                <option>Full-time</option>
+                                <option>Part-time</option>
+                                <option>Contract</option>
+                                <option>Internship</option>
+                                <option>Volunteer</option>
+                                <option>Attachment</option>
+                            </select>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label class="form-label text-sm font-weight-bold">Country</label>
+                            <input type="text" id="edit_country" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-4 d-flex align-items-end">
+                            <div class="form-check form-switch mb-0 pb-2">
+                                <input class="form-check-input" type="checkbox"
+                                       id="edit_is_current" role="switch"
+                                       onchange="toggleEditCurrentJob(this.checked)">
+                                <label class="form-check-label text-sm font-weight-bold ms-2"
+                                       for="edit_is_current">
+                                    Currently work here
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label text-sm font-weight-bold">
+                                Start Month <span class="text-danger">*</span>
+                            </label>
+                            <select id="edit_start_month" class="form-control"></select>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="form-label text-sm font-weight-bold">
+                                Start Year <span class="text-danger">*</span>
+                            </label>
+                            <select id="edit_start_year" class="form-control"></select>
+                        </div>
+                        <div class="col-6 col-md-3" id="editEndMonthWrap">
+                            <label class="form-label text-sm font-weight-bold">End Month</label>
+                            <select id="edit_end_month" class="form-control"></select>
+                        </div>
+                        <div class="col-6 col-md-3" id="editEndYearWrap">
+                            <label class="form-label text-sm font-weight-bold">End Year</label>
+                            <select id="edit_end_year" class="form-control"></select>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label text-sm font-weight-bold">
+                                Key Duties / Responsibilities
+                            </label>
+                            <textarea id="edit_duties" class="form-control" rows="3"></textarea>
+                        </div>
+                        <div class="col-12" id="editExitReasonWrap">
+                            <label class="form-label text-sm font-weight-bold">Reason for Leaving</label>
+                            <input type="text" id="edit_exit_reason" class="form-control"
+                                   placeholder="e.g. Contract ended, Career growth">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm"
+                            data-bs-dismiss="modal">Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm"
+                            onclick="submitEdit()">
+                        <i class="fas fa-save me-1"></i> Update
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// ── Constants ────────────────────────────────────────────────
-const CSRF   = '{{ csrf_token }}';
-const MONTHS = [
-    { v: 1,  l: 'January'   }, { v: 2,  l: 'February'  },
-    { v: 3,  l: 'March'     }, { v: 4,  l: 'April'     },
-    { v: 5,  l: 'May'       }, { v: 6,  l: 'June'      },
-    { v: 7,  l: 'July'      }, { v: 8,  l: 'August'    },
-    { v: 9,  l: 'September' }, { v: 10, l: 'October'   },
-    { v: 11, l: 'November'  }, { v: 12, l: 'December'  },
-];
-const SHORT_MONTHS = {
-    1:'Jan', 2:'Feb', 3:'Mar', 4:'Apr', 5:'May',  6:'Jun',
-    7:'Jul', 8:'Aug', 9:'Sep', 10:'Oct',11:'Nov', 12:'Dec',
-};
+    <script>
+        // ── Constants ────────────────────────────────────────────────
+        const CSRF = '{{ csrf_token }}';
+        const MONTHS = [
+            {v: 1, l: 'January'}, {v: 2, l: 'February'},
+            {v: 3, l: 'March'}, {v: 4, l: 'April'},
+            {v: 5, l: 'May'}, {v: 6, l: 'June'},
+            {v: 7, l: 'July'}, {v: 8, l: 'August'},
+            {v: 9, l: 'September'}, {v: 10, l: 'October'},
+            {v: 11, l: 'November'}, {v: 12, l: 'December'},
+        ];
+        const SHORT_MONTHS = {
+            1: 'Jan', 2: 'Feb', 3: 'Mar', 4: 'Apr', 5: 'May', 6: 'Jun',
+            7: 'Jul', 8: 'Aug', 9: 'Sep', 10: 'Oct', 11: 'Nov', 12: 'Dec',
+        };
 
-// ── State ────────────────────────────────────────────────────
-let pendingJobs = [];
+        // ── State ────────────────────────────────────────────────────
+        let pendingJobs = [];
 
-// ── Populate Selects ─────────────────────────────────────────
-function populateMonths(elId, selected) {
-    const sel = document.getElementById(elId);
-    sel.innerHTML = '<option value="">Month</option>';
-    MONTHS.forEach(m => {
-        sel.innerHTML += `<option value="${m.v}" ${m.v == selected ? 'selected' : ''}>${m.l}</option>`;
-    });
-}
+        // ── Populate Selects ─────────────────────────────────────────
+        function populateMonths(elId, selected) {
+            const sel = document.getElementById(elId);
+            sel.innerHTML = '<option value="">Month</option>';
+            MONTHS.forEach(m => {
+                sel.innerHTML += `<option value="${m.v}" ${m.v == selected ? 'selected' : ''}>${m.l}</option>`;
+            });
+        }
 
-function populateYears(elId, selected) {
-    const sel = document.getElementById(elId);
-    const cur = new Date().getFullYear();
-    sel.innerHTML = '<option value="">Year</option>';
-    for (let y = cur; y >= 1970; y--) {
-        sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
-    }
-}
+        function populateYears(elId, selected) {
+            const sel = document.getElementById(elId);
+            const cur = new Date().getFullYear();
+            sel.innerHTML = '<option value="">Year</option>';
+            for (let y = cur; y >= 1970; y--) {
+                sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+            }
+        }
 
-// Init add-form selects
-populateMonths('f_start_month', null);
-populateMonths('f_end_month',   null);
-populateYears('f_start_year',   null);
-populateYears('f_end_year',     null);
+        // Init add-form selects
+        populateMonths('f_start_month', null);
+        populateMonths('f_end_month', null);
+        populateYears('f_start_year', null);
+        populateYears('f_end_year', null);
 
-// ── Toggle Current Job ───────────────────────────────────────
-function toggleCurrentJob(isCurrent) {
-    document.getElementById('endMonthWrap').style.display   = isCurrent ? 'none' : '';
-    document.getElementById('endYearWrap').style.display    = isCurrent ? 'none' : '';
-    document.getElementById('exitReasonWrap').style.display = isCurrent ? 'none' : '';
-    if (isCurrent) {
-        document.getElementById('f_end_month').value   = '';
-        document.getElementById('f_end_year').value    = '';
-        document.getElementById('f_exit_reason').value = '';
-    }
-}
+        // ── Toggle Current Job ───────────────────────────────────────
+        function toggleCurrentJob(isCurrent) {
+            document.getElementById('endMonthWrap').style.display = isCurrent ? 'none' : '';
+            document.getElementById('endYearWrap').style.display = isCurrent ? 'none' : '';
+            document.getElementById('exitReasonWrap').style.display = isCurrent ? 'none' : '';
+            if (isCurrent) {
+                document.getElementById('f_end_month').value = '';
+                document.getElementById('f_end_year').value = '';
+                document.getElementById('f_exit_reason').value = '';
+            }
+        }
 
-function toggleEditCurrentJob(isCurrent) {
-    document.getElementById('editEndMonthWrap').style.display   = isCurrent ? 'none' : '';
-    document.getElementById('editEndYearWrap').style.display    = isCurrent ? 'none' : '';
-    document.getElementById('editExitReasonWrap').style.display = isCurrent ? 'none' : '';
-    if (isCurrent) {
-        document.getElementById('edit_end_month').value   = '';
-        document.getElementById('edit_end_year').value    = '';
-        document.getElementById('edit_exit_reason').value = '';
-    }
-}
+        function toggleEditCurrentJob(isCurrent) {
+            document.getElementById('editEndMonthWrap').style.display = isCurrent ? 'none' : '';
+            document.getElementById('editEndYearWrap').style.display = isCurrent ? 'none' : '';
+            document.getElementById('editExitReasonWrap').style.display = isCurrent ? 'none' : '';
+            if (isCurrent) {
+                document.getElementById('edit_end_month').value = '';
+                document.getElementById('edit_end_year').value = '';
+                document.getElementById('edit_exit_reason').value = '';
+            }
+        }
 
-// ── Build Table Row ──────────────────────────────────────────
-function buildTableRow(j) {
-    const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        // ── Build Table Row ──────────────────────────────────────────
+        function buildTableRow(j) {
+            const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
 
-    const typeBadge = j.employment_type
-        ? `<span class="badge bg-gradient-secondary" style="font-size:0.65rem;">${j.employment_type}</span>`
-        : '—';
-    const endBadge = j.is_current
-        ? `<span class="badge bg-gradient-success" style="font-size:0.65rem;">Present</span>`
-        : j.end_display;
+            const typeBadge = j.employment_type
+                ? `<span class="badge bg-gradient-secondary" style="font-size:0.65rem;">${j.employment_type}</span>`
+                : '—';
+            const endBadge = j.is_current
+                ? `<span class="badge bg-gradient-success" style="font-size:0.65rem;">Present</span>`
+                : j.end_display;
 
-    return `
+            return `
         <td class="text-sm font-weight-bold">${j.job_title}</td>
         <td class="text-sm">${j.company}</td>
         <td class="d-none d-md-table-cell text-sm">${typeBadge}</td>
@@ -525,7 +531,7 @@ function buildTableRow(j) {
                             ${j.start_month},
                             ${j.start_year},
                             '${j.end_month || ''}',
-                            '${j.end_year  || ''}',
+                            '${j.end_year || ''}',
                             ${j.is_current},
                             '${esc(j.duties)}',
                             '${esc(j.exit_reason)}',
@@ -539,97 +545,103 @@ function buildTableRow(j) {
                 </button>
             </div>
         </td>`;
-}
+        }
 
-// ── Add Job to Pending ───────────────────────────────────────
-function addJobToList() {
-    const job_title       = document.getElementById('f_job_title').value.trim();
-    const company         = document.getElementById('f_company').value.trim();
-    const start_month     = document.getElementById('f_start_month').value;
-    const start_year      = document.getElementById('f_start_year').value;
-    const is_current      = document.getElementById('f_is_current').checked;
-    const end_month       = document.getElementById('f_end_month').value;
-    const end_year        = document.getElementById('f_end_year').value;
-    const employment_type = document.getElementById('f_employment_type').value;
-    const duties          = document.getElementById('f_duties').value.trim();
-    const exit_reason     = document.getElementById('f_exit_reason').value.trim();
-    const country         = document.getElementById('f_country').value.trim() || 'Kenya';
+        // ── Add Job to Pending ───────────────────────────────────────
+        function addJobToList() {
+            const job_title = document.getElementById('f_job_title').value.trim();
+            const company = document.getElementById('f_company').value.trim();
+            const start_month = document.getElementById('f_start_month').value;
+            const start_year = document.getElementById('f_start_year').value;
+            const is_current = document.getElementById('f_is_current').checked;
+            const end_month = document.getElementById('f_end_month').value;
+            const end_year = document.getElementById('f_end_year').value;
+            const employment_type = document.getElementById('f_employment_type').value;
+            const duties = document.getElementById('f_duties').value.trim();
+            const exit_reason = document.getElementById('f_exit_reason').value.trim();
+            const country = document.getElementById('f_country').value.trim() || 'Kenya';
 
-    if (!job_title) {
-        Swal.fire({ icon: 'error', title: 'Job Title Required',
-            text: 'Please enter your job title.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-    if (!company) {
-        Swal.fire({ icon: 'error', title: 'Employer Required',
-            text: 'Please enter the employer / company name.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-    if (!start_month || !start_year) {
-        Swal.fire({ icon: 'error', title: 'Start Date Required',
-            text: 'Please select the start month and year.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
+            if (!job_title) {
+                Swal.fire({
+                    icon: 'error', title: 'Job Title Required',
+                    text: 'Please enter your job title.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
+            if (!company) {
+                Swal.fire({
+                    icon: 'error', title: 'Employer Required',
+                    text: 'Please enter the employer / company name.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
+            if (!start_month || !start_year) {
+                Swal.fire({
+                    icon: 'error', title: 'Start Date Required',
+                    text: 'Please select the start month and year.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
 
-    const start_display = `${SHORT_MONTHS[parseInt(start_month)]} ${start_year}`;
-    const end_display   = is_current
-        ? 'Present'
-        : (end_month && end_year ? `${SHORT_MONTHS[parseInt(end_month)]} ${end_year}` : '—');
+            const start_display = `${SHORT_MONTHS[parseInt(start_month)]} ${start_year}`;
+            const end_display = is_current
+                ? 'Present'
+                : (end_month && end_year ? `${SHORT_MONTHS[parseInt(end_month)]} ${end_year}` : '—');
 
-    pendingJobs.push({
-        job_title, company, employment_type,
-        start_month: parseInt(start_month),
-        start_year:  parseInt(start_year),
-        end_month:   end_month ? parseInt(end_month) : '',
-        end_year:    end_year  ? parseInt(end_year)  : '',
-        is_current, duties, exit_reason, country,
-        start_display, end_display,
-    });
+            pendingJobs.push({
+                job_title, company, employment_type,
+                start_month: parseInt(start_month),
+                start_year: parseInt(start_year),
+                end_month: end_month ? parseInt(end_month) : '',
+                end_year: end_year ? parseInt(end_year) : '',
+                is_current, duties, exit_reason, country,
+                start_display, end_display,
+            });
 
-    // Reset form
-    document.getElementById('f_job_title').value       = '';
-    document.getElementById('f_company').value         = '';
-    document.getElementById('f_employment_type').value = '';
-    document.getElementById('f_start_month').value     = '';
-    document.getElementById('f_start_year').value      = '';
-    document.getElementById('f_end_month').value       = '';
-    document.getElementById('f_end_year').value        = '';
-    document.getElementById('f_duties').value          = '';
-    document.getElementById('f_exit_reason').value     = '';
-    document.getElementById('f_country').value         = 'Kenya';
-    document.getElementById('f_is_current').checked    = false;
-    toggleCurrentJob(false);
+            // Reset form
+            document.getElementById('f_job_title').value = '';
+            document.getElementById('f_company').value = '';
+            document.getElementById('f_employment_type').value = '';
+            document.getElementById('f_start_month').value = '';
+            document.getElementById('f_start_year').value = '';
+            document.getElementById('f_end_month').value = '';
+            document.getElementById('f_end_year').value = '';
+            document.getElementById('f_duties').value = '';
+            document.getElementById('f_exit_reason').value = '';
+            document.getElementById('f_country').value = 'Kenya';
+            document.getElementById('f_is_current').checked = false;
+            toggleCurrentJob(false);
 
-    renderPendingList();
-}
+            renderPendingList();
+        }
 
-// ── Render Pending List ──────────────────────────────────────
-function renderPendingList() {
-    const container = document.getElementById('pendingContainer');
-    const list      = document.getElementById('pendingList');
-    const countEl   = document.getElementById('pendingCount');
+        // ── Render Pending List ──────────────────────────────────────
+        function renderPendingList() {
+            const container = document.getElementById('pendingContainer');
+            const list = document.getElementById('pendingList');
+            const countEl = document.getElementById('pendingCount');
 
-    if (pendingJobs.length === 0) {
-        container.style.display = 'none';
-        return;
-    }
+            if (pendingJobs.length === 0) {
+                container.style.display = 'none';
+                return;
+            }
 
-    container.style.display = 'block';
-    countEl.textContent     = `${pendingJobs.length} job(s)`;
-    list.innerHTML          = '';
+            container.style.display = 'block';
+            countEl.textContent = `${pendingJobs.length} job(s)`;
+            list.innerHTML = '';
 
-    pendingJobs.forEach((j, idx) => {
-        const currentBadge = j.is_current
-            ? '<span class="badge bg-gradient-success ms-2" style="font-size:0.65rem;">Current</span>'
-            : '';
-        const typeBadge = j.employment_type
-            ? `<span class="badge bg-gradient-secondary ms-1" style="font-size:0.65rem;">${j.employment_type}</span>`
-            : '';
+            pendingJobs.forEach((j, idx) => {
+                const currentBadge = j.is_current
+                    ? '<span class="badge bg-gradient-success ms-2" style="font-size:0.65rem;">Current</span>'
+                    : '';
+                const typeBadge = j.employment_type
+                    ? `<span class="badge bg-gradient-secondary ms-1" style="font-size:0.65rem;">${j.employment_type}</span>`
+                    : '';
 
-        list.innerHTML += `
+                list.innerHTML += `
             <div class="pending-item" id="pending_${idx}">
                 <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
                     <div class="flex-grow-1">
@@ -652,242 +664,260 @@ function renderPendingList() {
                     </button>
                 </div>
             </div>`;
-    });
-}
+            });
+        }
 
-function removePending(idx) {
-    pendingJobs.splice(idx, 1);
-    renderPendingList();
-}
+        function removePending(idx) {
+            pendingJobs.splice(idx, 1);
+            renderPendingList();
+        }
 
-// ── Save All Jobs ────────────────────────────────────────────
-function saveAllJobs() {
-    if (pendingJobs.length === 0) return;
+        // ── Save All Jobs ────────────────────────────────────────────
+        function saveAllJobs() {
+            if (pendingJobs.length === 0) return;
 
-    Swal.fire({
-        title: 'Saving...', text: 'Please wait.',
-        icon: 'info', allowOutsideClick: false,
-        showConfirmButton: false, position: 'center',
-        scrollbarPadding: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', CSRF);
-    formData.append('action', 'save');
-    formData.append('jobs',   JSON.stringify(pendingJobs));
-
-    fetch("{% url 'work_history' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        Swal.close();
-        if (data.status === 'success') {
             Swal.fire({
-                icon: 'success', title: 'Saved!',
-                text: data.message, confirmButtonText: 'OK',
-                position: 'center', scrollbarPadding: false, heightAuto: false,
-            }).then(() => {
-                if (data.saved) {
-                    const tbody = document.getElementById('savedTableBody');
-                    data.saved.forEach(j => {
-                        const existing = document.getElementById(`row_${j.id}`);
-                        if (existing) existing.remove();
-                        const tr  = document.createElement('tr');
-                        tr.id     = `row_${j.id}`;
-                        tr.innerHTML = buildTableRow(j);
-                        tbody.appendChild(tr);
+                title: 'Saving...', text: 'Please wait.',
+                icon: 'info', allowOutsideClick: false,
+                showConfirmButton: false, position: 'center',
+                scrollbarPadding: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', CSRF);
+            formData.append('action', 'save');
+            formData.append('jobs', JSON.stringify(pendingJobs));
+
+            fetch("{% url 'work_history' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF},
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success', title: 'Saved!',
+                            text: data.message, confirmButtonText: 'OK',
+                            position: 'center', scrollbarPadding: false, heightAuto: false,
+                        }).then(() => {
+                            if (data.saved) {
+                                const tbody = document.getElementById('savedTableBody');
+                                data.saved.forEach(j => {
+                                    const existing = document.getElementById(`row_${j.id}`);
+                                    if (existing) existing.remove();
+                                    const tr = document.createElement('tr');
+                                    tr.id = `row_${j.id}`;
+                                    tr.innerHTML = buildTableRow(j);
+                                    tbody.appendChild(tr);
+                                });
+                                document.getElementById('savedSection').style.display = 'block';
+                            }
+                            pendingJobs = [];
+                            renderPendingList();
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error', title: 'Save Failed',
+                            text: data.message,
+                            position: 'center', scrollbarPadding: false, heightAuto: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error', title: 'System Error',
+                        text: 'Something went wrong. Please try again.',
+                        position: 'center', scrollbarPadding: false, heightAuto: false
                     });
-                    document.getElementById('savedSection').style.display = 'block';
-                }
-                pendingJobs = [];
-                renderPendingList();
-            });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Save Failed',
-                text: data.message,
-                position: 'center', scrollbarPadding: false, heightAuto: false });
-        }
-    })
-    .catch(() => {
-        Swal.close();
-        Swal.fire({ icon: 'error', title: 'System Error',
-            text: 'Something went wrong. Please try again.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    });
-}
-
-// ── Edit Job ─────────────────────────────────────────────────
-function editJob(id, jobTitle, company, empType, startMonth, startYear,
-                 endMonth, endYear, isCurrent, duties, exitReason, country) {
-
-    document.getElementById('edit_job_id').value          = id;
-    document.getElementById('edit_job_title').value       = jobTitle;
-    document.getElementById('edit_company').value         = company;
-    document.getElementById('edit_employment_type').value = empType;
-    document.getElementById('edit_duties').value          = duties;
-    document.getElementById('edit_exit_reason').value     = exitReason;
-    document.getElementById('edit_country').value         = country;
-    document.getElementById('edit_is_current').checked    = isCurrent;
-
-    // Populate month/year dropdowns
-    populateMonths('edit_start_month', startMonth);
-    populateYears('edit_start_year',   startYear);
-    populateMonths('edit_end_month',   endMonth);
-    populateYears('edit_end_year',     endYear);
-
-    toggleEditCurrentJob(isCurrent);
-
-    new bootstrap.Modal(document.getElementById('editModal')).show();
-}
-
-function submitEdit() {
-    const job_id    = document.getElementById('edit_job_id').value;
-    const job_title = document.getElementById('edit_job_title').value.trim();
-    const company   = document.getElementById('edit_company').value.trim();
-    const s_month   = document.getElementById('edit_start_month').value;
-    const s_year    = document.getElementById('edit_start_year').value;
-    const isCurrent = document.getElementById('edit_is_current').checked;
-
-    if (!job_title) {
-        Swal.fire({ icon: 'error', title: 'Job Title Required',
-            text: 'Please enter your job title.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-    if (!company) {
-        Swal.fire({ icon: 'error', title: 'Employer Required',
-            text: 'Please enter the employer / company name.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-    if (!s_month || !s_year) {
-        Swal.fire({ icon: 'error', title: 'Start Date Required',
-            text: 'Please select the start month and year.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-
-    Swal.fire({
-        title: 'Updating...', icon: 'info',
-        allowOutsideClick: false, showConfirmButton: false,
-        position: 'center', scrollbarPadding: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', CSRF);
-    formData.append('action',           'edit');
-    formData.append('job_id',           job_id);
-    formData.append('job_title',        job_title);
-    formData.append('company',          company);
-    formData.append('employment_type',  document.getElementById('edit_employment_type').value);
-    formData.append('start_month',      s_month);
-    formData.append('start_year',       s_year);
-    formData.append('end_month',        document.getElementById('edit_end_month').value);
-    formData.append('end_year',         document.getElementById('edit_end_year').value);
-    formData.append('is_current',       isCurrent ? 'true' : 'false');
-    formData.append('duties',           document.getElementById('edit_duties').value.trim());
-    formData.append('exit_reason',      document.getElementById('edit_exit_reason').value.trim());
-    formData.append('country',          document.getElementById('edit_country').value.trim() || 'Kenya');
-
-    fetch("{% url 'work_history' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF },
-        body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-        Swal.close();
-        if (data.status === 'success') {
-            const row = document.getElementById(`row_${job_id}`);
-            if (row && data.job) row.innerHTML = buildTableRow(data.job);
-            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-            Swal.fire({
-                icon: 'success', title: 'Updated!',
-                text: data.message, timer: 1800,
-                showConfirmButton: false,
-                position: 'center', scrollbarPadding: false, heightAuto: false,
-            });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Update Failed',
-                text: data.message,
-                position: 'center', scrollbarPadding: false, heightAuto: false });
-        }
-    })
-    .catch(() => {
-        Swal.close();
-        Swal.fire({ icon: 'error', title: 'System Error',
-            text: 'Something went wrong. Please try again.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    });
-}
-
-// ── Delete Job ───────────────────────────────────────────────
-function deleteJob(jobId, jobTitle) {
-    Swal.fire({
-        icon:              'warning',
-        title:             'Delete Work History',
-        html:              `Are you sure you want to delete <strong>${jobTitle}</strong>?<br>
-                            <small class="text-secondary">This cannot be undone.</small>`,
-        showCancelButton:  true,
-        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
-        cancelButtonText:  'Cancel',
-        confirmButtonColor:'#ef4444',
-        cancelButtonColor: '#8392ab',
-        position:          'center',
-        scrollbarPadding:  false,
-        heightAuto:        false,
-    }).then(result => {
-        if (!result.isConfirmed) return;
-
-        Swal.fire({
-            title: 'Deleting...', icon: 'info',
-            allowOutsideClick: false, showConfirmButton: false,
-            position: 'center', scrollbarPadding: false,
-            didOpen: () => Swal.showLoading()
-        });
-
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', CSRF);
-        formData.append('action', 'delete');
-        formData.append('job_id', jobId);
-
-        fetch("{% url 'work_history' %}", {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF },
-            body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-            Swal.close();
-            if (data.status === 'success') {
-                document.getElementById(`row_${jobId}`)?.remove();
-                if (document.querySelectorAll('#savedTableBody tr').length === 0) {
-                    document.getElementById('savedSection').style.display = 'none';
-                }
-                Swal.fire({
-                    icon: 'success', title: 'Deleted',
-                    text: 'Work history entry removed.',
-                    timer: 1500, showConfirmButton: false,
-                    position: 'center', scrollbarPadding: false, heightAuto: false,
                 });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Delete Failed',
-                    text: data.message,
-                    position: 'center', scrollbarPadding: false, heightAuto: false });
+        }
+
+        // ── Edit Job ─────────────────────────────────────────────────
+        function editJob(id, jobTitle, company, empType, startMonth, startYear,
+                         endMonth, endYear, isCurrent, duties, exitReason, country) {
+
+            document.getElementById('edit_job_id').value = id;
+            document.getElementById('edit_job_title').value = jobTitle;
+            document.getElementById('edit_company').value = company;
+            document.getElementById('edit_employment_type').value = empType;
+            document.getElementById('edit_duties').value = duties;
+            document.getElementById('edit_exit_reason').value = exitReason;
+            document.getElementById('edit_country').value = country;
+            document.getElementById('edit_is_current').checked = isCurrent;
+
+            // Populate month/year dropdowns
+            populateMonths('edit_start_month', startMonth);
+            populateYears('edit_start_year', startYear);
+            populateMonths('edit_end_month', endMonth);
+            populateYears('edit_end_year', endYear);
+
+            toggleEditCurrentJob(isCurrent);
+
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
+
+        function submitEdit() {
+            const job_id = document.getElementById('edit_job_id').value;
+            const job_title = document.getElementById('edit_job_title').value.trim();
+            const company = document.getElementById('edit_company').value.trim();
+            const s_month = document.getElementById('edit_start_month').value;
+            const s_year = document.getElementById('edit_start_year').value;
+            const isCurrent = document.getElementById('edit_is_current').checked;
+
+            if (!job_title) {
+                Swal.fire({
+                    icon: 'error', title: 'Job Title Required',
+                    text: 'Please enter your job title.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
             }
-        })
-        .catch(() => {
-            Swal.close();
-            Swal.fire({ icon: 'error', title: 'System Error',
-                text: 'Something went wrong. Please try again.',
-                position: 'center', scrollbarPadding: false, heightAuto: false });
-        });
-    });
-}
-</script>
+            if (!company) {
+                Swal.fire({
+                    icon: 'error', title: 'Employer Required',
+                    text: 'Please enter the employer / company name.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
+            if (!s_month || !s_year) {
+                Swal.fire({
+                    icon: 'error', title: 'Start Date Required',
+                    text: 'Please select the start month and year.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
+
+            Swal.fire({
+                title: 'Updating...', icon: 'info',
+                allowOutsideClick: false, showConfirmButton: false,
+                position: 'center', scrollbarPadding: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', CSRF);
+            formData.append('action', 'edit');
+            formData.append('job_id', job_id);
+            formData.append('job_title', job_title);
+            formData.append('company', company);
+            formData.append('employment_type', document.getElementById('edit_employment_type').value);
+            formData.append('start_month', s_month);
+            formData.append('start_year', s_year);
+            formData.append('end_month', document.getElementById('edit_end_month').value);
+            formData.append('end_year', document.getElementById('edit_end_year').value);
+            formData.append('is_current', isCurrent ? 'true' : 'false');
+            formData.append('duties', document.getElementById('edit_duties').value.trim());
+            formData.append('exit_reason', document.getElementById('edit_exit_reason').value.trim());
+            formData.append('country', document.getElementById('edit_country').value.trim() || 'Kenya');
+
+            fetch("{% url 'work_history' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF},
+                body: formData
+            })
+                .then(res => res.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.status === 'success') {
+                        const row = document.getElementById(`row_${job_id}`);
+                        if (row && data.job) row.innerHTML = buildTableRow(data.job);
+                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                        Swal.fire({
+                            icon: 'success', title: 'Updated!',
+                            text: data.message, timer: 1800,
+                            showConfirmButton: false,
+                            position: 'center', scrollbarPadding: false, heightAuto: false,
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error', title: 'Update Failed',
+                            text: data.message,
+                            position: 'center', scrollbarPadding: false, heightAuto: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error', title: 'System Error',
+                        text: 'Something went wrong. Please try again.',
+                        position: 'center', scrollbarPadding: false, heightAuto: false
+                    });
+                });
+        }
+
+        // ── Delete Job ───────────────────────────────────────────────
+        function deleteJob(jobId, jobTitle) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Delete Work History',
+                html: `Are you sure you want to delete <strong>${jobTitle}</strong>?<br>
+                            <small class="text-secondary">This cannot be undone.</small>`,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#8392ab',
+                position: 'center',
+                scrollbarPadding: false,
+                heightAuto: false,
+            }).then(result => {
+                if (!result.isConfirmed) return;
+
+                Swal.fire({
+                    title: 'Deleting...', icon: 'info',
+                    allowOutsideClick: false, showConfirmButton: false,
+                    position: 'center', scrollbarPadding: false,
+                    didOpen: () => Swal.showLoading()
+                });
+
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', CSRF);
+                formData.append('action', 'delete');
+                formData.append('job_id', jobId);
+
+                fetch("{% url 'work_history' %}", {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': CSRF},
+                    body: formData
+                })
+                    .then(res => res.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.status === 'success') {
+                            document.getElementById(`row_${jobId}`)?.remove();
+                            if (document.querySelectorAll('#savedTableBody tr').length === 0) {
+                                document.getElementById('savedSection').style.display = 'none';
+                            }
+                            Swal.fire({
+                                icon: 'success', title: 'Deleted',
+                                text: 'Work history entry removed.',
+                                timer: 1500, showConfirmButton: false,
+                                position: 'center', scrollbarPadding: false, heightAuto: false,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error', title: 'Delete Failed',
+                                text: data.message,
+                                position: 'center', scrollbarPadding: false, heightAuto: false
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error', title: 'System Error',
+                            text: 'Something went wrong. Please try again.',
+                            position: 'center', scrollbarPadding: false, heightAuto: false
+                        });
+                    });
+            });
+        }
+    </script>
 {% endblock %}
