@@ -39,9 +39,12 @@
         </div>
     </div>
 
-    <a href="{% url 'create_vacancy' %}" class="btn btn-success mb-3">
-        + Create Vacancy
-    </a>
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
+        <h5 class="mb-2">Vacancies</h5>
+        <a href="{% url 'create_vacancy' %}" class="btn btn-success mb-2">
+            + Create Vacancy
+        </a>
+    </div>
 
     <table class="table table-bordered">
         <thead>

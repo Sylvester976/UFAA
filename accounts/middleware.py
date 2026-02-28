@@ -14,6 +14,7 @@ class LoginRequiredMiddleware:
         'send_verification_email',
         'vacancy_detail',
         'login_view',
+        'hr_dashboard',
 
     }
 

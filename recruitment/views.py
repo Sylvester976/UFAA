@@ -5,9 +5,9 @@ from django.contrib import messages
 from .models import Gender, EthnicGroup, County, Constituency, PanelAssignment, SubCounty, Ward, JobSeekerProfile
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
 from django.http import JsonResponse
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg

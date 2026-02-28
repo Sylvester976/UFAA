@@ -1,0 +1,273 @@
+/* =====================================
+   ROOT COLORS
+===================================== */
+:root {
+    --primary: #1e293b;
+    --accent: #2563eb;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+    --light-bg: #f1f5f9;
+    --card-bg: #ffffff;
+    --border: #e2e8f0;
+}
+
+/* =====================================
+   BODY
+===================================== */
+body {
+    margin: 0;
+    font-family: "Inter", "Segoe UI", sans-serif;
+    background-color: var(--light-bg);
+    color: #0f172a;
+}
+
+/* =====================================
+   TOPBAR
+===================================== */
+.hr-topbar {
+    height: 60px;
+    background: var(--primary);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.hr-logo {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.hr-user {
+    font-size: 14px;
+}
+
+/* =====================================
+   LAYOUT
+===================================== */
+.hr-layout {
+    display: flex;
+    min-height: calc(100vh - 60px);
+}
+
+/* =====================================
+   SIDEBAR
+===================================== */
+.hr-sidebar {
+    width: 240px;
+    background: white;
+    border-right: 1px solid var(--border);
+    padding: 25px 20px;
+}
+
+.sidebar-header h6 {
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: #64748b;
+    margin-bottom: 20px;
+}
+
+.hr-sidebar .nav-link {
+    color: #334155;
+    padding: 10px 12px;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    transition: 0.2s ease;
+}
+
+.hr-sidebar .nav-link:hover {
+    background-color: var(--light-bg);
+}
+
+.hr-sidebar .nav-link.active {
+    background-color: var(--accent);
+    color: white;
+    font-weight: 500;
+}
+
+/* =====================================
+   CONTENT
+===================================== */
+.hr-content {
+    flex: 1;
+    padding: 30px;
+}
+
+/* =====================================
+   CARD WRAPPER & CARDS
+===================================== */
+.card-wrapper {
+    padding: 10px; /* ensures spacing around cards */
+}
+
+@media (min-width: 992px) {
+    .card-wrapper {
+        padding: 15px; /* more spacing on large screens */
+    }
+}
+
+.card {
+    background: var(--card-bg);
+    border: none;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    transition: 0.25s ease;
+    height: 100%; /* ensures equal height in column */
+}
+
+.card:hover {
+    transform: translateY(-4px);
+}
+
+.card h6 {
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.card h3 {
+    font-weight: 700;
+}
+
+/* Override bootstrap colors slightly */
+.bg-primary {
+    background: var(--accent) !important;
+}
+
+.bg-success {
+    background: var(--success) !important;
+}
+
+.bg-warning {
+    background: var(--warning) !important;
+}
+
+/* =====================================
+   BUTTONS
+===================================== */
+.btn {
+    border-radius: 8px;
+    font-size: 14px;
+    padding: 6px 14px;
+}
+
+.btn-success {
+    background: var(--success);
+    border: none;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}
+
+/* =====================================
+   TABLES
+===================================== */
+.table {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.04);
+}
+
+.table thead {
+    background-color: var(--primary);
+    color: white;
+}
+
+.table th {
+    font-size: 13px;
+    font-weight: 500;
+    border: none;
+}
+
+.table td {
+    vertical-align: middle;
+    font-size: 14px;
+    border-color: var(--border);
+}
+
+.table tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+.table a {
+    text-decoration: none;
+    font-weight: 500;
+    color: var(--accent);
+}
+
+.table a:hover {
+    text-decoration: underline;
+}
+
+/* =====================================
+   ALERTS
+===================================== */
+.custom-alert {
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-size: 14px;
+}
+
+.alert-success { background-color: #dcfce7; color: #166534; }
+.alert-error,
+.alert-danger { background-color: #fee2e2; color: #991b1b; }
+.alert-warning { background-color: #fef3c7; color: #92400e; }
+
+/* =====================================
+   FORMS
+===================================== */
+form {
+    background: white;
+    padding: 25px;
+    border-radius: 14px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+}
+
+input, select, textarea {
+    border-radius: 8px !important;
+    border: 1px solid var(--border) !important;
+}
+
+label {
+    font-weight: 500;
+    margin-bottom: 6px;
+}
+
+/* =====================================
+   RESPONSIVE
+===================================== */
+@media (max-width: 992px) {
+    .hr-layout {
+        flex-direction: column;
+    }
+
+    .hr-sidebar {
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+    }
+}
+
+/* Make the create button slightly bigger and more modern */
+.btn-success {
+    background: var(--success);
+    color: white;
+    border: none;
+    font-weight: 500;
+    padding: 8px 18px;
+    border-radius: 10px;
+    transition: 0.2s ease;
+}
+
+.btn-success:hover {
+    background: #15803d;
+}

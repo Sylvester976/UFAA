@@ -214,7 +214,8 @@ def login_view(request):
 
         if user:
             login(request, user)
-            return HttpResponse("Logged in successfully")
+            # return HttpResponse("Logged in successfully")
+            return redirect("hr_dashboard")
 
     return render(request, "roles/login.html")
 
