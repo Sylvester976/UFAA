@@ -3,7 +3,7 @@ from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, 
 from django.shortcuts import render, redirect, get_object_or_404
 from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
 from django.http import JsonResponse
-from accounts.models import JobseekerAccount, AdditionalDetail, JobseekerProfile, ProfessionalQualification, WorkHistory, AcademicQualification
+from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory, AcademicQualification
 
 from django.contrib.auth.decorators import login_required
 from .models import Vacancy

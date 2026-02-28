@@ -1,6 +1,12 @@
 from django.db import models
 from accounts.models import JobseekerAccount
 
+from django.db import models
+from django.conf import settings
+from django.utils import timezone
+
+from django.utils import timezone
+from django.db.models import Avg
 
 class Gender(models.Model):
     name = models.CharField(max_length=50, unique=True)
@@ -102,15 +108,14 @@ class JobSeekerProfile(models.Model):
         return f'{self.user.name} — Profile'
     
     
-from django.db import models
-from django.conf import settings
-from django.utils import timezone
-
-from django.utils import timezone
-from django.db.models import Avg
 
 class Vacancy(models.Model):
 
+    TYPE_CHOICES = [
+        ('external', 'External'),
+        ('internal', 'Internal'),
+    ]
+    
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('open', 'Open'),
@@ -148,7 +153,17 @@ class Vacancy(models.Model):
     def __str__(self):
         return f"{self.title} ({self.reference_number})"
     
-  
+    vacancy_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='external'
+    )
+
+    def auto_close_if_expired(self):
+        if self.status == 'open' and self.end_date < timezone.now().date():
+            self.status = 'closed'
+            self.save()
+            
 
 
 class Application(models.Model):
