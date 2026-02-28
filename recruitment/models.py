@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from accounts.models import JobseekerAccount
+from accounts.models import User
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Avg
@@ -79,7 +79,7 @@ class Ward(models.Model):
         return f'{self.name} — {self.constituency.name}'
 
 class JobSeekerProfile(models.Model):
-    user                = models.OneToOneField(JobseekerAccount, on_delete=models.CASCADE, related_name='profile')
+    user                = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     salutation          = models.CharField(max_length=50, blank=True, null=True)
     surname             = models.CharField(max_length=255, blank=True, null=True)
     first_name          = models.CharField(max_length=255, blank=True, null=True)
@@ -120,7 +120,7 @@ class EducationLevel(models.Model):
 
 
 class AcademicQualification(models.Model):
-    user            = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='academic_qualifications')
+    user            = models.ForeignKey(User, on_delete=models.CASCADE, related_name='academic_qualifications')
     education_level = models.ForeignKey(EducationLevel, on_delete=models.PROTECT)
     institution     = models.CharField(max_length=255)
     field_of_study  = models.CharField(max_length=255, blank=True, null=True)
@@ -153,7 +153,7 @@ class DocumentType(models.Model):
 
 
 class Document(models.Model):
-    user          = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='documents')
+    user          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
     profile       = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
     document_type = models.ForeignKey(DocumentType, on_delete=models.PROTECT)
     file          = models.FileField(upload_to='documents/%Y/%m/')
@@ -248,7 +248,7 @@ class Application(models.Model):
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     # applicant = models.ForeignKey(
-    #     'accounts.JobseekerAccount',   # app_name.ModelName
+    #     'accounts.User',   # app_name.ModelName
     #     on_delete=models.CASCADE,
     #     related_name='applications'
     # )

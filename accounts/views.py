@@ -8,7 +8,7 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from config import settings
-from .models import JobseekerAccount
+from .models import User
 from django.contrib.auth import authenticate, login
 
 
@@ -86,14 +86,13 @@ def save_user_account(request):
 
     try:
         # Save user to DB
-        JobseekerAccount.objects.create(
-            name=name,
+        user = User.objects.create(
+            full_name=name,        # replaced 'name'
             email=email,
             id_no=idno,
-            password=encrypted_password,
-            account_type=1,
+            user_type=1,           # external / jobseeker
             is_active=True,
-            is_verified=False,
+            is_verified=False
         )
 
         return JsonResponse({'status': 'success', 'message': 'Registration successful.'})
@@ -123,16 +122,10 @@ def signin(request):
         return JsonResponse({'status': 'error', 'message': 'ID number and password are required.'})
 
     try:
-        user = JobseekerAccount.objects.get(id_no=idno)
+        user = User.objects.get(id_no=idno, user_type=1)
 
         if not user.is_active:
             return JsonResponse({'status': 'error', 'message': 'Account is disabled.'})
-        # if not user.is_verified:
-        #     send_verification_email(request, user)
-        #     return JsonResponse({
-        #         'status': 'error',
-        #         'message': 'Account not verified. Verification link sent to your email.'
-        #     })
         if not user.check_password(password):
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
 
@@ -144,14 +137,21 @@ def signin(request):
                 pass
 
         # Create new session
-        request.session['user_id'] = user.id
-        user.last_login = timezone.now()
+        # request.session['user_id'] = user.id
+        # user.last_login = timezone.now()
+        # user.session_key = request.session.session_key
+        # user.save()
+        
+        # Create new session
+        request.session['user_id'] = str(user.id)
+        request.session.save()  # ensure session_key is generated
         user.session_key = request.session.session_key
+        user.last_login = timezone.now()
         user.save()
 
         return JsonResponse({'status': 'success', 'message': 'Login successful.'})
 
-    except JobseekerAccount.DoesNotExist:
+    except User.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'User not found.'})
 
 
@@ -159,11 +159,11 @@ def logout(request):
     user_id = request.session.get('user_id')
     if user_id:
         try:
-            user = JobseekerAccount.objects.get(id=user_id)
+            user = User.objects.get(id=user_id, user_type=1)
             # Clear session key in DB
             user.session_key = None
             user.save()
-        except JobseekerAccount.DoesNotExist:
+        except User.DoesNotExist:
             pass
 
     # Delete session completely
@@ -174,11 +174,11 @@ def logout(request):
 
 def verify_email(request, token):
     try:
-        user = JobseekerAccount.objects.get(verification_token=token)
+        user = User.objects.get(verification_token=token, user_type=1)
         user.is_verified = True
         user.save()
         return HttpResponse("Email verified successfully. You can now login.")
-    except JobseekerAccount.DoesNotExist:
+    except User.DoesNotExist:
         return HttpResponse("Invalid or expired verification link.")
 
 
@@ -219,6 +219,11 @@ def login_view(request):
 
     return render(request, "roles/login.html")
 
+from django.shortcuts import render, redirect
+from django.views import View
+from django.contrib import messages
+from accounts.models import User
+from core.mixins import SuperAdminRequiredMixin
 
 class UserCreateView(SuperAdminRequiredMixin, View):
     template_name = "accounts/user_form.html"
@@ -227,31 +232,56 @@ class UserCreateView(SuperAdminRequiredMixin, View):
         return render(request, self.template_name)
 
     def post(self, request):
+        # Basic User fields
         email = request.POST.get("email")
         password = request.POST.get("password")
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         national_id = request.POST.get("national_id")
 
+        # InternalProfile fields
+        date_of_birth = request.POST.get("date_of_birth")
+        gender = request.POST.get("gender")
+        ethnic_group = request.POST.get("ethnic_group")
+        home_county = request.POST.get("home_county")
+        disability_status = request.POST.get("disability_status") == "on"
+        job_group = request.POST.get("job_group")
+        designation = request.POST.get("designation")
+        date_of_appointment = request.POST.get("date_of_appointment")
+
+        # Validation
         if not email or not password:
             messages.error(request, "Email and password are required")
             return render(request, self.template_name)
 
-        user = User.objects.create_user(
-            email=email,
-            password=password,
-            first_name=first_name,
-            last_name=last_name,
-            national_id=national_id,
-        )
+        try:
+            # Create User
+            user = User.objects.create_user(
+                email=email,
+                password=password,
+                first_name=first_name,
+                last_name=last_name,
+                national_id=national_id,
+                user_type=2,  # internal user
+                is_active=True
+            )
 
-        messages.success(request, "User created successfully")
-        return redirect("user_list")
+            messages.success(request, "Internal user created successfully")
+            return redirect("user_list")
 
-class UserListView(SuperAdminRequiredMixin, ListView): 
-    model = User 
-    template_name = "accounts/user_list.html" 
+        except Exception as e:
+            messages.error(request, f"Error creating user: {e}")
+            return render(request, self.template_name)
+        
+        
+class UserListView(SuperAdminRequiredMixin, ListView):
+    model = User
+    template_name = "accounts/user_list.html"
     context_object_name = "users"
+
+    def get_queryset(self):
+        # Only internal users (user_type=2)
+        return User.objects.filter(user_type=2)
 
 
 def assign_role(request, user_id):

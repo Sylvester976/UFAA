@@ -5,29 +5,57 @@
     {% if user_obj %} Edit User {% else %} Create User {% endif %}
 </h2>
 
+<h2>Create Internal User</h2>
+
 <form method="POST">
     {% csrf_token %}
 
+    <!-- User fields -->
     <label>Email</label>
-    <input type="email" name="email" 
-        value="{{ user_obj.email|default:'' }}" required>
+    <input type="email" name="email" required>
 
     <label>First Name</label>
-    <input type="text" name="first_name" 
-        value="{{ user_obj.first_name|default:'' }}">
+    <input type="text" name="first_name">
 
     <label>Last Name</label>
-    <input type="text" name="last_name" 
-        value="{{ user_obj.last_name|default:'' }}">
+    <input type="text" name="last_name">
 
     <label>National ID</label>
-    <input type="text" name="national_id" 
-        value="{{ user_obj.national_id|default:'' }}">
+    <input type="text" name="national_id">
 
-    <label>Password (leave blank if updating)</label>
-    <input type="password" name="password">
+    <label>Password</label>
+    <input type="password" name="password" required>
+
+    <!-- InternalProfile fields -->
+    {% comment %} <label>Date of Birth</label>
+    <input type="date" name="date_of_birth">
+
+    <label>Gender</label>
+    <select name="gender">
+        <option value="">Select</option>
+        <option value="Male">Male</option>
+        <option value="Female">Female</option>
+        <option value="Other">Other</option>
+    </select>
+
+    <label>Ethnic Group</label>
+    <input type="text" name="ethnic_group">
+
+    <label>Home County</label>
+    <input type="text" name="home_county">
+
+    <label>Disability Status</label>
+    <input type="checkbox" name="disability_status">
+
+    <label>Job Group</label>
+    <input type="text" name="job_group">
+
+    <label>Designation</label>
+    <input type="text" name="designation">
+
+    <label>Date of Appointment</label>
+    <input type="date" name="date_of_appointment"> {% endcomment %}
 
     <button type="submit">Save</button>
 </form>
-
 {% endblock %}

@@ -40,7 +40,9 @@
                     Dashboard
                 </a>
             </li>
-            <li class="nav-item"><a href="#" class="nav-link">Manage Users</a></li>
+            <li class="nav-item"><a href="{% url 'user_list' %}" 
+                   class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}"
+                    >Manage Users</a></li>
             <li class="nav-item"><a href="#" class="nav-link">Vacancies</a></li>
             <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
         </ul>

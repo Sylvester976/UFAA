@@ -5,9 +5,9 @@ from django.contrib import messages
 from .models import Gender, EthnicGroup, County, Constituency, PanelAssignment, SubCounty, Ward, JobSeekerProfile
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
 from django.shortcuts import render, redirect, get_object_or_404
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
+from accounts.models import User, AdditionalDetail, ProfessionalQualification, WorkHistory
 from django.http import JsonResponse
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
+from accounts.models import User, AdditionalDetail, ProfessionalQualification, WorkHistory
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
@@ -16,7 +16,7 @@ from django.http import JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
-from accounts.models import JobseekerAccount, AdditionalDetail, ProfessionalQualification, WorkHistory
+from accounts.models import User, AdditionalDetail, ProfessionalQualification, WorkHistory
 from core.decorators import role_required
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
@@ -29,7 +29,7 @@ def get_logged_in_user(request):
     user_id = request.session.get('user_id')
     if not user_id:
         return None
-    return JobseekerAccount.objects.filter(id=user_id).first()
+    return User.objects.filter(id=user_id, user_type=1).first()
 
 
 def dashboard(request):
@@ -63,7 +63,7 @@ def profile_view(request):
     if not user_id:
         return redirect('index')
 
-    user = JobseekerAccount.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id, user_type=1).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -141,7 +141,7 @@ def academic_qualifications_view(request):
     if not user_id:
         return redirect('index')
 
-    user = JobseekerAccount.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id, user_type=1).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -354,7 +354,7 @@ def delete_profile(request):
     if not user_id:
         return redirect('index')
 
-    user = JobseekerAccount.objects.filter(id=user_id).first()
+    user = User.objects.filter(id=user_id, user_type=1).first()
     profile = JobSeekerProfile.objects.filter(user=user).first()
     if profile:
         profile.delete()
@@ -884,7 +884,7 @@ def vacancy_detail(request, vacancy_id):
     })
 
     
-# @login_required
+@login_required
 # @role_required(['applicant', 'officer'])
 def apply_for_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
@@ -934,9 +934,9 @@ def apply_for_vacancy(request, vacancy_id):
 def hr_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    if vacancy.status not in ['closed', 'longlisting', 'shortlisting', 'interviews']:
-        messages.error(request, "Applications not available for review yet.")
-        return redirect('hr_dashboard')
+    # if vacancy.status not in ['closed', 'longlisting', 'shortlisting', 'interviews']:
+    #     messages.error(request, "Applications not available for review yet.")
+    #     return redirect('hr_dashboard')
 
     applications = Application.objects.filter(vacancy=vacancy)
 
