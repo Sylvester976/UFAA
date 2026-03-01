@@ -47,6 +47,7 @@ class User(AbstractBaseUser):
     session_key = models.CharField(max_length=40, blank=True, null=True)
     verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
     is_verified = models.BooleanField(default=False)
+    is_employee = models.BooleanField(default=False)
 
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES, default=1)
 
@@ -80,70 +81,3 @@ class User(AbstractBaseUser):
 
     
  
-class ProfessionalQualification(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="professional_qualifications"
-    )
-
-    institution = models.CharField(max_length=255)
-    course = models.CharField(max_length=255)
-    completion_date = models.DateField()
-    grade = models.CharField(max_length=50)
-
-    certificate = models.FileField(
-        upload_to="professional_certificates/",
-        null=True,
-        blank=True
-    )
-
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"{self.user.id_no} - {self.course}"
-       
-
-class WorkHistory(models.Model):
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="work_history"
-    )
-
-    company = models.CharField(max_length=255)
-    job_title = models.CharField(max_length=255)
-    duties = models.TextField()
-
-    start_date = models.DateField()
-    end_date = models.DateField(null=True, blank=True)
-
-    is_current = models.BooleanField(default=False)
-
-    exit_reason = models.TextField(null=True, blank=True)
-
-    created_at = models.DateTimeField(default=timezone.now)
-
-    def __str__(self):
-        return f"{self.user.id_no} - {self.company}"
-   
-
-class AdditionalDetail(models.Model):
-    user = models.OneToOneField(
-        User,
-        on_delete=models.CASCADE,
-        related_name="additional_detail"
-    )
-
-    cover_letter = models.TextField(null=True, blank=True)
-
-    cv = models.FileField(
-        upload_to="cv_uploads/",
-        null=True,
-        blank=True
-    )
-
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.user.id_no} Additional Details"

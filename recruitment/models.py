@@ -310,7 +310,7 @@ class Appointment(models.Model):
     appointment_letter = models.FileField(upload_to='media/appointments/', blank=True, null=True)
 
 class ProfessionalQualification(models.Model):
-    user              = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE,
+    user              = models.ForeignKey(User, on_delete=models.CASCADE,
                                           related_name='professional_qualifications')
     qualification     = models.CharField(max_length=255)          # e.g. CPA, PMP
     awarding_body     = models.CharField(max_length=255)          # institution
@@ -342,9 +342,7 @@ class WorkHistory(models.Model):
         (10, 'October'),  (11, 'November'), (12, 'December'),
     ]
 
-    user            = models.ForeignKey(
-                          'accounts.JobseekerAccount',
-                          on_delete=models.CASCADE,
+    user            = models.ForeignKey(User, on_delete=models.CASCADE,
                           related_name='work_history'
                       )
     job_title       = models.CharField(max_length=255)
@@ -390,9 +388,7 @@ class AdditionalDetail(models.Model):
         ('Not Available',  'Not Available'),
     ]
 
-    user            = models.OneToOneField(
-                          'accounts.JobseekerAccount',
-                          on_delete=models.CASCADE,
+    user            = models.OneToOneField(User, on_delete=models.CASCADE,
                           related_name='additional_detail'
                       )
     cv              = models.FileField(upload_to='cvs/', null=True, blank=True)

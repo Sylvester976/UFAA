@@ -10,6 +10,7 @@ urlpatterns = [
     path("professional/", views.professional_qualifications_view, name="professional_qualifications"),
     path("work-history/", views.work_history_view, name="work_history"),
     path("additional/", views.additional_details_view, name="additional_details"),
+    path("jobs/", views.view_jobs, name="view_jobs"),
     # HR DASHBOARD
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
 
@@ -98,4 +99,20 @@ urlpatterns = [
         views.ceo_select_candidate,
         name='ceo_select_candidate'
     ),
+        
+    path(
+        "hr/application/<int:application_id>/",
+        views.application_detail,
+        name="application_detail"
+    ),
+    
+    path('vacancies/longlisting/', views.vacancy_longlisting, name='vacancy_longlisting'),
+    path('vacancies/shortlisting/', views.vacancy_shortlisting, name='vacancy_shortlisting'),
+    path('vacancies/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
+    path('vacancies/list/', views.vacancy_list, name='vacancy_list'),
+    path('vacancies/appointments/', views.vacancy_appointments, name='vacancy_appointments'),
+
+    # Appoint panelists to a vacancy
+    path('vacancies/<int:vacancy_id>/appoint-panelists/', views.appoint_panelists, name='appoint_panelists'),
+
 ]

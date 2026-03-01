@@ -1,4 +1,4 @@
-
+{% extends "layout/base.html" %}
 {% load static %}
 
 {% block content %}
@@ -13,11 +13,11 @@
     </div>
 
     <div>
-        <label for="cover_letter">Cover Letter:</label><br>
+        <label for="cover_letter">Why you?</label><br>
         <textarea name="cover_letter" id="cover_letter" rows="6" required></textarea>
     </div>
 
-    <button type="submit">Submit Application</button>
+    <button style="background-color: #C39545; border-color: #C39545;" type="submit">Submit Application</button>
 </form>
 
 {% if messages %}
@@ -27,5 +27,6 @@
     {% endfor %}
 </ul>
 {% endif %}
+
 
 {% endblock %}

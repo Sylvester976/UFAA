@@ -158,3 +158,25 @@ DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.EmailBackend",
 ]
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'django_requests.log',
+        },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['file', 'console'],
+            'level': 'INFO',
+            'propagate': True,
+        },
+    },
+}

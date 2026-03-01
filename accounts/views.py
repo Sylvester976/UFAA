@@ -26,9 +26,6 @@ from django.shortcuts import render
 from django.utils import timezone
 from recruitment.models import Vacancy  # import your model
 
-from django.shortcuts import render
-from django.utils import timezone
-from recruitment.models import Vacancy
 
 def landing(request):
     today = timezone.now().date()
@@ -81,21 +78,22 @@ def save_user_account(request):
     if password != confirm_password:
         return JsonResponse({'status': 'error', 'message': 'Passwords do not match.'})
 
-    # Hash password
-    encrypted_password = make_password(password)
-
     try:
-        # Save user to DB
+        # Create user with hashed password
         user = User.objects.create(
-            full_name=name,        # replaced 'name'
+            full_name=name,
             email=email,
             id_no=idno,
+            password=make_password(password),  # Hash password before saving
             user_type=1,           # external / jobseeker
             is_active=True,
             is_verified=False
         )
 
-        return JsonResponse({'status': 'success', 'message': 'Registration successful.'})
+        # Optional: Send verification email
+        # send_verification_email(request, user)
+
+        return JsonResponse({'status': 'success', 'message': 'Registration successful. You can now login.'})
 
     except IntegrityError as e:
         # Check which field caused the integrity error
@@ -109,7 +107,6 @@ def save_user_account(request):
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
-
 
 def signin(request):
     if request.method != 'POST':

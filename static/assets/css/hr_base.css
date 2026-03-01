@@ -1,3 +1,5 @@
+
+
 /* =====================================
    ROOT COLORS
 ===================================== */
@@ -270,4 +272,81 @@ label {
 
 .btn-success:hover {
     background: #15803d;
+}
+
+
+/* Create/Edit user Form container */
+.user-form {
+    max-width: 600px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    font-family: Arial, sans-serif;
+}
+
+/* Form heading */
+.user-form h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #333;
+}
+
+/* Labels */
+.user-form label {
+    display: block;
+    margin-bottom: 0.3rem;
+    font-weight: bold;
+    color: #555;
+}
+
+/* Inputs, selects, date pickers */
+.user-form input[type="text"],
+.user-form input[type="email"],
+.user-form input[type="password"],
+.user-form input[type="date"],
+.user-form select {
+    width: 100%;
+    padding: 0.6rem;
+    margin-bottom: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 1rem;
+    transition: border-color 0.2s;
+}
+
+.user-form input:focus,
+.user-form select:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Checkbox styling */
+.user-form .checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.user-form .checkbox-container input[type="checkbox"] {
+    margin-right: 0.5rem;
+    transform: scale(1.2);
+}
+
+/* Submit button */
+.user-form button {
+    width: 100%;
+    padding: 0.8rem;
+    background-color: #007bff;
+    border: none;
+    color: #fff;
+    font-size: 1.1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.user-form button:hover {
+    background-color: #0056b3;
 }

@@ -68,13 +68,13 @@
 
                     <!-- Draft Stage -->
                     {% if vacancy.status == "draft" %}
-                        <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
-                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
+                         | <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
                         <a href="{% url 'publish_vacancy' vacancy.id %}">Publish</a> |
+                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
                     {% elif vacancy.status == "open" %}
-                         | <a href="{% url 'close_vacancy' vacancy.id %}">Close</a> 
+                         | <a href="{% url 'close_vacancy' vacancy.id %}">Close</a>  |  
                     {% elif vacancy.status == "closed" %}
-                        <a href="{% url 'open_vacancy' vacancy.id %}">Open</a>
+                        <a href="{% url 'open_vacancy' vacancy.id %}">Open</a> |  
                     {% endif %}
 
                     <!-- Open / Closed -->
@@ -83,7 +83,7 @@
                             View Applications
                         </a> |                        
                         <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
-                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> 
+                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
                     {% endif %}
 
                     <!-- Longlisting -->

@@ -27,7 +27,6 @@
 
 <div class="hr-layout">
 
-    <!-- SIDEBAR -->
     <aside class="hr-sidebar">
         <div class="sidebar-header">
             <h6>HR MENU</h6>
@@ -36,14 +35,47 @@
         <ul class="nav flex-column">
             <li class="nav-item">
                 <a href="{% url 'hr_dashboard' %}" 
-                   class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}">
+                class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}">
                     Dashboard
                 </a>
             </li>
-            <li class="nav-item"><a href="{% url 'user_list' %}" 
-                   class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}"
-                    >Manage Users</a></li>
-            <li class="nav-item"><a href="#" class="nav-link">Vacancies</a></li>
+            <li class="nav-item">
+                <a href="{% url 'vacancy_list' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}">
+                    Published Vacancies
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'vacancy_longlisting' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}">
+                    Vacancy longlists
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'vacancy_shortlisting' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}">
+                    Vacancy shortlists
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'vacancy_interviews' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}">
+                    Vacancy interviews
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'vacancy_appointments' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}">
+                    Appointments
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a href="{% url 'user_list' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    Manage Users
+                </a>
+            </li>
             <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
         </ul>
     </aside>

@@ -27,7 +27,7 @@
                 <th>Email</th>
                 <th>Applied At</th>
                 <th>Status</th>
-                <th>CV</th>
+                <th>Profile</th>
             </tr>
         </thead>
         <tbody>
@@ -39,8 +39,9 @@
                     <td>{{ app.applied_at }}</td>
                     <td>{{ app.status }}</td>
                     <td>
-                        <a href="{{ app.cv.url }}" target="_blank">
-                            View CV
+                        <a href="{% url 'application_detail' app.id %}"
+                        class="btn btn-sm btn-outline-primary">
+                            View Profile
                         </a>
                     </td>
                 </tr>
