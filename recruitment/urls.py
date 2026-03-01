@@ -13,7 +13,8 @@ urlpatterns = [
     path("jobs/", views.view_jobs, name="view_jobs"),
     path("instrutions/", views.view_jobs, name="view_jobs"),
     # HR DASHBOARD
-    path('hr/dashboard/', views.instrutions_view, name='instrutions_view'),
+    path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
+    path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
 
     # Vacancy management
     path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),
