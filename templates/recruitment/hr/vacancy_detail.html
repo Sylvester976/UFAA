@@ -1,25 +1,150 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>{{ vacancy.title }} | UFAA Recruitment Portal</title>
 
-{% block content %}
+    <link href="{% static 'assets/css/landing.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/npm/bootstrap/bootstrap.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/npm/font/bootstrap-icons.css' %}" rel="stylesheet" />
+    
+    <link href="{% static 'assets/css/landing.css' %}" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+    
+</head>
+<body>
 
-<h3>{{ vacancy.title }}</h3>
+<!-- Navbar -->
+<nav class="header navbar navbar-expand-lg custom-navbar fixed-top">
+    <div class="container">
+        <a href="{% url 'landing' %}" class="logo d-flex align-items-center">
+            <img alt="Court of Arms of Kenya" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 80px;">
+            <div class="logo-divider mx-2"></div>
+            <img alt="UFAA Official Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 80px;">
+        </a>
 
-<p><strong>Reference:</strong> {{ vacancy.reference_number }}</p>
-<p><strong>Description:</strong></p>
-<p>{{ vacancy.description }}</p>
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
-{% comment %} <a href="{{ vacancy.advert_pdf.url }}" target="_blank">
-    Download Advert PDF
-</a> {% endcomment %}
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'landing' %}#jobs">Vacancies</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'signup' %}">Register</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'index' %}">Login</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
 
-<hr>
-{% if vacancy.status == "open" %}
-    <a href="{% url 'apply_for_vacancy' vacancy.id %}"
-       class="btn btn-primary">
-        Apply Now
-    </a>
-{% else %}
-    <span class="badge bg-danger">Closed</span>
-{% endif %}
+<!-- Page Header -->
+<section class="hero text-center" style="padding: 120px 0 60px 0;">
+    <div class="container">
+        <h1 class="fw-bold">{{ vacancy.title }}</h1>
+        <p class="lead">Reference No: {{ vacancy.reference_number }}</p>
+    </div>
+</section>
 
+<!-- Vacancy Content -->
+<section class="py-5 bg-light">
+    <div class="container">
 
-{% endblock %}
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-4">
+
+                        <h5 class="fw-bold mb-3">Job Description</h5>
+                        
+                        <p class="lead">Reference No: {{ vacancy.reference_number }}</p>
+                        <p class="text-muted">
+                            {{ vacancy.description|linebreaks }}
+                        </p>
+
+                        {% if vacancy.advert_pdf %}
+                        <div class="mb-4">
+                            <a href="{% url 'download_vacancy_pdf' vacancy.id %}"
+                               class="btn btn-outline-secondary btn-sm">
+                                <i class="bi bi-file-earmark-pdf"></i> Download Full Advert (PDF)
+                            </a>
+                        </div>
+                        {% endif %}
+
+                        <hr>
+
+                        {% if vacancy.status == "open" %}
+                            <div class="alert alert-success">
+                                Applications are currently open.
+                            </div>
+
+                            <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+                               class="btn btn-primary"
+                               style="background-color: #003366; border-color: #003366;">
+                                <i class="bi bi-send"></i> Apply Now
+                            </a>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                This vacancy is now closed.
+                            </div>
+                            <span class="badge bg-danger">Closed</span>
+                        {% endif %}
+
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <div class="mt-4">
+                    <a href="{% url 'landing' %}#jobs" class="text-decoration-none">
+                        <i class="bi bi-arrow-left"></i> Back to Vacancies
+                    </a>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- Important Notice -->
+<section class="py-4 bg-white">
+    <div class="container">
+        <div class="alert alert-warning">
+            <strong>Important Notice:</strong>
+            The Unclaimed Financial Assets Authority (UFAA) does not charge any fee
+            at any stage of the recruitment process.
+            Do not pay anyone claiming to offer recruitment assistance.
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="py-4 text-center">
+    <div class="container">
+        <div class="copyright text-center text-sm">
+            © <script>document.write(new Date().getFullYear())</script>
+            The Unclaimed Financial Assets Authority (UFAA).
+            All rights reserved.
+        </div>
+        <small>
+            <a href="#" class="text-decoration-none text-secondary me-3">Privacy Policy</a>
+            <a href="#" class="text-decoration-none text-secondary">Terms of Service</a>
+        </small>
+    </div>
+</footer>
+
+<script src="{% static 'assets/npm/js/bootstrap.bundle.min.js' %}"></script>
+
+</body>
+</html>

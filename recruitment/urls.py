@@ -11,8 +11,9 @@ urlpatterns = [
     path("work-history/", views.work_history_view, name="work_history"),
     path("additional/", views.additional_details_view, name="additional_details"),
     path("jobs/", views.view_jobs, name="view_jobs"),
+    path("instrutions/", views.view_jobs, name="view_jobs"),
     # HR DASHBOARD
-    path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
+    path('hr/dashboard/', views.instrutions_view, name='instrutions_view'),
 
     # Vacancy management
     path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),

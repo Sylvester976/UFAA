@@ -55,6 +55,10 @@ def view_jobs(request):
 
     return render(request, 'jobseekers/jobs.html', {'vacancies': vacancies})
 
+def instrutions_view(request):
+
+    return render(request, 'jobseekers/instructions.html')
+
 
 # ── In recruitment/views.py ───────────────────────────────────
 # Add/replace dashboard_view:
