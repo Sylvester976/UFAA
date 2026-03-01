@@ -266,6 +266,20 @@ class UserCreateView(SuperAdminRequiredMixin, View):
                 is_active=True
             )
 
+            # Create InternalProfile
+            # InternalProfile.objects.create(
+            #     user=user,
+            #     national_id=national_id,
+            #     date_of_birth=date_of_birth,
+            #     gender=gender,
+            #     ethnic_group=ethnic_group,
+            #     home_county=home_county,
+            #     disability_status=disability_status,
+            #     job_group=job_group,
+            #     designation=designation,
+            #     date_of_appointment=date_of_appointment
+            # )
+            
             messages.success(request, "Internal user created successfully")
             return redirect("user_list")
 

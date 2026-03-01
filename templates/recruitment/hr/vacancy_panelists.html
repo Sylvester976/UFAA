@@ -1,0 +1,12 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block content %}
+<h3>Panelists for {{ vacancy.title }}</h3>
+
+<ul>
+    {% for user in panelists %}
+        <li>{{ user.first_name }} {{ user.last_name }}</li>
+    {% empty %}
+        <li>No panelists assigned.</li>
+    {% endfor %}
+</ul>
+{% endblock %}

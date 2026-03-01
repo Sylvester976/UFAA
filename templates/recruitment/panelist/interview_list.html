@@ -1,0 +1,48 @@
+{% extends 'recruitment/panelist/base_panelist.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Interview Candidates - {{ vacancy.title }}</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Candidate</th>
+                <th>CV</th>
+                <th>Your Score</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ app.applicant.get_full_name }}</td>
+                <td>
+                    <a href="{{ app.cv.url }}" target="_blank">View CV</a>
+                </td>
+                <td>
+                    {% with score=app.scores.all|dictsort:"panelist_id" %}
+                        {% for s in app.scores.all %}
+                            {% if s.panelist == request.user %}
+                                {{ s.score }}
+                            {% endif %}
+                        {% endfor %}
+                    {% endwith %}
+                </td>
+                <td>
+                    <a href="{% url 'panelist_score_candidate' app.id %}">
+                        Score
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

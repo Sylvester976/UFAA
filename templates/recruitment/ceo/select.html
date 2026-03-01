@@ -1,0 +1,43 @@
+{% extends "recruitment/ceo/base_ceo.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h4>Confirm Selection</h4>
+
+    {% if application %}
+        <p><strong>Candidate:</strong> {{ application.applicant.get_full_name }}</p>
+
+        {% if is_override %}
+            <div class="alert alert-warning">
+                This candidate is NOT in the Top Three.
+                An override reason is required.
+            </div>
+        {% endif %}
+
+        <form method="POST">
+            {% csrf_token %}
+
+            {% if is_override %}
+                <div class="mb-3">
+                    <label class="form-label">Override Reason</label>
+                    <textarea name="override_reason"
+                              class="form-control"
+                              required>{{ application.ceo_override_reason }}</textarea>
+                </div>
+            {% endif %}
+
+            <button type="submit" class="btn btn-success">
+                Confirm Selection
+            </button>
+        </form>
+    {% else %}
+        <div class="alert alert-info">
+            No candidate available for selection.
+        </div>
+    {% endif %}
+
+</div>
+
+{% endblock %}

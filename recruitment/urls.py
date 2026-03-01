@@ -49,4 +49,61 @@ urlpatterns = [
     # Applicant Area
     path('vacancy/<int:vacancy_id>/', views.vacancy_detail, name='vacancy_detail'),
     path('vacancy/<int:vacancy_id>/apply/', views.apply_for_vacancy, name='apply_for_vacancy'),
+    path('vacancies/<int:vacancy_id>/panelists/', views.vacancy_panelists, name='vacancy_panelists'),
+    # opening/closing vacancies
+    path('vacancies/<int:vacancy_id>/open/', views.open_vacancy, name='open_vacancy'),
+    path('vacancies/<int:vacancy_id>/close/', views.close_vacancy, name='close_vacancy'),
+    
+    # Panelist area
+    path('panelist/dashboard/', views.panelist_dashboard, name='panelist_dashboard'),
+
+    path('panelist/vacancy/<int:vacancy_id>/interviews/',
+        views.panelist_interview_list,
+        name='panelist_interview_list'),
+
+    path('panelist/application/<int:application_id>/score/',
+        views.panelist_score_candidate,
+        name='panelist_score_candidate'),
+    
+    path('hr/vacancy/<int:vacancy_id>/ranking/',
+     views.hr_ranking_view,
+     name='hr_ranking_view'),
+
+    path('hr/vacancy/<int:vacancy_id>/select-top-three/',
+        views.select_top_three,
+        name='select_top_three'),
+    
+    # path('ceo/vacancy/<int:vacancy_id>/review/',
+    #  views.ceo_review_view,
+    #  name='ceo_review_view'),
+
+    # path('ceo/vacancy/<int:vacancy_id>/select/<int:application_id>/',
+    #     views.ceo_select_candidate,
+    #     name='ceo_select_candidate'),
+    
+    
+
+    path(
+        'ceo/dashboard/',
+        views.ceo_dashboard,
+        name='ceo_dashboard'
+    ),
+
+    path(
+        'ceo/vacancy/<int:vacancy_id>/review/',
+        views.ceo_review_view,
+        name='ceo_review'
+    ),
+
+    path(
+        'ceo/vacancy/<int:vacancy_id>/approve/',
+        views.ceo_approve,
+        name='ceo_approve'
+    ),
+
+    path(
+        'ceo/vacancy/<int:vacancy_id>/select/<int:application_id>/',
+        views.ceo_select_candidate,
+        name='ceo_select_candidate'
+    ),
 ]

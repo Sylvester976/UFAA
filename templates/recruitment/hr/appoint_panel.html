@@ -1,14 +1,70 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block content %}
+
 <form method="POST">
+    {% csrf_token %}
+
+    {% for user in internal_users %}
+        <div>
+            <input type="checkbox"
+                   name="panelists"
+                   value="{{ user.id }}"
+                   {% if panelist_role in user.role.all %}checked{% endif %}>
+            {{ user.first_name }} {{ user.last_name }}
+        </div>
+    {% endfor %}
+
+    <button type="submit">Save</button>
+</form>
+
+<form method="POST">
+    {% csrf_token %}
+
+    {% for user in internal_users %}
+        <div>
+            <input type="checkbox"
+                   name="panelists"
+                   value="{{ user.id }}"
+                   {% if panelist_role in user.role.all %}checked{% endif %}>
+            {{ user.first_name }} {{ user.last_name }}
+        </div>
+    {% endfor %}
+
+    <button type="submit">Save</button>
+</form>
+
+<form method="POST" id="panelForm">
     {% csrf_token %}
 
     {% for panelist in panelists %}
         <div>
             <input type="checkbox"
                    name="panelists"
-                   value="{{ panelist.id }}">
-            {{ panelist.get_full_name }}
+                   value="{{ panelist.id }}"
+                   class="panelist-checkbox"
+                   {% if panelist in assigned_panelists %}checked{% endif %}>
+            {{ panelist.first_name }} {{ panelist.last_name }}
         </div>
     {% endfor %}
 
-    <button type="submit">Appoint Panel</button>
+    <button type="submit" id="submitBtn" disabled>Appoint Panel</button>
 </form>
+
+<script>
+    const checkboxes = document.querySelectorAll('.panelist-checkbox');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function toggleSubmit() {
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+        submitBtn.disabled = !atLeastOneChecked;
+    }
+
+    // Run on page load (in case some are pre-checked)
+    toggleSubmit();
+
+    // Listen for changes
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', toggleSubmit);
+    });
+</script>
+{% endblock %}

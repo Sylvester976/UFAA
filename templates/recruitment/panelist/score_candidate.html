@@ -1,0 +1,45 @@
+{% extends 'recruitment/panelist/base_panelist.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Score Candidate</h3>
+
+    <p><strong>Name:</strong> {{ application.applicant.get_full_name }}</p>
+    <p><strong>Vacancy:</strong> {{ application.vacancy.title }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="mb-3">
+            <label>Score (0 - 100)</label>
+            <input type="number"
+                   name="score"
+                   min="0"
+                   max="100"
+                   step="0.01"
+                   class="form-control"
+                   value="{% if existing_score %}{{ existing_score.score }}{% endif %}"
+                   required>
+        </div>
+
+        <div class="mb-3">
+            <label>Remarks</label>
+            <textarea name="remarks"
+                      class="form-control">{% if existing_score %}{{ existing_score.remarks }}{% endif %}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary">
+            Save Score
+        </button>
+
+        <a href="{% url 'panelist_interview_list' application.vacancy.id %}"
+           class="btn btn-secondary">
+            Back
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

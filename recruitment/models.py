@@ -243,20 +243,22 @@ class Application(models.Model):
         ('approved', 'Approved'),
         ('selected', 'Selected'),
         ('not_selected', 'Not Selected'),
+        ('ceo_review', 'CEO Review'),
+        ('ceo_approved', 'CEO Approved'),
+        ('appointed', 'Appointed')
     ]
-
+    ceo_override = models.BooleanField(default=False)
+    ceo_override_reason = models.TextField(blank=True, null=True)
+    ceo_selected = models.BooleanField(default=False)
+    
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # applicant = models.ForeignKey(
-    #     'accounts.User',   # app_name.ModelName
-    #     on_delete=models.CASCADE,
-    #     related_name='applications'
-    # )
     cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
-
+    interview_locked = models.BooleanField(default=False)
+    
     def average_score(self):
         return self.scores.aggregate(avg=Avg('score'))['avg'] or 0
 

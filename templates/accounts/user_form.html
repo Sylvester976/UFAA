@@ -1,11 +1,10 @@
 
-
+{% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
 <h2>
-    {% if user_obj %} Edit User {% else %} Create User {% endif %}
+    {% if user_obj %} Edit User {% else %} Create Internal User {% endif %}
 </h2>
 
-<h2>Create Internal User</h2>
 
 <form method="POST">
     {% csrf_token %}

@@ -1,0 +1,74 @@
+{% extends 'recruitment/panelist/base_panelist.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Interview Ranking - {{ vacancy.title }}</h3>
+
+    {% if applications %}
+    <form method="POST" action="{% url 'select_top_three' vacancy.id %}">
+        {% csrf_token %}
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>#</th>
+                    <th>Candidate</th>
+                    <th>Final Average</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>
+                        <input type="checkbox"
+                               class="candidate-checkbox"
+                               name="selected_candidates"
+                               value="{{ app.id }}"
+                               {% if total_applications == 1 %}checked{% endif %}>
+                    </td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ app.applicant.get_full_name }}</td>
+                    <td>{{ app.avg_score|floatformat:2 }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">
+            {% if total_applications > 3 %}
+                Confirm Top Three
+            {% else %}
+                Confirm Selection
+            {% endif %}
+        </button>
+    </form>
+    {% else %}
+        <div class="alert alert-info">
+            No ranked candidates available yet.
+        </div>
+    {% endif %}
+
+</div>
+
+{% if total_applications > 3 %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const checkboxes = document.querySelectorAll('.candidate-checkbox');
+
+    checkboxes.forEach(box => {
+        box.addEventListener('change', function () {
+            const checked = document.querySelectorAll('.candidate-checkbox:checked');
+            if (checked.length > 3) {
+                this.checked = false;
+                alert("You can only select three candidates.");
+            }
+        });
+    });
+});
+</script>
+{% endif %}
+
+{% endblock %}

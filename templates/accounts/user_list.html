@@ -8,8 +8,9 @@
   <ul class="list-group">
     {% for user in users %}
     <li class="list-group-item">
-      {{ user.email }}
+      {{ user.first_name }} {{ user.last_name }}
     </li>
+
     
     <li class="list-group-item d-flex justify-content-between">
         {{ user.email }} - {{ user.role }}

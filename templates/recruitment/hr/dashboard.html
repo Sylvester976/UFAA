@@ -70,15 +70,20 @@
                     {% if vacancy.status == "draft" %}
                         <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
                         <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
-                        <a href="{% url 'publish_vacancy' vacancy.id %}">Publish</a>
+                        <a href="{% url 'publish_vacancy' vacancy.id %}">Publish</a> |
+                    {% elif vacancy.status == "open" %}
+                         | <a href="{% url 'close_vacancy' vacancy.id %}">Close</a> 
+                    {% elif vacancy.status == "closed" %}
+                        <a href="{% url 'open_vacancy' vacancy.id %}">Open</a>
                     {% endif %}
 
                     <!-- Open / Closed -->
                     {% if vacancy.status == "open" or vacancy.status == "closed" %}
-                        |
-                        <a href="{% url 'hr_view_applications' vacancy.id %}">
+                         <a href="{% url 'hr_view_applications' vacancy.id %}">
                             View Applications
-                        </a>
+                        </a> |                        
+                        <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
+                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> 
                     {% endif %}
 
                     <!-- Longlisting -->
@@ -98,11 +103,37 @@
                     {% endif %}
 
                     <!-- Interviews -->
-                    {% if vacancy.status == "interviews" %}
-                        |
+                    {% if vacancy.status == "interviews" %}                        
                         Interview Stage Active
                     {% endif %}
 
+                    <!-- Interviews -->
+                    {% if vacancy.status == "interviews" %}
+                        |
+                    <a href="{% url 'vacancy_panelists' vacancy.id %}">
+                        View Panelists
+                    </a>
+                    {% endif %}
+
+                    {% if vacancy.status == "interviews" %}
+                        <span class="text-primary fw-bold">Interview Stage Active</span> |
+                        
+                        <a href="{% url 'vacancy_panelists' vacancy.id %}">
+                            View Panelists
+                        </a> |
+                        
+                        <a href="{% url 'hr_ranking_view' vacancy.id %}" 
+                        class="text-success fw-bold">
+                            View Ranking
+                        </a>
+                    {% endif %}
+
+                    {% if vacancy.status == "ceo_review" %}
+                        <span class="text-success fw-bold">Top Three Selected</span> |
+                        <a href="{% url 'hr_ranking_view' vacancy.id %}">
+                            View Final Ranking
+                        </a>
+                    {% endif %}
                 </td>
             </tr>
             {% empty %}
