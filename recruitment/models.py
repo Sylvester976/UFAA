@@ -94,6 +94,8 @@ class JobSeekerProfile(models.Model):
     sub_county          = models.ForeignKey(SubCounty, on_delete=models.SET_NULL, null=True, blank=True)
     ward                = models.ForeignKey(Ward, on_delete=models.SET_NULL, null=True, blank=True)
     disability_status   = models.CharField(max_length=50, blank=True, null=True)
+    disability_other = models.CharField(max_length=255, blank=True, null=True)
+    employee_number = models.CharField(max_length=50, blank=True, null=True)
     date_created        = models.DateTimeField(auto_now_add=True)
     date_updated        = models.DateTimeField(auto_now=True)
 
@@ -306,3 +308,114 @@ class Appointment(models.Model):
     appointed_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     appointed_at = models.DateTimeField(auto_now_add=True)
     appointment_letter = models.FileField(upload_to='media/appointments/', blank=True, null=True)
+
+class ProfessionalQualification(models.Model):
+    user              = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE,
+                                          related_name='professional_qualifications')
+    qualification     = models.CharField(max_length=255)          # e.g. CPA, PMP
+    awarding_body     = models.CharField(max_length=255)          # institution
+    year_obtained     = models.PositiveIntegerField()
+    expiry_year       = models.PositiveIntegerField(null=True, blank=True)
+    grade             = models.CharField(max_length=100, blank=True)
+    cert_number       = models.CharField(max_length=100, blank=True)
+    country           = models.CharField(max_length=100, default='Kenya')
+    created_at        = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-year_obtained']
+
+class WorkHistory(models.Model):
+
+    EMPLOYMENT_TYPES = [
+        ('Full-time',   'Full-time'),
+        ('Part-time',   'Part-time'),
+        ('Contract',    'Contract'),
+        ('Internship',  'Internship'),
+        ('Volunteer',   'Volunteer'),
+        ('Attachment',  'Attachment'),
+    ]
+
+    MONTHS = [
+        (1, 'January'),   (2, 'February'),  (3, 'March'),
+        (4, 'April'),     (5, 'May'),       (6, 'June'),
+        (7, 'July'),      (8, 'August'),    (9, 'September'),
+        (10, 'October'),  (11, 'November'), (12, 'December'),
+    ]
+
+    user            = models.ForeignKey(
+                          'accounts.JobseekerAccount',
+                          on_delete=models.CASCADE,
+                          related_name='work_history'
+                      )
+    job_title       = models.CharField(max_length=255)
+    company         = models.CharField(max_length=255)
+    employment_type = models.CharField(max_length=50, blank=True, choices=EMPLOYMENT_TYPES)
+    start_month     = models.PositiveIntegerField()
+    start_year      = models.PositiveIntegerField()
+    end_month       = models.PositiveIntegerField(null=True, blank=True)
+    end_year        = models.PositiveIntegerField(null=True, blank=True)
+    is_current      = models.BooleanField(default=False)
+    duties          = models.TextField(blank=True)
+    exit_reason     = models.CharField(max_length=255, blank=True)
+    country         = models.CharField(max_length=100, default='Kenya')
+    created_at      = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-start_year', '-start_month']
+
+    def __str__(self):
+        return f"{self.job_title} at {self.company}"
+
+    @property
+    def start_display(self):
+        month_name = dict(self.MONTHS).get(self.start_month, '')
+        return f"{month_name} {self.start_year}"
+
+    @property
+    def end_display(self):
+        if self.is_current:
+            return 'Present'
+        if self.end_month and self.end_year:
+            month_name = dict(self.MONTHS).get(self.end_month, '')
+            return f"{month_name} {self.end_year}"
+        return '—'
+
+class AdditionalDetail(models.Model):
+
+    AVAILABILITY_CHOICES = [
+        ('Immediately',    'Immediately'),
+        ('1 Month Notice', '1 Month Notice'),
+        ('2 Months Notice','2 Months Notice'),
+        ('3 Months Notice','3 Months Notice'),
+        ('Not Available',  'Not Available'),
+    ]
+
+    user            = models.OneToOneField(
+                          'accounts.JobseekerAccount',
+                          on_delete=models.CASCADE,
+                          related_name='additional_detail'
+                      )
+    cv              = models.FileField(upload_to='cvs/', null=True, blank=True)
+    cover_letter    = models.TextField(blank=True)
+    linkedin_url    = models.URLField(max_length=300, blank=True)
+    portfolio_url   = models.URLField(max_length=300, blank=True)
+    languages       = models.CharField(max_length=500, blank=True)  # comma-separated
+    availability    = models.CharField(max_length=50, blank=True,
+                          choices=AVAILABILITY_CHOICES)
+    expected_salary = models.PositiveIntegerField(null=True, blank=True)
+    updated_at      = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Additional Details — {self.user}"
+
+    @property
+    def cv_filename(self):
+        if self.cv:
+            return self.cv.name.split('/')[-1]
+        return None
+
+    @property
+    def languages_list(self):
+        if self.languages:
+            return [l.strip() for l in self.languages.split(',') if l.strip()]
+        return []
