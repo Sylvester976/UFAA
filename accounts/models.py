@@ -1,7 +1,6 @@
 # apps/accounts/models.py
 
 import uuid
-
 from django.contrib.auth.base_user import AbstractBaseUser, BaseUserManager
 from django.contrib.auth.hashers import make_password, check_password
 from django.db import models
@@ -103,8 +102,10 @@ class JobseekerAccount(models.Model):
 
     account_type = models.IntegerField(default=1)  # 1 = External, 2 = Internal
     session_key = models.CharField(max_length=40, blank=True, null=True)
+    verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
     is_active = models.BooleanField(default=True)
+    is_employee = models.BooleanField(default=False)
     is_verified = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(default=timezone.now)
@@ -118,3 +119,5 @@ class JobseekerAccount(models.Model):
 
     def __str__(self):
         return f"{self.id_no} - {self.name}"
+       
+

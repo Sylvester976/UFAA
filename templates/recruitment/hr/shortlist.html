@@ -1,0 +1,68 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Shortlist Candidates</h3>
+
+    <p>
+        <strong>Vacancy:</strong> {{ vacancy.title }} <br>
+        <strong>Stage:</strong> {{ vacancy.status }}
+    </p>
+
+    <hr>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Applied At</th>
+                    <th>Current Status</th>
+                    <th>CV</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>
+                        <input type="checkbox"
+                               name="selected_applications"
+                               value="{{ app.id }}">
+                    </td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ app.applicant.get_full_name }}</td>
+                    <td>{{ app.applicant.email }}</td>
+                    <td>{{ app.applied_at }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{{ app.cv.url }}" target="_blank">
+                            View CV
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7">No applications found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">
+            Confirm Shortlist
+        </button>
+
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

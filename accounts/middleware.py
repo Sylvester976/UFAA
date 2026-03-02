@@ -10,6 +10,11 @@ class LoginRequiredMiddleware:
         'authregister',
         'authlogin',
         'logout',
+        'verify_email',
+        'send_verification_email',
+        'vacancy_detail',
+        'login_view',
+
     }
 
     def __init__(self, get_response):

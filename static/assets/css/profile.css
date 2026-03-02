@@ -1,0 +1,494 @@
+/* ─── Tab Cards ─────────────────────────────────────────── */
+#profileTabs {
+    gap: 8px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+#profileTabs .nav-item .nav-link {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 0.75rem !important;
+    color: #67748e;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.55rem 1rem;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    text-decoration: none;
+}
+
+#profileTabs .nav-item .nav-link i {
+    font-size: 0.78rem;
+}
+
+#profileTabs .nav-item .nav-link:hover {
+    background: #f0fbff;
+    color: #17c1e8;
+    border-color: #17c1e8;
+    box-shadow: 0 4px 12px rgba(23, 193, 232, 0.15);
+    transform: translateY(-1px);
+}
+
+#profileTabs .nav-item .nav-link.active {
+    background: linear-gradient(310deg, #2dce89, #17c1e8) !important;
+    color: #ffffff !important;
+    border-color: transparent !important;
+    font-weight: 600;
+    box-shadow: 0 4px 15px rgba(23, 193, 232, 0.4);
+    transform: translateY(-1px);
+}
+
+/* ─── Content Card ───────────────────────────────────────── */
+.profile-content-card {
+    background: #ffffff !important;
+    border-top-left-radius: 0.25rem !important;
+    border-top-right-radius: 0.75rem !important;
+    border-bottom-left-radius: 0.75rem !important;
+    border-bottom-right-radius: 0.75rem !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    margin-top: 10px;
+}
+
+/* ─── Form Controls ──────────────────────────────────────── */
+.profile-content-card .form-control {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem;
+    font-size: 0.85rem;
+    color: #344767;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.profile-content-card .form-control:focus {
+    background: #ffffff;
+    border-color: #17c1e8;
+    box-shadow: 0 0 0 3px rgba(23, 193, 232, 0.12);
+}
+
+.profile-content-card .form-label {
+    color: #344767;
+    margin-bottom: 0.3rem;
+}
+
+/* ─── Progress Bar ───────────────────────────────────────── */
+.progress {
+    background-color: #e9ecef;
+    border-radius: 1rem;
+}
+
+/* ─── Modal ──────────────────────────────────────────────── */
+.modal-content {
+    border-radius: 0.75rem;
+    border: none;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.modal-footer {
+    border-top: 1px solid #f0f0f0;
+}
+
+/* ─── Select2 ────────────────────────────────────────────── */
+.select2-container--default .select2-selection--single {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem !important;
+    height: calc(1.5em + 1rem + 2px);
+    padding: 0.5rem 0.75rem;
+    font-size: 0.85rem;
+    color: #344767;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.select2-container--default .select2-selection--single:focus,
+.select2-container--default.select2-container--focus .select2-selection--single,
+.select2-container--default.select2-container--open .select2-selection--single {
+    background: #ffffff;
+    border-color: #17c1e8 !important;
+    box-shadow: 0 0 0 3px rgba(23, 193, 232, 0.12) !important;
+    outline: none;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    color: #344767;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    padding-left: 0;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__placeholder {
+    color: #adb5bd;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 100%;
+    top: 0;
+    right: 8px;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__clear {
+    color: #adb5bd;
+    font-size: 1rem;
+    margin-right: 6px;
+}
+
+.select2-dropdown {
+    border: 1px solid #e9ecef;
+    border-radius: 0.5rem !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+    font-size: 0.85rem;
+    overflow: hidden;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #e9ecef;
+    border-radius: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.83rem;
+    color: #344767;
+    outline: none;
+}
+
+.select2-container--default .select2-search--dropdown .select2-search__field:focus {
+    border-color: #17c1e8;
+    box-shadow: 0 0 0 2px rgba(23, 193, 232, 0.12);
+}
+
+.select2-container--default .select2-results__option {
+    padding: 0.45rem 0.9rem;
+    color: #344767;
+    font-size: 0.83rem;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background: linear-gradient(310deg, #2dce89, #17c1e8);
+    color: #fff;
+}
+
+.select2-container--default .select2-results__option[aria-selected=true] {
+    background: #f0fbff;
+    color: #17c1e8;
+    font-weight: 600;
+}
+
+/* ─── Z-Index Stack ──────────────────────────────────────── */
+.select2-container {
+    z-index: 9999 !important;
+}
+
+.dropdown-menu {
+    z-index: 1055 !important;
+}
+
+.swal2-container {
+    z-index: 99999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+}
+
+.swal2-popup {
+    z-index: 99999 !important;
+    margin: auto !important;
+    position: relative !important;
+    top: auto !important;
+    transform: none !important;
+}
+
+/* ─── Drop Zone (Large) ──────────────────────────────────── */
+.drop-zone {
+    border: 2px dashed #17c1e8;
+    border-radius: 0.75rem;
+    background: #f0fbff;
+    padding: 2rem;
+    text-align: center;
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.drop-zone.dragover {
+    background: #d0f4fd;
+    border-color: #0ea5c9;
+    transform: scale(1.01);
+    box-shadow: 0 4px 20px rgba(23, 193, 232, 0.2);
+}
+
+.drop-zone-inner i {
+    color: #17c1e8;
+}
+
+/* ─── Drop Zone (Small / Inline) ─────────────────────────── */
+.drop-zone-sm {
+    border: 2px dashed #17c1e8;
+    border-radius: 0.6rem;
+    background: #f0fbff;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.82rem;
+}
+
+.drop-zone-sm.dragover {
+    background: #d0f4fd;
+    border-color: #0ea5c9;
+}
+
+/* ─── File Item ──────────────────────────────────────────── */
+@keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+.file-item {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 0.65rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.6rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    animation: slideIn 0.2s ease;
+}
+
+.file-item .file-icon {
+    font-size: 1.4rem;
+    min-width: 28px;
+    text-align: center;
+}
+
+.file-item .file-icon.pdf   { color: #ef4444; }
+.file-item .file-icon.image { color: #22c55e; }
+
+.file-item .file-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.file-item .file-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #344767;
+    margin-bottom: 2px;
+    word-break: break-all;
+}
+
+.file-item .file-meta {
+    font-size: 0.73rem;
+    color: #adb5bd;
+}
+
+.file-item .file-doctype {
+    min-width: 180px;
+}
+
+.file-item .file-doctype select {
+    font-size: 0.78rem;
+    padding: 0.25rem 0.5rem;
+    height: auto;
+}
+
+.file-item .remove-btn {
+    background: none;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.4rem;
+    transition: background 0.2s;
+}
+
+.file-item .remove-btn:hover {
+    background: #fef2f2;
+}
+
+/* ─── Education Level Pills ──────────────────────────────── */
+.level-pill {
+    background: #f8f9fa;
+    border: 1.5px solid #dee2e6;
+    border-radius: 2rem;
+    padding: 0.4rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.level-pill:has(input:checked) {
+    background: #e0f7fc;
+    border-color: #17c1e8;
+    box-shadow: 0 2px 8px rgba(23, 193, 232, 0.2);
+}
+
+.level-pill label {
+    cursor: pointer;
+    font-size: 0.82rem;
+    margin: 0;
+}
+
+.level-pill input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* ─── Academic Add Card ──────────────────────────────────── */
+.acad-add-card {
+    border: 1.5px solid #e9ecef;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+.acad-add-header {
+    background: linear-gradient(310deg, #2dce89, #17c1e8);
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.85rem;
+    padding: 0.6rem 1rem;
+}
+
+.acad-add-body {
+    padding: 1rem;
+}
+
+/* ─── Pending Item ───────────────────────────────────────── */
+.pending-item {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-left: 3px solid #17c1e8;
+    border-radius: 0.6rem;
+    padding: 0.75rem 1rem;
+    margin-bottom: 0.6rem;
+    animation: slideIn 0.2s ease;
+}
+
+.pending-remove-btn {
+    font-size: 0.72rem;
+    padding: 0.2rem 0.5rem;
+    white-space: nowrap;
+}
+
+/* ─── Utility Buttons ────────────────────────────────────── */
+.btn-xs {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.55rem;
+}
+
+/* ─── Saved Qualifications Table ─────────────────────────── */
+#savedTable td {
+    vertical-align: middle;
+    font-size: 0.83rem;
+}
+
+#savedTable thead th {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #67748e;
+    border-bottom: 2px solid #e9ecef;
+    white-space: nowrap;
+}
+
+/* ─── Responsive: ≤576px ─────────────────────────────────── */
+@media (max-width: 576px) {
+    .modal-dialog {
+        margin: 0.5rem;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+
+    .file-item {
+        flex-wrap: wrap;
+    }
+
+    .file-item .file-doctype {
+        min-width: 100%;
+    }
+
+    .file-item .file-info {
+        min-width: 0;
+    }
+}
+
+/* ─── Responsive: ≤480px ─────────────────────────────────── */
+@media (max-width: 480px) {
+    .btn-xs {
+        padding: 0.15rem 0.4rem;
+        font-size: 0.7rem;
+    }
+
+    #savedTable .badge {
+        font-size: 0.65rem !important;
+    }
+
+    #profileTabs .nav-item .nav-link {
+        padding: 0.45rem 0.6rem;
+        font-size: 0.78rem;
+    }
+}
+
+/* ─── Language Pills ─────────────────────────────────────── */
+.language-pill-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    min-height: 1.5rem;
+}
+
+.lang-pill {
+    background: linear-gradient(310deg, #e0f7fa, #f0fbff);
+    border: 1px solid #17c1e8;
+    border-radius: 2rem;
+    padding: 0.2rem 0.75rem;
+    font-size: 0.8rem;
+    color: #0e7490;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    animation: slideIn 0.15s ease;
+}
+
+.lang-pill button {
+    background: none;
+    border: none;
+    padding: 0;
+    color: #0e7490;
+    cursor: pointer;
+    font-size: 0.7rem;
+    line-height: 1;
+    opacity: 0.7;
+    transition: opacity 0.15s;
+}
+
+.lang-pill button:hover {
+    opacity: 1;
+}
+
+/* ─── Input Group KES ────────────────────────────────────── */
+.input-group-text {
+    border-radius: 0.5rem 0 0 0.5rem !important;
+    border-right: none !important;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.82rem;
+}
+
+.input-group .form-control {
+    border-radius: 0 0.5rem 0.5rem 0 !important;
+    border-left: none !important;
+}
+
+.input-group .form-control:focus {
+    border-left: none !important;
+    box-shadow: 0 0 0 3px rgba(23, 193, 232, 0.12) !important;
+}

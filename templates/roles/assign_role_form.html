@@ -1,0 +1,26 @@
+<form method="post">
+    {% csrf_token %}
+
+    <div>
+        <label>Assign Roles</label>
+
+        {% for role in roles %}
+            <div>
+                <input 
+                    type="checkbox"
+                    name="role"
+                    value="{{ role.id }}"
+                    id="role_{{ role.id }}"
+                    {% if role in user.role.all %}
+                        checked
+                    {% endif %}
+                >
+                <label for="role_{{ role.id }}">
+                    {{ role.name }}
+                </label>
+            </div>
+        {% endfor %}
+    </div>
+
+    <button type="submit">Save Roles</button>
+</form>

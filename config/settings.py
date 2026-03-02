@@ -56,6 +56,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     # Add your custom login middleware here
     'accounts.middleware.LoginRequiredMiddleware',
+    'core.middleware.RBACMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -71,6 +72,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "accounts.context_processors.logged_in_user",
             ],
         },
     },
@@ -144,3 +146,15 @@ AUTH_USER_MODEL = "accounts.User"
 SESSION_COOKIE_AGE = 10 * 365 * 24 * 60 * 60
 SESSION_SAVE_EVERY_REQUEST = False
 SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+
+EMAIL_BACKEND = os.getenv("EMAIL_BACKEND")
+EMAIL_HOST = os.getenv("EMAIL_HOST")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT"))
+EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS") == "True"
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL")
+
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailBackend",
+]

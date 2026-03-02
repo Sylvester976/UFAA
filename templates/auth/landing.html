@@ -3,7 +3,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
     <title>UFAA | Recruitment Portal</title>
 
     
@@ -19,16 +21,14 @@
 <body>
 
 
-
 <!-- Custom Navbar -->
-<nav class="navbar navbar-expand-lg custom-navbar fixed-top">
+<nav class="header navbar navbar-expand-lg custom-navbar fixed-top">
     <div class="container">
 
-        <!-- Logo + Brand -->
-        <a class="navbar-brand d-flex align-items-center" href="#">
-            <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" 
-                 alt="Government Logo" 
-                 class="gov-coat me-2">
+        <a href="#" class="logo d-flex align-items-center">
+          <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}"  style="max-height: 80px;">
+            <div class="logo-divider mx-2"></div>
+          <img alt="ufaa Logo"  src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 80px;">
         </a>
 
         <!-- Mobile Toggle Button -->
@@ -95,39 +95,26 @@
         </div>
         
         <div class="row">
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Frontend Developer</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
+            {% for vacancy in vacancies %}
+                <div class="col-md-4 mb-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ vacancy.title }}</h5>
+                            <p class="card-text">• Ref: {{ vacancy.reference_number }}</p>
+                            {% if vacancy.advert_pdf %}
+                                <a href="{% url 'download_vacancy_pdf' vacancy.id %}" class="btn btn-outline-primary btn-sm">Download PDF</a>
+                            {% endif %}
+                            <a href="{% url 'vacancy_detail' vacancy.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                        </div>
                     </div>
                 </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Marketing Manager</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4 mb-4">
-                <div class="card shadow-sm">
-                    <div class="card-body">
-                        <h5 class="card-title">Data Analyst</h5>
-                        <p class="card-text">• Ref: UFAA/01/2025</p>
-                        <a href="#" class="btn btn-outline-primary btn-sm">View Details</a>
-                        <a href="#" class="btn btn-outline-primary btn-sm">Dowanload</a>
-                    </div>
-                </div>
-            </div>
+            {% empty %}
+                <p class="text-center">No vacancies are currently available. Please check back later.</p>
+            {% endfor %}
         </div>
     </div>
 </section>
+
 
 
 <!-- UFAA Recruitment Information Section -->
@@ -203,7 +190,14 @@
 <!-- Footer -->
 <footer class="py-4 text-center">
     <div class="container">
-        <p class="mb-1">&copy; 2026 UFAA. All rights reserved.</p>
+        <div class="copyright text-center text-sm ">                
+            © <script>
+                document.write(new Date().getFullYear())
+            </script>
+            <i class="fa fa-heart"></i>
+            <a target="_blank"> The Unclaimed Financial Assets Authority (UFAA).</a>
+                All rights reserved.
+        </div>
         <small>
             <a href="#" class="text-decoration-none text-secondary me-3">Privacy Policy</a>
             <a href="#" class="text-decoration-none text-secondary">Terms of Service</a>

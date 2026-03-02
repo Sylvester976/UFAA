@@ -1,0 +1,38 @@
+{% block content %}
+<div class="container mt-4">
+  <h3>Users</h3>
+  <a href="{% url 'user_create' %}" class="btn btn-primary mb-2"
+    >Create</a>
+    
+  <ul class="list-group">
+    {% for user in users %}
+    <li class="list-group-item">
+      {{ user.email }}
+    </li>
+    <li class="list-group-item">
+      {{ user.first_name }} {{ user.last_name }}
+    </li>
+
+    
+    <li class="list-group-item d-flex justify-content-between">
+        {{ user.email }} - {{ user.role }}
+        <a href="{% url 'assign_role' user.id %}" class="btn btn-sm btn-secondary">Assign Role</a>
+    </li>
+    
+    <a href="{% url 'user_update' user.pk %}">Edit</a>
+
+    <form action="{% url 'user_delete' user.pk %}" 
+            method="POST" 
+            style="display:inline;">
+        {% csrf_token %}
+        <button type="submit">Delete</button>
+    </form>
+
+
+
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
+
+

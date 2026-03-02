@@ -1,0 +1,25 @@
+
+{% block content %}
+
+<h3>{{ vacancy.title }}</h3>
+
+<p><strong>Reference:</strong> {{ vacancy.reference_number }}</p>
+<p><strong>Description:</strong></p>
+<p>{{ vacancy.description }}</p>
+
+{% comment %} <a href="{{ vacancy.advert_pdf.url }}" target="_blank">
+    Download Advert PDF
+</a> {% endcomment %}
+
+<hr>
+{% if vacancy.status == "open" %}
+    <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+       class="btn btn-primary">
+        Apply Now
+    </a>
+{% else %}
+    <span class="badge bg-danger">Closed</span>
+{% endif %}
+
+
+{% endblock %}
