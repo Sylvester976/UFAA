@@ -29,6 +29,7 @@ from .models import PanelAssignment
 from .models import Vacancy
 
 
+
 # ── Helper ───────────────────────────────────────────────────
 def get_logged_in_user(request):
     user_id = request.session.get('user_id')
@@ -68,7 +69,8 @@ def dashboard(request):
     if not user_id:
         return redirect('index')
 
-    user = JobseekerAccount.objects.filter(id=user_id).first()
+    # user = JobseekerAccount.objects.filter(id=user_id).first()
+    user = JobseekerAccount.objects.filter(pk=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -1889,7 +1891,7 @@ def application_detail(request, application_id):
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
-from .models import Vacancy, PanelAssignment, User
+from .models import Vacancy, PanelAssignment
 from core.decorators import role_required
 
 # ----------------------
