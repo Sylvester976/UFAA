@@ -77,7 +77,7 @@ class Ward(models.Model):
 
     def __str__(self):
         return f'{self.name} — {self.constituency.name}'
-
+#okay
 class JobSeekerProfile(models.Model):
     user                = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     salutation          = models.CharField(max_length=50, blank=True, null=True)
