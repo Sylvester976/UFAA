@@ -72,7 +72,7 @@ def reverse_subcounties(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0005_populate_genders'),
+        ('recruitment', '0016_populate_wards'),
     ]
 
     operations = [

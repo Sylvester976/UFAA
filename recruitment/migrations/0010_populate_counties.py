@@ -66,7 +66,7 @@ def reverse_counties(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0009_populate_subcounties'),
+        ('recruitment', '0005_populate_genders'),
     ]
 
     operations = [
