@@ -19,7 +19,7 @@ def reverse_genders(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0004_jobseekerprofile_disability_other_and_more'),  
+        ('recruitment', '0001_initial'),  
         # Replace with the last migration in recruitment
     ]
 

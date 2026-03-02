@@ -8,10 +8,9 @@ from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
 from config import settings
-from .models import User
+from .models import JobseekerAccount
 from django.contrib.auth import authenticate, login
 
-from .models import JobseekerAccount
 
 from django.views import View
 from django.contrib import messages
@@ -27,6 +26,9 @@ from django.shortcuts import render
 from django.utils import timezone
 from recruitment.models import Vacancy  # import your model
 
+from django.shortcuts import render
+from django.utils import timezone
+from recruitment.models import Vacancy
 
 def landing(request):
     today = timezone.now().date()
@@ -108,6 +110,7 @@ def save_user_account(request):
 
     except Exception as e:
         return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
+
 
 def signin(request):
     if request.method != 'POST':
@@ -211,8 +214,7 @@ def login_view(request):
 
         if user:
             login(request, user)
-            # return HttpResponse("Logged in successfully")
-            return redirect("hr_dashboard")
+            return HttpResponse("Logged in successfully")
 
     return render(request, "roles/login.html")
 
