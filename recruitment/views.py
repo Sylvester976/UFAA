@@ -11,7 +11,7 @@ from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, 
 from django.shortcuts import render, redirect, get_object_or_404
 from recruitment.models import AdditionalDetail, ProfessionalQualification, WorkHistory
 from django.http import JsonResponse
-from accounts.models import User
+from accounts.models import User, JobseekerAccount
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Avg
@@ -34,7 +34,7 @@ def get_logged_in_user(request):
     user_id = request.session.get('user_id')
     if not user_id:
         return None
-    return User.objects.filter(id=user_id, user_type=1).first()
+    return JobseekerAccount.objects.filter(id=user_id).first()
 
 
 def view_jobs(request):
@@ -68,7 +68,7 @@ def dashboard(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -177,7 +177,7 @@ def profile_view(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -280,7 +280,7 @@ def academic_qualifications_view(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -493,7 +493,7 @@ def delete_profile(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     profile = JobSeekerProfile.objects.filter(user=user).first()
     if profile:
         profile.delete()
@@ -552,7 +552,7 @@ def professional_qualifications_view(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -748,7 +748,7 @@ def work_history_view(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
@@ -944,7 +944,7 @@ def additional_details_view(request):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    user = JobseekerAccount.objects.filter(id=user_id).first()
     if not user:
         request.session.flush()
         return redirect('index')
