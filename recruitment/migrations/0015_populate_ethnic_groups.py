@@ -70,7 +70,7 @@ def reverse_ethnic_groups(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0003_ethnicgroup'),
+        ('recruitment', '0014_populate_document_types'),
     ]
 
     operations = [

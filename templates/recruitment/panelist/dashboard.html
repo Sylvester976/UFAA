@@ -1,29 +1,40 @@
-{% extends 'panelist/base_panelist.html' %}
-
-{% block title %}Panelist Dashboard{% endblock %}
+{% extends 'recruitment/panelist/base_panelist.html' %}
 
 {% block content %}
-<h1 class="mt-4">Welcome, {{ user.get_full_name }}</h1>
 
-<h3 class="mt-4">Your Assigned Vacancies</h3>
-<table class="table table-striped mt-2">
-    <thead>
-        <tr>
-            <th>Vacancy</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for vacancy in assigned_vacancies %}
-        <tr>
-            <td>{{ vacancy.title }}</td>
-            <td>{{ vacancy.status }}</td>
-            <td><a href="{% url 'shortlist_candidates' vacancy.id %}" class="btn btn-primary btn-sm">Shortlist</a></td>
-        </tr>
-        {% empty %}
-        <tr><td colspan="3">No assigned vacancies</td></tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container mt-4">
+
+    <h3>Panelist Dashboard</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Vacancy</th>
+                <th>Reference</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vacancy in vacancies %}
+            <tr>
+                <td>{{ vacancy.title }}</td>
+                <td>{{ vacancy.reference_number }}</td>
+                <td>{{ vacancy.status }}</td>
+                <td>
+                    <a href="{% url 'panelist_interview_list' vacancy.id %}">
+                        Conduct Interviews
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4">No active interview assignments.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
 {% endblock %}

@@ -408,7 +408,7 @@ def reverse_wards(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0008_populate_subcounties'),
+        ('recruitment', '0015_populate_ethnic_groups'),
     ]
 
     operations = [

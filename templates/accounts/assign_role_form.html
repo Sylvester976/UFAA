@@ -1,3 +1,5 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block content %}
 <form method="post">
     {% csrf_token %}
 
@@ -24,3 +26,4 @@
 
     <button type="submit">Save Roles</button>
 </form>
+{% endblock %}

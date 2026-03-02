@@ -72,7 +72,7 @@ def reverse_constituencies(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0006_populate_counties'),
+        ('recruitment', '0010_populate_counties'),
     ]
 
     operations = [

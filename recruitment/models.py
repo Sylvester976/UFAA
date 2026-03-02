@@ -1,6 +1,6 @@
 import uuid
 from django.db import models
-from accounts.models import JobseekerAccount
+from accounts.models import User
 from django.conf import settings
 from django.utils import timezone
 from django.db.models import Avg
@@ -79,7 +79,7 @@ class Ward(models.Model):
         return f'{self.name} — {self.constituency.name}'
 #okay
 class JobSeekerProfile(models.Model):
-    user                = models.OneToOneField(JobseekerAccount, on_delete=models.CASCADE, related_name='profile')
+    user                = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     salutation          = models.CharField(max_length=50, blank=True, null=True)
     surname             = models.CharField(max_length=255, blank=True, null=True)
     first_name          = models.CharField(max_length=255, blank=True, null=True)
@@ -122,7 +122,7 @@ class EducationLevel(models.Model):
 
 
 class AcademicQualification(models.Model):
-    user            = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='academic_qualifications')
+    user            = models.ForeignKey(User, on_delete=models.CASCADE, related_name='academic_qualifications')
     education_level = models.ForeignKey(EducationLevel, on_delete=models.PROTECT)
     institution     = models.CharField(max_length=255)
     field_of_study  = models.CharField(max_length=255, blank=True, null=True)
@@ -155,7 +155,7 @@ class DocumentType(models.Model):
 
 
 class Document(models.Model):
-    user          = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='documents')
+    user          = models.ForeignKey(User, on_delete=models.CASCADE, related_name='documents')
     profile       = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name='documents', null=True, blank=True)
     document_type = models.ForeignKey(DocumentType, on_delete=models.PROTECT)
     file          = models.FileField(upload_to='documents/%Y/%m/')
@@ -245,20 +245,22 @@ class Application(models.Model):
         ('approved', 'Approved'),
         ('selected', 'Selected'),
         ('not_selected', 'Not Selected'),
+        ('ceo_review', 'CEO Review'),
+        ('ceo_approved', 'CEO Approved'),
+        ('appointed', 'Appointed')
     ]
-
+    ceo_override = models.BooleanField(default=False)
+    ceo_override_reason = models.TextField(blank=True, null=True)
+    ceo_selected = models.BooleanField(default=False)
+    
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
     applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    # applicant = models.ForeignKey(
-    #     'accounts.JobseekerAccount',   # app_name.ModelName
-    #     on_delete=models.CASCADE,
-    #     related_name='applications'
-    # )
     cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
-
+    interview_locked = models.BooleanField(default=False)
+    
     def average_score(self):
         return self.scores.aggregate(avg=Avg('score'))['avg'] or 0
 
@@ -308,7 +310,7 @@ class Appointment(models.Model):
     appointment_letter = models.FileField(upload_to='media/appointments/', blank=True, null=True)
 
 class ProfessionalQualification(models.Model):
-    user              = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE,
+    user              = models.ForeignKey(User, on_delete=models.CASCADE,
                                           related_name='professional_qualifications')
     qualification     = models.CharField(max_length=255)          # e.g. CPA, PMP
     awarding_body     = models.CharField(max_length=255)          # institution
@@ -340,9 +342,7 @@ class WorkHistory(models.Model):
         (10, 'October'),  (11, 'November'), (12, 'December'),
     ]
 
-    user            = models.ForeignKey(
-                          'accounts.JobseekerAccount',
-                          on_delete=models.CASCADE,
+    user            = models.ForeignKey(User, on_delete=models.CASCADE,
                           related_name='work_history'
                       )
     job_title       = models.CharField(max_length=255)
@@ -388,9 +388,7 @@ class AdditionalDetail(models.Model):
         ('Not Available',  'Not Available'),
     ]
 
-    user            = models.OneToOneField(
-                          'accounts.JobseekerAccount',
-                          on_delete=models.CASCADE,
+    user            = models.OneToOneField(User, on_delete=models.CASCADE,
                           related_name='additional_detail'
                       )
     cv              = models.FileField(upload_to='cvs/', null=True, blank=True)

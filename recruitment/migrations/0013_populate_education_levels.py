@@ -43,7 +43,7 @@ def reverse_education_levels(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('recruitment', '0012_documenttype_educationlevel_document_and_more'),
+        ('recruitment', '0011_populate_constituencies'),
     ]
 
     operations = [

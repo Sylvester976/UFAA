@@ -1,0 +1,37 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Longlisting{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">Vacancies – Longlisting Stage</h3>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Title</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Closing Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vacancy in vacancies %}
+        <tr>
+            <td>{{ vacancy.title }}</td>
+            <td>{{ vacancy.reference_number }}</td>
+            <td>{{ vacancy.get_vacancy_type_display }}</td>
+            <td>{{ vacancy.end_date }}</td>
+            <td>
+                <span class="badge bg-warning">
+                    {{ vacancy.get_status_display }}
+                </span>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No vacancies in longlisting stage.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

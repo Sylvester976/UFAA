@@ -1,0 +1,44 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Appointments{% endblock %}
+
+{% block content %}
+<h3 class="mb-4">Appointed Vacancies</h3>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-light">
+        <tr>
+            <th>Title</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Panelists</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vacancy in vacancies %}
+        <tr>
+            <td>{{ vacancy.title }}</td>
+            <td>{{ vacancy.reference_number }}</td>
+            <td>{{ vacancy.get_vacancy_type_display }}</td>
+            <td>
+                {% for assignment in vacancy.panelassignment_set.all %}
+                    {{ assignment.panelist.get_full_name }}
+                    {% if not forloop.last %}, {% endif %}
+                {% empty %}
+                    <span class="text-muted">No panelists</span>
+                {% endfor %}
+            </td>
+            <td>
+                <span class="badge bg-success">
+                    {{ vacancy.get_status_display }}
+                </span>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No appointed vacancies yet.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

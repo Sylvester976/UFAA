@@ -1,0 +1,37 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<h3 class="mb-4">Vacancies – Shortlisting Stage</h3>
+
+<table class="table table-bordered table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Title</th>
+            <th>Reference</th>
+            <th>Type</th>
+            <th>Closing Date</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for vacancy in vacancies %}
+        <tr>
+            <td>{{ vacancy.title }}</td>
+            <td>{{ vacancy.reference_number }}</td>
+            <td>{{ vacancy.get_vacancy_type_display }}</td>
+            <td>{{ vacancy.end_date }}</td>
+            <td>
+                <a href="{% url 'appoint_panelists' vacancy.id %}" 
+                   class="btn btn-sm btn-primary">
+                    Appoint Panel
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="text-center">No vacancies in shortlisting stage.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

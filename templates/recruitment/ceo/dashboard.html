@@ -1,12 +1,78 @@
-{% extends 'ceo/base_ceo.html' %}
+{% extends "recruitment/ceo/base_ceo.html" %}
 
 {% block content %}
-<h2>CEO Dashboard</h2>
 
-<div class="card mt-4">
-    <div class="card-body">
-        <h6>Vacancies Awaiting Approval</h6>
-        <h3>{{ pending_approval_count }}</h3>
+<div class="container mt-4">
+
+    <h2 class="mb-4">CEO Dashboard</h2>
+
+    <!-- Messages -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Pending Approval Card -->
+    <div class="card mb-4 shadow-sm">
+        <div class="card-body text-center">
+            <h6 class="text-muted">Vacancies Awaiting Review</h6>
+            <h2 class="fw-bold">{{ pending_approval_count }}</h2>
+        </div>
     </div>
+
+    <!-- Vacancy List -->
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <strong>Vacancies in Review Stage</strong>
+        </div>
+
+        <div class="card-body">
+
+            {% if vacancies %}
+                <table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vacancy Title</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for vacancy in vacancies %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ vacancy.title }}</td>
+                            <td>
+                                <span class="badge bg-warning text-dark">
+                                    CEO Review
+                                </span>
+                            </td>
+                            <td>
+                                <a href="{% url 'ceo_review' vacancy.id %}"
+                                   class="btn btn-primary btn-sm">
+                                    Review Applications
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+            {% else %}
+                <div class="text-center p-4">
+                    <p class="text-muted">
+                        No vacancies are currently awaiting review.
+                    </p>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
 </div>
+
 {% endblock %}

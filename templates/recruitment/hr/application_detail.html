@@ -1,0 +1,222 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <!-- ================= APPLICATION HEADER ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h3 class="mb-1">
+                        {{ application.applicant.get_full_name|default:application.applicant.email }}
+                    </h3>
+                    <p class="text-muted mb-0">
+                        Vacancy: <strong>{{ application.vacancy.title }}</strong>
+                    </p>
+                    <small>
+                        Applied on {{ application.applied_at|date:"d M Y H:i" }}
+                    </small>
+                </div>
+
+                <div>
+                    <span class="badge bg-primary">
+                        {{ application.status|title }}
+                    </span>
+                </div>
+            </div>
+
+            <hr>
+
+            <a href="{{ application.cv.url }}" class="btn btn-outline-dark btn-sm" target="_blank">
+                View Uploaded CV
+            </a>
+
+        </div>
+    </div>
+
+
+    <!-- ================= PERSONAL DETAILS ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Personal Information</strong>
+        </div>
+        <div class="card-body">
+            {% if application.applicant.profile %}
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Email:</strong> {{ application.applicant.email }}</p>
+                        <p><strong>ID No:</strong> {{ application.applicant.profile.id_no }}</p>
+                        <p><strong>Date of Birth:</strong> {{ application.applicant.profile.date_of_birth }}</p>
+                        <p><strong>Gender:</strong> {{ application.applicant.profile.gender }}</p>
+                    </div>
+
+                    <div class="col-md-6">
+                        <p><strong>County:</strong> {{ application.applicant.profile.home_county }}</p>
+                        <p><strong>Constituency:</strong> {{ application.applicant.profile.constituency }}</p>
+                        <p><strong>Ward:</strong> {{ application.applicant.profile.ward }}</p>
+                        <p><strong>Disability:</strong> {{ application.applicant.profile.disability_status }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <p class="text-muted">Profile not completed.</p>
+            {% endif %}
+        </div>
+    </div>
+
+
+    <!-- ================= ACADEMIC QUALIFICATIONS ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Academic Qualifications</strong>
+        </div>
+        <div class="card-body">
+
+            {% for edu in application.applicant.academic_qualifications.all %}
+                <div class="border rounded p-3 mb-3">
+                    <h6 class="mb-1">{{ edu.education_level }}</h6>
+                    <p class="mb-1">{{ edu.institution }}</p>
+                    <small>
+                        {{ edu.field_of_study }} |
+                        Completed: {{ edu.year_completed }} |
+                        Grade: {{ edu.grade }}
+                    </small>
+                </div>
+            {% empty %}
+                <p class="text-muted">No academic qualifications added.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    <!-- ================= PROFESSIONAL QUALIFICATIONS ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Professional Qualifications</strong>
+        </div>
+        <div class="card-body">
+
+            {% for prof in application.applicant.professional_qualifications.all %}
+                <div class="border rounded p-3 mb-3">
+                    <h6>{{ prof.qualification }}</h6>
+                    <p class="mb-1">{{ prof.awarding_body }}</p>
+                    <small>
+                        Obtained: {{ prof.year_obtained }}
+                        {% if prof.expiry_year %}
+                            | Expires: {{ prof.expiry_year }}
+                        {% endif %}
+                    </small>
+                </div>
+            {% empty %}
+                <p class="text-muted">No professional qualifications added.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    <!-- ================= WORK HISTORY ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Work Experience</strong>
+        </div>
+        <div class="card-body">
+
+            {% for work in application.applicant.work_history.all %}
+                <div class="border rounded p-3 mb-3">
+                    <h6>{{ work.job_title }} — {{ work.company }}</h6>
+                    <small>
+                        {{ work.start_display }} - {{ work.end_display }}
+                        | {{ work.employment_type }}
+                    </small>
+                    <p class="mt-2">{{ work.duties }}</p>
+                </div>
+            {% empty %}
+                <p class="text-muted">No work history provided.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    <!-- ================= ADDITIONAL DETAILS ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Additional Details</strong>
+        </div>
+        <div class="card-body">
+
+            {% if application.applicant.additional_detail %}
+                <p><strong>LinkedIn:</strong>
+                    <a href="{{ application.applicant.additional_detail.linkedin_url }}" target="_blank">
+                        {{ application.applicant.additional_detail.linkedin_url }}
+                    </a>
+                </p>
+
+                <p><strong>Portfolio:</strong>
+                    <a href="{{ application.applicant.additional_detail.portfolio_url }}" target="_blank">
+                        {{ application.applicant.additional_detail.portfolio_url }}
+                    </a>
+                </p>
+
+                <p><strong>Expected Salary:</strong>
+                    {{ application.applicant.additional_detail.expected_salary }}
+                </p>
+
+                <p><strong>Availability:</strong>
+                    {{ application.applicant.additional_detail.availability }}
+                </p>
+            {% else %}
+                <p class="text-muted">No additional details provided.</p>
+            {% endif %}
+
+        </div>
+    </div>
+
+
+    <!-- ================= DOCUMENTS ================= -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-light">
+            <strong>Supporting Documents</strong>
+        </div>
+        <div class="card-body">
+
+            {% for doc in application.applicant.documents.all %}
+                <p>
+                    <a href="{{ doc.file.url }}" target="_blank">
+                        {{ doc.document_type }}
+                    </a>
+                </p>
+            {% empty %}
+                <p class="text-muted">No documents uploaded.</p>
+            {% endfor %}
+
+        </div>
+    </div>
+
+
+    <!-- ================= HR ACTIONS ================= -->
+    <div class="card shadow-sm mb-5">
+        <div class="card-header bg-light">
+            <strong>HR Actions</strong>
+        </div>
+        <div class="card-body">
+
+            {% comment %} <a href="{% url 'shortlist_candidate' application.id %}"
+               class="btn btn-warning btn-sm">
+                Shortlist
+            </a> {% endcomment %}
+
+            {% comment %} <a href="{% url 'reject_candidate' application.id %}"
+               class="btn btn-danger btn-sm">
+                Reject
+            </a> {% endcomment %}
+
+        </div>
+    </div>
+
+</div>
+
+{% endblock %}

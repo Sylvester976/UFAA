@@ -1,3 +1,5 @@
+
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -43,6 +45,16 @@
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse w-auto max-height-vh-100 h-100 ps" id="sidenav-collapse-main">
         <ul class="navbar-nav">
+            
+            <!-- Instructions -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'instrutions_view' %}active{% endif %}"
+                   href="{% url 'instrutions_view' %}">
+                    <i class="fa-solid fa-book me-2"></i>
+                    Instructions
+                </a>
+            </li>
+            
             <!-- Dashboard -->
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
@@ -51,8 +63,7 @@
                     Dashboard
                 </a>
             </li>
-
-
+            
             <!-- Profile -->
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
@@ -94,6 +105,14 @@
                 </a>
             </li>
 
+            <!-- Applications -->
+            <li class="nav-item">
+                <a class="nav-link " href="{% url 'view_jobs' %}">
+                    <i class="fas fa-paper-plane me-2"></i>
+                    <span class="nav-link-text ms-1">Apply job</span>
+                </a>
+            </li>
+            
             <!-- Applications -->
             <li class="nav-item">
                 <a class="nav-link  " href="../pages/virtual-reality.html">

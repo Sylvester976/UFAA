@@ -1,33 +1,62 @@
-
-
+{% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
-<h2>
-    {% if user_obj %} Edit User {% else %} Create User {% endif %}
-</h2>
+<div class="user-form">
+    <h2>
+        {% if user_obj %} Edit User {% else %} Create Internal User {% endif %}
+    </h2>
 
-<form method="POST">
-    {% csrf_token %}
+    <form method="POST">
+        {% csrf_token %}
 
-    <label>Email</label>
-    <input type="email" name="email" 
-        value="{{ user_obj.email|default:'' }}" required>
+        <!-- User fields -->
+        <label>Email</label>
+        <input type="email" name="email" required value="{{ user_obj.email|default_if_none:'' }}">
 
-    <label>First Name</label>
-    <input type="text" name="first_name" 
-        value="{{ user_obj.first_name|default:'' }}">
+        <label>First Name</label>
+        <input type="text" name="first_name" value="{{ user_obj.first_name|default_if_none:'' }}">
 
-    <label>Last Name</label>
-    <input type="text" name="last_name" 
-        value="{{ user_obj.last_name|default:'' }}">
+        <label>Last Name</label>
+        <input type="text" name="last_name" value="{{ user_obj.last_name|default_if_none:'' }}">
 
-    <label>National ID</label>
-    <input type="text" name="national_id" 
-        value="{{ user_obj.national_id|default:'' }}">
+        <label>National ID</label>
+        <input type="text" name="national_id" value="{{ user_obj.national_id|default_if_none:'' }}">
 
-    <label>Password (leave blank if updating)</label>
-    <input type="password" name="password">
+        <label>Password</label>
+        <input type="password" name="password" required>
 
-    <button type="submit">Save</button>
-</form>
+        {% comment %} <!-- InternalProfile fields -->
+        <label>Date of Birth</label>
+        <input type="date" name="date_of_birth" value="{{ internal_profile.date_of_birth|default_if_none:'' }}">
 
+        <label>Gender</label>
+        <select name="gender">
+            <option value="">Select</option>
+            <option value="Male" {% if internal_profile.gender == "Male" %}selected{% endif %}>Male</option>
+            <option value="Female" {% if internal_profile.gender == "Female" %}selected{% endif %}>Female</option>
+            <option value="Other" {% if internal_profile.gender == "Other" %}selected{% endif %}>Other</option>
+        </select>
+
+        <label>Ethnic Group</label>
+        <input type="text" name="ethnic_group" value="{{ internal_profile.ethnic_group|default_if_none:'' }}">
+
+        <label>Home County</label>
+        <input type="text" name="home_county" value="{{ internal_profile.home_county|default_if_none:'' }}">
+
+        <div class="checkbox-container">
+            <input type="checkbox" name="disability_status" {% if internal_profile.disability_status %}checked{% endif %}>
+            <label>Disability Status</label>
+        </div>
+
+        <label>Job Group</label>
+        <input type="text" name="job_group" value="{{ internal_profile.job_group|default_if_none:'' }}">
+
+        <label>Designation</label>
+        <input type="text" name="designation" value="{{ internal_profile.designation|default_if_none:'' }}">
+
+        <label>Date of Appointment</label>
+        <input type="date" name="date_of_appointment" value="{{ internal_profile.date_of_appointment|default_if_none:'' }}">  {% endcomment %}
+
+        <button type="submit">Save</button>
+    </form>
+</div>
 {% endblock %}
