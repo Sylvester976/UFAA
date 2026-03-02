@@ -11,6 +11,7 @@ from config import settings
 from .models import User
 from django.contrib.auth import authenticate, login
 
+from .models import JobseekerAccount
 
 from django.views import View
 from django.contrib import messages
@@ -78,22 +79,22 @@ def save_user_account(request):
     if password != confirm_password:
         return JsonResponse({'status': 'error', 'message': 'Passwords do not match.'})
 
+    # Hash password
+    encrypted_password = make_password(password)
+
     try:
-        # Create user with hashed password
-        user = User.objects.create(
-            full_name=name,
+        # Save user to DB
+        JobseekerAccount.objects.create(
+            name=name,
             email=email,
             id_no=idno,
-            password=make_password(password),  # Hash password before saving
-            user_type=1,           # external / jobseeker
+            password=encrypted_password,
+            account_type=1,
             is_active=True,
-            is_verified=False
+            is_verified=False,
         )
 
-        # Optional: Send verification email
-        # send_verification_email(request, user)
-
-        return JsonResponse({'status': 'success', 'message': 'Registration successful. You can now login.'})
+        return JsonResponse({'status': 'success', 'message': 'Registration successful.'})
 
     except IntegrityError as e:
         # Check which field caused the integrity error
@@ -119,10 +120,16 @@ def signin(request):
         return JsonResponse({'status': 'error', 'message': 'ID number and password are required.'})
 
     try:
-        user = User.objects.get(id_no=idno, user_type=1)
+        user = JobseekerAccount.objects.get(id_no=idno)
 
         if not user.is_active:
             return JsonResponse({'status': 'error', 'message': 'Account is disabled.'})
+        # if not user.is_verified:
+        #     send_verification_email(request, user)
+        #     return JsonResponse({
+        #         'status': 'error',
+        #         'message': 'Account not verified. Verification link sent to your email.'
+        #     })
         if not user.check_password(password):
             return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
 
@@ -134,21 +141,14 @@ def signin(request):
                 pass
 
         # Create new session
-        # request.session['user_id'] = user.id
-        # user.last_login = timezone.now()
-        # user.session_key = request.session.session_key
-        # user.save()
-        
-        # Create new session
-        request.session['user_id'] = str(user.id)
-        request.session.save()  # ensure session_key is generated
-        user.session_key = request.session.session_key
+        request.session['user_id'] = user.id
         user.last_login = timezone.now()
+        user.session_key = request.session.session_key
         user.save()
 
         return JsonResponse({'status': 'success', 'message': 'Login successful.'})
 
-    except User.DoesNotExist:
+    except JobseekerAccount.DoesNotExist:
         return JsonResponse({'status': 'error', 'message': 'User not found.'})
 
 
@@ -156,11 +156,11 @@ def logout(request):
     user_id = request.session.get('user_id')
     if user_id:
         try:
-            user = User.objects.get(id=user_id, user_type=1)
+            user = JobseekerAccount.objects.get(id=user_id)
             # Clear session key in DB
             user.session_key = None
             user.save()
-        except User.DoesNotExist:
+        except JobseekerAccount.DoesNotExist:
             pass
 
     # Delete session completely
@@ -171,11 +171,11 @@ def logout(request):
 
 def verify_email(request, token):
     try:
-        user = User.objects.get(verification_token=token, user_type=1)
+        user = JobseekerAccount.objects.get(verification_token=token)
         user.is_verified = True
         user.save()
         return HttpResponse("Email verified successfully. You can now login.")
-    except User.DoesNotExist:
+    except JobseekerAccount.DoesNotExist:
         return HttpResponse("Invalid or expired verification link.")
 
 
