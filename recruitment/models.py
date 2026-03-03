@@ -193,11 +193,17 @@ class Vacancy(models.Model):
         ('external', 'External'),
         ('internal', 'Internal'),
     ]
+    
+    GRADE_CHOICES = [
+        ('10-5', 'Grade 10-5'),
+        ('4-1', 'Grade 4-1'),
+    ]
 
     STATUS_CHOICES = [
         ('draft', 'Draft'),
         ('open', 'Open'),
         ('longlisting', 'Longlisting'),
+        ('committee_stage', 'Committee Appointed'),
         ('shortlisting', 'Shortlisting'),
         ('interviews', 'Interviews'),
         ('top_three_selected', 'Top Three Selected'),
@@ -206,6 +212,11 @@ class Vacancy(models.Model):
         ('appointed', 'Appointed'),
     ]
 
+    grade_category = models.CharField(
+        max_length=10,
+        choices=GRADE_CHOICES,
+        default='4-1'
+    )
     title = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
     description = models.TextField()
@@ -241,6 +252,25 @@ class Vacancy(models.Model):
         if self.status == 'open' and self.end_date < timezone.now().date():
             self.status = 'closed'
             self.save()
+       
+    def move_to(self, new_status):
+        allowed = {
+            'draft': ['open'],
+            'open': ['longlisting'],
+            'longlisting': ['shortlisting'],
+            'shortlisting': ['interviews'],
+            'interviews': ['top_three_selected'],
+            'top_three_selected': ['pending_ceo_approval'],
+            'pending_ceo_approval': ['approved'],
+            'approved': ['appointed'],
+        }
+
+        if new_status in allowed.get(self.status, []):
+            self.status = new_status
+            self.save()
+            return True
+
+        return False
 
 
 class Application(models.Model):
@@ -248,25 +278,33 @@ class Application(models.Model):
         ('submitted', 'Submitted'),
         ('shortlisted', 'Shortlisted'),
         ('interviewed', 'Interviewed'),
-        ('selected_top_three', 'Top Three'),
-        ('approved', 'Approved'),
-        ('selected', 'Selected'),
-        ('not_selected', 'Not Selected'),
+
+        # Grade 10–5 specific
+        ('selected_top_five', 'Selected Top Five'),
+        ('board_review', 'Board Review'),
+
+        # Shared
+        ('selected_top_three', 'Selected Top Three'),
         ('ceo_review', 'CEO Review'),
         ('ceo_approved', 'CEO Approved'),
-        ('appointed', 'Appointed')
+
+        ('hr_appoints', 'HR Appoints'),
+        ('appointed', 'Appointed'),
+
+        ('not_selected', 'Not Selected'),
     ]
     ceo_override = models.BooleanField(default=False)
     ceo_override_reason = models.TextField(blank=True, null=True)
     ceo_selected = models.BooleanField(default=False)
 
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
-    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    applicant = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='applications')
     cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
     interview_locked = models.BooleanField(default=False)
+    profile_snapshot = models.JSONField(null=True, blank=True)
 
     def average_score(self):
         return self.scores.aggregate(avg=Avg('score'))['avg'] or 0
@@ -276,15 +314,86 @@ class Application(models.Model):
 
     class Meta:
         unique_together = ('vacancy', 'applicant')
+        
+    def move_to(self, new_status):
+        allowed_transitions = {
+            'submitted': ['shortlisted', 'not_selected'],
+            'shortlisted': ['interviewed', 'not_selected'],
+            'interviewed': ['selected_top_five', 'selected_top_three', 'not_selected'],
+
+            # Grade 10–5 path
+            'selected_top_five': ['ceo_review'],
+            'ceo_review': ['selected_top_three', 'ceo_approved'],
+            'selected_top_three': ['board_review', 'ceo_approved'],
+            'board_review': ['hr_appoints'],
+
+            # Grade 4–1 path
+            'ceo_approved': ['hr_appoints'],
+
+            'hr_appoints': ['appointed'],
+        }
+
+        if new_status in allowed_transitions.get(self.status, []):
+            self.status = new_status
+            self.save()
+            return True
+
+        return False
 
 
 class PanelAssignment(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    ]
+    
+    COMMITTEE_TYPES = [
+        ('shortlisting', 'Shortlisting'),
+        ('interview', 'Interview'),
+    ]
+
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')
     panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    class Meta:
-        unique_together = ('vacancy', 'panelist')
+    committee_type = models.CharField(
+        max_length=30,
+        choices=COMMITTEE_TYPES,
+        null=True,
+        blank=True
+    )
 
+    status = models.CharField(max_length=20, choices=COMMITTEE_TYPES, default='pending')
+    decline_reason = models.TextField(blank=True, null=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = ('vacancy', 'panelist', 'committee_type')
+
+class ShortlistVote(models.Model):
+
+    vacancy = models.ForeignKey(
+        Vacancy,
+        on_delete=models.CASCADE,
+        related_name='shortlist_votes'
+    )
+
+    committee_member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='shortlist_votes'
+    )
+
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('vacancy', 'committee_member', 'application')
 
 class InterviewScore(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='scores')

@@ -1,0 +1,23 @@
+
+.logo-divider {
+    height: 50px;
+  }
+
+
+.logo-divider {
+  width: 3px;
+  height: 60px;
+  background: linear-gradient(to bottom,
+    #000000 0%,     /* Top color: Black */
+    #000000  28%,
+    #FFFFFF 28%, /* transparent 28%,    /* Gap 1 */
+    #FFFFFF 34%, /* transparent 34%, */
+    #BD272F 34%, /* Middle color: Red */
+    #BD272F 62%,
+    #FFFFFF 62%, /* transparent 62%,    /* Gap 2 */
+    #FFFFFF 68%, /* transparent 68%, */
+    #136B38 68%, /* Bottom color: Green */
+    #136B38 100%
+  );
+  margin: 0 12px;
+}

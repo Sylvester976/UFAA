@@ -1,35 +1,53 @@
+{% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
 
-<div class="container mt-4">
-  <h3>Roles</h3>
-  <a href="{% url 'role_create' %}" class="btn btn-primary mb-2">Create</a>
+<div class="container-fluid">
 
-  <ul class="list-group">
-    {% for role in roles %}
-    <li
-      class="list-group-item d-flex justify-content-between align-items-center"
-    >
-      {{ role.name }} {% if perms.yourapp.delete_role %}
-      <a href="{% url 'role_delete' role.id %}" class="btn btn-danger btn-sm">
-        Delete
-      </a>
-      {% endif %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Roles</h4>
+        <a href="{% url 'role_create' %}" class="btn btn-primary">
+            + Create Role
+        </a>
+    </div>
 
-      
-    <a href="{% url 'role_update' role.pk %}">Edit</a>
+    <ul class="list-group border-0">
 
-    <form action="{% url 'role_delete' role.pk %}" 
-            method="POST" 
-            style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Delete</button>
-    </form>
+        {% for role in roles %}
+        <li class="list-group-item mb-3 rounded shadow-sm d-flex justify-content-between align-items-center">
 
-    </li>
-    {% empty %}
-    <li class="list-group-item">No roles found.</li>
-    {% endfor %}
-  </ul>
+            <div>
+                <strong>{{ role.name }}</strong>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <a href="{% url 'role_update' role.pk %}"
+                   class="btn btn-sm btn-outline-secondary">
+                    Edit
+                </a>
+
+                <form action="{% url 'role_delete' role.pk %}"
+                      method="POST"
+                      class="m-0">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-sm btn-link text-danger p-0"
+                            onclick="return confirm('Are you sure you want to delete this role?');">
+                        Delete
+                    </button>
+                </form>
+
+            </div>
+
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">
+            No roles found.
+        </li>
+        {% endfor %}
+
+    </ul>
+
 </div>
 
 {% endblock %}

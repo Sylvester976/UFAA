@@ -1,0 +1,43 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<div class="container mt-4">
+    <h4>Longlisting - {{ vacancy.title }}</h4>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Select</th>
+                    <th>Applicant</th>
+                    <th>CV</th>
+                    <th>Applied At</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for app in applications %}
+                <tr>
+                    <td>
+                        <input type="checkbox"
+                               name="selected_applications"
+                               value="{{ app.id }}">
+                    </td>
+                    <td>{{ app.applicant.email }}</td>
+                    <td>
+                        <a href="{{ app.cv.url }}" target="_blank">View CV</a>
+                    </td>
+                    <td>{{ app.applied_at }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <button type="submit" class="btn btn-success">
+            Finalize Longlist
+        </button>
+    </form>
+</div>
+
+{% endblock %}

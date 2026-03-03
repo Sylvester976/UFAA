@@ -18,6 +18,17 @@ urlpatterns = [
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
 
+
+    # path(
+    #     "hr/vacancy/<int:vacancy_id>/start-longlisting/",
+    #     views.longlist_candidates,
+    #     name="longlist_candidates",
+    # ),
+    path(
+        "panel/assignment/<int:assignment_id>/respond/",
+        views.respond_panel_assignment,
+        name="respond_panel_assignment",
+    ),
     # Vacancy management
     path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),
     path('hr/vacancy/<int:vacancy_id>/edit/', views.update_vacancy, name='update_vacancy'),
@@ -117,4 +128,17 @@ urlpatterns = [
     # Appoint panelists to a vacancy
     path('vacancies/<int:vacancy_id>/appoint-panelists/', views.appoint_panelists, name='appoint_panelists'),
 
+
+    path(
+        'hr/vacancy/<int:vacancy_id>/appoint-shortlisting/',
+        views.appoint_shortlisting_committee,
+        name='appoint_shortlisting_committee'
+    ),
+
+    # Panelist views shortlist page
+    path(
+        'panelist/vacancy/<int:vacancy_id>/shortlist/',
+        views.submit_shortlist,
+        name='submit_shortlist'
+    ),
 ]

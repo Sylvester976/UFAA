@@ -1,25 +1,56 @@
+{% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
-<div class="container mt-4">
-  <h3>Permissions</h3>
-  <a href="{% url 'permission_create' %}" class="btn btn-primary mb-2"
-    >Create</a>
-    
-  <ul class="list-group">
-    {% for permission in permissions %}
-    <li class="list-group-item">
-      {{ permission.name }} ({{ permission.code }})
-    </li>
-    <a href="{% url 'permission_update' permission.pk %}">Edit</a>
 
-    <form action="{% url 'permission_delete' permission.pk %}" 
-          method="POST" 
-          style="display:inline;">
-        {% csrf_token %}
-        <button type="submit">Delete</button>
-    </form>
+<div class="container-fluid">
 
-    {% endfor %}
-  </ul>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0">Permissions</h4>
+        <a href="{% url 'permission_create' %}" class="btn btn-primary">
+            + Create Permission
+        </a>
+    </div>
+
+    <ul class="list-group border-0">
+
+        {% for permission in permissions %}
+        <li class="list-group-item mb-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+
+            <div>
+                <strong>{{ permission.name }}</strong>
+                <div class="text-muted small">
+                    Code: {{ permission.code }}
+                </div>
+            </div>
+
+            <div class="d-flex align-items-center gap-3">
+
+                <a href="{% url 'permission_update' permission.pk %}"
+                   class="btn btn-sm btn-outline-secondary">
+                    Edit
+                </a>
+
+                <form action="{% url 'permission_delete' permission.pk %}"
+                      method="POST"
+                      class="m-0">
+                    {% csrf_token %}
+                    <button type="submit"
+                            class="btn btn-sm btn-link text-danger p-0"
+                            onclick="return confirm('Are you sure you want to delete this permission?');">
+                        Delete
+                    </button>
+                </form>
+
+            </div>
+
+        </li>
+        {% empty %}
+        <li class="list-group-item text-muted">
+            No permissions found.
+        </li>
+        {% endfor %}
+
+    </ul>
+
 </div>
-{% endblock %}
 
+{% endblock %}
