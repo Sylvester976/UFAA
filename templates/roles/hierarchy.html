@@ -1,15 +1,34 @@
-
+{% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
-<h2>Role Hierarchy</h2>
 
-<ul>
-    {% for role in roles %}
-        <li>
-            {{ role.name }}
+<div class="container-fluid">
+
+    <div class="mb-4">
+        <h4 class="mb-0">Role Hierarchy</h4>
+    </div>
+
+    <ul class="list-group border-0">
+
+        {% for role in roles %}
+        <li class="list-group-item mb-3 rounded shadow-sm">
+
+            <strong>{{ role.name }}</strong>
+
             {% if role.parent %}
-                → inherits {{ role.parent.name }}
+                <div class="text-muted small">
+                    Inherits from: {{ role.parent.name }}
+                </div>
             {% endif %}
+
         </li>
-    {% endfor %}
-</ul>
+        {% empty %}
+        <li class="list-group-item text-muted">
+            No roles available.
+        </li>
+        {% endfor %}
+
+    </ul>
+
+</div>
+
 {% endblock %}

@@ -76,6 +76,20 @@
                     Manage Users
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="{% url 'role_list' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'role_list' %}active{% endif %}">
+                    Manage roles
+                </a>
+            </li>
+                        
+            <li class="nav-item">
+                <a href="{% url 'permission_list' %}" 
+                class="nav-link {% if request.resolver_match.url_name == 'permission_list' %}active{% endif %}">
+                    Manage permissions
+                </a>
+            </li>
             <li class="nav-item"><a href="#" class="nav-link">Reports</a></li>
         </ul>
     </aside>
