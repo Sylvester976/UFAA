@@ -2,7 +2,9 @@ import json
 import os
 from datetime import datetime
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.core.mail import send_mail
 from django.http import FileResponse, Http404
 from django.http import JsonResponse
 from django.utils import timezone
@@ -12,7 +14,8 @@ from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification, ShortlistVote, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee
+    ProfessionalQualification, ShortlistVote, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee, \
+    JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
@@ -2530,44 +2533,314 @@ def appoint_shortlisting_committee(request, vacancy_id):
         'panelists': panelists
     })
     
-# @login_required
-# @role_required(['panelist'])
-# def submit_shortlist(request, vacancy_id):
+# ── Add to recruitment/views.py ────────────────────────────────
+# Additional imports needed:
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from django.utils import timezone
+# from .models import (..., Vacancy, JobApplication, JobApplicationStatus,
+#                      JobApplicationStatusLog, JobApplicationNotification)
 
-#     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+def _application_ready(user):
+    issues  = []
+    profile = JobSeekerProfile.objects.filter(user=user).first()
+    detail  = AdditionalDetail.objects.filter(user=user).first()
 
-#     assignment = PanelAssignment.objects.filter(
-#         vacancy=vacancy,
-#         panelist=request.user,
-#         committee_type='shortlisting',
-#         status='accepted'
-#     ).first()
+    if not profile or not all([profile.first_name, profile.surname,
+            profile.date_of_birth, profile.phone_number,
+            profile.gender_id, profile.home_county_id]):
+        issues.append({'label': 'Complete your basic details', 'url': 'profile', 'icon': 'fa-user'})
 
-#     if not assignment:
-#         messages.error(request, "You are not part of this shortlisting committee.")
-#         return redirect('panelist_dashboard')
+    if not AcademicQualification.objects.filter(user=user).exists():
+        issues.append({'label': 'Add at least one academic qualification', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
 
-#     applications = Application.objects.filter(
-#         vacancy=vacancy,
-#         status='submitted'
-#     )
+    if not WorkHistory.objects.filter(user=user).exists():
+        issues.append({'label': 'Add your work history', 'url': 'work_history', 'icon': 'fa-briefcase'})
 
-#     if request.method == 'POST':
-#         selected_ids = request.POST.getlist('selected_applications')
+    if Referee.objects.filter(user=user).count() < 2:
+        issues.append({'label': 'Add both referees', 'url': 'referees', 'icon': 'fa-user-tie'})
 
-#         for app in applications:
-#             if str(app.id) in selected_ids:
-#                 app.move_to('shortlisted')
-#             else:
-#                 app.move_to('not_selected')
+    if not detail or not detail.cv:
+        issues.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
+    if not detail or not detail.availability:
+        issues.append({'label': 'Set your availability', 'url': 'additional_details', 'icon': 'fa-calendar-check'})
+    if not detail or not detail.expected_salary:
+        issues.append({'label': 'Enter your expected salary', 'url': 'additional_details', 'icon': 'fa-money-bill'})
 
-#         vacancy.move_to('shortlisting')
+    return len(issues) == 0, issues
 
-#         messages.success(request, "Shortlist submitted successfully.")
-#         return redirect('panelist_dashboard')
 
-#     return render(request, 'recruitment/panelist/shortlist.html', {
-#         'vacancy': vacancy,
-#         'applications': applications
-#     })
-    
+def _build_snapshots(user):
+    profile = JobSeekerProfile.objects.filter(user=user).first()
+    detail  = AdditionalDetail.objects.filter(user=user).first()
+
+    snap_basic = {}
+    if profile:
+        snap_basic = {
+            'salutation': profile.salutation or '',
+            'surname': profile.surname or '',
+            'first_name': profile.first_name or '',
+            'second_name': profile.second_name or '',
+            'id_no': profile.id_no or '',
+            'phone_number': profile.phone_number or '',
+            'date_of_birth': str(profile.date_of_birth) if profile.date_of_birth else '',
+            'gender': str(profile.gender) if profile.gender else '',
+            'ethnic_group': str(profile.ethnic_group) if profile.ethnic_group else '',
+            'home_county': str(profile.home_county) if profile.home_county else '',
+            'constituency': str(profile.constituency) if profile.constituency else '',
+            'sub_county': str(profile.sub_county) if profile.sub_county else '',
+            'ward': str(profile.ward) if profile.ward else '',
+            'disability_status': profile.disability_status or '',
+            'disability_other': profile.disability_other or '',
+            'disability_no': profile.disability_no or '',
+            'employee_number': profile.employee_number or '',
+        }
+
+    snap_academic = [
+        {
+            'education_level': str(q.education_level) if q.education_level else '',
+            'institution': q.institution or '',
+            'year_completed': q.year_completed,
+            'grade': q.grade or '',
+        }
+        for q in AcademicQualification.objects.filter(user=user)
+    ]
+
+    snap_professional = [
+        {
+            'qualification': q.qualification or '',
+            'awarding_body': q.awarding_body or '',
+            'year_obtained': q.year_obtained,
+            'grade': q.grade or '',
+            'cert_number': q.cert_number or '',
+        }
+        for q in ProfessionalQualification.objects.filter(user=user)
+    ]
+
+    snap_work = [
+        {
+            'job_title': w.job_title or '',
+            'company': w.company or '',
+            'employment_type': w.employment_type or '',
+            'start_display': w.start_display,
+            'end_display': w.end_display if not w.is_current else 'Present',
+            'is_current': w.is_current,
+            'duties': w.duties or '',
+            'exit_reason': w.exit_reason or '',
+            'country': w.country or '',
+        }
+        for w in WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
+    ]
+
+    snap_memberships = [
+        {
+            'body_name': m.body_name or '',
+            'membership_no': m.membership_no or '',
+            'year_joined': m.year_joined,
+            'expiry_year': m.expiry_year or '',
+        }
+        for m in ProfessionalBodyMembership.objects.filter(user=user)
+    ]
+
+    snap_referees = [
+        {
+            'referee_no': r.referee_no,
+            'name': r.name or '',
+            'occupation': r.occupation or '',
+            'mobile': r.mobile or '',
+            'email': r.email or '',
+            'period_known': r.period_known or '',
+        }
+        for r in Referee.objects.filter(user=user).order_by('referee_no')
+    ]
+
+    snap_additional = {}
+    if detail:
+        snap_additional = {
+            'cv_filename': detail.cv_filename if detail.cv else '',
+            'cover_letter': detail.cover_letter or '',
+            'linkedin_url': detail.linkedin_url or '',
+            'portfolio_url': detail.portfolio_url or '',
+            'languages': detail.languages or '',
+            'availability': detail.availability or '',
+            'expected_salary': str(detail.expected_salary) if detail.expected_salary else '',
+        }
+
+    return {
+        'basic': snap_basic,
+        'academic': snap_academic,
+        'professional': snap_professional,
+        'work': snap_work,
+        'memberships': snap_memberships,
+        'referees': snap_referees,
+        'additional': snap_additional,
+    }
+
+
+def _notify_submission(user, application):
+    vacancy = application.vacancy
+    JobApplicationNotification.objects.create(
+        user=user,
+        title=f'Application Submitted — {vacancy.title}',
+        message=(
+            f'Your application for {vacancy.title} ({vacancy.reference_number}) '
+            f'has been received successfully. We will be in touch regarding next steps.'
+        ),
+        notification_type='application_submitted',
+        related_application=application,
+    )
+    try:
+        first_name = user.profile.first_name if hasattr(user, 'profile') and user.profile.first_name else 'Applicant'
+        send_mail(
+            subject=f'Application Received — {vacancy.title} [{vacancy.reference_number}]',
+            message=(
+                f'Dear {first_name},\n\n'
+                f'Thank you for applying for the position of {vacancy.title} '
+                f'(Reference: {vacancy.reference_number}).\n\n'
+                f'Your application has been received and is currently under review. '
+                f'You can track your application status on the UFAA Job Portal.\n\n'
+                f'Please do not reply to this email.\n\n'
+                f'Regards,\nUFAA Human Resources\n'
+                f'Unclaimed Financial Assets Authority'
+            ),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+    except Exception:
+        pass
+
+
+def apply_jobs_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+    user = JobseekerAccount.objects.filter(pk=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+    is_ready, readiness_issues = _application_ready(user)
+
+    if request.method == 'POST':
+        vacancy_id = request.POST.get('vacancy_id', '').strip()
+        try:
+            ready, issues = _application_ready(user)
+            if not ready:
+                return JsonResponse({'status': 'error',
+                    'message': 'Your profile is incomplete. Please address all required sections before applying.'})
+
+            vacancy = Vacancy.objects.filter(id=vacancy_id).first()
+            if not vacancy:
+                return JsonResponse({'status': 'error', 'message': 'Vacancy not found.'})
+            if not vacancy.is_open():
+                return JsonResponse({'status': 'error', 'message': 'This vacancy is no longer open for applications.'})
+            if vacancy.vacancy_type == 'internal' and not user.is_employee:
+                return JsonResponse({'status': 'error', 'message': 'This vacancy is only open to UFAA employees.'})
+            if JobApplication.objects.filter(user=user, vacancy=vacancy).exists():
+                return JsonResponse({'status': 'error', 'message': 'You have already applied for this position.'})
+
+            submitted_status = JobApplicationStatus.objects.filter(code='submitted').first()
+            if not submitted_status:
+                return JsonResponse({'status': 'error', 'message': 'System configuration error. Please contact support.'})
+
+            snaps = _build_snapshots(user)
+            application = JobApplication.objects.create(
+                user=user,
+                vacancy=vacancy,
+                status=submitted_status,
+                snapshot_basic=snaps['basic'],
+                snapshot_academic=snaps['academic'],
+                snapshot_professional=snaps['professional'],
+                snapshot_work=snaps['work'],
+                snapshot_memberships=snaps['memberships'],
+                snapshot_referees=snaps['referees'],
+                snapshot_additional=snaps['additional'],
+            )
+            JobApplicationStatusLog.objects.create(
+                application=application,
+                from_status=None,
+                to_status=submitted_status,
+                notes='Application submitted by applicant.',
+            )
+            _notify_submission(user, application)
+
+            return JsonResponse({'status': 'success',
+                'message': f'Your application for {vacancy.title} has been submitted successfully.'})
+
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+
+    from django.utils import timezone
+    today     = timezone.now().date()
+    vacancies = Vacancy.objects.filter(
+        status='open',
+        start_date__lte=today,
+        end_date__gte=today,
+    ).order_by('end_date')
+    if not user.is_employee:
+        vacancies = vacancies.filter(vacancy_type='external')
+
+    applied_ids = set(JobApplication.objects.filter(user=user).values_list('vacancy_id', flat=True))
+    snaps       = _build_snapshots(user)
+    detail      = AdditionalDetail.objects.filter(user=user).first()
+    ref1        = Referee.objects.filter(user=user, referee_no=1).first()
+    ref2        = Referee.objects.filter(user=user, referee_no=2).first()
+
+    context = {
+        'user': user, 'profile': profile, 'completion': completion,
+        'vacancies': vacancies, 'applied_ids': applied_ids,
+        'is_ready': is_ready, 'readiness_issues': readiness_issues,
+        'snap_academic_count': len(snaps['academic']),
+        'snap_professional_count': len(snaps['professional']),
+        'snap_work_count': len(snaps['work']),
+        'snap_memberships_count': len(snaps['memberships']),
+        'ref1': ref1, 'ref2': ref2, 'detail': detail,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        'has_additional':   detail is not None,
+        'page': 'Apply for Jobs',
+    }
+    return render(request, 'Jobseekers/apply_jobs.html', context)
+
+
+def job_status_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+    user = JobseekerAccount.objects.filter(pk=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+    detail     = AdditionalDetail.objects.filter(user=user).first()
+
+    applications = (
+        JobApplication.objects
+        .filter(user=user)
+        .select_related('vacancy', 'status')
+        .prefetch_related('status_logs__to_status', 'status_logs__from_status')
+        .order_by('-submitted_at')
+    )
+
+    JobApplicationNotification.objects.filter(user=user, is_read=False).update(is_read=True)
+
+    context = {
+        'user': user, 'profile': profile, 'detail': detail,
+        'completion': completion, 'applications': applications,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        'has_additional':   detail is not None,
+        'page': 'Job Status',
+    }
+    return render(request, 'Jobseekers/job_status.html', context)
