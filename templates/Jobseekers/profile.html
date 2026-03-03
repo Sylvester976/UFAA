@@ -92,10 +92,11 @@
                 </li>
                 <!-- Referees tab — enable when url is ready -->
                 <li class="nav-item">
-                    <a class="nav-link disabled" href="#"
-                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                    <a class="nav-link" href="{% url 'referees' %}">
                         <i class="fas fa-user-tie me-1"></i>
                         <span class="d-none d-sm-inline">Referees</span>
+                        {% if has_referees %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">

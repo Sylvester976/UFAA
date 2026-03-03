@@ -12,7 +12,7 @@ from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification, WorkHistory, AdditionalDetail, ProfessionalBodyMembership
+    ProfessionalQualification, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 
@@ -55,7 +55,6 @@ def dashboard(request):
     if not user_id:
         return redirect('index')
 
-    # user = JobseekerAccount.objects.filter(id=user_id).first()
     user = JobseekerAccount.objects.filter(pk=user_id).first()
     if not user:
         request.session.flush()
@@ -69,30 +68,45 @@ def dashboard(request):
     professional_count = ProfessionalQualification.objects.filter(user=user).count()
     work_history = WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
     work_count = work_history.count()
+    membership_count = ProfessionalBodyMembership.objects.filter(user=user).count()  # ← new
+    referee_count = Referee.objects.filter(user=user).count()  # ← new
 
-    # Profile completion breakdown per section (for donut chart)
+    # Section completion % — weights now 30/15/10/10/10/15/10
     sections = {
-        'Basic Details': min(int(_basic_score(profile) / 40 * 100), 100) if profile else 0,
+        'Basic Details': min(int(_basic_score(profile) / 30 * 100), 100) if profile else 0,
         'Academic': 100 if academic_count > 0 else 0,
         'Professional': 100 if professional_count > 0 else 0,
         'Work History': 100 if work_count > 0 else 0,
-        'Additional Details': _additional_score(detail),
+        'Memberships': 100 if membership_count > 0 else 0,  # ← new
+        'Referees': 100 if referee_count >= 2 else (50 if referee_count == 1 else 0),  # ← new
+        'Additional': _additional_score(detail),
     }
 
-    # Incomplete sections — things to nudge user to complete
+    # Nudge items
     incomplete = []
     if not profile or not profile.first_name:
-        incomplete.append({'label': 'Complete your basic details', 'url': 'profile', 'icon': 'fa-user'})
+        incomplete.append({'label': 'Complete your basic details',
+                           'url': 'profile', 'icon': 'fa-user'})
     if academic_count == 0:
-        incomplete.append(
-            {'label': 'Add academic qualifications', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
+        incomplete.append({'label': 'Add academic qualifications',
+                           'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
     if professional_count == 0:
-        incomplete.append({'label': 'Add professional qualifications', 'url': 'professional_qualifications',
-                           'icon': 'fa-certificate'})
+        incomplete.append({'label': 'Add professional qualifications',
+                           'url': 'professional_qualifications', 'icon': 'fa-certificate'})
     if work_count == 0:
-        incomplete.append({'label': 'Add work history', 'url': 'work_history', 'icon': 'fa-briefcase'})
+        incomplete.append({'label': 'Add work history',
+                           'url': 'work_history', 'icon': 'fa-briefcase'})
+    if membership_count == 0:  # ← new
+        incomplete.append({'label': 'Add professional body memberships',
+                           'url': 'memberships', 'icon': 'fa-users'})
+    if referee_count < 2:  # ← new
+        incomplete.append({
+            'label': 'Add both referees' if referee_count == 0 else 'Add second referee',
+            'url': 'referees', 'icon': 'fa-user-tie'
+        })
     if not detail or not detail.cv:
-        incomplete.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
+        incomplete.append({'label': 'Upload your CV',
+                           'url': 'additional_details', 'icon': 'fa-file-pdf'})
 
     context = {
         'user': user,
@@ -102,12 +116,16 @@ def dashboard(request):
         'academic_count': academic_count,
         'professional_count': professional_count,
         'work_count': work_count,
-        'work_history': work_history[:5],  # last 5 jobs for timeline
+        'work_history': work_history[:5],
+        'membership_count': membership_count,  # ← new
+        'referee_count': referee_count,  # ← new
         'sections': sections,
         'incomplete': incomplete,
         'has_academic': academic_count > 0,
         'has_professional': professional_count > 0,
         'has_work_history': work_count > 0,
+        'has_memberships': membership_count > 0,  # ← new
+        'has_referees': referee_count >= 2,  # ← new
         'has_additional': detail is not None,
         'page': 'Dashboard',
     }
@@ -271,9 +289,8 @@ def profile_view(request):
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
         'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
-        # Add these when models are ready:
-        # 'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        # 'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'jobseekers/profile.html', context)
 
@@ -487,6 +504,8 @@ def academic_qualifications_view(request):
         'has_work_history': user.work_history.exists()
         if hasattr(user, 'work_history') else False,
         'has_additional': hasattr(user, 'additional_detail'),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'jobseekers/academic.html', context)
 
@@ -526,13 +545,15 @@ def calculate_profile_completion(user):
         score += 10
 
     # ── Section 5: Professional Body Memberships (10 points) ──
-    # if ProfessionalBodyMembership.objects.filter(user=user).exists():
-    #     score += 10
+    if ProfessionalBodyMembership.objects.filter(user=user).exists():
+        score += 10
 
-    # ── Section 6: Referees (15 points) ───────────────────────
-    # referees = Referee.objects.filter(user=user)
-    # if referees.count() >= 1: score += 8
-    # if referees.count() >= 2: score += 7
+        # ── Section 6: Referees (15 points) ───────────────────────
+        referee_count = Referee.objects.filter(user=user).count()
+        if referee_count >= 2:
+            score += 15  # full 15 only when both are saved
+        elif referee_count == 1:
+            score += 8  # partial credit for one referee
 
     # ── Section 7: Additional Details (10 points) ─────────────
     detail = AdditionalDetail.objects.filter(user=user).first()
@@ -738,6 +759,8 @@ def professional_qualifications_view(request):
         'has_work_history': user.work_history.exists()
         if hasattr(user, 'work_history') else False,
         'has_additional': hasattr(user, 'additional_detail'),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'jobseekers/professional.html', context)
 
@@ -899,6 +922,8 @@ def work_history_view(request):
         'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': existing.exists(),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
         'has_additional': hasattr(user, 'additional_detail'),
     }
     return render(request, 'jobseekers/work_history.html', context)
@@ -1063,7 +1088,8 @@ def memberships_view(request):
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
         'has_memberships': existing.exists(),
         'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
-        # 'has_referees':   Referee.objects.filter(user=user).count() >= 2,
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'jobseekers/membership.html', context)
 
@@ -1076,6 +1102,108 @@ def _mem_to_dict(mem):
         'membership_no': mem.membership_no,
         'year_joined': mem.year_joined,
         'expiry_year': mem.expiry_year or '',
+    }
+
+
+def referee_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+
+    if request.method == 'POST':
+        try:
+            # ── Collect both referees first ───────────────────
+            refs_data = {}
+            for no in [1, 2]:
+                refs_data[no] = {
+                    'name': request.POST.get(f'ref{no}_name', '').strip(),
+                    'occupation': request.POST.get(f'ref{no}_occupation', '').strip(),
+                    'mobile': request.POST.get(f'ref{no}_mobile', '').strip(),
+                    'email': request.POST.get(f'ref{no}_email', '').strip(),
+                    'period_known': request.POST.get(f'ref{no}_period_known', '').strip(),
+                }
+
+            # ── Validate BOTH before saving EITHER ───────────
+            for no in [1, 2]:
+                d = refs_data[no]
+                if not all([d['name'], d['occupation'], d['mobile'],
+                            d['email'], d['period_known']]):
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'All fields for Referee {no} are required. '
+                                   f'Both referees must be complete before saving.'
+                    })
+
+            # ── Both valid — now save ─────────────────────────
+            saved = []
+            for no in [1, 2]:
+                d = refs_data[no]
+                referee, _ = Referee.objects.update_or_create(
+                    user=user,
+                    referee_no=no,
+                    defaults={
+                        'name': d['name'],
+                        'occupation': d['occupation'],
+                        'mobile': d['mobile'],
+                        'email': d['email'],
+                        'period_known': d['period_known'],
+                    }
+                )
+                saved.append(_referee_to_dict(referee))
+
+            return JsonResponse({
+                'status': 'success',
+                'message': 'Referee details saved successfully.',
+                'completion': calculate_profile_completion(user),
+                'saved': saved,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
+
+    # ── GET ───────────────────────────────────────────────────
+    ref1 = Referee.objects.filter(user=user, referee_no=1).first()
+    ref2 = Referee.objects.filter(user=user, referee_no=2).first()
+
+    period_choices = Referee.PERIOD_CHOICES
+
+    context = {
+        'profile': profile,
+        'user': user,
+        'page': 'Referees',
+        'ref1': ref1,
+        'ref2': ref2,
+        'period_choices': period_choices,
+        'completion': completion,
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
+    }
+    return render(request, 'jobseekers/referee.html', context)
+
+
+def _referee_to_dict(ref):
+    """Serialise a Referee for JSON responses."""
+    return {
+        'id': ref.id,
+        'referee_no': ref.referee_no,
+        'name': ref.name,
+        'occupation': ref.occupation,
+        'mobile': ref.mobile,
+        'email': ref.email,
+        'period_known': ref.period_known,
     }
 
 
@@ -1190,6 +1318,8 @@ def additional_details_view(request):
         'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
         'has_additional': detail is not None,
     }
     return render(request, 'jobseekers/additional.html', context)
