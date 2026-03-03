@@ -40,6 +40,10 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/applications/',
          views.hr_view_applications,
          name='hr_view_applications'),
+    
+    path('hr/vacancy/<int:vacancy_id>/committee/',
+         views.committee_view_applications,
+         name='committee_view_applications'),
 
     path('hr/vacancy/<int:vacancy_id>/start-longlisting/',
          views.start_longlisting,

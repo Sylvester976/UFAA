@@ -1721,6 +1721,33 @@ def hr_view_applications(request, vacancy_id):
         'applications': applications
     })
 
+@login_required
+# @role_required(['hod_hr'])
+def committee_view_applications(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    # if vacancy.status not in ['closed', 'longlisting', 'shortlisting', 'interviews']:
+    #     messages.error(request, "Applications not available for review yet.")
+    #     return redirect('hr_dashboard')
+
+    applications = Application.objects.filter(vacancy=vacancy) \
+    #     .select_related(
+    #     "applicant",
+    #     "applicant__profile",
+    #     "applicant__additional_detail"
+    # ).prefetch_related(
+    #     "applicant__academic_qualifications",
+    #     "applicant__work_history",
+    #     "applicant__professional_qualifications",
+    #     "applicant__documents"
+    # )
+
+    return render(request, 'recruitment/hr/view_applications.html', {
+        'vacancy': vacancy,
+        'applications': applications
+    })
+
+
 
 # HR View to Move Vacancy to Longlisting
 # @login_required
@@ -1751,7 +1778,7 @@ def start_longlisting(request, vacancy_id):
     vacancy.save()
 
     messages.success(request, "Longlisting stage started.")
-    return redirect('hr_view_applications', vacancy_id=vacancy.id)
+    return redirect('committee_view_applications', vacancy_id=vacancy.id)
 
 @login_required
 @role_required(['hod_hr'])

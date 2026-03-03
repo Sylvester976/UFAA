@@ -93,14 +93,6 @@
                             Shortlist
                         </a>
                     {% endif %}
-                    
-                    <!-- Longlisting -->
-                    {% if vacancy.status == "longlisting" %}
-                        |
-                        <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}">
-                            appoint Committee
-                        </a>
-                    {% endif %}
 
                     <!-- Shortlisting -->
                     {% if vacancy.status == "shortlisting" %}

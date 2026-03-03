@@ -53,6 +53,12 @@
         </tbody>
     </table>
 
+    {% if vacancy.status == "longlisting" %}
+        <a href="{% url 'shortlist_candidates' vacancy.id %}"
+           class="btn btn-primary">
+            Proceed to Shortlisting
+        </a>
+    {% endif %}
 
 </div>
 
