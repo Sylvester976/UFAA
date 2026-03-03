@@ -1,0 +1,33 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block content %}
+
+<div class="container mt-4">
+    <h4>Appoint Shortlisting Committee</h4>
+    <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <div class="card p-3">
+            {% for panelist in panelists %}
+                <div class="form-check">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           name="panelists"
+                           value="{{ panelist.id }}">
+                    <label class="form-check-label">
+                        {{ panelist.first_name }} {{ panelist.last_name }} ({{ panelist.email }})
+                    </label>
+                </div>
+            {% empty %}
+                <p>No panelists available.</p>
+            {% endfor %}
+        </div>
+
+        <button type="submit" class="btn btn-primary mt-3">
+            Appoint Committee
+        </button>
+    </form>
+</div>
+
+{% endblock %}

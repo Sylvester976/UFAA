@@ -128,4 +128,17 @@ urlpatterns = [
     # Appoint panelists to a vacancy
     path('vacancies/<int:vacancy_id>/appoint-panelists/', views.appoint_panelists, name='appoint_panelists'),
 
+
+    path(
+        'hr/vacancy/<int:vacancy_id>/appoint-shortlisting/',
+        views.appoint_shortlisting_committee,
+        name='appoint_shortlisting_committee'
+    ),
+
+    # Panelist views shortlist page
+    path(
+        'panelist/vacancy/<int:vacancy_id>/shortlist/',
+        views.submit_shortlist,
+        name='submit_shortlist'
+    ),
 ]

@@ -1,5 +1,8 @@
 # recruitment/services.py
 
+from recruitment.models import Application, PanelAssignment, ShortlistVote
+
+
 def build_profile_snapshot(user):
     profile = user.profile
 
@@ -55,3 +58,50 @@ def build_profile_snapshot(user):
             for w in user.work_history.all()
         ],
     }
+    
+    
+def is_shortlisting_complete(vacancy):
+
+    committee_members = PanelAssignment.objects.filter(
+        vacancy=vacancy,
+        committee_type='shortlisting',
+        status='accepted'
+    ).count()
+
+    members_who_submitted = ShortlistVote.objects.filter(
+        vacancy=vacancy
+    ).values('committee_member').distinct().count()
+
+    return committee_members > 0 and committee_members == members_who_submitted
+
+
+from django.db.models import Count
+
+def aggregate_shortlist(vacancy):
+
+    total_members = PanelAssignment.objects.filter(
+        vacancy=vacancy,
+        committee_type='shortlisting',
+        status='accepted'
+    ).count()
+
+    majority_threshold = (total_members // 2) + 1
+
+    applications = Application.objects.filter(
+        vacancy=vacancy,
+        status='submitted'
+    )
+
+    for app in applications:
+
+        vote_count = ShortlistVote.objects.filter(
+            vacancy=vacancy,
+            application=app
+        ).count()
+
+        if vote_count >= majority_threshold:
+            app.move_to('shortlisted')
+        else:
+            app.move_to('not_selected')
+
+    vacancy.move_to('shortlisting')

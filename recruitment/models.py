@@ -203,6 +203,7 @@ class Vacancy(models.Model):
         ('draft', 'Draft'),
         ('open', 'Open'),
         ('longlisting', 'Longlisting'),
+        ('committee_stage', 'Committee Appointed'),
         ('shortlisting', 'Shortlisting'),
         ('interviews', 'Interviews'),
         ('top_three_selected', 'Top Three Selected'),
@@ -347,17 +348,52 @@ class PanelAssignment(models.Model):
         ('accepted', 'Accepted'),
         ('declined', 'Declined'),
     ]
+    
+    COMMITTEE_TYPES = [
+        ('shortlisting', 'Shortlisting'),
+        ('interview', 'Interview'),
+    ]
 
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')
     panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    committee_type = models.CharField(
+        max_length=30,
+        choices=COMMITTEE_TYPES,
+        null=True,
+        blank=True
+    )
+
+    status = models.CharField(max_length=20, choices=COMMITTEE_TYPES, default='pending')
     decline_reason = models.TextField(blank=True, null=True)
     responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
-        unique_together = ('vacancy', 'panelist')
+        unique_together = ('vacancy', 'panelist', 'committee_type')
 
+class ShortlistVote(models.Model):
+
+    vacancy = models.ForeignKey(
+        Vacancy,
+        on_delete=models.CASCADE,
+        related_name='shortlist_votes'
+    )
+
+    committee_member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='shortlist_votes'
+    )
+
+    voted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('vacancy', 'committee_member', 'application')
 
 class InterviewScore(models.Model):
     application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='scores')
