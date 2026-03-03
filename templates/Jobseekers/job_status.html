@@ -1,0 +1,417 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+<style>
+:root {
+    --navy: #1D255B;
+    --navy-deep: #141A45;
+    --gold: #F9E6A1;
+    --gold-dark: #C7B77F;
+}
+.app-card {
+    background: #fff;
+    border-radius: 1rem;
+    border: 1px solid #eef0f9;
+    box-shadow: 0 4px 20px rgba(29,37,91,0.06);
+    overflow: hidden;
+    transition: box-shadow 0.2s;
+}
+.app-card:hover { box-shadow: 0 8px 32px rgba(29,37,91,0.11); }
+.app-card-header {
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+    padding: 1rem 1.25rem 0.85rem;
+    position: relative;
+}
+.app-card-header::after {
+    content: '';
+    position: absolute; bottom: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+}
+.app-title { font-size: 0.87rem; font-weight: 700; color: #fff; margin: 0 0 2px; }
+.app-ref   { font-size: 0.7rem; color: rgba(249,230,161,0.7); font-family: monospace; }
+.app-body  { padding: 1rem 1.25rem; }
+.status-pill {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.72rem; font-weight: 700;
+    padding: 0.3rem 0.75rem; border-radius: 2rem;
+    letter-spacing: 0.02em;
+}
+.status-submitted         { background: #e0f2fe; color: #0369a1; }
+.status-under_review      { background: #fef9e7; color: #8B6914; }
+.status-shortlisted       { background: #d1fae5; color: #065f46; }
+.status-interview_scheduled { background: #ede9fe; color: #5b21b6; }
+.status-rejected          { background: #fee2e2; color: #991b1b; }
+.status-offered           { background: #dcfce7; color: #14532d; }
+.status-default           { background: #f1f5f9; color: #475569; }
+.app-meta-row {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.76rem; color: #67748e; margin-bottom: 0.3rem;
+}
+.app-meta-row i { width: 14px; color: var(--navy); opacity: 0.6; font-size: 0.7rem; }
+/* Timeline */
+.timeline { position: relative; padding-left: 1.5rem; }
+.timeline::before {
+    content: ''; position: absolute; left: 7px; top: 6px; bottom: 6px;
+    width: 2px; background: linear-gradient(180deg, var(--gold-dark), var(--navy), #e9ecef);
+    border-radius: 2px;
+}
+.tl-item { position: relative; margin-bottom: 0.85rem; }
+.tl-item:last-child { margin-bottom: 0; }
+.tl-dot {
+    position: absolute; left: -1.22rem; top: 4px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--navy); border: 2px solid #fff;
+    box-shadow: 0 0 0 2px var(--navy);
+}
+.tl-dot.latest { background: var(--gold-dark); box-shadow: 0 0 0 2px var(--gold-dark); }
+.tl-status { font-size: 0.78rem; font-weight: 700; color: #344767; margin-bottom: 1px; }
+.tl-date   { font-size: 0.68rem; color: #adb5bd; }
+.tl-notes  { font-size: 0.73rem; color: #67748e; margin-top: 2px; }
+/* Empty state */
+.empty-state { text-align: center; padding: 3.5rem 1rem; }
+.empty-state-icon { font-size: 3rem; color: var(--navy); opacity: 0.12; margin-bottom: 1rem; }
+/* Detail modal rows */
+.detail-section-title {
+    font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.06em; color: var(--navy); opacity: 0.7;
+    margin: 1rem 0 0.5rem; padding-bottom: 0.3rem;
+    border-bottom: 2px solid var(--gold-dark);
+}
+.detail-row {
+    display: flex; gap: 0.6rem; padding: 0.35rem 0;
+    border-bottom: 1px solid #f8f9fa; font-size: 0.79rem;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-lbl { font-size: 0.67rem; color: #adb5bd; text-transform: uppercase; min-width: 120px; flex-shrink: 0; padding-top: 1px; }
+.detail-val { font-weight: 600; color: #344767; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+<div class="col-12 mt-4">
+
+    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+            <h6 class="mb-0 font-weight-bolder">My Applications</h6>
+            <p class="text-sm text-secondary mb-0">Track the status of your job applications</p>
+        </div>
+        <div class="d-flex gap-2 align-items-center">
+            {% if applications %}
+            <span class="badge px-3 py-2"
+                  style="background:linear-gradient(135deg,var(--navy-deep),var(--navy));color:var(--gold);">
+                <i class="fas fa-file-alt me-1"></i>
+                {{ applications|length }} Application{{ applications|length|pluralize }}
+            </span>
+            {% endif %}
+            <a href="{% url 'apply_jobs' %}" class="btn btn-sm mb-0"
+               style="background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+                      color:var(--gold);border:none;border-radius:0.65rem;font-size:0.78rem;">
+                <i class="fas fa-plus me-1"></i> Apply for More
+            </a>
+        </div>
+    </div>
+
+    {% if applications %}
+    <div class="row g-3">
+        {% for app in applications %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="app-card h-100 d-flex flex-column">
+                <div class="app-card-header">
+                    <div class="app-title">{{ app.vacancy.title }}</div>
+                    <div class="app-ref">
+                        <i class="fas fa-hashtag me-1" style="font-size:0.58rem;"></i>
+                        {{ app.vacancy.reference_number }}
+                    </div>
+                </div>
+                <div class="app-body flex-grow-1 d-flex flex-column">
+
+                    <!-- Status pill -->
+                    <div class="mb-3">
+                        {% if app.status %}
+                        <span class="status-pill status-{{ app.status.code }}">
+                            {% if app.status.code == 'submitted' %}
+                                <i class="fas fa-paper-plane"></i>
+                            {% elif app.status.code == 'under_review' %}
+                                <i class="fas fa-search"></i>
+                            {% elif app.status.code == 'shortlisted' %}
+                                <i class="fas fa-star"></i>
+                            {% elif app.status.code == 'interview_scheduled' %}
+                                <i class="fas fa-calendar-check"></i>
+                            {% elif app.status.code == 'rejected' %}
+                                <i class="fas fa-times-circle"></i>
+                            {% elif app.status.code == 'offered' %}
+                                <i class="fas fa-trophy"></i>
+                            {% else %}
+                                <i class="fas fa-circle"></i>
+                            {% endif %}
+                            {{ app.status.name }}
+                        </span>
+                        {% else %}
+                        <span class="status-pill status-default">
+                            <i class="fas fa-circle"></i> Unknown
+                        </span>
+                        {% endif %}
+                    </div>
+
+                    <!-- Meta info -->
+                    <div class="mb-3">
+                        <div class="app-meta-row">
+                            <i class="fas fa-calendar-alt"></i>
+                            Applied {{ app.submitted_at|date:"d M Y" }}
+                        </div>
+                        <div class="app-meta-row">
+                            <i class="fas fa-clock"></i>
+                            {{ app.submitted_at|date:"H:i" }}
+                        </div>
+                        <div class="app-meta-row">
+                            <i class="fas fa-{% if app.vacancy.vacancy_type == 'internal' %}lock{% else %}globe{% endif %}"></i>
+                            {{ app.vacancy.get_vacancy_type_display }} Vacancy
+                        </div>
+                    </div>
+
+                    <!-- Status Timeline (last 3 entries) -->
+                    {% with logs=app.status_logs.all %}
+                    {% if logs %}
+                    <div class="mb-3">
+                        <p style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#8392ab;margin-bottom:0.5rem;">
+                            Status History
+                        </p>
+                        <div class="timeline">
+                            {% for log in logs|slice:":4" %}
+                            <div class="tl-item">
+                                <div class="tl-dot {% if forloop.first %}latest{% endif %}"></div>
+                                <div class="tl-status">{{ log.to_status.name|default:'—' }}</div>
+                                <div class="tl-date">{{ log.changed_at|date:"d M Y, H:i" }}</div>
+                                {% if log.notes %}
+                                <div class="tl-notes">{{ log.notes }}</div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+
+                    <!-- Actions -->
+                    <div class="mt-auto pt-2" style="border-top:1px solid #f0f2f5;">
+                        <div class="d-flex gap-2 flex-wrap">
+                            <button type="button"
+                                    class="btn btn-sm mb-0"
+                                    style="border:1px solid var(--navy);color:var(--navy);
+                                           font-size:0.74rem;border-radius:0.55rem;
+                                           padding:0.35rem 0.75rem;background:transparent;"
+                                    onclick="viewSnapshot({{ app.id }})">
+                                <i class="fas fa-eye me-1"></i> View Submitted Profile
+                            </button>
+                            {% if app.vacancy.advert_pdf %}
+                            <a href="{{ app.vacancy.advert_pdf.url }}" target="_blank"
+                               class="btn btn-sm mb-0"
+                               style="border:1px solid #e9ecef;color:#67748e;
+                                      font-size:0.74rem;border-radius:0.55rem;
+                                      padding:0.35rem 0.75rem;background:transparent;">
+                                <i class="fas fa-file-pdf me-1"></i> Advert
+                            </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="card profile-content-card">
+        <div class="card-body">
+            <div class="empty-state">
+                <div class="empty-state-icon"><i class="fas fa-file-alt"></i></div>
+                <h6 class="font-weight-bold mb-2" style="color:var(--navy);">No Applications Yet</h6>
+                <p class="text-secondary text-sm mb-3">
+                    You haven't applied for any positions yet.<br>
+                    Browse open vacancies and submit your application.
+                </p>
+                <a href="{% url 'apply_jobs' %}" class="btn btn-sm"
+                   style="background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+                          color:var(--gold);border:none;border-radius:0.65rem;font-size:0.8rem;">
+                    <i class="fas fa-search me-1"></i> Browse Vacancies
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+</div>
+
+<!-- Snapshot Detail Modal -->
+<div class="modal fade" id="snapshotModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content" style="border-radius:1rem;border:none;overflow:hidden;">
+            <div class="modal-header"
+                 style="background:linear-gradient(135deg,var(--navy-deep),var(--navy));
+                        border:none;padding:1.1rem 1.5rem;">
+                <div>
+                    <h6 class="modal-title text-white font-weight-bolder mb-0">
+                        <i class="fas fa-user-check me-2" style="color:var(--gold);"></i>
+                        Submitted Profile Snapshot
+                    </h6>
+                    <p class="text-white mb-0" id="snapshotVacancyTitle"
+                       style="font-size:0.72rem;opacity:0.65;"></p>
+                </div>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div style="height:3px;background:linear-gradient(90deg,var(--gold-dark),var(--gold),var(--gold-dark));"></div>
+            <div class="modal-body p-4" id="snapshotContent">
+                <div class="text-center py-4">
+                    <i class="fas fa-spinner fa-spin text-secondary" style="font-size:1.5rem;"></i>
+                </div>
+            </div>
+            <div class="modal-footer" style="border-top:1px solid #f0f2f5;">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden app data for JS snapshot rendering -->
+{% for app in applications %}
+<script>
+window.__appData = window.__appData || {};
+window.__appData[{{ app.id }}] = {
+    vacancyTitle: '{{ app.vacancy.title|escapejs }}',
+    submittedAt:  '{{ app.submitted_at|date:"d M Y, H:i" }}',
+    status:       '{{ app.status.name|default:"Unknown"|escapejs }}',
+    basic:        {{ app.snapshot_basic|safe }},
+    academic:     {{ app.snapshot_academic|safe }},
+    professional: {{ app.snapshot_professional|safe }},
+    work:         {{ app.snapshot_work|safe }},
+    memberships:  {{ app.snapshot_memberships|safe }},
+    referees:     {{ app.snapshot_referees|safe }},
+    additional:   {{ app.snapshot_additional|safe }},
+};
+</script>
+{% endfor %}
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function viewSnapshot(appId) {
+    const data = (window.__appData || {})[appId];
+    if (!data) return;
+
+    document.getElementById('snapshotVacancyTitle').textContent =
+        data.vacancyTitle + ' — Submitted ' + data.submittedAt;
+
+    let html = '';
+
+    // ── Basic Details ──
+    html += '<p class="detail-section-title"><i class="fas fa-user me-2"></i>Basic Details</p>';
+    const b = data.basic;
+    const rows = [
+        ['Name',        [b.salutation, b.first_name, b.second_name, b.surname].filter(Boolean).join(' ')],
+        ['ID Number',   b.id_no || '—'],
+        ['Phone',       b.phone_number || '—'],
+        ['Date of Birth', b.date_of_birth || '—'],
+        ['Gender',      b.gender || '—'],
+        ['Home County', b.home_county || '—'],
+        ['Constituency',b.constituency || '—'],
+        ['Disability',  b.disability_status || 'None'],
+    ];
+    if (b.employee_number) rows.push(['Employee No.', b.employee_number]);
+    rows.forEach(([lbl, val]) => {
+        html += `<div class="detail-row"><span class="detail-lbl">${lbl}</span><span class="detail-val">${val}</span></div>`;
+    });
+
+    // ── Academic ──
+    if (data.academic && data.academic.length) {
+        html += '<p class="detail-section-title"><i class="fas fa-graduation-cap me-2"></i>Academic Qualifications</p>';
+        data.academic.forEach(q => {
+            html += `<div class="detail-row">
+                <span class="detail-lbl">${q.education_level || 'Qualification'}</span>
+                <span class="detail-val">${q.institution || '—'}
+                    ${q.year_completed ? ' · ' + q.year_completed : ''}
+                    ${q.grade ? ' · ' + q.grade : ''}
+                </span>
+            </div>`;
+        });
+    }
+
+    // ── Professional ──
+    if (data.professional && data.professional.length) {
+        html += '<p class="detail-section-title"><i class="fas fa-certificate me-2"></i>Professional Qualifications</p>';
+        data.professional.forEach(q => {
+            html += `<div class="detail-row">
+                <span class="detail-lbl">${q.awarding_body || 'Certificate'}</span>
+                <span class="detail-val">${q.qualification || '—'}
+                    ${q.year_obtained ? ' · ' + q.year_obtained : ''}
+                    ${q.grade ? ' · ' + q.grade : ''}
+                </span>
+            </div>`;
+        });
+    }
+
+    // ── Work History ──
+    if (data.work && data.work.length) {
+        html += '<p class="detail-section-title"><i class="fas fa-briefcase me-2"></i>Work History</p>';
+        data.work.forEach(w => {
+            html += `<div class="detail-row">
+                <span class="detail-lbl">${w.start_display || ''} — ${w.end_display || ''}</span>
+                <span class="detail-val">${w.job_title || '—'} · ${w.company || '—'}
+                    ${w.employment_type ? ' <span style="font-weight:400;color:#8392ab;">(' + w.employment_type + ')</span>' : ''}
+                </span>
+            </div>`;
+        });
+    }
+
+    // ── Memberships ──
+    if (data.memberships && data.memberships.length) {
+        html += '<p class="detail-section-title"><i class="fas fa-users me-2"></i>Professional Body Memberships</p>';
+        data.memberships.forEach(m => {
+            html += `<div class="detail-row">
+                <span class="detail-lbl">${m.body_name || '—'}</span>
+                <span class="detail-val">No. ${m.membership_no || '—'} · Joined ${m.year_joined || '—'}
+                    ${m.expiry_year ? ' · Expires ' + m.expiry_year : ' · Lifetime'}
+                </span>
+            </div>`;
+        });
+    }
+
+    // ── Referees ──
+    if (data.referees && data.referees.length) {
+        html += '<p class="detail-section-title"><i class="fas fa-user-tie me-2"></i>Referees</p>';
+        data.referees.forEach(r => {
+            html += `<div class="detail-row">
+                <span class="detail-lbl">Referee ${r.referee_no}</span>
+                <span class="detail-val">${r.name || '—'} · ${r.occupation || '—'}<br>
+                    <span style="font-weight:400;color:#67748e;font-size:0.74rem;">
+                        ${r.mobile || ''} · ${r.email || ''} · Known: ${r.period_known || '—'}
+                    </span>
+                </span>
+            </div>`;
+        });
+    }
+
+    // ── Additional ──
+    const a = data.additional;
+    if (a) {
+        html += '<p class="detail-section-title"><i class="fas fa-info-circle me-2"></i>Additional Details</p>';
+        html += `<div class="detail-row"><span class="detail-lbl">CV</span><span class="detail-val">${a.cv_filename || '—'}</span></div>`;
+        html += `<div class="detail-row"><span class="detail-lbl">Availability</span><span class="detail-val">${a.availability || '—'}</span></div>`;
+        html += `<div class="detail-row"><span class="detail-lbl">Expected Salary</span><span class="detail-val">${a.expected_salary ? 'KES ' + parseInt(a.expected_salary).toLocaleString() : '—'}</span></div>`;
+        if (a.languages) html += `<div class="detail-row"><span class="detail-lbl">Languages</span><span class="detail-val">${a.languages}</span></div>`;
+        if (a.linkedin_url) html += `<div class="detail-row"><span class="detail-lbl">LinkedIn</span><span class="detail-val"><a href="${a.linkedin_url}" target="_blank" style="color:var(--navy);">View Profile</a></span></div>`;
+        if (a.cover_letter) {
+            html += `<div class="detail-row"><span class="detail-lbl">Cover Letter</span><span class="detail-val" style="font-size:0.75rem;color:#67748e;line-height:1.5;">${a.cover_letter.replace(/\n/g,'<br>')}</span></div>`;
+        }
+    }
+
+    document.getElementById('snapshotContent').innerHTML = html;
+    new bootstrap.Modal(document.getElementById('snapshotModal')).show();
+}
+</script>
+{% endblock %}
