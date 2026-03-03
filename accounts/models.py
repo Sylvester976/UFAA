@@ -93,6 +93,8 @@ class JobseekerAccount(models.Model):
     session_key = models.CharField(max_length=40, blank=True, null=True)
     verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
+    is_employee = models.BooleanField(default=False)
+
     is_active = models.BooleanField(default=True)
     is_verified = models.BooleanField(default=False)
 

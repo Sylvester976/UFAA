@@ -5,552 +5,589 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mt-4">
+    <div class="row">
+        <div class="col-12 mt-4">
 
-        <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-            <div>
-                <h6 class="mb-0 font-weight-bolder">Additional Details</h6>
-                <p class="text-sm text-secondary mb-0">Final step — upload your CV and add any extra information</p>
-            </div>
-            <span class="badge px-3 py-2" id="completionBadge"
-                style="background: {% if completion == 100 %}linear-gradient(310deg,#2dce89,#17c1e8){% elif completion >= 60 %}linear-gradient(310deg,#17c1e8,#2dce89){% elif completion >= 30 %}linear-gradient(310deg,#f5a623,#f76b1c){% else %}linear-gradient(310deg,#f5365c,#f56036){% endif %}">
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">Additional Details</h6>
+                    <p class="text-sm text-secondary mb-0">Final step — upload your CV and add any extra information</p>
+                </div>
+                <span class="badge px-3 py-2" id="completionBadge"
+                      style="background: {% if completion == 100 %}linear-gradient(310deg,#2dce89,#17c1e8){% elif completion >= 60 %}linear-gradient(310deg,#17c1e8,#2dce89){% elif completion >= 30 %}linear-gradient(310deg,#f5a623,#f76b1c){% else %}linear-gradient(310deg,#f5365c,#f56036){% endif %}">
                 <i class="fas fa-tasks me-1"></i>
                 <span id="completionText">{{ completion }}% Complete</span>
             </span>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <small class="text-secondary" id="progressMsg" style="font-size:0.75rem;">
-                    {% if completion == 100 %}🎉 Profile complete!
-                    {% elif completion >= 60 %}Almost there — keep going!
-                    {% elif completion >= 30 %}Good start — more to fill in.
-                    {% else %}Just getting started...{% endif %}
-                </small>
-                <small class="font-weight-bold" id="progressPct" style="font-size:0.75rem;">
-                    {{ completion }}%
-                </small>
             </div>
-            <div class="progress" style="height:8px; border-radius:1rem;">
-                <div class="progress-bar bg-gradient-info"
-                     id="progressBar"
-                     role="progressbar"
-                     style="width:{{ completion }}%; transition:width 0.6s ease;"
-                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+
+            <!-- Progress Bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-secondary" id="progressMsg" style="font-size:0.75rem;">
+                        {% if completion == 100 %}🎉 Profile complete!
+                        {% elif completion >= 60 %}Almost there — keep going!
+                        {% elif completion >= 30 %}Good start — more to fill in.
+                        {% else %}Just getting started...{% endif %}
+                    </small>
+                    <small class="font-weight-bold" id="progressPct" style="font-size:0.75rem;">
+                        {{ completion }}%
+                    </small>
+                </div>
+                <div class="progress" style="height:8px; border-radius:1rem;">
+                    <div class="progress-bar bg-gradient-info"
+                         id="progressBar"
+                         role="progressbar"
+                         style="width:{{ completion }}%; transition:width 0.6s ease;"
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabs -->
-        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'profile' %}">
-                    <i class="fas fa-user me-1"></i>
-                    <span class="d-none d-sm-inline">Basic Details</span>
-                    {% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'academic_qualifications' %}">
-                    <i class="fas fa-graduation-cap me-1"></i>
-                    <span class="d-none d-sm-inline">Academic</span>
-                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'professional_qualifications' %}">
-                    <i class="fas fa-certificate me-1"></i>
-                    <span class="d-none d-sm-inline">Professional</span>
-                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'work_history' %}">
-                    <i class="fas fa-briefcase me-1"></i>
-                    <span class="d-none d-sm-inline">Work History</span>
-                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'additional_details' %}">
-                    <i class="fas fa-info-circle me-1"></i>
-                    <span class="d-none d-sm-inline">Additional</span>
-                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-        </ul>
+            <!-- Tabs -->
+            <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'profile' %}">
+                        <i class="fas fa-user me-1"></i>
+                        <span class="d-none d-sm-inline">Basic Details</span>
+                        {% if completion >= 40 %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        <span class="d-none d-sm-inline">Academic</span>
+                        {% if has_academic %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                        <i class="fas fa-certificate me-1"></i>
+                        <span class="d-none d-sm-inline">Professional</span>
+                        {% if has_professional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'work_history' %}">
+                        <i class="fas fa-briefcase me-1"></i>
+                        <span class="d-none d-sm-inline">Work History</span>
+                        {% if has_work_history %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <!-- Memberships tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'memberships' %}">
+                        <i class="fas fa-users me-1"></i>
+                        <span class="d-none d-sm-inline">Memberships</span>
+                        {% if has_memberships %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <!-- Referees tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#"
+                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                        <i class="fas fa-user-tie me-1"></i>
+                        <span class="d-none d-sm-inline">Referees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'additional_details' %}">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <span class="d-none d-sm-inline">Additional</span>
+                        {% if has_additional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+            </ul>
 
-        <!-- Content Card -->
-        <div class="card mb-4 profile-content-card">
-            <div class="card-body p-3 p-md-4">
+            <!-- Content Card -->
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body p-3 p-md-4">
 
-                <h6 class="font-weight-bolder mb-1">Step 5: Additional Details</h6>
-                <p class="text-sm text-secondary mb-4">
-                    Upload your CV and fill in any additional information to complete your profile.
-                </p>
+                    <h6 class="font-weight-bolder mb-1">Step 5: Additional Details</h6>
+                    <p class="text-sm text-secondary mb-4">
+                        Upload your CV and fill in any additional information to complete your profile.
+                    </p>
 
-                <!-- ── CV Upload ── -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-file-pdf me-2"></i> CV / Resume
-                        <small class="ms-2 opacity-75" style="font-size:0.75rem;">PDF only — max 2MB</small>
+                    <!-- ── CV Upload ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-file-pdf me-2"></i> CV / Resume
+                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">PDF only — max 2MB</small>
+                        </div>
+                        <div class="acad-add-body">
+
+                            {% if detail and detail.cv %}
+                                <!-- CV Already Uploaded -->
+                                <div id="cvExisting" class="d-flex align-items-center gap-3 flex-wrap">
+                                    <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold text-sm" id="cvFileName">
+                                            {{ detail.cv.name|slice:"4:" }}
+                                        </div>
+                                        <div class="text-secondary" style="font-size:0.75rem;">
+                                            Uploaded successfully
+                                            <span class="badge bg-gradient-success ms-1"
+                                                  style="font-size:0.65rem;">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a href="{{ detail.cv.url }}" target="_blank"
+                                           class="btn btn-outline-info btn-xs">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                        <label for="cvReplaceInput"
+                                               class="btn btn-outline-warning btn-xs mb-0"
+                                               style="cursor:pointer;">
+                                            <i class="fas fa-sync-alt me-1"></i> Replace
+                                        </label>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-xs"
+                                                onclick="deleteCV()">
+                                            <i class="fas fa-trash me-1"></i> Remove
+                                        </button>
+                                    </div>
+                                    <input type="file" id="cvReplaceInput"
+                                           accept=".pdf" style="display:none;"
+                                           onchange="handleCVReplace(this)">
+                                </div>
+                            {% else %}
+                                <!-- CV Drop Zone -->
+                                <div id="cvExisting" style="display:none;"
+                                     class="d-flex align-items-center gap-3 flex-wrap">
+                                    <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold text-sm" id="cvFileName"></div>
+                                        <div class="text-secondary" style="font-size:0.75rem;">
+                                            Ready to upload
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <label for="cvReplaceInput"
+                                               class="btn btn-outline-warning btn-xs mb-0"
+                                               style="cursor:pointer;">
+                                            <i class="fas fa-sync-alt me-1"></i> Replace
+                                        </label>
+                                        <button type="button"
+                                                class="btn btn-outline-danger btn-xs"
+                                                onclick="clearCVSelection()">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <input type="file" id="cvReplaceInput"
+                                           accept=".pdf" style="display:none;"
+                                           onchange="handleCVReplace(this)">
+                                </div>
+                            {% endif %}
+
+                            <div id="cvDropZone"
+                                 class="drop-zone-sm"
+                                 {% if detail and detail.cv %}style="display:none;"{% endif %}>
+                                <i class="fas fa-cloud-upload-alt me-2 text-danger"></i>
+                                <span class="text-sm">Drag & drop your CV or</span>
+                                <label for="cvFileInput"
+                                       class="btn btn-outline-danger btn-xs ms-2 mb-0"
+                                       style="cursor:pointer; font-size:0.75rem; padding:0.2rem 0.6rem;">
+                                    Browse
+                                </label>
+                                <input type="file" id="cvFileInput"
+                                       accept=".pdf" style="display:none;">
+                            </div>
+
+                            <!-- Selected CV file (new upload, not yet saved) -->
+                            <input type="hidden" id="cvSelected" value="">
+
+                        </div>
                     </div>
-                    <div class="acad-add-body">
 
-                        {% if detail and detail.cv %}
-                        <!-- CV Already Uploaded -->
-                        <div id="cvExisting" class="d-flex align-items-center gap-3 flex-wrap">
-                            <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
-                            <div class="flex-grow-1">
-                                <div class="font-weight-bold text-sm" id="cvFileName">
-                                    {{ detail.cv.name|slice:"4:" }}
-                                </div>
-                                <div class="text-secondary" style="font-size:0.75rem;">
-                                    Uploaded successfully
-                                    <span class="badge bg-gradient-success ms-1"
-                                          style="font-size:0.65rem;">Active</span>
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2 flex-wrap">
-                                <a href="{{ detail.cv.url }}" target="_blank"
-                                   class="btn btn-outline-info btn-xs">
-                                    <i class="fas fa-download me-1"></i> Download
-                                </a>
-                                <label for="cvReplaceInput"
-                                       class="btn btn-outline-warning btn-xs mb-0"
-                                       style="cursor:pointer;">
-                                    <i class="fas fa-sync-alt me-1"></i> Replace
-                                </label>
-                                <button type="button"
-                                        class="btn btn-outline-danger btn-xs"
-                                        onclick="deleteCV()">
-                                    <i class="fas fa-trash me-1"></i> Remove
-                                </button>
-                            </div>
-                            <input type="file" id="cvReplaceInput"
-                                   accept=".pdf" style="display:none;"
-                                   onchange="handleCVReplace(this)">
-                        </div>
-                        {% else %}
-                        <!-- CV Drop Zone -->
-                        <div id="cvExisting" style="display:none;"
-                             class="d-flex align-items-center gap-3 flex-wrap">
-                            <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
-                            <div class="flex-grow-1">
-                                <div class="font-weight-bold text-sm" id="cvFileName"></div>
-                                <div class="text-secondary" style="font-size:0.75rem;">
-                                    Ready to upload
-                                </div>
-                            </div>
-                            <div class="d-flex gap-2">
-                                <label for="cvReplaceInput"
-                                       class="btn btn-outline-warning btn-xs mb-0"
-                                       style="cursor:pointer;">
-                                    <i class="fas fa-sync-alt me-1"></i> Replace
-                                </label>
-                                <button type="button"
-                                        class="btn btn-outline-danger btn-xs"
-                                        onclick="clearCVSelection()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                            <input type="file" id="cvReplaceInput"
-                                   accept=".pdf" style="display:none;"
-                                   onchange="handleCVReplace(this)">
-                        </div>
-                        {% endif %}
+                    <!-- ── Details Form ── -->
+                    <div class="row g-3 mb-4">
 
-                        <div id="cvDropZone"
-                             class="drop-zone-sm"
-                             {% if detail and detail.cv %}style="display:none;"{% endif %}>
-                            <i class="fas fa-cloud-upload-alt me-2 text-danger"></i>
-                            <span class="text-sm">Drag & drop your CV or</span>
-                            <label for="cvFileInput"
-                                   class="btn btn-outline-danger btn-xs ms-2 mb-0"
-                                   style="cursor:pointer; font-size:0.75rem; padding:0.2rem 0.6rem;">
-                                Browse
+                        <!-- Cover Letter -->
+                        <div class="col-12">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-pen me-1"></i> Cover Letter
+                                <small class="text-secondary ms-1">(optional)</small>
                             </label>
-                            <input type="file" id="cvFileInput"
-                                   accept=".pdf" style="display:none;">
+                            <textarea id="f_cover_letter" class="form-control" rows="6"
+                                      placeholder="Write a brief cover letter or personal statement that highlights your key strengths and career goals...">{% if detail %}
+                                {{ detail.cover_letter }}{% endif %}</textarea>
                         </div>
 
-                        <!-- Selected CV file (new upload, not yet saved) -->
-                        <input type="hidden" id="cvSelected" value="">
+                        <!-- LinkedIn -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fab fa-linkedin me-1"></i> LinkedIn Profile URL
+                                <small class="text-secondary ms-1">(optional)</small>
+                            </label>
+                            <input type="url" id="f_linkedin_url" class="form-control"
+                                   placeholder="https://linkedin.com/in/yourname"
+                                   value="{% if detail %}{{ detail.linkedin_url }}{% endif %}">
+                        </div>
 
-                    </div>
-                </div>
+                        <!-- Portfolio -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-globe me-1"></i> Portfolio / Website URL
+                                <small class="text-secondary ms-1">(optional)</small>
+                            </label>
+                            <input type="url" id="f_portfolio_url" class="form-control"
+                                   placeholder="https://yourportfolio.com"
+                                   value="{% if detail %}{{ detail.portfolio_url }}{% endif %}">
+                        </div>
 
-                <!-- ── Details Form ── -->
-                <div class="row g-3 mb-4">
-
-                    <!-- Cover Letter -->
-                    <div class="col-12">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-pen me-1"></i> Cover Letter
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <textarea id="f_cover_letter" class="form-control" rows="6"
-                                  placeholder="Write a brief cover letter or personal statement that highlights your key strengths and career goals...">{% if detail %}{{ detail.cover_letter }}{% endif %}</textarea>
-                    </div>
-
-                    <!-- LinkedIn -->
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fab fa-linkedin me-1"></i> LinkedIn Profile URL
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <input type="url" id="f_linkedin_url" class="form-control"
-                               placeholder="https://linkedin.com/in/yourname"
-                               value="{% if detail %}{{ detail.linkedin_url }}{% endif %}">
-                    </div>
-
-                    <!-- Portfolio -->
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-globe me-1"></i> Portfolio / Website URL
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <input type="url" id="f_portfolio_url" class="form-control"
-                               placeholder="https://yourportfolio.com"
-                               value="{% if detail %}{{ detail.portfolio_url }}{% endif %}">
-                    </div>
-
-                    <!-- Languages -->
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-language me-1"></i> Languages Spoken
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <div id="languagePills" class="language-pill-container mb-2">
-                            {% if detail %}
-                                {% for lang in detail.languages_list %}
-                                <span class="lang-pill">
+                        <!-- Languages -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-language me-1"></i> Languages Spoken
+                                <small class="text-secondary ms-1">(optional)</small>
+                            </label>
+                            <div id="languagePills" class="language-pill-container mb-2">
+                                {% if detail %}
+                                    {% for lang in detail.languages_list %}
+                                        <span class="lang-pill">
                                     {{ lang }}
                                     <button type="button" onclick="removeLang(this)">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </span>
-                                {% endfor %}
-                            {% endif %}
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                            <div class="d-flex gap-2">
+                                <input type="text" id="f_lang_input" class="form-control"
+                                       placeholder="e.g. English, Swahili"
+                                       onkeydown="handleLangKey(event)">
+                                <button type="button" class="btn btn-outline-info btn-sm"
+                                        onclick="addLanguage()"
+                                        style="white-space:nowrap;">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <small class="text-secondary" style="font-size:0.73rem;">
+                                Press Enter or click + to add each language
+                            </small>
+                            <input type="hidden" id="f_languages"
+                                   value="{% if detail %}{{ detail.languages }}{% endif %}">
                         </div>
-                        <div class="d-flex gap-2">
-                            <input type="text" id="f_lang_input" class="form-control"
-                                   placeholder="e.g. English, Swahili"
-                                   onkeydown="handleLangKey(event)">
-                            <button type="button" class="btn btn-outline-info btn-sm"
-                                    onclick="addLanguage()"
-                                    style="white-space:nowrap;">
-                                <i class="fas fa-plus"></i>
-                            </button>
+
+                        <!-- Availability -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-calendar-check me-1"></i> Availability
+                                <small class="text-secondary ms-1">(optional)</small>
+                            </label>
+                            <select id="f_availability" class="form-control">
+                                <option value="">Select availability</option>
+                                <option {% if detail and detail.availability == 'Immediately' %}selected{% endif %}>
+                                    Immediately
+                                </option>
+                                <option {% if detail and detail.availability == '1 Month Notice' %}selected{% endif %}>
+                                    1 Month Notice
+                                </option>
+                                <option {% if detail and detail.availability == '2 Months Notice' %}selected{% endif %}>
+                                    2 Months Notice
+                                </option>
+                                <option {% if detail and detail.availability == '3 Months Notice' %}selected{% endif %}>
+                                    3 Months Notice
+                                </option>
+                                <option {% if detail and detail.availability == 'Not Available' %}selected{% endif %}>
+                                    Not Available
+                                </option>
+                            </select>
                         </div>
-                        <small class="text-secondary" style="font-size:0.73rem;">
-                            Press Enter or click + to add each language
-                        </small>
-                        <input type="hidden" id="f_languages"
-                               value="{% if detail %}{{ detail.languages }}{% endif %}">
-                    </div>
 
-                    <!-- Availability -->
-                    <div class="col-12 col-md-3">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-calendar-check me-1"></i> Availability
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <select id="f_availability" class="form-control">
-                            <option value="">Select availability</option>
-                            <option {% if detail and detail.availability == 'Immediately' %}selected{% endif %}>
-                                Immediately
-                            </option>
-                            <option {% if detail and detail.availability == '1 Month Notice' %}selected{% endif %}>
-                                1 Month Notice
-                            </option>
-                            <option {% if detail and detail.availability == '2 Months Notice' %}selected{% endif %}>
-                                2 Months Notice
-                            </option>
-                            <option {% if detail and detail.availability == '3 Months Notice' %}selected{% endif %}>
-                                3 Months Notice
-                            </option>
-                            <option {% if detail and detail.availability == 'Not Available' %}selected{% endif %}>
-                                Not Available
-                            </option>
-                        </select>
-                    </div>
-
-                    <!-- Expected Salary -->
-                    <div class="col-12 col-md-3">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-money-bill me-1"></i> Expected Salary (KES)
-                            <small class="text-secondary ms-1">(optional)</small>
-                        </label>
-                        <div class="input-group">
+                        <!-- Expected Salary -->
+                        <div class="col-12 col-md-3">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-money-bill me-1"></i> Expected Salary (KES)
+                                <small class="text-secondary ms-1">(optional)</small>
+                            </label>
+                            <div class="input-group">
                             <span class="input-group-text"
                                   style="background:#f8f9fa; border:1px solid #e9ecef;
                                          font-size:0.82rem; color:#344767;">
                                 KES
                             </span>
-                            <input type="number" id="f_expected_salary" class="form-control"
-                                   placeholder="e.g. 80000" min="0"
-                                   value="{% if detail and detail.expected_salary %}{{ detail.expected_salary }}{% endif %}">
+                                <input type="number" id="f_expected_salary" class="form-control"
+                                       placeholder="e.g. 80000" min="0"
+                                       value="
+                                               {% if detail and detail.expected_salary %}{{ detail.expected_salary }}{% endif %}">
+                            </div>
                         </div>
+
+                    </div>
+
+                    <!-- Save Button -->
+                    <div class="d-flex justify-content-end mb-4">
+                        <button type="button" class="btn btn-outline-info btn-sm"
+                                onclick="saveDetails()">
+                            <i class="fas fa-save me-1"></i> Save Details
+                        </button>
+                    </div>
+
+                    <!-- ── Nav Buttons ── -->
+                    <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                        <a href="{% url 'work_history' %}"
+                           class="btn btn-outline-secondary btn-sm mb-0">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                        <a href="{% url 'dashboard' %}"
+                           class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                            <i class="fas fa-home me-1"></i> Go to Dashboard
+                        </a>
                     </div>
 
                 </div>
-
-                <!-- Save Button -->
-                <div class="d-flex justify-content-end mb-4">
-                    <button type="button" class="btn btn-outline-info btn-sm"
-                            onclick="saveDetails()">
-                        <i class="fas fa-save me-1"></i> Save Details
-                    </button>
-                </div>
-
-                <!-- ── Nav Buttons ── -->
-                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                    <a href="{% url 'work_history' %}"
-                       class="btn btn-outline-secondary btn-sm mb-0">
-                        <i class="fas fa-arrow-left me-1"></i> Back
-                    </a>
-                    <a href="{% url 'dashboard' %}"
-                       class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
-                        <i class="fas fa-home me-1"></i> Go to Dashboard
-                    </a>
-                </div>
-
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const CSRF   = '{{ csrf_token }}';
-const MAX_CV = 2 * 1024 * 1024;  // 2MB
+    <script>
+        const CSRF = '{{ csrf_token }}';
+        const MAX_CV = 2 * 1024 * 1024;  // 2MB
 
-// ── CV handling ──────────────────────────────────────────────
-let selectedCVFile = null;
+        // ── CV handling ──────────────────────────────────────────────
+        let selectedCVFile = null;
 
-const cvDropZone  = document.getElementById('cvDropZone');
-const cvFileInput = document.getElementById('cvFileInput');
+        const cvDropZone = document.getElementById('cvDropZone');
+        const cvFileInput = document.getElementById('cvFileInput');
 
-cvDropZone.addEventListener('dragover', e => {
-    e.preventDefault(); cvDropZone.classList.add('dragover');
-});
-cvDropZone.addEventListener('dragleave', () => cvDropZone.classList.remove('dragover'));
-cvDropZone.addEventListener('drop', function (e) {
-    e.preventDefault();
-    cvDropZone.classList.remove('dragover');
-    const file = e.dataTransfer.files[0];
-    if (file) validateAndSetCV(file);
-});
-cvDropZone.addEventListener('click', function (e) {
-    if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') cvFileInput.click();
-});
-cvFileInput.addEventListener('change', function () {
-    if (this.files[0]) validateAndSetCV(this.files[0]);
-    this.value = '';
-});
-
-function handleCVReplace(input) {
-    if (input.files[0]) validateAndSetCV(input.files[0]);
-    input.value = '';
-}
-
-function validateAndSetCV(file) {
-    const ext = '.' + file.name.split('.').pop().toLowerCase();
-    if (ext !== '.pdf') {
-        Swal.fire({ icon: 'error', title: 'PDF Only',
-            text: 'Please upload a PDF file for your CV.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-    if (file.size > MAX_CV) {
-        Swal.fire({ icon: 'error', title: 'File Too Large',
-            text: 'CV must be smaller than 2MB. Please compress and retry.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-        return;
-    }
-
-    selectedCVFile = file;
-    document.getElementById('cvFileName').textContent = file.name;
-    document.getElementById('cvDropZone').style.display  = 'none';
-    document.getElementById('cvExisting').style.display  = '';
-}
-
-function clearCVSelection() {
-    selectedCVFile = null;
-    document.getElementById('cvFileName').textContent    = '';
-    document.getElementById('cvDropZone').style.display  = '';
-    document.getElementById('cvExisting').style.display  = 'none';
-}
-
-function deleteCV() {
-    Swal.fire({
-        icon: 'warning', title: 'Remove CV',
-        text: 'Are you sure you want to remove your CV?',
-        showCancelButton: true,
-        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Remove',
-        cancelButtonText: 'Cancel',
-        confirmButtonColor: '#ef4444',
-        cancelButtonColor:  '#8392ab',
-        position: 'center', scrollbarPadding: false, heightAuto: false,
-    }).then(result => {
-        if (!result.isConfirmed) return;
-
-        const formData = new FormData();
-        formData.append('csrfmiddlewaretoken', CSRF);
-        formData.append('action', 'delete_cv');
-
-        fetch("{% url 'additional_details' %}", {
-            method: 'POST',
-            headers: { 'X-CSRFToken': CSRF },
-            body: formData
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.status === 'success') {
-                selectedCVFile = null;
-                document.getElementById('cvFileName').textContent   = '';
-                document.getElementById('cvDropZone').style.display = '';
-                document.getElementById('cvExisting').style.display = 'none';
-                Swal.fire({ icon: 'success', title: 'Removed',
-                    text: data.message, timer: 1500,
-                    showConfirmButton: false,
-                    position: 'center', scrollbarPadding: false, heightAuto: false });
-            } else {
-                Swal.fire({ icon: 'error', title: 'Error',
-                    text: data.message,
-                    position: 'center', scrollbarPadding: false, heightAuto: false });
-            }
+        cvDropZone.addEventListener('dragover', e => {
+            e.preventDefault();
+            cvDropZone.classList.add('dragover');
         });
-    });
-}
+        cvDropZone.addEventListener('dragleave', () => cvDropZone.classList.remove('dragover'));
+        cvDropZone.addEventListener('drop', function (e) {
+            e.preventDefault();
+            cvDropZone.classList.remove('dragover');
+            const file = e.dataTransfer.files[0];
+            if (file) validateAndSetCV(file);
+        });
+        cvDropZone.addEventListener('click', function (e) {
+            if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') cvFileInput.click();
+        });
+        cvFileInput.addEventListener('change', function () {
+            if (this.files[0]) validateAndSetCV(this.files[0]);
+            this.value = '';
+        });
 
-// ── Languages ────────────────────────────────────────────────
-function getLangs() {
-    return Array.from(
-        document.getElementById('languagePills').querySelectorAll('.lang-pill')
-    ).map(p => p.firstChild.textContent.trim());
-}
+        function handleCVReplace(input) {
+            if (input.files[0]) validateAndSetCV(input.files[0]);
+            input.value = '';
+        }
 
-function syncLangsHidden() {
-    document.getElementById('f_languages').value = getLangs().join(', ');
-}
+        function validateAndSetCV(file) {
+            const ext = '.' + file.name.split('.').pop().toLowerCase();
+            if (ext !== '.pdf') {
+                Swal.fire({
+                    icon: 'error', title: 'PDF Only',
+                    text: 'Please upload a PDF file for your CV.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
+            if (file.size > MAX_CV) {
+                Swal.fire({
+                    icon: 'error', title: 'File Too Large',
+                    text: 'CV must be smaller than 2MB. Please compress and retry.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
 
-function addLanguage() {
-    const input = document.getElementById('f_lang_input');
-    const val   = input.value.trim();
-    if (!val) return;
+            selectedCVFile = file;
+            document.getElementById('cvFileName').textContent = file.name;
+            document.getElementById('cvDropZone').style.display = 'none';
+            document.getElementById('cvExisting').style.display = '';
+        }
 
-    // Handle comma-separated input
-    val.split(',').forEach(v => {
-        const lang = v.trim();
-        if (!lang) return;
+        function clearCVSelection() {
+            selectedCVFile = null;
+            document.getElementById('cvFileName').textContent = '';
+            document.getElementById('cvDropZone').style.display = '';
+            document.getElementById('cvExisting').style.display = 'none';
+        }
 
-        const existing = getLangs().map(l => l.toLowerCase());
-        if (existing.includes(lang.toLowerCase())) return;
+        function deleteCV() {
+            Swal.fire({
+                icon: 'warning', title: 'Remove CV',
+                text: 'Are you sure you want to remove your CV?',
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Remove',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#8392ab',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(result => {
+                if (!result.isConfirmed) return;
 
-        const pill = document.createElement('span');
-        pill.className = 'lang-pill';
-        pill.innerHTML = `${lang.charAt(0).toUpperCase() + lang.slice(1)}
+                const formData = new FormData();
+                formData.append('csrfmiddlewaretoken', CSRF);
+                formData.append('action', 'delete_cv');
+
+                fetch("{% url 'additional_details' %}", {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': CSRF},
+                    body: formData
+                })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            selectedCVFile = null;
+                            document.getElementById('cvFileName').textContent = '';
+                            document.getElementById('cvDropZone').style.display = '';
+                            document.getElementById('cvExisting').style.display = 'none';
+                            Swal.fire({
+                                icon: 'success', title: 'Removed',
+                                text: data.message, timer: 1500,
+                                showConfirmButton: false,
+                                position: 'center', scrollbarPadding: false, heightAuto: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error', title: 'Error',
+                                text: data.message,
+                                position: 'center', scrollbarPadding: false, heightAuto: false
+                            });
+                        }
+                    });
+            });
+        }
+
+        // ── Languages ────────────────────────────────────────────────
+        function getLangs() {
+            return Array.from(
+                document.getElementById('languagePills').querySelectorAll('.lang-pill')
+            ).map(p => p.firstChild.textContent.trim());
+        }
+
+        function syncLangsHidden() {
+            document.getElementById('f_languages').value = getLangs().join(', ');
+        }
+
+        function addLanguage() {
+            const input = document.getElementById('f_lang_input');
+            const val = input.value.trim();
+            if (!val) return;
+
+            // Handle comma-separated input
+            val.split(',').forEach(v => {
+                const lang = v.trim();
+                if (!lang) return;
+
+                const existing = getLangs().map(l => l.toLowerCase());
+                if (existing.includes(lang.toLowerCase())) return;
+
+                const pill = document.createElement('span');
+                pill.className = 'lang-pill';
+                pill.innerHTML = `${lang.charAt(0).toUpperCase() + lang.slice(1)}
             <button type="button" onclick="removeLang(this)">
                 <i class="fas fa-times"></i>
             </button>`;
-        document.getElementById('languagePills').appendChild(pill);
-    });
-
-    input.value = '';
-    syncLangsHidden();
-}
-
-function removeLang(btn) {
-    btn.closest('.lang-pill').remove();
-    syncLangsHidden();
-}
-
-function handleLangKey(e) {
-    if (e.key === 'Enter' || e.key === ',') {
-        e.preventDefault();
-        addLanguage();
-    }
-}
-
-// ── Save Details ─────────────────────────────────────────────
-function saveDetails() {
-    Swal.fire({
-        title: 'Saving...', icon: 'info',
-        allowOutsideClick: false, showConfirmButton: false,
-        position: 'center', scrollbarPadding: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', CSRF);
-    formData.append('action',          'save');
-    formData.append('cover_letter',    document.getElementById('f_cover_letter').value.trim());
-    formData.append('linkedin_url',    document.getElementById('f_linkedin_url').value.trim());
-    formData.append('portfolio_url',   document.getElementById('f_portfolio_url').value.trim());
-    formData.append('languages',       document.getElementById('f_languages').value);
-    formData.append('availability',    document.getElementById('f_availability').value);
-    formData.append('expected_salary', document.getElementById('f_expected_salary').value);
-
-    if (selectedCVFile) {
-        formData.append('cv', selectedCVFile);
-    }
-
-    fetch("{% url 'additional_details' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF },
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        Swal.close();
-        if (data.status === 'success') {
-            // Update CV display if new file was uploaded
-            if (data.cv_filename) {
-                document.getElementById('cvFileName').textContent   = data.cv_filename;
-                document.getElementById('cvDropZone').style.display = 'none';
-                document.getElementById('cvExisting').style.display = '';
-                selectedCVFile = null;
-            }
-
-            // Update progress bar live
-            if (data.completion !== undefined) {
-                const pct = data.completion;
-                document.getElementById('progressBar').style.width = pct + '%';
-                document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
-                document.getElementById('progressPct').textContent  = pct + '%';
-                document.getElementById('completionText').textContent = pct + '% Complete';
-
-                const msg = document.getElementById('progressMsg');
-                if (pct === 100)     msg.textContent = '🎉 Profile complete!';
-                else if (pct >= 60)  msg.textContent = 'Almost there — keep going!';
-                else if (pct >= 30)  msg.textContent = 'Good start — more to fill in.';
-                else                 msg.textContent = 'Just getting started...';
-            }
-
-            Swal.fire({
-                icon: 'success', title: 'Saved!',
-                text: data.message, timer: 1800,
-                showConfirmButton: false,
-                position: 'center', scrollbarPadding: false, heightAuto: false,
+                document.getElementById('languagePills').appendChild(pill);
             });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Save Failed',
-                text: data.message,
-                position: 'center', scrollbarPadding: false, heightAuto: false });
+
+            input.value = '';
+            syncLangsHidden();
         }
-    })
-    .catch(() => {
-        Swal.close();
-        Swal.fire({ icon: 'error', title: 'System Error',
-            text: 'Something went wrong. Please try again.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    });
-}
-</script>
+
+        function removeLang(btn) {
+            btn.closest('.lang-pill').remove();
+            syncLangsHidden();
+        }
+
+        function handleLangKey(e) {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addLanguage();
+            }
+        }
+
+        // ── Save Details ─────────────────────────────────────────────
+        function saveDetails() {
+            Swal.fire({
+                title: 'Saving...', icon: 'info',
+                allowOutsideClick: false, showConfirmButton: false,
+                position: 'center', scrollbarPadding: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', CSRF);
+            formData.append('action', 'save');
+            formData.append('cover_letter', document.getElementById('f_cover_letter').value.trim());
+            formData.append('linkedin_url', document.getElementById('f_linkedin_url').value.trim());
+            formData.append('portfolio_url', document.getElementById('f_portfolio_url').value.trim());
+            formData.append('languages', document.getElementById('f_languages').value);
+            formData.append('availability', document.getElementById('f_availability').value);
+            formData.append('expected_salary', document.getElementById('f_expected_salary').value);
+
+            if (selectedCVFile) {
+                formData.append('cv', selectedCVFile);
+            }
+
+            fetch("{% url 'additional_details' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF},
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.status === 'success') {
+                        // Update CV display if new file was uploaded
+                        if (data.cv_filename) {
+                            document.getElementById('cvFileName').textContent = data.cv_filename;
+                            document.getElementById('cvDropZone').style.display = 'none';
+                            document.getElementById('cvExisting').style.display = '';
+                            selectedCVFile = null;
+                        }
+
+                        // Update progress bar live
+                        if (data.completion !== undefined) {
+                            const pct = data.completion;
+                            document.getElementById('progressBar').style.width = pct + '%';
+                            document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
+                            document.getElementById('progressPct').textContent = pct + '%';
+                            document.getElementById('completionText').textContent = pct + '% Complete';
+
+                            const msg = document.getElementById('progressMsg');
+                            if (pct === 100) msg.textContent = '🎉 Profile complete!';
+                            else if (pct >= 60) msg.textContent = 'Almost there — keep going!';
+                            else if (pct >= 30) msg.textContent = 'Good start — more to fill in.';
+                            else msg.textContent = 'Just getting started...';
+                        }
+
+                        Swal.fire({
+                            icon: 'success', title: 'Saved!',
+                            text: data.message, timer: 1800,
+                            showConfirmButton: false,
+                            position: 'center', scrollbarPadding: false, heightAuto: false,
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error', title: 'Save Failed',
+                            text: data.message,
+                            position: 'center', scrollbarPadding: false, heightAuto: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error', title: 'System Error',
+                        text: 'Something went wrong. Please try again.',
+                        position: 'center', scrollbarPadding: false, heightAuto: false
+                    });
+                });
+        }
+    </script>
 {% endblock %}
