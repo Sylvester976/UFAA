@@ -12,10 +12,10 @@ from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee
+    ProfessionalQualification, ShortlistVote, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
-from .services import build_profile_snapshot
+from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
 
 # ── Helper ───────────────────────────────────────────────────
 def get_logged_in_user(request):
@@ -1840,6 +1840,82 @@ def appoint_panelists(request, vacancy_id):
 
 @login_required
 @role_required(['hod_hr'])
+def appoint_committee(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'shortlisting':
+        messages.error(request, "Complete shortlisting first.")
+        return redirect('hr_dashboard')
+
+    # panelists = User.objects.filter(role__name='panelist')
+    panelist_role = get_object_or_404(Role, name='panelist')
+
+    panelists = User.objects.filter(
+        user_type=2,
+        role=panelist_role
+    )
+
+    if request.method == 'POST':
+        selected_panelists = request.POST.getlist('panelists')
+
+        PanelAssignment.objects.filter(vacancy=vacancy).delete()
+
+        for user_id in selected_panelists:
+            PanelAssignment.objects.create(
+                vacancy=vacancy,
+                panelist_id=user_id
+            )
+
+        vacancy.status = 'interviews'
+        vacancy.save()
+
+        messages.success(request, "Panel appointed. Interview stage started.")
+        return redirect('hr_dashboard')
+
+    # Already assigned panelists for this vacancy
+    assigned_panelists = User.objects.filter(
+        panelassignment__vacancy=vacancy
+    )
+
+    return render(request, 'recruitment/hr/appoint_panel.html', {
+        'vacancy': vacancy,
+        'panelists': panelists,
+        'assigned_panelists': assigned_panelists
+    })
+
+@login_required
+@role_required(['hod_hr'])
+def appointed_committee(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'shortlisting':
+        messages.error(request, "Complete shortlisting first.")
+        return redirect('vacancy_shortlisting')
+
+    panelist_role = get_object_or_404(Role, name='panelist')
+    panelists = User.objects.filter(user_type=2, role=panelist_role)
+
+    if request.method == 'POST':
+        selected_panelists = request.POST.getlist('panelists')
+        PanelAssignment.objects.filter(vacancy=vacancy).delete()
+        for user_id in selected_panelists:
+            PanelAssignment.objects.create(vacancy=vacancy, panelist_id=user_id)
+        vacancy.status = 'interviews'
+        vacancy.save()
+        messages.success(request, "Panel appointed. Interview stage started.")
+        return redirect('vacancy_interviews')
+
+    assigned_panelists = User.objects.filter(panelassignment__vacancy=vacancy)
+
+    return render(request, 'recruitment/hr/appoint_panel.html', {
+        'vacancy': vacancy,
+        'panelists': panelists,
+        'assigned_panelists': assigned_panelists
+    })
+
+
+@login_required
+@role_required(['hod_hr'])
 def manage_panelists(request):
     panelist_role = get_object_or_404(Role, name='panelist')
 
@@ -1868,6 +1944,68 @@ def manage_panelists(request):
         "current_panelists": current_panelists
     })
 
+@login_required
+@role_required(['panelist'])
+def submit_shortlist(request, vacancy_id):
+
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'committee_stage':
+        messages.error(request, "Shortlisting is not active.")
+        return redirect('panelist_dashboard')
+
+    assignment = PanelAssignment.objects.filter(
+        vacancy=vacancy,
+        panelist=request.user,
+        committee_type='shortlisting',
+        status='accepted'
+    ).first()
+
+    if not assignment:
+        messages.error(request, "You are not part of this shortlisting committee.")
+        return redirect('panelist_dashboard')
+
+    # Prevent duplicate submission
+    existing_votes = ShortlistVote.objects.filter(
+        vacancy=vacancy,
+        committee_member=request.user
+    )
+
+    if existing_votes.exists():
+        messages.warning(request, "You have already submitted your shortlist.")
+        return redirect('panelist_dashboard')
+
+    applications = Application.objects.filter(
+        vacancy=vacancy,
+        status='submitted'
+    )
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_applications')
+
+        if not selected_ids:
+            messages.error(request, "Select at least one candidate.")
+            return redirect(request.path)
+
+        for app in applications:
+            if str(app.id) in selected_ids:
+                ShortlistVote.objects.create(
+                    vacancy=vacancy,
+                    committee_member=request.user,
+                    application=app
+                )
+
+        # Check if all members submitted
+        if is_shortlisting_complete(vacancy):
+            aggregate_shortlist(vacancy)
+
+        messages.success(request, "Your shortlist has been submitted.")
+        return redirect('panelist_dashboard')
+
+    return render(request, 'recruitment/panelist/shortlist.html', {
+        'vacancy': vacancy,
+        'applications': applications
+    })
 
 @login_required
 def vacancy_panelists(request, vacancy_id):
@@ -2348,3 +2486,89 @@ def vacancy_list(request):
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
     }
     return render(request, 'recruitment/hr/vacancy_list.html', context)
+
+
+@login_required
+@role_required(['hod_hr'])
+def appoint_shortlisting_committee(request, vacancy_id):
+
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'longlisting':
+        messages.error(request, "Committee can only be appointed during longlisting stage.")
+        return redirect('hr_dashboard')
+
+    panel_role = Role.objects.get(name='panelist')
+    panelists = User.objects.filter(role=panel_role)
+
+    if request.method == 'POST':
+        selected_panelists = request.POST.getlist('panelists')
+
+        if not selected_panelists:
+            messages.error(request, "Select at least one committee member.")
+            return redirect(request.path)
+
+        # Remove old committee if exists
+        PanelAssignment.objects.filter(
+            vacancy=vacancy,
+            committee_type='shortlisting'
+        ).delete()
+
+        for user_id in selected_panelists:
+            PanelAssignment.objects.create(
+                vacancy=vacancy,
+                panelist_id=user_id,
+                committee_type='shortlisting'
+            )
+
+        vacancy.move_to('committee_stage')
+
+        messages.success(request, "Shortlisting committee appointed successfully.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/appoint_shortlisting.html', {
+        'vacancy': vacancy,
+        'panelists': panelists
+    })
+    
+# @login_required
+# @role_required(['panelist'])
+# def submit_shortlist(request, vacancy_id):
+
+#     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+#     assignment = PanelAssignment.objects.filter(
+#         vacancy=vacancy,
+#         panelist=request.user,
+#         committee_type='shortlisting',
+#         status='accepted'
+#     ).first()
+
+#     if not assignment:
+#         messages.error(request, "You are not part of this shortlisting committee.")
+#         return redirect('panelist_dashboard')
+
+#     applications = Application.objects.filter(
+#         vacancy=vacancy,
+#         status='submitted'
+#     )
+
+#     if request.method == 'POST':
+#         selected_ids = request.POST.getlist('selected_applications')
+
+#         for app in applications:
+#             if str(app.id) in selected_ids:
+#                 app.move_to('shortlisted')
+#             else:
+#                 app.move_to('not_selected')
+
+#         vacancy.move_to('shortlisting')
+
+#         messages.success(request, "Shortlist submitted successfully.")
+#         return redirect('panelist_dashboard')
+
+#     return render(request, 'recruitment/panelist/shortlist.html', {
+#         'vacancy': vacancy,
+#         'applications': applications
+#     })
+    
