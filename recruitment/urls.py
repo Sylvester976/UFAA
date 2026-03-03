@@ -24,7 +24,11 @@ urlpatterns = [
     #     views.longlist_candidates,
     #     name="longlist_candidates",
     # ),
-    
+    path(
+        "panel/assignment/<int:assignment_id>/respond/",
+        views.respond_panel_assignment,
+        name="respond_panel_assignment",
+    ),
     # Vacancy management
     path('hr/vacancy/create/', views.create_vacancy, name='create_vacancy'),
     path('hr/vacancy/<int:vacancy_id>/edit/', views.update_vacancy, name='update_vacancy'),
