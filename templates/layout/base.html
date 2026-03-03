@@ -75,7 +75,7 @@
 
             <!-- Academic Qualifications -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'qualifications' %}active{% endif %}"
+                <a class="nav-link {% if request.resolver_match.url_name == 'academic_qualifications' %}active{% endif %}"
                    href="{% url 'academic_qualifications' %}">
                     <i class="fas fa-graduation-cap me-2"></i>
                     Academic Qualifications
@@ -84,7 +84,8 @@
 
 
             <li class="nav-item">
-                <a class="nav-link  " href="{% url 'professional_qualifications' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'professional_qualifications' %}active{% endif %}"
+                   href="{% url 'professional_qualifications' %}">
                     <i class="fas fa-certificate me-2"></i>
                     <span class="nav-link-text ms-1">professional qualifications</span>
                 </a>
@@ -92,9 +93,25 @@
 
 
             <li class="nav-item">
-                <a class="nav-link  " href="{% url 'work_history' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}"
+                   href="{% url 'work_history' %}">
                     <i class="fas fa-briefcase me-2"></i>
                     <span class="nav-link-text ms-1">Work history</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'memberships' %}active{% endif %}"
+                   href="{% url 'memberships' %}">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="nav-link-text ms-1">Membership</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link  " href="{% url 'referees' %}">
+                    <i class="fas fa-user-tie me-2"></i>
+                    <span class="nav-link-text ms-1">Referees</span>
                 </a>
             </li>
 
