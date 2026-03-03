@@ -1409,20 +1409,33 @@ def hr_view_applications(request, vacancy_id):
     })
 
 
-@login_required
+# HR View to Move Vacancy to Longlisting
+# @login_required
 # @role_required(['hod_hr'])
+# def start_longlisting(request, vacancy_id):
+#     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+#     if vacancy.status != 'open':
+#         messages.error(request, "Vacancy must be open to start longlisting.")
+#         return redirect('hr_dashboard')
+
+#     vacancy.move_to('longlisting')
+#     messages.success(request, "Vacancy moved to Longlisting stage.")
+#     return redirect('longlist_candidates', vacancy_id=vacancy.id)
+
+# HR View to Move Vacancy to Longlisting
+@login_required
+@role_required(['hod_hr'])
 def start_longlisting(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    if vacancy.status != 'closed':
-        messages.error(request, "Vacancy must be closed before longlisting.")
+    if vacancy.status != 'open':
+        messages.error(request, "Vacancy must be open to start longlisting.")
         return redirect('hr_dashboard')
 
-    vacancy.status = 'longlisting'
-    vacancy.save()
-
-    messages.success(request, "Longlisting stage started.")
-    return redirect('hr_view_applications', vacancy_id=vacancy.id)
+    vacancy.move_to('longlisting')
+    messages.success(request, "Vacancy moved to Longlisting stage.")
+    return redirect('longlist_candidates', vacancy_id=vacancy.id)
 
 
 @login_required

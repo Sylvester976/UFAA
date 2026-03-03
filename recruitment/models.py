@@ -202,6 +202,11 @@ class Vacancy(models.Model):
         ('appointed', 'Appointed'),
     ]
 
+    grade_category = models.CharField(
+        max_length=10,
+        choices=GRADE_CHOICES,
+        default='4-1'
+    )
     title = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
     description = models.TextField()
@@ -237,6 +242,25 @@ class Vacancy(models.Model):
         if self.status == 'open' and self.end_date < timezone.now().date():
             self.status = 'closed'
             self.save()
+       
+    def move_to(self, new_status):
+        allowed = {
+            'draft': ['open'],
+            'open': ['longlisting'],
+            'longlisting': ['shortlisting'],
+            'shortlisting': ['interviews'],
+            'interviews': ['top_three_selected'],
+            'top_three_selected': ['pending_ceo_approval'],
+            'pending_ceo_approval': ['approved'],
+            'approved': ['appointed'],
+        }
+
+        if new_status in allowed.get(self.status, []):
+            self.status = new_status
+            self.save()
+            return True
+
+        return False
 
 
 
@@ -246,13 +270,20 @@ class Application(models.Model):
         ('submitted', 'Submitted'),
         ('shortlisted', 'Shortlisted'),
         ('interviewed', 'Interviewed'),
-        ('selected_top_three', 'Top Three'),
-        ('approved', 'Approved'),
-        ('selected', 'Selected'),
-        ('not_selected', 'Not Selected'),
+
+        # Grade 10–5 specific
+        ('selected_top_five', 'Selected Top Five'),
+        ('board_review', 'Board Review'),
+
+        # Shared
+        ('selected_top_three', 'Selected Top Three'),
         ('ceo_review', 'CEO Review'),
         ('ceo_approved', 'CEO Approved'),
-        ('appointed', 'Appointed')
+
+        ('hr_appoints', 'HR Appoints'),
+        ('appointed', 'Appointed'),
+
+        ('not_selected', 'Not Selected'),
     ]
     ceo_override = models.BooleanField(default=False)
     ceo_override_reason = models.TextField(blank=True, null=True)
@@ -274,6 +305,31 @@ class Application(models.Model):
 
     class Meta:
         unique_together = ('vacancy', 'applicant')
+        
+    def move_to(self, new_status):
+        allowed_transitions = {
+            'submitted': ['shortlisted', 'not_selected'],
+            'shortlisted': ['interviewed', 'not_selected'],
+            'interviewed': ['selected_top_five', 'selected_top_three', 'not_selected'],
+
+            # Grade 10–5 path
+            'selected_top_five': ['ceo_review'],
+            'ceo_review': ['selected_top_three', 'ceo_approved'],
+            'selected_top_three': ['board_review', 'ceo_approved'],
+            'board_review': ['hr_appoints'],
+
+            # Grade 4–1 path
+            'ceo_approved': ['hr_appoints'],
+
+            'hr_appoints': ['appointed'],
+        }
+
+        if new_status in allowed_transitions.get(self.status, []):
+            self.status = new_status
+            self.save()
+            return True
+
+        return False
 
 
 class PanelAssignment(models.Model):

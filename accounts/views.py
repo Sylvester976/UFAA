@@ -214,7 +214,8 @@ def login_view(request):
 
         if user:
             login(request, user)
-            return HttpResponse("Logged in successfully")
+            # return HttpResponse("Logged in successfully")
+            return redirect('user_list')
 
     return render(request, "roles/login.html")
 
@@ -303,15 +304,16 @@ def assign_role(request, user_id):
 
     if request.method == "POST":
         role_ids = request.POST.getlist("role")  # IMPORTANT: getlist()
-
         user.role.set(role_ids)  # replaces all existing roles
         user.save()
-
         return redirect("user_list")
+
+    assigned_role_ids = user.role.values_list("id", flat=True)
 
     return render(request, "roles/assign_role_form.html", {
         "user": user,
-        "roles": roles
+        "roles": roles,
+        "assigned_role_ids": assigned_role_ids
     })
 
 class UserUpdateView(SuperAdminRequiredMixin, View):

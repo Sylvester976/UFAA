@@ -1,36 +1,64 @@
-<form method="post">
-    {% csrf_token %}
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block content %}
 
-    <div>
-        <label for="id_name">Name</label>
-        <input 
-            type="text" 
-            name="name" 
-            id="id_name" 
-            maxlength="150" 
-            required
-        >
+<div class="container-fluid">
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-light">
+            <h4 class="mb-0">Update Permission</h4>
+        </div>
+
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Name -->
+                <div class="mb-3">
+                    <label for="id_name" class="form-label">Name</label>
+                    <input type="text"
+                           name="name"
+                           id="id_name"
+                           maxlength="150"
+                           class="form-control"
+                           value="{{ permission.name }}"
+                           required>
+                </div>
+
+                <!-- Code -->
+                <div class="mb-3">
+                    <label for="id_code" class="form-label">Code</label>
+                    <input type="text"
+                           name="code"
+                           id="id_code"
+                           maxlength="150"
+                           class="form-control"
+                           value="{{ permission.code }}"
+                           required>
+                </div>
+
+                <!-- Description -->
+                <div class="mb-3">
+                    <label for="id_description" class="form-label">Description</label>
+                    <textarea name="description"
+                              id="id_description"
+                              rows="4"
+                              class="form-control">{{ permission.description }}</textarea>
+                </div>
+
+                <!-- Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="submit" class="btn btn-primary">
+                        Update Permission
+                    </button>
+                    <a href="{% url 'permission_list' %}" class="btn btn-secondary">
+                        Cancel
+                    </a>
+                </div>
+
+            </form>
+        </div>
     </div>
 
-    <div>
-        <label for="id_code">Code</label>
-        <input 
-            type="text" 
-            name="code" 
-            id="id_code" 
-            maxlength="150" 
-            required
-        >
-    </div>
+</div>
 
-    <div>
-        <label for="id_description">Description</label>
-        <textarea 
-            name="description" 
-            id="id_description"
-            rows="4"
-        ></textarea>
-    </div>
-
-    <button type="submit">Save Permission</button>
-</form>
+{% endblock %}
