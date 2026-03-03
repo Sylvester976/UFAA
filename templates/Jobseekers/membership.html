@@ -1,0 +1,690 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mt-4">
+
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 font-weight-bolder">Professional Body Memberships</h6>
+                <p class="text-sm text-secondary mb-0">Add your memberships to professional bodies and associations</p>
+            </div>
+            <span class="badge px-3 py-2
+                {% if completion == 100 %}bg-gradient-success
+                {% elif completion >= 60 %}bg-gradient-info
+                {% elif completion >= 30 %}bg-gradient-warning
+                {% else %}bg-gradient-danger{% endif %}">
+                <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
+            </span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-secondary" style="font-size:0.75rem;">
+                    {% if completion == 100 %}🎉 Profile complete!
+                    {% elif completion >= 60 %}Almost there — keep going!
+                    {% elif completion >= 30 %}Good start — more to fill in.
+                    {% else %}Just getting started...{% endif %}
+                </small>
+                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
+            </div>
+            <div class="progress" style="height:8px; border-radius:1rem;">
+                <div class="progress-bar
+                    {% if completion == 100 %}bg-gradient-success
+                    {% elif completion >= 60 %}bg-gradient-info
+                    {% elif completion >= 30 %}bg-gradient-warning
+                    {% else %}bg-gradient-danger{% endif %}"
+                     role="progressbar"
+                     style="width:{{ completion }}%; transition:width 0.6s ease;"
+                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="fas fa-user me-1"></i>
+                    <span class="d-none d-sm-inline">Basic Details</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                    <i class="fas fa-graduation-cap me-1"></i>
+                    <span class="d-none d-sm-inline">Academic</span>
+                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                    <i class="fas fa-certificate me-1"></i>
+                    <span class="d-none d-sm-inline">Professional</span>
+                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'work_history' %}">
+                    <i class="fas fa-briefcase me-1"></i>
+                    <span class="d-none d-sm-inline">Work History</span>
+                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'memberships' %}">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="d-none d-sm-inline">Memberships</span>
+                    {% if has_memberships %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#"
+                   title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="d-none d-sm-inline">Referees</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'additional_details' %}">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <span class="d-none d-sm-inline">Additional</span>
+                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+        </ul>
+
+        <!-- Content Card -->
+        <div class="card mb-4 profile-content-card">
+            <div class="card-body p-3 p-md-4">
+
+                <h6 class="font-weight-bolder mb-1">Step 5: Professional Body Memberships</h6>
+                <p class="text-sm text-secondary mb-4">
+                    Add your memberships to professional bodies e.g. ICPAK, LSK, KISM, EBK.
+                    This section is optional — click <strong>Next</strong> to skip.
+                </p>
+
+                <!-- ── Add Membership Form ── -->
+                <div class="acad-add-card mb-4">
+                    <div class="acad-add-header">
+                        <i class="fas fa-plus-circle me-2"></i> Add Membership
+                    </div>
+                    <div class="acad-add-body">
+                        <div class="row g-3 mb-3">
+
+                            <!-- Body Name -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Professional Body <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="f_body_name" class="form-control"
+                                       placeholder="e.g. ICPAK, LSK, KISM, EBK, IEK">
+                            </div>
+
+                            <!-- Membership Number -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Membership Number <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" id="f_membership_no" class="form-control"
+                                       placeholder="Enter membership number">
+                            </div>
+
+                            <!-- Year Joined -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Year Joined <span class="text-danger">*</span>
+                                </label>
+                                <select id="f_year_joined" class="form-control">
+                                    <option value="">Select year</option>
+                                </select>
+                            </div>
+
+                            <!-- Expiry Year -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Expiry Year
+                                    <small class="text-secondary ms-1">(optional)</small>
+                                </label>
+                                <select id="f_expiry_year" class="form-control">
+                                    <option value="">No expiry / Lifetime</option>
+                                </select>
+                            </div>
+
+                        </div>
+
+                        <div class="d-flex justify-content-end">
+                            <button type="button" class="btn btn-outline-info btn-sm"
+                                    onclick="addMembershipToList()">
+                                <i class="fas fa-plus me-1"></i> Add to List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── Pending List ── -->
+                <div id="pendingContainer" style="display:none;" class="mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
+                        <h6 class="font-weight-bolder mb-0 text-sm">
+                            <i class="fas fa-list me-2 text-info"></i>Memberships Ready to Save
+                        </h6>
+                        <span id="pendingCount" class="badge bg-gradient-info px-2 py-1"></span>
+                    </div>
+                    <div id="pendingList"></div>
+                    <div class="d-flex justify-content-end mt-3">
+                        <button type="button" class="btn btn-outline-info btn-sm"
+                                onclick="saveAllMemberships()">
+                            <i class="fas fa-save me-1"></i> Save All
+                        </button>
+                    </div>
+                </div>
+
+                <!-- ── Saved Table ── -->
+                <div id="savedSection"
+                     style="{% if not existing %}display:none;{% endif %}">
+                    <h6 class="font-weight-bolder mb-3">
+                        <i class="fas fa-users me-2 text-success"></i>Saved Memberships
+                    </h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm align-middle" id="savedTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th style="min-width:140px;">Professional Body</th>
+                                    <th style="min-width:120px;">Membership No.</th>
+                                    <th class="d-none d-sm-table-cell">Year Joined</th>
+                                    <th class="d-none d-sm-table-cell">Expiry</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="savedTableBody">
+                                {% for m in existing %}
+                                <tr id="row_{{ m.id }}">
+                                    <td class="text-sm font-weight-bold">
+                                        <span class="badge bg-gradient-info"
+                                              style="font-size:0.72rem;">
+                                            {{ m.body_name }}
+                                        </span>
+                                    </td>
+                                    <td class="text-sm">{{ m.membership_no }}</td>
+                                    <td class="d-none d-sm-table-cell text-sm">
+                                        {{ m.year_joined }}
+                                    </td>
+                                    <td class="d-none d-sm-table-cell text-sm">
+                                        {% if m.expiry_year %}
+                                            <span class="badge bg-gradient-warning"
+                                                  style="font-size:0.65rem;">
+                                                {{ m.expiry_year }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-gradient-success"
+                                                  style="font-size:0.65rem;">
+                                                Lifetime
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex gap-1">
+                                            <button type="button"
+                                                    class="btn btn-outline-info btn-xs"
+                                                    title="Edit"
+                                                    onclick="editMembership(
+                                                        {{ m.id }},
+                                                        '{{ m.body_name|escapejs }}',
+                                                        '{{ m.membership_no|escapejs }}',
+                                                        {{ m.year_joined }},
+                                                        '{{ m.expiry_year|default:'' }}'
+                                                    )">
+                                                <i class="fas fa-edit"></i>
+                                            </button>
+                                            <button type="button"
+                                                    class="btn btn-outline-danger btn-xs"
+                                                    title="Delete"
+                                                    onclick="deleteMembership(
+                                                        {{ m.id }},
+                                                        '{{ m.body_name|escapejs }}'
+                                                    )">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ── Nav Buttons ── -->
+                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                    <a href="{% url 'work_history' %}"
+                       class="btn btn-outline-secondary btn-sm mb-0">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </a>
+                    <a href="#"
+                       class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                        Next <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── Edit Modal ── -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-md modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title font-weight-bolder mb-0">
+                    <i class="fas fa-edit me-2"></i> Edit Membership
+                </h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="edit_mem_id">
+                <div class="row g-3">
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">
+                            Professional Body <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" id="edit_body_name" class="form-control"
+                               placeholder="e.g. ICPAK, LSK, KISM">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">
+                            Membership Number <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" id="edit_membership_no" class="form-control"
+                               placeholder="Enter membership number">
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">
+                            Year Joined <span class="text-danger">*</span>
+                        </label>
+                        <select id="edit_year_joined" class="form-control"></select>
+                    </div>
+                    <div class="col-12 col-md-6">
+                        <label class="form-label text-sm font-weight-bold">Expiry Year</label>
+                        <select id="edit_expiry_year" class="form-control"></select>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-outline-info btn-sm"
+                        onclick="submitEdit()">
+                    <i class="fas fa-save me-1"></i> Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+
+// ── State ────────────────────────────────────────────────────
+let pendingMems = [];
+
+// ── Populate Year Dropdowns ──────────────────────────────────
+function populateJoinedYears(elId, selected) {
+    const sel = document.getElementById(elId);
+    const cur = new Date().getFullYear();
+    sel.innerHTML = '<option value="">Select year</option>';
+    for (let y = cur; y >= 1970; y--) {
+        sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+    }
+}
+
+function populateExpiryYears(elId, selected) {
+    const sel = document.getElementById(elId);
+    const cur = new Date().getFullYear();
+    sel.innerHTML = '<option value="">No expiry / Lifetime</option>';
+    for (let y = cur; y <= cur + 20; y++) {
+        sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+    }
+}
+
+// Init add-form dropdowns
+populateJoinedYears('f_year_joined',  null);
+populateExpiryYears('f_expiry_year',  null);
+
+// ── Build Table Row ──────────────────────────────────────────
+function buildTableRow(m) {
+    const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+    const expiryBadge = m.expiry_year
+        ? `<span class="badge bg-gradient-warning" style="font-size:0.65rem;">${m.expiry_year}</span>`
+        : `<span class="badge bg-gradient-success" style="font-size:0.65rem;">Lifetime</span>`;
+
+    return `
+        <td class="text-sm font-weight-bold">
+            <span class="badge bg-gradient-info" style="font-size:0.72rem;">
+                ${m.body_name}
+            </span>
+        </td>
+        <td class="text-sm">${m.membership_no}</td>
+        <td class="d-none d-sm-table-cell text-sm">${m.year_joined}</td>
+        <td class="d-none d-sm-table-cell text-sm">${expiryBadge}</td>
+        <td>
+            <div class="d-flex gap-1">
+                <button type="button" class="btn btn-outline-info btn-xs" title="Edit"
+                        onclick="editMembership(
+                            ${m.id},
+                            '${esc(m.body_name)}',
+                            '${esc(m.membership_no)}',
+                            ${m.year_joined},
+                            '${m.expiry_year || ''}'
+                        )">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-outline-danger btn-xs" title="Delete"
+                        onclick="deleteMembership(${m.id}, '${esc(m.body_name)}')">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+        </td>`;
+}
+
+// ── Add to Pending List ──────────────────────────────────────
+function addMembershipToList() {
+    const body_name     = document.getElementById('f_body_name').value.trim();
+    const membership_no = document.getElementById('f_membership_no').value.trim();
+    const year_joined   = document.getElementById('f_year_joined').value;
+    const expiry_year   = document.getElementById('f_expiry_year').value;
+
+    if (!body_name) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Please enter the professional body name.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!membership_no) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Please enter your membership number.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!year_joined) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Please select the year you joined.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+
+    pendingMems.push({ body_name, membership_no, year_joined, expiry_year });
+
+    // Reset form
+    document.getElementById('f_body_name').value    = '';
+    document.getElementById('f_membership_no').value = '';
+    document.getElementById('f_year_joined').value  = '';
+    document.getElementById('f_expiry_year').value  = '';
+
+    renderPendingList();
+}
+
+// ── Render Pending List ──────────────────────────────────────
+function renderPendingList() {
+    const container = document.getElementById('pendingContainer');
+    const list      = document.getElementById('pendingList');
+    const countEl   = document.getElementById('pendingCount');
+
+    if (pendingMems.length === 0) {
+        container.style.display = 'none';
+        return;
+    }
+
+    container.style.display = 'block';
+    countEl.textContent     = `${pendingMems.length} membership(s)`;
+    list.innerHTML          = '';
+
+    pendingMems.forEach((m, idx) => {
+        const expiryText = m.expiry_year ? ` · Expires ${m.expiry_year}` : ' · Lifetime';
+        list.innerHTML += `
+            <div class="pending-item" id="pending_${idx}">
+                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
+                    <div class="flex-grow-1">
+                        <div class="d-flex align-items-center gap-1 flex-wrap mb-1">
+                            <span class="badge bg-gradient-info px-2 py-1"
+                                  style="font-size:0.75rem;">
+                                <i class="fas fa-users me-1"></i>${m.body_name}
+                            </span>
+                        </div>
+                        <div class="text-sm text-secondary">
+                            <strong>${m.membership_no}</strong>
+                            · Joined ${m.year_joined}${expiryText}
+                        </div>
+                    </div>
+                    <button type="button"
+                            class="btn btn-outline-danger btn-xs pending-remove-btn"
+                            onclick="removePending(${idx})">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>`;
+    });
+}
+
+function removePending(idx) {
+    pendingMems.splice(idx, 1);
+    renderPendingList();
+}
+
+// ── Save All ─────────────────────────────────────────────────
+function saveAllMemberships() {
+    if (pendingMems.length === 0) return;
+
+    Swal.fire({
+        title: 'Saving...', text: 'Please wait.',
+        icon: 'info', allowOutsideClick: false,
+        showConfirmButton: false, position: 'center',
+        scrollbarPadding: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action',      'save');
+    formData.append('memberships', JSON.stringify(pendingMems));
+
+    fetch("{% url 'memberships' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+            Swal.fire({
+                icon: 'success', title: 'Saved!',
+                text: data.message, confirmButtonText: 'OK',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(() => {
+                if (data.saved) {
+                    const tbody = document.getElementById('savedTableBody');
+                    data.saved.forEach(m => {
+                        const existing = document.getElementById(`row_${m.id}`);
+                        if (existing) existing.remove();
+                        const tr  = document.createElement('tr');
+                        tr.id     = `row_${m.id}`;
+                        tr.innerHTML = buildTableRow(m);
+                        tbody.appendChild(tr);
+                    });
+                    document.getElementById('savedSection').style.display = 'block';
+                }
+                pendingMems = [];
+                renderPendingList();
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Save Failed',
+                text: data.message,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'System Error',
+            text: 'Something went wrong. Please try again.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+    });
+}
+
+// ── Edit Membership ──────────────────────────────────────────
+function editMembership(id, bodyName, membershipNo, yearJoined, expiryYear) {
+    document.getElementById('edit_mem_id').value       = id;
+    document.getElementById('edit_body_name').value    = bodyName;
+    document.getElementById('edit_membership_no').value = membershipNo;
+
+    populateJoinedYears('edit_year_joined',  yearJoined);
+    populateExpiryYears('edit_expiry_year',  expiryYear);
+
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+function submitEdit() {
+    const mem_id       = document.getElementById('edit_mem_id').value;
+    const body_name    = document.getElementById('edit_body_name').value.trim();
+    const membership_no= document.getElementById('edit_membership_no').value.trim();
+    const year_joined  = document.getElementById('edit_year_joined').value;
+
+    if (!body_name) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Professional body name is required.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!membership_no) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Membership number is required.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+    if (!year_joined) {
+        Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Year joined is required.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+        return;
+    }
+
+    Swal.fire({
+        title: 'Updating...', icon: 'info',
+        allowOutsideClick: false, showConfirmButton: false,
+        position: 'center', scrollbarPadding: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action',        'edit');
+    formData.append('mem_id',        mem_id);
+    formData.append('body_name',     body_name);
+    formData.append('membership_no', membership_no);
+    formData.append('year_joined',   year_joined);
+    formData.append('expiry_year',   document.getElementById('edit_expiry_year').value);
+
+    fetch("{% url 'memberships' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+            const row = document.getElementById(`row_${mem_id}`);
+            if (row && data.mem) row.innerHTML = buildTableRow(data.mem);
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            Swal.fire({
+                icon: 'success', title: 'Updated!',
+                text: data.message, timer: 1800,
+                showConfirmButton: false,
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            });
+        } else {
+            Swal.fire({ icon: 'error', title: 'Update Failed',
+                text: data.message,
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({ icon: 'error', title: 'System Error',
+            text: 'Something went wrong. Please try again.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+    });
+}
+
+// ── Delete Membership ────────────────────────────────────────
+function deleteMembership(memId, bodyName) {
+    Swal.fire({
+        icon:              'warning',
+        title:             'Delete Membership',
+        html:              `Are you sure you want to delete your <strong>${bodyName}</strong> membership?<br>
+                            <small class="text-secondary">This cannot be undone.</small>`,
+        showCancelButton:  true,
+        confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
+        cancelButtonText:  'Cancel',
+        confirmButtonColor:'#ef4444',
+        cancelButtonColor: '#8392ab',
+        position:          'center',
+        scrollbarPadding:  false,
+        heightAuto:        false,
+    }).then(result => {
+        if (!result.isConfirmed) return;
+
+        Swal.fire({
+            title: 'Deleting...', icon: 'info',
+            allowOutsideClick: false, showConfirmButton: false,
+            position: 'center', scrollbarPadding: false,
+            didOpen: () => Swal.showLoading()
+        });
+
+        const formData = new FormData();
+        formData.append('csrfmiddlewaretoken', CSRF);
+        formData.append('action', 'delete');
+        formData.append('mem_id', memId);
+
+        fetch("{% url 'memberships' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': CSRF },
+            body: formData
+        })
+        .then(r => r.json())
+        .then(data => {
+            Swal.close();
+            if (data.status === 'success') {
+                document.getElementById(`row_${memId}`)?.remove();
+                if (document.querySelectorAll('#savedTableBody tr').length === 0) {
+                    document.getElementById('savedSection').style.display = 'none';
+                }
+                Swal.fire({
+                    icon: 'success', title: 'Deleted',
+                    text: 'Membership removed.',
+                    timer: 1500, showConfirmButton: false,
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                });
+            } else {
+                Swal.fire({ icon: 'error', title: 'Delete Failed',
+                    text: data.message,
+                    position: 'center', scrollbarPadding: false, heightAuto: false });
+            }
+        })
+        .catch(() => {
+            Swal.close();
+            Swal.fire({ icon: 'error', title: 'System Error',
+                text: 'Something went wrong. Please try again.',
+                position: 'center', scrollbarPadding: false, heightAuto: false });
+        });
+    });
+}
+</script>
+{% endblock %}

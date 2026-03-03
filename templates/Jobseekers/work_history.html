@@ -81,6 +81,23 @@
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
+                <!-- Memberships tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'memberships' %}">
+                        <i class="fas fa-users me-1"></i>
+                        <span class="d-none d-sm-inline">Memberships</span>
+                        {% if has_memberships %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <!-- Referees tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#"
+                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                        <i class="fas fa-user-tie me-1"></i>
+                        <span class="d-none d-sm-inline">Referees</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'additional_details' %}">
                         <i class="fas fa-info-circle me-1"></i>
@@ -213,7 +230,7 @@
 
                             </div>
 
-                            <div class="d-flex justify-content-end" >
+                            <div class="d-flex justify-content-end">
                                 <button type="button" class="btn btn-outline-info btn-sm"
                                         onclick="addJobToList()">
                                     <i class="fas fa-plus me-1"></i> Add to List

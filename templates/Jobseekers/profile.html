@@ -5,692 +5,712 @@
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mt-4">
+    <div class="row">
+        <div class="col-12 mt-4">
 
-        <!-- Header -->
-        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-            <div>
-                <h6 class="mb-0 font-weight-bolder">My Profile</h6>
-                <p class="text-sm text-secondary mb-0">Complete all steps to finish your profile</p>
-            </div>
-            <span class="badge px-3 py-2
+            <!-- Header -->
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">My Profile</h6>
+                    <p class="text-sm text-secondary mb-0">Complete all steps to finish your profile</p>
+                </div>
+                <span class="badge px-3 py-2
                 {% if completion == 100 %}bg-gradient-success
                 {% elif completion >= 60 %}bg-gradient-info
                 {% elif completion >= 30 %}bg-gradient-warning
                 {% else %}bg-gradient-danger{% endif %}">
                 <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
             </span>
-        </div>
-
-        <!-- Progress Bar -->
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <small class="text-secondary" style="font-size:0.75rem;">
-                    {% if completion == 100 %}🎉 Profile complete!
-                    {% elif completion >= 60 %}Almost there — keep going!
-                    {% elif completion >= 30 %}Good start — more to fill in.
-                    {% else %}Just getting started...{% endif %}
-                </small>
-                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
             </div>
-            <div class="progress" style="height:8px; border-radius:1rem;">
-                <div class="progress-bar
+
+            <!-- Progress Bar -->
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-secondary" style="font-size:0.75rem;">
+                        {% if completion == 100 %}🎉 Profile complete!
+                        {% elif completion >= 60 %}Almost there — keep going!
+                        {% elif completion >= 30 %}Good start — more to fill in.
+                        {% else %}Just getting started...{% endif %}
+                    </small>
+                    <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
+                </div>
+                <div class="progress" style="height:8px; border-radius:1rem;">
+                    <div class="progress-bar
                     {% if completion == 100 %}bg-gradient-success
                     {% elif completion >= 60 %}bg-gradient-info
                     {% elif completion >= 30 %}bg-gradient-warning
                     {% else %}bg-gradient-danger{% endif %}"
-                     role="progressbar"
-                     style="width:{{ completion }}%; transition:width 0.6s ease;"
-                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                         role="progressbar"
+                         style="width:{{ completion }}%; transition:width 0.6s ease;"
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tabs -->
-        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'profile' %}">
-                    <i class="fas fa-user me-1"></i>
-                    <span class="d-none d-sm-inline">Basic Details</span>
-                    {% if completion >= 30 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'academic_qualifications' %}">
-                    <i class="fas fa-graduation-cap me-1"></i>
-                    <span class="d-none d-sm-inline">Academic</span>
-                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'professional_qualifications' %}">
-                    <i class="fas fa-certificate me-1"></i>
-                    <span class="d-none d-sm-inline">Professional</span>
-                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'work_history' %}">
-                    <i class="fas fa-briefcase me-1"></i>
-                    <span class="d-none d-sm-inline">Work History</span>
-                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-            <!-- Memberships tab — enable when url is ready -->
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#"
-                   title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
-                    <i class="fas fa-users me-1"></i>
-                    <span class="d-none d-sm-inline">Memberships</span>
-                </a>
-            </li>
-            <!-- Referees tab — enable when url is ready -->
-            <li class="nav-item">
-                <a class="nav-link disabled" href="#"
-                   title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
-                    <i class="fas fa-user-tie me-1"></i>
-                    <span class="d-none d-sm-inline">Referees</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'additional_details' %}">
-                    <i class="fas fa-info-circle me-1"></i>
-                    <span class="d-none d-sm-inline">Additional</span>
-                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
-                </a>
-            </li>
-        </ul>
+            <!-- Tabs -->
+            <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+                <li class="nav-item">
+                    <a class="nav-link active" href="{% url 'profile' %}">
+                        <i class="fas fa-user me-1"></i>
+                        <span class="d-none d-sm-inline">Basic Details</span>
+                        {% if completion >= 30 %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                        <i class="fas fa-graduation-cap me-1"></i>
+                        <span class="d-none d-sm-inline">Academic</span>
+                        {% if has_academic %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                        <i class="fas fa-certificate me-1"></i>
+                        <span class="d-none d-sm-inline">Professional</span>
+                        {% if has_professional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'work_history' %}">
+                        <i class="fas fa-briefcase me-1"></i>
+                        <span class="d-none d-sm-inline">Work History</span>
+                        {% if has_work_history %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <!-- Memberships tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'memberships' %}">
+                        <i class="fas fa-users me-1"></i>
+                        <span class="d-none d-sm-inline">Memberships</span>
+                        {% if has_memberships %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+                <!-- Referees tab — enable when url is ready -->
+                <li class="nav-item">
+                    <a class="nav-link disabled" href="#"
+                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                        <i class="fas fa-user-tie me-1"></i>
+                        <span class="d-none d-sm-inline">Referees</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'additional_details' %}">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <span class="d-none d-sm-inline">Additional</span>
+                        {% if has_additional %}
+                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    </a>
+                </li>
+            </ul>
 
-        <!-- Content Card -->
-        <div class="card mb-4 profile-content-card">
-            <div class="card-body p-3 p-md-4">
+            <!-- Content Card -->
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body p-3 p-md-4">
 
-                <h6 class="font-weight-bolder mb-1">Step 1: Basic Details</h6>
-                <p class="text-sm text-secondary mb-4">Fill in your personal information below</p>
+                    <h6 class="font-weight-bolder mb-1">Step 1: Basic Details</h6>
+                    <p class="text-sm text-secondary mb-4">Fill in your personal information below</p>
 
-                <!-- ── Section: Personal Info ── -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-id-card me-2"></i> Personal Information
-                    </div>
-                    <div class="acad-add-body">
-                        <div class="row g-3">
+                    <!-- ── Section: Personal Info ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-id-card me-2"></i> Personal Information
+                        </div>
+                        <div class="acad-add-body">
+                            <div class="row g-3">
 
-                            <!-- ID Number (readonly) -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    ID Number <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" id="id_no" name="id_no" class="form-control"
-                                       value="{{ profile.id_no|default:user.id_no }}"
-                                       readonly style="background:#f0f0f0; cursor:not-allowed;">
-                                <small class="text-secondary" style="font-size:0.72rem;">
-                                    <i class="fas fa-lock me-1"></i>ID number cannot be changed
-                                </small>
-                            </div>
+                                <!-- ID Number (readonly) -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        ID Number <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="id_no" name="id_no" class="form-control"
+                                           value="{{ profile.id_no|default:user.id_no }}"
+                                           readonly style="background:#f0f0f0; cursor:not-allowed;">
+                                    <small class="text-secondary" style="font-size:0.72rem;">
+                                        <i class="fas fa-lock me-1"></i>ID number cannot be changed
+                                    </small>
+                                </div>
 
-                            <!-- Phone Number -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Phone Number <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
+                                <!-- Phone Number -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Phone Number <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
                                     <span class="input-group-text"
                                           style="background:#f8f9fa; border:1px solid #e9ecef;
                                                  font-size:0.82rem; color:#344767;">
                                         <i class="fas fa-phone"></i>
                                     </span>
-                                    <input type="tel" name="phone_number" id="phone_number"
-                                           class="form-control"
-                                           placeholder="e.g. 0712 345 678"
-                                           value="{{ profile.phone_number|default:'' }}">
-                                </div>
-                            </div>
-
-                            <!-- Salutation -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Salutation</label>
-                                <input type="text" name="salutation" class="form-control"
-                                       placeholder="e.g. Mr, Mrs, Dr, Eng, OGW"
-                                       value="{{ profile.salutation|default:'' }}">
-                            </div>
-
-                            <!-- Surname -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Surname <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="surname" class="form-control"
-                                       placeholder="Enter surname"
-                                       value="{{ profile.surname|default:'' }}">
-                            </div>
-
-                            <!-- First Name -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    First Name <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="first_name" class="form-control"
-                                       placeholder="Enter first name"
-                                       value="{{ profile.first_name|default:'' }}">
-                            </div>
-
-                            <!-- Other Names -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Other Names</label>
-                                <input type="text" name="second_name" class="form-control"
-                                       placeholder="Enter other names"
-                                       value="{{ profile.second_name|default:'' }}">
-                            </div>
-
-                            <!-- Date of Birth -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Date of Birth <span class="text-danger">*</span>
-                                </label>
-                                <input type="date" name="date_of_birth" id="date_of_birth"
-                                       class="form-control"
-                                       value="{{ profile.date_of_birth|date:'Y-m-d' }}">
-                                <small id="dobError" class="text-danger"
-                                       style="display:none; font-size:0.75rem;">
-                                    <i class="fas fa-exclamation-circle me-1"></i>
-                                    <span id="dobErrorMsg"></span>
-                                </small>
-                            </div>
-
-                            <!-- Gender -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Gender</label>
-                                <select name="gender" id="gender" class="form-control">
-                                    <option value="" {% if not profile.gender %}selected{% endif %}>
-                                        Select gender
-                                    </option>
-                                    {% for g in genders %}
-                                    <option value="{{ g.id }}"
-                                            {% if profile.gender_id == g.id %}selected{% endif %}>
-                                        {{ g.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <!-- Ethnic Group -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Ethnic Group</label>
-                                <select name="ethnic_group" id="ethnic_group" class="form-control">
-                                    <option value="" {% if not profile.ethnic_group %}selected{% endif %}>
-                                        Select ethnic group
-                                    </option>
-                                    {% for group in ethnic_groups %}
-                                    <option value="{{ group.id }}"
-                                            {% if profile.ethnic_group_id == group.id %}selected{% endif %}>
-                                        {{ group.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ── Section: Location ── -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-map-marker-alt me-2"></i> Home Location
-                    </div>
-                    <div class="acad-add-body">
-                        <div class="row g-3">
-
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Home County</label>
-                                <select name="home_county" id="countySelect" class="form-control">
-                                    <option value="">Select county</option>
-                                    {% for county in counties %}
-                                    <option value="{{ county.id }}"
-                                            {% if profile.home_county_id == county.id %}selected{% endif %}>
-                                        {{ county.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Constituency</label>
-                                <select name="constituency" id="constituencySelect" class="form-control">
-                                    <option value="">Select constituency</option>
-                                    {% for c in constituencies %}
-                                    <option value="{{ c.id }}"
-                                            data-county="{{ c.county_id }}"
-                                            {% if profile.constituency_id == c.id %}selected{% endif %}>
-                                        {{ c.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Sub County</label>
-                                <select name="sub_county" id="subCountySelect" class="form-control">
-                                    <option value="">Select sub county</option>
-                                    {% for s in sub_counties %}
-                                    <option value="{{ s.id }}"
-                                            data-county="{{ s.county_id }}"
-                                            {% if profile.sub_county_id == s.id %}selected{% endif %}>
-                                        {{ s.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Ward</label>
-                                <select name="ward" id="wardSelect" class="form-control">
-                                    <option value="">Select ward</option>
-                                    {% for ward in wards %}
-                                    <option value="{{ ward.id }}"
-                                            data-constituency="{{ ward.constituency_id }}"
-                                            {% if profile.ward_id == ward.id %}selected{% endif %}>
-                                        {{ ward.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-
-                <!-- ── Section: Other Details ── -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-clipboard-list me-2"></i> Other Details
-                    </div>
-                    <div class="acad-add-body">
-                        <div class="row g-3">
-
-                            <!-- Disability Status -->
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Disability Status
-                                </label>
-                                <select name="disability_status" id="disabilitySelect"
-                                        class="form-control"
-                                        onchange="toggleDisabilityFields(this.value)">
-                                    <option value="" {% if not profile.disability_status %}selected{% endif %}>
-                                        Select disability status
-                                    </option>
-                                    <option value="None"
-                                            {% if profile.disability_status == 'None' %}selected{% endif %}>
-                                        None
-                                    </option>
-                                    <option value="Physical"
-                                            {% if profile.disability_status == 'Physical' %}selected{% endif %}>
-                                        Physical
-                                    </option>
-                                    <option value="Visual"
-                                            {% if profile.disability_status == 'Visual' %}selected{% endif %}>
-                                        Visual
-                                    </option>
-                                    <option value="Hearing"
-                                            {% if profile.disability_status == 'Hearing' %}selected{% endif %}>
-                                        Hearing
-                                    </option>
-                                    <option value="Other"
-                                            {% if profile.disability_status == 'Other' %}selected{% endif %}>
-                                        Other
-                                    </option>
-                                </select>
-                            </div>
-
-                            <!-- Disability Number (shown when disability is not None/empty) -->
-                            <div class="col-12 col-md-6" id="disabilityNoWrap"
-                                 style="{% if not profile.disability_status or profile.disability_status == 'None' %}display:none;{% endif %}">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Disability Registration Number
-                                </label>
-                                <input type="text" name="disability_no" id="disability_no"
-                                       class="form-control"
-                                       placeholder="Enter disability registration number"
-                                       value="{{ profile.disability_no|default:'' }}">
-                            </div>
-
-                            <!-- Disability Other (shown only when Other selected) -->
-                            <div class="col-12 col-md-6" id="disabilityOtherWrap"
-                                 style="{% if profile.disability_status != 'Other' %}display:none;{% endif %}">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Please describe your disability <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" name="disability_other" id="disability_other"
-                                       class="form-control"
-                                       placeholder="e.g. Mobility impairment, Chronic illness"
-                                       value="{{ profile.disability_other|default:'' }}">
-                            </div>
-
-                            <!-- UFAA Employee -->
-                            <div class="col-12">
-                                <label class="form-label text-sm font-weight-bold d-block mb-2">
-                                    Are you a UFAA Employee?
-                                </label>
-                                <div class="d-flex align-items-center gap-3 flex-wrap">
-                                    <div class="d-flex gap-3">
-                                        <label class="level-pill">
-                                            <input type="radio" name="is_employee_radio"
-                                                   value="true"
-                                                   {% if user.is_employee %}checked{% endif %}
-                                                   onchange="toggleEmployeeNumber(true)">
-                                            <label class="mb-0" style="cursor:pointer;">
-                                                <i class="fas fa-check-circle me-1 text-success"></i> Yes
-                                            </label>
-                                        </label>
-                                        <label class="level-pill">
-                                            <input type="radio" name="is_employee_radio"
-                                                   value="false"
-                                                   {% if not user.is_employee %}checked{% endif %}
-                                                   onchange="toggleEmployeeNumber(false)">
-                                            <label class="mb-0" style="cursor:pointer;">
-                                                <i class="fas fa-times-circle me-1 text-danger"></i> No
-                                            </label>
-                                        </label>
+                                        <input type="tel" name="phone_number" id="phone_number"
+                                               class="form-control"
+                                               placeholder="e.g. 0712 345 678"
+                                               value="{{ profile.phone_number|default:'' }}">
                                     </div>
-                                    <input type="hidden" name="is_employee" id="is_employee_hidden"
-                                           value="{{ user.is_employee|yesno:'true,false' }}">
                                 </div>
-                            </div>
 
-                            <!-- Employee Number -->
-                            <div class="col-12 col-md-6" id="employeeNumberWrap"
-                                 style="{% if not user.is_employee %}display:none;{% endif %}">
-                                <label class="form-label text-sm font-weight-bold">
-                                    UFAA Employee Number <span class="text-danger">*</span>
-                                </label>
-                                <div class="input-group">
+                                <!-- Salutation -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Salutation</label>
+                                    <input type="text" name="salutation" class="form-control"
+                                           placeholder="e.g. Mr, Mrs, Dr, Eng, OGW"
+                                           value="{{ profile.salutation|default:'' }}">
+                                </div>
+
+                                <!-- Surname -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Surname <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="surname" class="form-control"
+                                           placeholder="Enter surname"
+                                           value="{{ profile.surname|default:'' }}">
+                                </div>
+
+                                <!-- First Name -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        First Name <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="first_name" class="form-control"
+                                           placeholder="Enter first name"
+                                           value="{{ profile.first_name|default:'' }}">
+                                </div>
+
+                                <!-- Other Names -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Other Names</label>
+                                    <input type="text" name="second_name" class="form-control"
+                                           placeholder="Enter other names"
+                                           value="{{ profile.second_name|default:'' }}">
+                                </div>
+
+                                <!-- Date of Birth -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Date of Birth <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="date" name="date_of_birth" id="date_of_birth"
+                                           class="form-control"
+                                           value="{{ profile.date_of_birth|date:'Y-m-d' }}">
+                                    <small id="dobError" class="text-danger"
+                                           style="display:none; font-size:0.75rem;">
+                                        <i class="fas fa-exclamation-circle me-1"></i>
+                                        <span id="dobErrorMsg"></span>
+                                    </small>
+                                </div>
+
+                                <!-- Gender -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Gender</label>
+                                    <select name="gender" id="gender" class="form-control">
+                                        <option value="" {% if not profile.gender %}selected{% endif %}>
+                                            Select gender
+                                        </option>
+                                        {% for g in genders %}
+                                            <option value="{{ g.id }}"
+                                                    {% if profile.gender_id == g.id %}selected{% endif %}>
+                                                {{ g.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <!-- Ethnic Group -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Ethnic Group</label>
+                                    <select name="ethnic_group" id="ethnic_group" class="form-control">
+                                        <option value="" {% if not profile.ethnic_group %}selected{% endif %}>
+                                            Select ethnic group
+                                        </option>
+                                        {% for group in ethnic_groups %}
+                                            <option value="{{ group.id }}"
+                                                    {% if profile.ethnic_group_id == group.id %}selected{% endif %}>
+                                                {{ group.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Section: Location ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-map-marker-alt me-2"></i> Home Location
+                        </div>
+                        <div class="acad-add-body">
+                            <div class="row g-3">
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Home County</label>
+                                    <select name="home_county" id="countySelect" class="form-control">
+                                        <option value="">Select county</option>
+                                        {% for county in counties %}
+                                            <option value="{{ county.id }}"
+                                                    {% if profile.home_county_id == county.id %}selected{% endif %}>
+                                                {{ county.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Constituency</label>
+                                    <select name="constituency" id="constituencySelect" class="form-control">
+                                        <option value="">Select constituency</option>
+                                        {% for c in constituencies %}
+                                            <option value="{{ c.id }}"
+                                                    data-county="{{ c.county_id }}"
+                                                    {% if profile.constituency_id == c.id %}selected{% endif %}>
+                                                {{ c.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Sub County</label>
+                                    <select name="sub_county" id="subCountySelect" class="form-control">
+                                        <option value="">Select sub county</option>
+                                        {% for s in sub_counties %}
+                                            <option value="{{ s.id }}"
+                                                    data-county="{{ s.county_id }}"
+                                                    {% if profile.sub_county_id == s.id %}selected{% endif %}>
+                                                {{ s.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">Ward</label>
+                                    <select name="ward" id="wardSelect" class="form-control">
+                                        <option value="">Select ward</option>
+                                        {% for ward in wards %}
+                                            <option value="{{ ward.id }}"
+                                                    data-constituency="{{ ward.constituency_id }}"
+                                                    {% if profile.ward_id == ward.id %}selected{% endif %}>
+                                                {{ ward.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Section: Other Details ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-clipboard-list me-2"></i> Other Details
+                        </div>
+                        <div class="acad-add-body">
+                            <div class="row g-3">
+
+                                <!-- Disability Status -->
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Disability Status
+                                    </label>
+                                    <select name="disability_status" id="disabilitySelect"
+                                            class="form-control"
+                                            onchange="toggleDisabilityFields(this.value)">
+                                        <option value="" {% if not profile.disability_status %}selected{% endif %}>
+                                            Select disability status
+                                        </option>
+                                        <option value="None"
+                                                {% if profile.disability_status == 'None' %}selected{% endif %}>
+                                            None
+                                        </option>
+                                        <option value="Physical"
+                                                {% if profile.disability_status == 'Physical' %}selected{% endif %}>
+                                            Physical
+                                        </option>
+                                        <option value="Visual"
+                                                {% if profile.disability_status == 'Visual' %}selected{% endif %}>
+                                            Visual
+                                        </option>
+                                        <option value="Hearing"
+                                                {% if profile.disability_status == 'Hearing' %}selected{% endif %}>
+                                            Hearing
+                                        </option>
+                                        <option value="Other"
+                                                {% if profile.disability_status == 'Other' %}selected{% endif %}>
+                                            Other
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <!-- Disability Number (shown when disability is not None/empty) -->
+                                <div class="col-12 col-md-6" id="disabilityNoWrap"
+                                     style="{% if not profile.disability_status or profile.disability_status == 'None' %}display:none;{% endif %}">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Disability Registration Number
+                                    </label>
+                                    <input type="text" name="disability_no" id="disability_no"
+                                           class="form-control"
+                                           placeholder="Enter disability registration number"
+                                           value="{{ profile.disability_no|default:'' }}">
+                                </div>
+
+                                <!-- Disability Other (shown only when Other selected) -->
+                                <div class="col-12 col-md-6" id="disabilityOtherWrap"
+                                     style="{% if profile.disability_status != 'Other' %}display:none;{% endif %}">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Please describe your disability <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" name="disability_other" id="disability_other"
+                                           class="form-control"
+                                           placeholder="e.g. Mobility impairment, Chronic illness"
+                                           value="{{ profile.disability_other|default:'' }}">
+                                </div>
+
+                                <!-- UFAA Employee -->
+                                <div class="col-12">
+                                    <label class="form-label text-sm font-weight-bold d-block mb-2">
+                                        Are you a UFAA Employee?
+                                    </label>
+                                    <div class="d-flex align-items-center gap-3 flex-wrap">
+                                        <div class="d-flex gap-3">
+                                            <label class="level-pill">
+                                                <input type="radio" name="is_employee_radio"
+                                                       value="true"
+                                                       {% if user.is_employee %}checked{% endif %}
+                                                       onchange="toggleEmployeeNumber(true)">
+                                                <label class="mb-0" style="cursor:pointer;">
+                                                    <i class="fas fa-check-circle me-1 text-success"></i> Yes
+                                                </label>
+                                            </label>
+                                            <label class="level-pill">
+                                                <input type="radio" name="is_employee_radio"
+                                                       value="false"
+                                                       {% if not user.is_employee %}checked{% endif %}
+                                                       onchange="toggleEmployeeNumber(false)">
+                                                <label class="mb-0" style="cursor:pointer;">
+                                                    <i class="fas fa-times-circle me-1 text-danger"></i> No
+                                                </label>
+                                            </label>
+                                        </div>
+                                        <input type="hidden" name="is_employee" id="is_employee_hidden"
+                                               value="{{ user.is_employee|yesno:'true,false' }}">
+                                    </div>
+                                </div>
+
+                                <!-- Employee Number -->
+                                <div class="col-12 col-md-6" id="employeeNumberWrap"
+                                     style="{% if not user.is_employee %}display:none;{% endif %}">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        UFAA Employee Number <span class="text-danger">*</span>
+                                    </label>
+                                    <div class="input-group">
                                     <span class="input-group-text"
                                           style="background:#f8f9fa; border:1px solid #e9ecef;
                                                  font-size:0.82rem; color:#344767;">
                                         <i class="fas fa-id-badge"></i>
                                     </span>
-                                    <input type="text" name="employee_number" id="employee_number"
-                                           class="form-control"
-                                           placeholder="Enter your employee number"
-                                           value="{{ profile.employee_number|default:'' }}">
+                                        <input type="text" name="employee_number" id="employee_number"
+                                               class="form-control"
+                                               placeholder="Enter your employee number"
+                                               value="{{ profile.employee_number|default:'' }}">
+                                    </div>
                                 </div>
-                            </div>
 
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <!-- ── Action Buttons ── -->
-                <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                    <div></div>
-                    <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-outline-info btn-sm mb-0"
-                                onclick="saveProfile()">
-                            <i class="fas fa-save me-1"></i>
-                            {% if profile.first_name %}Update Profile{% else %}Save Profile{% endif %}
-                        </button>
-                        {% if profile.first_name %}
-                        <a href="{% url 'academic_qualifications' %}"
-                           class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
-                            Next <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
-                        {% endif %}
+                    <!-- ── Action Buttons ── -->
+                    <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
+                        <div></div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info btn-sm mb-0"
+                                    onclick="saveProfile()">
+                                <i class="fas fa-save me-1"></i>
+                                {% if profile.first_name %}Update Profile{% else %}Save Profile{% endif %}
+                            </button>
+                            {% if profile.first_name %}
+                                <a href="{% url 'academic_qualifications' %}"
+                                   class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                                    Next <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
 
+                </div>
             </div>
         </div>
     </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const CSRF = '{{ csrf_token }}';
+    <script>
+        const CSRF = '{{ csrf_token }}';
 
-// ── Disability Fields Toggle ──────────────────────────────────
-// Called whenever disability select changes
-function toggleDisabilityFields(val) {
-    const hasDisability = val !== '' && val !== 'None';
-    const isOther       = val === 'Other';
+        // ── Disability Fields Toggle ──────────────────────────────────
+        // Called whenever disability select changes
+        function toggleDisabilityFields(val) {
+            const hasDisability = val !== '' && val !== 'None';
+            const isOther = val === 'Other';
 
-    // Disability number — show for any disability
-    document.getElementById('disabilityNoWrap').style.display = hasDisability ? '' : 'none';
-    if (!hasDisability) {
-        document.getElementById('disability_no').value = '';
-    }
+            // Disability number — show for any disability
+            document.getElementById('disabilityNoWrap').style.display = hasDisability ? '' : 'none';
+            if (!hasDisability) {
+                document.getElementById('disability_no').value = '';
+            }
 
-    // Disability other description — only for "Other"
-    document.getElementById('disabilityOtherWrap').style.display = isOther ? '' : 'none';
-    if (!isOther) {
-        document.getElementById('disability_other').value = '';
-    }
-}
+            // Disability other description — only for "Other"
+            document.getElementById('disabilityOtherWrap').style.display = isOther ? '' : 'none';
+            if (!isOther) {
+                document.getElementById('disability_other').value = '';
+            }
+        }
 
-// ── UFAA Employee Toggle ─────────────────────────────────────
-function toggleEmployeeNumber(isEmployee) {
-    document.getElementById('employeeNumberWrap').style.display = isEmployee ? '' : 'none';
-    document.getElementById('is_employee_hidden').value = isEmployee ? 'true' : 'false';
-    if (!isEmployee) {
-        document.getElementById('employee_number').value = '';
-    }
-}
+        // ── UFAA Employee Toggle ─────────────────────────────────────
+        function toggleEmployeeNumber(isEmployee) {
+            document.getElementById('employeeNumberWrap').style.display = isEmployee ? '' : 'none';
+            document.getElementById('is_employee_hidden').value = isEmployee ? 'true' : 'false';
+            if (!isEmployee) {
+                document.getElementById('employee_number').value = '';
+            }
+        }
 
-document.querySelectorAll('input[name="is_employee_radio"]').forEach(radio => {
-    radio.addEventListener('change', function () {
-        toggleEmployeeNumber(this.value === 'true');
-    });
-});
-
-// ── DOB Validation ───────────────────────────────────────────
-const dobInput    = document.getElementById('date_of_birth');
-const dobError    = document.getElementById('dobError');
-const dobErrorMsg = document.getElementById('dobErrorMsg');
-
-const today   = new Date();
-today.setHours(0, 0, 0, 0);
-const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-const minDate = new Date(today.getFullYear() - 60, today.getMonth(), today.getDate() + 1);
-dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
-dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
-
-function validateDOB() {
-    const value    = dobInput.value.trim();
-    if (!value) {
-        dobErrorMsg.textContent = 'Date of birth is required.';
-        dobError.style.display  = 'block';
-        dobInput.setCustomValidity('Required');
-        return false;
-    }
-    const selected = new Date(value);
-    selected.setHours(0, 0, 0, 0);
-    if (isNaN(selected.getTime())) {
-        dobErrorMsg.textContent = 'Enter a valid date.';
-        dobError.style.display  = 'block';
-        dobInput.setCustomValidity('Invalid');
-        return false;
-    }
-    if (selected > maxDate) {
-        dobErrorMsg.textContent = 'You must be at least 18 years old.';
-        dobError.style.display  = 'block';
-        dobInput.setCustomValidity('Under 18');
-        return false;
-    }
-    if (selected < minDate) {
-        dobErrorMsg.textContent = 'Age must be under 60 years.';
-        dobError.style.display  = 'block';
-        dobInput.setCustomValidity('Over 60');
-        return false;
-    }
-    dobError.style.display = 'none';
-    dobInput.setCustomValidity('');
-    return true;
-}
-
-dobInput.addEventListener('input', validateDOB);
-dobInput.addEventListener('blur',  validateDOB);
-
-// ── Save Profile ─────────────────────────────────────────────
-function saveProfile() {
-    if (!validateDOB()) {
-        dobInput.focus();
-        return;
-    }
-
-    const fields = {
-        csrfmiddlewaretoken: CSRF,
-        salutation:          document.querySelector('[name="salutation"]').value,
-        surname:             document.querySelector('[name="surname"]').value.trim(),
-        first_name:          document.querySelector('[name="first_name"]').value.trim(),
-        second_name:         document.querySelector('[name="second_name"]').value.trim(),
-        id_no:               document.getElementById('id_no').value.trim(),
-        phone_number:        document.getElementById('phone_number').value.trim(),
-        date_of_birth:       dobInput.value,
-        gender:              document.querySelector('[name="gender"]').value,
-        ethnic_group:        document.querySelector('[name="ethnic_group"]').value,
-        home_county:         document.getElementById('countySelect').value,
-        constituency:        document.getElementById('constituencySelect').value,
-        sub_county:          document.getElementById('subCountySelect').value,
-        ward:                document.getElementById('wardSelect').value,
-        disability_status:   document.getElementById('disabilitySelect').value,
-        disability_no:       document.getElementById('disability_no').value.trim(),
-        disability_other:    document.getElementById('disability_other').value.trim(),
-        is_employee:         document.getElementById('is_employee_hidden').value,
-        employee_number:     document.getElementById('employee_number').value.trim(),
-    };
-
-    // Client-side validations
-    if (!fields.surname) {
-        return Swal.fire({ icon: 'error', title: 'Required',
-            text: 'Surname is required.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    }
-    if (!fields.first_name) {
-        return Swal.fire({ icon: 'error', title: 'Required',
-            text: 'First name is required.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    }
-    if (!fields.phone_number) {
-        return Swal.fire({ icon: 'error', title: 'Required',
-            text: 'Phone number is required.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    }
-    if (fields.is_employee === 'true' && !fields.employee_number) {
-        return Swal.fire({ icon: 'error', title: 'Required',
-            text: 'Please enter your UFAA employee number.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    }
-    if (fields.disability_status === 'Other' && !fields.disability_other) {
-        return Swal.fire({ icon: 'error', title: 'Required',
-            text: 'Please describe your disability.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    }
-
-    Swal.fire({
-        title: 'Saving...', text: 'Please wait.',
-        icon: 'info', allowOutsideClick: false,
-        showConfirmButton: false, position: 'center',
-        scrollbarPadding: false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const formData = new FormData();
-    Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
-
-    fetch("{% url 'profile' %}", {
-        method: 'POST',
-        headers: { 'X-CSRFToken': CSRF },
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        Swal.close();
-        if (data.status === 'success') {
-            Swal.fire({
-                icon: 'success', title: 'Profile Saved',
-                text: data.message, confirmButtonText: 'Continue',
-                position: 'center', scrollbarPadding: false, heightAuto: false,
-            }).then(() => {
-                window.location.href = "{% url 'profile' %}";
+        document.querySelectorAll('input[name="is_employee_radio"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                toggleEmployeeNumber(this.value === 'true');
             });
-        } else {
-            Swal.fire({ icon: 'error', title: 'Save Failed',
-                text: data.message,
-                position: 'center', scrollbarPadding: false, heightAuto: false });
+        });
+
+        // ── DOB Validation ───────────────────────────────────────────
+        const dobInput = document.getElementById('date_of_birth');
+        const dobError = document.getElementById('dobError');
+        const dobErrorMsg = document.getElementById('dobErrorMsg');
+
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        const minDate = new Date(today.getFullYear() - 60, today.getMonth(), today.getDate() + 1);
+        dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
+        dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
+
+        function validateDOB() {
+            const value = dobInput.value.trim();
+            if (!value) {
+                dobErrorMsg.textContent = 'Date of birth is required.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Required');
+                return false;
+            }
+            const selected = new Date(value);
+            selected.setHours(0, 0, 0, 0);
+            if (isNaN(selected.getTime())) {
+                dobErrorMsg.textContent = 'Enter a valid date.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Invalid');
+                return false;
+            }
+            if (selected > maxDate) {
+                dobErrorMsg.textContent = 'You must be at least 18 years old.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Under 18');
+                return false;
+            }
+            if (selected < minDate) {
+                dobErrorMsg.textContent = 'Age must be under 60 years.';
+                dobError.style.display = 'block';
+                dobInput.setCustomValidity('Over 60');
+                return false;
+            }
+            dobError.style.display = 'none';
+            dobInput.setCustomValidity('');
+            return true;
         }
-    })
-    .catch(() => {
-        Swal.close();
-        Swal.fire({ icon: 'error', title: 'System Error',
-            text: 'Something went wrong. Please try again.',
-            position: 'center', scrollbarPadding: false, heightAuto: false });
-    });
-}
 
-// ── Select2 + Cascading Dropdowns ───────────────────────────
-$(document).ready(function () {
-    const s2cfg = { width: '100%', allowClear: true, dropdownParent: $('body') };
+        dobInput.addEventListener('input', validateDOB);
+        dobInput.addEventListener('blur', validateDOB);
 
-    $('#ethnic_group').select2({...s2cfg, placeholder: 'Select ethnic group'});
-    $('#countySelect').select2({...s2cfg, placeholder: 'Select county'});
-    $('#constituencySelect').select2({...s2cfg, placeholder: 'Select constituency'});
-    $('#subCountySelect').select2({...s2cfg, placeholder: 'Select sub county'});
-    $('#wardSelect').select2({...s2cfg, placeholder: 'Select ward'});
+        // ── Save Profile ─────────────────────────────────────────────
+        function saveProfile() {
+            if (!validateDOB()) {
+                dobInput.focus();
+                return;
+            }
 
-    const allConstituencies = [];
-    $('#constituencySelect option[data-county]').each(function () {
-        allConstituencies.push({ id: $(this).val(), name: $(this).text(), county: $(this).data('county') });
-    });
-    const allSubCounties = [];
-    $('#subCountySelect option[data-county]').each(function () {
-        allSubCounties.push({ id: $(this).val(), name: $(this).text(), county: $(this).data('county') });
-    });
-    const allWards = [];
-    $('#wardSelect option[data-constituency]').each(function () {
-        allWards.push({ id: $(this).val(), name: $(this).text(), constituency: $(this).data('constituency') });
-    });
+            const fields = {
+                csrfmiddlewaretoken: CSRF,
+                salutation: document.querySelector('[name="salutation"]').value,
+                surname: document.querySelector('[name="surname"]').value.trim(),
+                first_name: document.querySelector('[name="first_name"]').value.trim(),
+                second_name: document.querySelector('[name="second_name"]').value.trim(),
+                id_no: document.getElementById('id_no').value.trim(),
+                phone_number: document.getElementById('phone_number').value.trim(),
+                date_of_birth: dobInput.value,
+                gender: document.querySelector('[name="gender"]').value,
+                ethnic_group: document.querySelector('[name="ethnic_group"]').value,
+                home_county: document.getElementById('countySelect').value,
+                constituency: document.getElementById('constituencySelect').value,
+                sub_county: document.getElementById('subCountySelect').value,
+                ward: document.getElementById('wardSelect').value,
+                disability_status: document.getElementById('disabilitySelect').value,
+                disability_no: document.getElementById('disability_no').value.trim(),
+                disability_other: document.getElementById('disability_other').value.trim(),
+                is_employee: document.getElementById('is_employee_hidden').value,
+                employee_number: document.getElementById('employee_number').value.trim(),
+            };
 
-    function rebuildSelect(selector, options, placeholder) {
-        $(selector).select2('destroy');
-        $(selector).empty().append(`<option value="">${placeholder}</option>`);
-        options.forEach(o => $(selector).append(`<option value="${o.id}">${o.name}</option>`));
-        $(selector).select2({ width: '100%', allowClear: true, dropdownParent: $('body'), placeholder });
-    }
+            // Client-side validations
+            if (!fields.surname) {
+                return Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Surname is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            if (!fields.first_name) {
+                return Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'First name is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            if (!fields.phone_number) {
+                return Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Phone number is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            if (fields.is_employee === 'true' && !fields.employee_number) {
+                return Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Please enter your UFAA employee number.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            if (fields.disability_status === 'Other' && !fields.disability_other) {
+                return Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Please describe your disability.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
 
-    $('#countySelect').on('change', function () {
-        const id = $(this).val();
-        rebuildSelect('#constituencySelect', [], 'Select constituency');
-        rebuildSelect('#subCountySelect',    [], 'Select sub county');
-        rebuildSelect('#wardSelect',         [], 'Select ward');
-        if (id) {
-            rebuildSelect('#constituencySelect', allConstituencies.filter(c => c.county == id), 'Select constituency');
-            rebuildSelect('#subCountySelect',    allSubCounties.filter(s => s.county == id),    'Select sub county');
+            Swal.fire({
+                title: 'Saving...', text: 'Please wait.',
+                icon: 'info', allowOutsideClick: false,
+                showConfirmButton: false, position: 'center',
+                scrollbarPadding: false,
+                didOpen: () => Swal.showLoading()
+            });
+
+            const formData = new FormData();
+            Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
+
+            fetch("{% url 'profile' %}", {
+                method: 'POST',
+                headers: {'X-CSRFToken': CSRF},
+                body: formData
+            })
+                .then(r => r.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.status === 'success') {
+                        Swal.fire({
+                            icon: 'success', title: 'Profile Saved',
+                            text: data.message, confirmButtonText: 'Continue',
+                            position: 'center', scrollbarPadding: false, heightAuto: false,
+                        }).then(() => {
+                            window.location.href = "{% url 'profile' %}";
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error', title: 'Save Failed',
+                            text: data.message,
+                            position: 'center', scrollbarPadding: false, heightAuto: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error', title: 'System Error',
+                        text: 'Something went wrong. Please try again.',
+                        position: 'center', scrollbarPadding: false, heightAuto: false
+                    });
+                });
         }
-    });
 
-    $('#constituencySelect').on('change', function () {
-        const id = $(this).val();
-        rebuildSelect('#wardSelect', [], 'Select ward');
-        if (id) rebuildSelect('#wardSelect', allWards.filter(w => w.constituency == id), 'Select ward');
-    });
+        // ── Select2 + Cascading Dropdowns ───────────────────────────
+        $(document).ready(function () {
+            const s2cfg = {width: '100%', allowClear: true, dropdownParent: $('body')};
 
-    const savedCounty       = "{{ profile.home_county_id|default:'' }}";
-    const savedConstituency = "{{ profile.constituency_id|default:'' }}";
-    const savedSubCounty    = "{{ profile.sub_county_id|default:'' }}";
-    const savedWard         = "{{ profile.ward_id|default:'' }}";
+            $('#ethnic_group').select2({...s2cfg, placeholder: 'Select ethnic group'});
+            $('#countySelect').select2({...s2cfg, placeholder: 'Select county'});
+            $('#constituencySelect').select2({...s2cfg, placeholder: 'Select constituency'});
+            $('#subCountySelect').select2({...s2cfg, placeholder: 'Select sub county'});
+            $('#wardSelect').select2({...s2cfg, placeholder: 'Select ward'});
 
-    if (savedCounty) {
-        $('#countySelect').val(savedCounty).trigger('change');
-        setTimeout(() => {
-            if (savedConstituency) $('#constituencySelect').val(savedConstituency).trigger('change');
-            if (savedSubCounty)    $('#subCountySelect').val(savedSubCounty);
-            setTimeout(() => {
-                if (savedWard) $('#wardSelect').val(savedWard);
-            }, 150);
-        }, 150);
-    }
-});
-</script>
+            const allConstituencies = [];
+            $('#constituencySelect option[data-county]').each(function () {
+                allConstituencies.push({id: $(this).val(), name: $(this).text(), county: $(this).data('county')});
+            });
+            const allSubCounties = [];
+            $('#subCountySelect option[data-county]').each(function () {
+                allSubCounties.push({id: $(this).val(), name: $(this).text(), county: $(this).data('county')});
+            });
+            const allWards = [];
+            $('#wardSelect option[data-constituency]').each(function () {
+                allWards.push({id: $(this).val(), name: $(this).text(), constituency: $(this).data('constituency')});
+            });
+
+            function rebuildSelect(selector, options, placeholder) {
+                $(selector).select2('destroy');
+                $(selector).empty().append(`<option value="">${placeholder}</option>`);
+                options.forEach(o => $(selector).append(`<option value="${o.id}">${o.name}</option>`));
+                $(selector).select2({width: '100%', allowClear: true, dropdownParent: $('body'), placeholder});
+            }
+
+            $('#countySelect').on('change', function () {
+                const id = $(this).val();
+                rebuildSelect('#constituencySelect', [], 'Select constituency');
+                rebuildSelect('#subCountySelect', [], 'Select sub county');
+                rebuildSelect('#wardSelect', [], 'Select ward');
+                if (id) {
+                    rebuildSelect('#constituencySelect', allConstituencies.filter(c => c.county == id), 'Select constituency');
+                    rebuildSelect('#subCountySelect', allSubCounties.filter(s => s.county == id), 'Select sub county');
+                }
+            });
+
+            $('#constituencySelect').on('change', function () {
+                const id = $(this).val();
+                rebuildSelect('#wardSelect', [], 'Select ward');
+                if (id) rebuildSelect('#wardSelect', allWards.filter(w => w.constituency == id), 'Select ward');
+            });
+
+            const savedCounty = "{{ profile.home_county_id|default:'' }}";
+            const savedConstituency = "{{ profile.constituency_id|default:'' }}";
+            const savedSubCounty = "{{ profile.sub_county_id|default:'' }}";
+            const savedWard = "{{ profile.ward_id|default:'' }}";
+
+            if (savedCounty) {
+                $('#countySelect').val(savedCounty).trigger('change');
+                setTimeout(() => {
+                    if (savedConstituency) $('#constituencySelect').val(savedConstituency).trigger('change');
+                    if (savedSubCounty) $('#subCountySelect').val(savedSubCounty);
+                    setTimeout(() => {
+                        if (savedWard) $('#wardSelect').val(savedWard);
+                    }, 150);
+                }, 150);
+            }
+        });
+    </script>
 {% endblock %}

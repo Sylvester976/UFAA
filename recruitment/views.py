@@ -2,32 +2,19 @@ import json
 import os
 from datetime import datetime
 
-from django.contrib import messages
-
-from recruitment.utils import check_and_lock_application
-from roles.models import Role
-from .models import Gender, EthnicGroup, County, Constituency, PanelAssignment, SubCounty, Ward, JobSeekerProfile
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore
-from django.shortcuts import render, redirect, get_object_or_404
-from recruitment.models import AdditionalDetail, ProfessionalQualification, WorkHistory
-from django.http import JsonResponse
-from accounts.models import User, JobseekerAccount
-
 from django.contrib.auth.decorators import login_required
-from django.db.models import Avg
 from django.http import FileResponse, Http404
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
 from django.utils import timezone
 
+from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
+from recruitment.utils import check_and_lock_application
+from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
-    ProfessionalQualification, WorkHistory, AdditionalDetail
+    ProfessionalQualification, WorkHistory, AdditionalDetail, ProfessionalBodyMembership
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
-from .models import PanelAssignment
-from .models import Vacancy
-
 
 
 # ── Helper ───────────────────────────────────────────────────
@@ -40,24 +27,23 @@ def get_logged_in_user(request):
 
 def view_jobs(request):
     today = timezone.now().date()
-    
+
     # Close vacancies whose end date is today
     Vacancy.objects.filter(
         status='open',
         end_date=today
     ).update(status='closed')
-        
+
     # Only show vacancies that start today or later
     vacancies = Vacancy.objects.filter(
         status='open',
         start_date__gte=today
     ).order_by('start_date')  # earliest starting first
-    
 
     return render(request, 'jobseekers/jobs.html', {'vacancies': vacancies})
 
-def instrutions_view(request):
 
+def instrutions_view(request):
     return render(request, 'jobseekers/instructions.html')
 
 
@@ -75,22 +61,22 @@ def dashboard(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
-    detail     = AdditionalDetail.objects.filter(user=user).first()
+    detail = AdditionalDetail.objects.filter(user=user).first()
 
-    academic_count     = AcademicQualification.objects.filter(user=user).count()
+    academic_count = AcademicQualification.objects.filter(user=user).count()
     professional_count = ProfessionalQualification.objects.filter(user=user).count()
-    work_history       = WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
-    work_count         = work_history.count()
+    work_history = WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
+    work_count = work_history.count()
 
     # Profile completion breakdown per section (for donut chart)
     sections = {
-        'Basic Details':       min(int(_basic_score(profile) / 40 * 100), 100) if profile else 0,
-        'Academic':            100 if academic_count > 0 else 0,
-        'Professional':        100 if professional_count > 0 else 0,
-        'Work History':        100 if work_count > 0 else 0,
-        'Additional Details':  _additional_score(detail),
+        'Basic Details': min(int(_basic_score(profile) / 40 * 100), 100) if profile else 0,
+        'Academic': 100 if academic_count > 0 else 0,
+        'Professional': 100 if professional_count > 0 else 0,
+        'Work History': 100 if work_count > 0 else 0,
+        'Additional Details': _additional_score(detail),
     }
 
     # Incomplete sections — things to nudge user to complete
@@ -98,30 +84,32 @@ def dashboard(request):
     if not profile or not profile.first_name:
         incomplete.append({'label': 'Complete your basic details', 'url': 'profile', 'icon': 'fa-user'})
     if academic_count == 0:
-        incomplete.append({'label': 'Add academic qualifications', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
+        incomplete.append(
+            {'label': 'Add academic qualifications', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
     if professional_count == 0:
-        incomplete.append({'label': 'Add professional qualifications', 'url': 'professional_qualifications', 'icon': 'fa-certificate'})
+        incomplete.append({'label': 'Add professional qualifications', 'url': 'professional_qualifications',
+                           'icon': 'fa-certificate'})
     if work_count == 0:
         incomplete.append({'label': 'Add work history', 'url': 'work_history', 'icon': 'fa-briefcase'})
     if not detail or not detail.cv:
         incomplete.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
 
     context = {
-        'user':              user,
-        'profile':           profile,
-        'detail':            detail,
-        'completion':        completion,
-        'academic_count':    academic_count,
-        'professional_count':professional_count,
-        'work_count':        work_count,
-        'work_history':      work_history[:5],      # last 5 jobs for timeline
-        'sections':          sections,
-        'incomplete':        incomplete,
-        'has_academic':      academic_count > 0,
-        'has_professional':  professional_count > 0,
-        'has_work_history':  work_count > 0,
-        'has_additional':    detail is not None,
-        'page':              'Dashboard',
+        'user': user,
+        'profile': profile,
+        'detail': detail,
+        'completion': completion,
+        'academic_count': academic_count,
+        'professional_count': professional_count,
+        'work_count': work_count,
+        'work_history': work_history[:5],  # last 5 jobs for timeline
+        'sections': sections,
+        'incomplete': incomplete,
+        'has_academic': academic_count > 0,
+        'has_professional': professional_count > 0,
+        'has_work_history': work_count > 0,
+        'has_additional': detail is not None,
+        'page': 'Dashboard',
     }
     return render(request, 'jobseekers/dashboard.html', context)
 
@@ -185,28 +173,28 @@ def profile_view(request):
         return redirect('index')
 
     profile, created = JobSeekerProfile.objects.get_or_create(user=user)
-    completion       = calculate_profile_completion(user)
+    completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
         try:
-            salutation        = request.POST.get('salutation', '').strip()
-            surname           = request.POST.get('surname', '').strip()
-            first_name        = request.POST.get('first_name', '').strip()
-            second_name       = request.POST.get('second_name', '').strip()
-            id_no             = request.POST.get('id_no', '').strip()
-            date_of_birth     = request.POST.get('date_of_birth') or None
-            gender_id         = request.POST.get('gender') or None
-            ethnic_group_id   = request.POST.get('ethnic_group') or None
-            home_county_id    = request.POST.get('home_county') or None
-            constituency_id   = request.POST.get('constituency') or None
-            sub_county_id     = request.POST.get('sub_county') or None
-            ward_id           = request.POST.get('ward') or None
+            salutation = request.POST.get('salutation', '').strip()
+            surname = request.POST.get('surname', '').strip()
+            first_name = request.POST.get('first_name', '').strip()
+            second_name = request.POST.get('second_name', '').strip()
+            id_no = request.POST.get('id_no', '').strip()
+            date_of_birth = request.POST.get('date_of_birth') or None
+            gender_id = request.POST.get('gender') or None
+            ethnic_group_id = request.POST.get('ethnic_group') or None
+            home_county_id = request.POST.get('home_county') or None
+            constituency_id = request.POST.get('constituency') or None
+            sub_county_id = request.POST.get('sub_county') or None
+            ward_id = request.POST.get('ward') or None
             disability_status = request.POST.get('disability_status', '').strip()
-            disability_other  = request.POST.get('disability_other', '').strip()
-            disability_no     = request.POST.get('disability_no', '').strip()
-            is_employee       = request.POST.get('is_employee') == 'true'
-            employee_number   = request.POST.get('employee_number', '').strip()
-            phone_number      = request.POST.get('phone_number', '').strip()
+            disability_other = request.POST.get('disability_other', '').strip()
+            disability_no = request.POST.get('disability_no', '').strip()
+            is_employee = request.POST.get('is_employee') == 'true'
+            employee_number = request.POST.get('employee_number', '').strip()
+            phone_number = request.POST.get('phone_number', '').strip()
 
             # ── Validations ───────────────────────────────────
             if not first_name:
@@ -235,32 +223,32 @@ def profile_view(request):
             has_disability = disability_status not in ('', 'None')
 
             # ── Save profile ──────────────────────────────────
-            profile.salutation        = salutation
-            profile.surname           = surname
-            profile.first_name        = first_name
-            profile.second_name       = second_name
-            profile.email             = user.email
-            profile.id_no             = id_no
-            profile.date_of_birth     = date_of_birth
-            profile.gender_id         = gender_id
-            profile.ethnic_group_id   = ethnic_group_id
-            profile.home_county_id    = home_county_id
-            profile.constituency_id   = constituency_id
-            profile.sub_county_id     = sub_county_id
-            profile.ward_id           = ward_id
+            profile.salutation = salutation
+            profile.surname = surname
+            profile.first_name = first_name
+            profile.second_name = second_name
+            profile.email = user.email
+            profile.id_no = id_no
+            profile.date_of_birth = date_of_birth
+            profile.gender_id = gender_id
+            profile.ethnic_group_id = ethnic_group_id
+            profile.home_county_id = home_county_id
+            profile.constituency_id = constituency_id
+            profile.sub_county_id = sub_county_id
+            profile.ward_id = ward_id
             profile.disability_status = disability_status
-            profile.disability_other  = disability_other if disability_status == 'Other' else ''
-            profile.disability_no     = disability_no if has_disability else ''
-            profile.employee_number   = employee_number if is_employee else ''
-            profile.phone_number      = phone_number
+            profile.disability_other = disability_other if disability_status == 'Other' else ''
+            profile.disability_no = disability_no if has_disability else ''
+            profile.employee_number = employee_number if is_employee else ''
+            profile.phone_number = phone_number
             profile.save()
 
             # Save is_employee on account
             JobseekerAccount.objects.filter(id=user.id).update(is_employee=is_employee)
 
             return JsonResponse({
-                'status':     'success',
-                'message':    'Profile saved successfully.',
+                'status': 'success',
+                'message': 'Profile saved successfully.',
                 'completion': calculate_profile_completion(user),
             })
 
@@ -269,20 +257,20 @@ def profile_view(request):
                                  'message': f'Something went wrong: {str(e)}'})
 
     context = {
-        'profile':          profile,
-        'user':             user,
-        'page':             'Profile',
-        'counties':         County.objects.all(),
-        'constituencies':   Constituency.objects.all(),
-        'sub_counties':     SubCounty.objects.all(),
-        'wards':            Ward.objects.all(),
-        'genders':          Gender.objects.all(),
-        'ethnic_groups':    EthnicGroup.objects.all(),
-        'completion':       completion,
-        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'profile': profile,
+        'user': user,
+        'page': 'Profile',
+        'counties': County.objects.all(),
+        'constituencies': Constituency.objects.all(),
+        'sub_counties': SubCounty.objects.all(),
+        'wards': Ward.objects.all(),
+        'genders': Gender.objects.all(),
+        'ethnic_groups': EthnicGroup.objects.all(),
+        'completion': completion,
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
+        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
         # Add these when models are ready:
         # 'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
         # 'has_referees':     Referee.objects.filter(user=user).count() >= 2,
@@ -510,7 +498,7 @@ def calculate_profile_completion(user):
     # ── Section 1: Basic Details (30 points) ──────────────────
     if hasattr(user, 'profile'):
         profile = user.profile
-        fields  = [
+        fields = [
             profile.salutation,
             profile.surname,
             profile.first_name,
@@ -520,7 +508,7 @@ def calculate_profile_completion(user):
             profile.home_county_id,
             profile.constituency_id,
             profile.disability_status,
-            profile.phone_number,          # ← new
+            profile.phone_number,  # ← new
         ]
         filled = sum(1 for f in fields if f)
         score += int((filled / len(fields)) * 30)
@@ -949,6 +937,148 @@ def _job_to_dict(job):
     }
 
 
+def memberships_view(request):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return redirect('index')
+
+    user = JobseekerAccount.objects.filter(id=user_id).first()
+    if not user:
+        request.session.flush()
+        return redirect('index')
+
+    profile = JobSeekerProfile.objects.filter(user=user).first()
+    completion = calculate_profile_completion(user)
+
+    if request.method == 'POST':
+        action = request.POST.get('action', 'save')
+
+        # ── DELETE ───────────────────────────────────────────
+        if action == 'delete':
+            try:
+                mem_id = request.POST.get('mem_id')
+                mem = ProfessionalBodyMembership.objects.filter(
+                    id=mem_id, user=user).first()
+                if not mem:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Record not found.'})
+                mem.delete()
+                return JsonResponse({'status': 'success',
+                                     'message': 'Membership deleted successfully.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── EDIT ─────────────────────────────────────────────
+        if action == 'edit':
+            try:
+                mem_id = request.POST.get('mem_id')
+                mem = ProfessionalBodyMembership.objects.filter(
+                    id=mem_id, user=user).first()
+                if not mem:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Record not found.'})
+
+                body_name = request.POST.get('body_name', '').strip()
+                membership_no = request.POST.get('membership_no', '').strip()
+                year_joined = request.POST.get('year_joined', '').strip()
+                expiry_raw = request.POST.get('expiry_year', '').strip()
+
+                if not body_name:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Body name is required.'})
+                if not membership_no:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Membership number is required.'})
+                if not year_joined:
+                    return JsonResponse({'status': 'error',
+                                         'message': 'Year joined is required.'})
+
+                mem.body_name = body_name
+                mem.membership_no = membership_no
+                mem.year_joined = int(year_joined)
+                mem.expiry_year = int(expiry_raw) if expiry_raw else None
+                mem.save()
+
+                return JsonResponse({
+                    'status': 'success',
+                    'message': 'Membership updated successfully.',
+                    'mem': _mem_to_dict(mem),
+                })
+
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── SAVE NEW ─────────────────────────────────────────
+        try:
+            mems_data = json.loads(request.POST.get('memberships', '[]'))
+
+            if not mems_data:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Please add at least one membership.'})
+
+            saved = []
+            for m in mems_data:
+                body_name = m.get('body_name', '').strip()
+                membership_no = m.get('membership_no', '').strip()
+                year_joined = m.get('year_joined', '')
+                expiry_raw = m.get('expiry_year', '')
+
+                if not body_name or not membership_no or not year_joined:
+                    continue
+
+                mem = ProfessionalBodyMembership.objects.create(
+                    user=user,
+                    body_name=body_name,
+                    membership_no=membership_no,
+                    year_joined=int(year_joined),
+                    expiry_year=int(expiry_raw) if expiry_raw else None,
+                )
+                saved.append(_mem_to_dict(mem))
+
+            if not saved:
+                return JsonResponse({'status': 'error',
+                                     'message': 'No valid entries saved. Check required fields.'})
+
+            return JsonResponse({
+                'status': 'success',
+                'message': f'{len(saved)} membership(s) saved successfully.',
+                'saved': saved,
+            })
+
+        except Exception as e:
+            return JsonResponse({'status': 'error',
+                                 'message': f'Something went wrong: {str(e)}'})
+
+    # ── GET ───────────────────────────────────────────────────
+    existing = ProfessionalBodyMembership.objects.filter(user=user)
+
+    context = {
+        'profile': profile,
+        'user': user,
+        'page': 'Memberships',
+        'existing': existing,
+        'completion': completion,
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
+        'has_work_history': WorkHistory.objects.filter(user=user).exists(),
+        'has_memberships': existing.exists(),
+        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
+        # 'has_referees':   Referee.objects.filter(user=user).count() >= 2,
+    }
+    return render(request, 'jobseekers/membership.html', context)
+
+
+def _mem_to_dict(mem):
+    """Serialise a ProfessionalBodyMembership for JSON responses."""
+    return {
+        'id': mem.id,
+        'body_name': mem.body_name,
+        'membership_no': mem.membership_no,
+        'year_joined': mem.year_joined,
+        'expiry_year': mem.expiry_year or '',
+    }
+
+
 # ── Additional Details ───────────────────────────────────────
 def additional_details_view(request):
     user_id = request.session.get('user_id')
@@ -1082,7 +1212,6 @@ def hr_dashboard(request):
 @login_required
 @role_required(['panelist'])
 def panelist_dashboard(request):
-
     vacancies = Vacancy.objects.filter(
         panel_assignments__panelist=request.user,
         status='interviews'
@@ -1092,6 +1221,7 @@ def panelist_dashboard(request):
         'vacancies': vacancies
     })
 
+
 @login_required
 @role_required(['officer'])
 def officer_dashboard(request):
@@ -1100,8 +1230,6 @@ def officer_dashboard(request):
         'my_applications_count': request.user.application_set.count()
     }
     return render(request, 'officer/dashboard.html', context)
-
-
 
 
 @login_required
@@ -1135,8 +1263,6 @@ def generate_ranking(request, vacancy_id):
     ).order_by('-avg_score')
 
     return render(request, 'recruitment/hr/top_three.html', {'applications': applications})
-
-
 
 
 @login_required
@@ -1341,10 +1467,10 @@ def vacancy_detail(request, vacancy_id):
         'vacancy': vacancy
     })
 
-    
+
 def apply_for_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-    
+
     user_id = request.session.get('user_id')
     if not user_id:
         return redirect('index')
@@ -1400,8 +1526,8 @@ def hr_view_applications(request, vacancy_id):
     #     messages.error(request, "Applications not available for review yet.")
     #     return redirect('hr_dashboard')
 
-    applications = Application.objects.filter(vacancy=vacancy)\
-    .select_related(
+    applications = Application.objects.filter(vacancy=vacancy) \
+        .select_related(
         "applicant",
         "applicant__profile",
         "applicant__additional_detail"
@@ -1466,10 +1592,12 @@ def shortlist_candidates(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
-    
+
+
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
+
 
 @login_required
 @role_required(['hod_hr'])
@@ -1515,9 +1643,8 @@ def appoint_panelists(request, vacancy_id):
         'panelists': panelists,
         'assigned_panelists': assigned_panelists
     })
-    
 
-    
+
 @login_required
 @role_required(['hod_hr'])
 def manage_panelists(request):
@@ -1547,8 +1674,8 @@ def manage_panelists(request):
         "internal_users": internal_users,
         "current_panelists": current_panelists
     })
-    
-    
+
+
 @login_required
 def vacancy_panelists(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
@@ -1561,12 +1688,11 @@ def vacancy_panelists(request, vacancy_id):
         "vacancy": vacancy,
         "panelists": panelists
     })
-    
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import Vacancy
+
+
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied
+
 
 @login_required
 @role_required(['hod_hr'])
@@ -1595,10 +1721,10 @@ def close_vacancy(request, vacancy_id):
     messages.success(request, "Vacancy is now closed.")
     return redirect('hr_dashboard')
 
+
 @login_required
 @role_required(['panelist'])
 def panelist_interview_list(request, vacancy_id):
-
     vacancy = get_object_or_404(
         Vacancy,
         id=vacancy_id,
@@ -1607,8 +1733,8 @@ def panelist_interview_list(request, vacancy_id):
 
     # Ensure panelist is assigned
     if not PanelAssignment.objects.filter(
-        vacancy=vacancy,
-        panelist=request.user
+            vacancy=vacancy,
+            panelist=request.user
     ).exists():
         raise PermissionDenied
 
@@ -1621,11 +1747,11 @@ def panelist_interview_list(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
-    
+
+
 @login_required
 @role_required(['panelist'])
 def panelist_score_candidate(request, application_id):
-
     application = get_object_or_404(Application, id=application_id)
     vacancy = application.vacancy
 
@@ -1635,8 +1761,8 @@ def panelist_score_candidate(request, application_id):
 
     # Ensure panelist is assigned
     if not PanelAssignment.objects.filter(
-        vacancy=vacancy,
-        panelist=request.user
+            vacancy=vacancy,
+            panelist=request.user
     ).exists():
         raise PermissionDenied
 
@@ -1644,7 +1770,7 @@ def panelist_score_candidate(request, application_id):
         application=application,
         panelist=request.user
     ).first()
-    
+
     if application.interview_locked:
         messages.error(request, "Scoring for this candidate is locked.")
         return redirect('panelist_interview_list', vacancy_id=vacancy.id)
@@ -1656,7 +1782,7 @@ def panelist_score_candidate(request, application_id):
         if not score_value:
             messages.error(request, "Score is required.")
             return redirect('panelist_score_candidate', application_id=application.id)
-        
+
         InterviewScore.objects.update_or_create(
             application=application,
             panelist=request.user,
@@ -1675,14 +1801,14 @@ def panelist_score_candidate(request, application_id):
         'application': application,
         'existing_score': score_obj
     })
-    
 
-from django.db.models import Avg, Count
+
+from django.db.models import Count
+
 
 @login_required
 @role_required(['hod_hr'])
 def hr_ranking_view(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'interviews':
@@ -1706,12 +1832,11 @@ def hr_ranking_view(request, vacancy_id):
         'applications': applications,
         'total_applications': total_applications
     })
-    
+
 
 @login_required
 @role_required(['hod_hr'])
 def select_top_three(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if request.method == 'POST':
@@ -1742,14 +1867,16 @@ def select_top_three(request, vacancy_id):
         ).update(status='selected_top_three')
 
         # vacancy.status = 'top_three_selected'
-        
+
         vacancy.status = 'ceo_review'
         vacancy.save()
 
         messages.success(request, "Selection completed successfully.")
         return redirect('hr_dashboard')
-    
+
+
 from django.db.models import Avg
+
 
 @login_required
 @role_required(['ceo'])
@@ -1762,14 +1889,13 @@ def ceo_dashboard(request):
     }
     return render(request, 'recruitment/ceo/dashboard.html', context)
 
+
 @login_required
 @role_required(['ceo'])
 def ceo_approve(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if request.method == 'POST':
-
         application_id = request.POST.get('application_id')
         reason = request.POST.get('reason', '')
 
@@ -1793,10 +1919,10 @@ def ceo_approve(request, vacancy_id):
 
     return redirect('ceo_dashboard')
 
+
 @login_required
 @role_required(['ceo'])
 def ceo_review_view(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'ceo_review':
@@ -1814,7 +1940,7 @@ def ceo_review_view(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
-    
+
 
 @login_required
 @role_required(['ceo'])
@@ -1895,13 +2021,14 @@ def application_detail(request, application_id):
     return render(request, "recruitment/hr/application_detail.html", {
         "application": application
     })
-    
-    
+
+
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .models import Vacancy, PanelAssignment
 from core.decorators import role_required
+
 
 # ----------------------
 # Stage: Longlisting
@@ -1914,6 +2041,7 @@ def vacancy_longlisting(request):
         'vacancies': vacancies
     })
 
+
 # ----------------------
 # Stage: Shortlisting
 # ----------------------
@@ -1924,6 +2052,7 @@ def vacancy_shortlisting(request):
     return render(request, 'recruitment/hr/shortlisting.html', {
         'vacancies': vacancies
     })
+
 
 # ----------------------
 # Stage: Interviews
@@ -1936,6 +2065,7 @@ def vacancy_interviews(request):
         'vacancies': vacancies
     })
 
+
 # ----------------------
 # Stage: Appointments (with panelists)
 # ----------------------
@@ -1946,6 +2076,7 @@ def vacancy_appointments(request):
     return render(request, 'recruitment/hr/vacancy_appointments.html', {
         'vacancies': vacancies
     })
+
 
 # ----------------------
 # Optional: Detailed view to appoint panelists
@@ -1979,9 +2110,8 @@ def appointed_panelists(request, vacancy_id):
         'panelists': panelists,
         'assigned_panelists': assigned_panelists
     })
-    
 
-    
+
 @login_required
 @role_required(['hod_hr'])
 def vacancy_list(request):
