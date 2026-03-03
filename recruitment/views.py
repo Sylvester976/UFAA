@@ -15,7 +15,7 @@ from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, 
     ProfessionalQualification, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
-
+from .services import build_profile_snapshot
 
 # ── Helper ───────────────────────────────────────────────────
 def get_logged_in_user(request):
@@ -1339,16 +1339,33 @@ def hr_dashboard(request):
     return render(request, 'recruitment/hr/dashboard.html', context)
 
 
+# @login_required
+# @role_required(['panelist'])
+# def panelist_dashboard(request):
+#     vacancies = Vacancy.objects.filter(
+#         panel_assignments__panelist=request.user,
+#         status='interviews'
+#     ).distinct()
+
+#     return render(request, 'recruitment/panelist/dashboard.html', {
+#         'vacancies': vacancies
+#     })
 @login_required
 @role_required(['panelist'])
 def panelist_dashboard(request):
+
     vacancies = Vacancy.objects.filter(
         panel_assignments__panelist=request.user,
         status='interviews'
     ).distinct()
 
+    assignments = PanelAssignment.objects.filter(
+        panelist=request.user
+    ).select_related('vacancy')
+
     return render(request, 'recruitment/panelist/dashboard.html', {
-        'vacancies': vacancies
+        'vacancies': vacancies,
+        'assignments': assignments
     })
 
 
@@ -1361,6 +1378,34 @@ def officer_dashboard(request):
     }
     return render(request, 'officer/dashboard.html', context)
 
+@login_required
+@role_required(['panelist'])
+def respond_panel_assignment(request, assignment_id):
+
+    assignment = get_object_or_404(
+        PanelAssignment,
+        id=assignment_id,
+        panelist=request.user
+    )
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+
+        if action == 'accept':
+            assignment.status = 'accepted'
+            assignment.responded_at = timezone.now()
+            assignment.save()
+            messages.success(request, "You accepted the panel assignment.")
+
+        elif action == 'decline':
+            reason = request.POST.get('reason')
+            assignment.status = 'declined'
+            assignment.decline_reason = reason
+            assignment.responded_at = timezone.now()
+            assignment.save()
+            messages.warning(request, "You declined the panel assignment.")
+
+        return redirect('panelist_dashboard')
 
 @login_required
 @role_required(['panelist'])
@@ -1605,7 +1650,8 @@ def apply_for_vacancy(request, vacancy_id):
     if not user_id:
         return redirect('index')
 
-    user = User.objects.filter(id=user_id, user_type=1).first()
+    # user = JobseekerAccount.objects.filter(id=user_id).first()
+    user = JobseekerAccount.objects.filter(pk=user_id).first()
     # # Check if vacancy is open
     # if not vacancy.is_open():
     #     messages.error(request, "This vacancy is no longer open.")
@@ -1633,12 +1679,14 @@ def apply_for_vacancy(request, vacancy_id):
         elif not cover_letter:
             messages.error(request, "Cover letter cannot be empty.")
         else:
-            # Save application
-            application = Application(
+            snapshot = build_profile_snapshot(user)
+
+            application = Application.objects.create(
                 vacancy=vacancy,
                 applicant=user,
                 cv=cv_file,
-                cover_letter=cover_letter
+                cover_letter=cover_letter,
+                profile_snapshot=snapshot
             )
             application.save()
             messages.success(request, "Application submitted successfully.")
@@ -1657,16 +1705,16 @@ def hr_view_applications(request, vacancy_id):
     #     return redirect('hr_dashboard')
 
     applications = Application.objects.filter(vacancy=vacancy) \
-        .select_related(
-        "applicant",
-        "applicant__profile",
-        "applicant__additional_detail"
-    ).prefetch_related(
-        "applicant__academic_qualifications",
-        "applicant__work_history",
-        "applicant__professional_qualifications",
-        "applicant__documents"
-    )
+    #     .select_related(
+    #     "applicant",
+    #     "applicant__profile",
+    #     "applicant__additional_detail"
+    # ).prefetch_related(
+    #     "applicant__academic_qualifications",
+    #     "applicant__work_history",
+    #     "applicant__professional_qualifications",
+    #     "applicant__documents"
+    # )
 
     return render(request, 'recruitment/hr/view_applications.html', {
         'vacancy': vacancy,
@@ -1689,19 +1737,21 @@ def hr_view_applications(request, vacancy_id):
 #     return redirect('longlist_candidates', vacancy_id=vacancy.id)
 
 # HR View to Move Vacancy to Longlisting
+
 @login_required
-@role_required(['hod_hr'])
+# @role_required(['hod_hr'])
 def start_longlisting(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    if vacancy.status != 'open':
-        messages.error(request, "Vacancy must be open to start longlisting.")
+    if vacancy.status != 'closed':
+        messages.error(request, "Vacancy must be closed before longlisting.")
         return redirect('hr_dashboard')
 
-    vacancy.move_to('longlisting')
-    messages.success(request, "Vacancy moved to Longlisting stage.")
-    return redirect('longlist_candidates', vacancy_id=vacancy.id)
+    vacancy.status = 'longlisting'
+    vacancy.save()
 
+    messages.success(request, "Longlisting stage started.")
+    return redirect('hr_view_applications', vacancy_id=vacancy.id)
 
 @login_required
 @role_required(['hod_hr'])
@@ -2184,6 +2234,40 @@ def vacancy_longlisting(request):
         'vacancies': vacancies
     })
 
+# @login_required
+# @role_required(['hod_hr'])
+# def longlist_candidates(request, vacancy_id):
+#     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+#     vacancies = Vacancy.objects.filter(status='longlisting')
+
+#     if vacancy.status not in ['longlisting']:
+#         messages.error(request, "Vacancy is not in longlisting stage.")
+#         return redirect('hr_dashboard')
+
+#     applications = Application.objects.filter(
+#         vacancy=vacancy,
+#         status='submitted'
+#     )
+
+#     if request.method == 'POST':
+#         selected_ids = request.POST.getlist('selected_applications')
+
+#         for app in applications:
+#             if str(app.id) in selected_ids:
+#                 app.move_to('shortlisted')
+#             else:
+#                 app.move_to('not_selected')
+
+#         vacancy.move_to('shortlisting')
+
+#         messages.success(request, "Longlisting completed successfully.")
+#         return redirect('hr_dashboard')
+
+#     return render(request, 'recruitment/hr/longlisting.html', {
+#         'vacancy': vacancy,
+#         'applications': applications,
+#         'vacancies': vacancies
+#     })
 
 # ----------------------
 # Stage: Shortlisting

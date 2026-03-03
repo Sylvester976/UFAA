@@ -297,12 +297,13 @@ class Application(models.Model):
     ceo_selected = models.BooleanField(default=False)
 
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='applications')
-    applicant = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    applicant = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE, related_name='applications')
     cv = models.FileField(upload_to='media/cvs/')
     cover_letter = models.TextField()
     status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='submitted')
     applied_at = models.DateTimeField(auto_now_add=True)
     interview_locked = models.BooleanField(default=False)
+    profile_snapshot = models.JSONField(null=True, blank=True)
 
     def average_score(self):
         return self.scores.aggregate(avg=Avg('score'))['avg'] or 0
@@ -340,8 +341,19 @@ class Application(models.Model):
 
 
 class PanelAssignment(models.Model):
+
+    STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('accepted', 'Accepted'),
+        ('declined', 'Declined'),
+    ]
+
     vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')
     panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    decline_reason = models.TextField(blank=True, null=True)
+    responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('vacancy', 'panelist')
