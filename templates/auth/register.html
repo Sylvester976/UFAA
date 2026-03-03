@@ -4,11 +4,23 @@
 {% block content %}
     <div class="login-wrapper">
         <div class="login-card2 card">
-            <div class="card-header pb-0 text-center bg-transparent">
-                <img alt="UFAA Logo" src="{% static 'assets/img/ufaa.png' %}"
-                     style="max-width: 250px; margin-bottom: 1rem;">
+            
+            <div class="card-header pb-0 bg-transparent text-center">
+                <a href="#" class="logo d-flex justify-content-center align-items-center">
+                    <img alt="Court of Arms"
+                        src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                        style="max-height: 80px;">
+
+                    <div class="logo-divider mx-2"></div>
+
+                    <img alt="ufaa Logo"
+                        src="{% static 'assets/img/logos/ufaa_logo.png' %}"
+                        style="max-height: 80px;">
+                </a>
+                
                 <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
             </div>
+            
             <div class="card-body">
                 <form id="signupform" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
