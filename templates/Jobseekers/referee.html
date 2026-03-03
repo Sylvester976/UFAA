@@ -1,0 +1,438 @@
+{% extends "layout/base.html" %}
+{% load static %}
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mt-4">
+
+        <!-- Header -->
+        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+            <div>
+                <h6 class="mb-0 font-weight-bolder">Referee Details</h6>
+                <p class="text-sm text-secondary mb-0">Provide details for two referees who can vouch for you</p>
+            </div>
+            <span class="badge px-3 py-2
+                {% if completion == 100 %}bg-gradient-success
+                {% elif completion >= 60 %}bg-gradient-info
+                {% elif completion >= 30 %}bg-gradient-warning
+                {% else %}bg-gradient-danger{% endif %}">
+                <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
+            </span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-3">
+            <div class="d-flex justify-content-between align-items-center mb-1">
+                <small class="text-secondary" style="font-size:0.75rem;">
+                    {% if completion == 100 %}🎉 Profile complete!
+                    {% elif completion >= 60 %}Almost there — keep going!
+                    {% elif completion >= 30 %}Good start — more to fill in.
+                    {% else %}Just getting started...{% endif %}
+                </small>
+                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
+            </div>
+            <div class="progress" style="height:8px; border-radius:1rem;">
+                <div class="progress-bar
+                    {% if completion == 100 %}bg-gradient-success
+                    {% elif completion >= 60 %}bg-gradient-info
+                    {% elif completion >= 30 %}bg-gradient-warning
+                    {% else %}bg-gradient-danger{% endif %}"
+                     role="progressbar"
+                     style="width:{{ completion }}%; transition:width 0.6s ease;"
+                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'profile' %}">
+                    <i class="fas fa-user me-1"></i>
+                    <span class="d-none d-sm-inline">Basic Details</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'academic_qualifications' %}">
+                    <i class="fas fa-graduation-cap me-1"></i>
+                    <span class="d-none d-sm-inline">Academic</span>
+                    {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'professional_qualifications' %}">
+                    <i class="fas fa-certificate me-1"></i>
+                    <span class="d-none d-sm-inline">Professional</span>
+                    {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'work_history' %}">
+                    <i class="fas fa-briefcase me-1"></i>
+                    <span class="d-none d-sm-inline">Work History</span>
+                    {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'memberships' %}">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="d-none d-sm-inline">Memberships</span>
+                    {% if has_memberships %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'referees' %}">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="d-none d-sm-inline">Referees</span>
+                    {% if has_referees %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'additional_details' %}">
+                    <i class="fas fa-info-circle me-1"></i>
+                    <span class="d-none d-sm-inline">Additional</span>
+                    {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+        </ul>
+
+        <!-- Content Card -->
+        <div class="card mb-4 profile-content-card">
+            <div class="card-body p-3 p-md-4">
+
+                <h6 class="font-weight-bolder mb-1">Step 6: Referee Details</h6>
+                <p class="text-sm text-secondary mb-4">
+                    Both referees are required. They should be people who know you
+                    professionally and can speak to your character and work ethic.
+                    <strong>Do not use relatives as referees.</strong>
+                </p>
+
+                <div class="row g-4">
+
+                    <!-- ── Referee 1 ── -->
+                    <div class="col-12 col-lg-6">
+                        <div class="acad-add-card h-100">
+                            <div class="acad-add-header">
+                                <i class="fas fa-user-tie me-2"></i> Referee 1
+                                {% if ref1 %}
+                                <span class="badge bg-gradient-success ms-2"
+                                      style="font-size:0.65rem;">
+                                    <i class="fas fa-check me-1"></i>Saved
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="acad-add-body">
+                                <div class="row g-3">
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Full Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="ref1_name" class="form-control"
+                                               placeholder="e.g. John Kamau Njoroge"
+                                               value="{{ ref1.name|default:'' }}">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Occupation <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="ref1_occupation" class="form-control"
+                                               placeholder="e.g. Senior Manager, Director"
+                                               value="{{ ref1.occupation|default:'' }}">
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Mobile Number <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"
+                                                  style="background:#f8f9fa;
+                                                         border:1px solid #e9ecef;
+                                                         font-size:0.82rem; color:#344767;">
+                                                <i class="fas fa-phone"></i>
+                                            </span>
+                                            <input type="tel" id="ref1_mobile" class="form-control"
+                                                   placeholder="0712 345 678"
+                                                   value="{{ ref1.mobile|default:'' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"
+                                                  style="background:#f8f9fa;
+                                                         border:1px solid #e9ecef;
+                                                         font-size:0.82rem; color:#344767;">
+                                                <i class="fas fa-envelope"></i>
+                                            </span>
+                                            <input type="email" id="ref1_email" class="form-control"
+                                                   placeholder="email@example.com"
+                                                   value="{{ ref1.email|default:'' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            How long have they known you?
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <select id="ref1_period_known" class="form-control">
+                                            <option value="">Select period</option>
+                                            {% for val, label in period_choices %}
+                                            <option value="{{ val }}"
+                                                    {% if ref1 and ref1.period_known == val %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── Referee 2 ── -->
+                    <div class="col-12 col-lg-6">
+                        <div class="acad-add-card h-100">
+                            <div class="acad-add-header">
+                                <i class="fas fa-user-tie me-2"></i> Referee 2
+                                {% if ref2 %}
+                                <span class="badge bg-gradient-success ms-2"
+                                      style="font-size:0.65rem;">
+                                    <i class="fas fa-check me-1"></i>Saved
+                                </span>
+                                {% endif %}
+                            </div>
+                            <div class="acad-add-body">
+                                <div class="row g-3">
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Full Name <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="ref2_name" class="form-control"
+                                               placeholder="e.g. Jane Wanjiru Mwangi"
+                                               value="{{ ref2.name|default:'' }}">
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Occupation <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="ref2_occupation" class="form-control"
+                                               placeholder="e.g. CEO, Principal Officer"
+                                               value="{{ ref2.occupation|default:'' }}">
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Mobile Number <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"
+                                                  style="background:#f8f9fa;
+                                                         border:1px solid #e9ecef;
+                                                         font-size:0.82rem; color:#344767;">
+                                                <i class="fas fa-phone"></i>
+                                            </span>
+                                            <input type="tel" id="ref2_mobile" class="form-control"
+                                                   placeholder="0712 345 678"
+                                                   value="{{ ref2.mobile|default:'' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12 col-sm-6">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Email Address <span class="text-danger">*</span>
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text"
+                                                  style="background:#f8f9fa;
+                                                         border:1px solid #e9ecef;
+                                                         font-size:0.82rem; color:#344767;">
+                                                <i class="fas fa-envelope"></i>
+                                            </span>
+                                            <input type="email" id="ref2_email" class="form-control"
+                                                   placeholder="email@example.com"
+                                                   value="{{ ref2.email|default:'' }}">
+                                        </div>
+                                    </div>
+
+                                    <div class="col-12">
+                                        <label class="form-label text-sm font-weight-bold">
+                                            How long have they known you?
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        <select id="ref2_period_known" class="form-control">
+                                            <option value="">Select period</option>
+                                            {% for val, label in period_choices %}
+                                            <option value="{{ val }}"
+                                                    {% if ref2 and ref2.period_known == val %}selected{% endif %}>
+                                                {{ label }}
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ── Action Buttons ── -->
+                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                    <a href="{% url 'memberships' %}"
+                       class="btn btn-outline-secondary btn-sm mb-0">
+                        <i class="fas fa-arrow-left me-1"></i> Back
+                    </a>
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-outline-info btn-sm mb-0"
+                                onclick="saveReferees()">
+                            <i class="fas fa-save me-1"></i>
+                            {% if ref1 and ref2 %}Update Referees{% else %}Save Referees{% endif %}
+                        </button>
+                        {% if ref1 and ref2 %}
+                        <a href="{% url 'additional_details' %}"
+                           class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                            Next <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF = '{{ csrf_token }}';
+
+function saveReferees() {
+
+    // Collect all fields
+    const fields = {
+        ref1_name:         document.getElementById('ref1_name').value.trim(),
+        ref1_occupation:   document.getElementById('ref1_occupation').value.trim(),
+        ref1_mobile:       document.getElementById('ref1_mobile').value.trim(),
+        ref1_email:        document.getElementById('ref1_email').value.trim(),
+        ref1_period_known: document.getElementById('ref1_period_known').value,
+        ref2_name:         document.getElementById('ref2_name').value.trim(),
+        ref2_occupation:   document.getElementById('ref2_occupation').value.trim(),
+        ref2_mobile:       document.getElementById('ref2_mobile').value.trim(),
+        ref2_email:        document.getElementById('ref2_email').value.trim(),
+        ref2_period_known: document.getElementById('ref2_period_known').value,
+    };
+
+    // ── Client-side validation ────────────────────────────────
+    const required = [
+        ['ref1_name',         'Referee 1: Full name is required.'],
+        ['ref1_occupation',   'Referee 1: Occupation is required.'],
+        ['ref1_mobile',       'Referee 1: Mobile number is required.'],
+        ['ref1_email',        'Referee 1: Email address is required.'],
+        ['ref1_period_known', 'Referee 1: Please select how long they have known you.'],
+        ['ref2_name',         'Referee 2: Full name is required.'],
+        ['ref2_occupation',   'Referee 2: Occupation is required.'],
+        ['ref2_mobile',       'Referee 2: Mobile number is required.'],
+        ['ref2_email',        'Referee 2: Email address is required.'],
+        ['ref2_period_known', 'Referee 2: Please select how long they have known you.'],
+    ];
+
+    for (const [key, msg] of required) {
+        if (!fields[key]) {
+            Swal.fire({
+                icon: 'error', title: 'Required', text: msg,
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            });
+            document.getElementById(key).focus();
+            return;
+        }
+    }
+
+    // Basic email format check
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(fields.ref1_email)) {
+        Swal.fire({
+            icon: 'error', title: 'Invalid Email',
+            text: 'Referee 1: Please enter a valid email address.',
+            position: 'center', scrollbarPadding: false, heightAuto: false,
+        });
+        document.getElementById('ref1_email').focus();
+        return;
+    }
+    if (!emailRe.test(fields.ref2_email)) {
+        Swal.fire({
+            icon: 'error', title: 'Invalid Email',
+            text: 'Referee 2: Please enter a valid email address.',
+            position: 'center', scrollbarPadding: false, heightAuto: false,
+        });
+        document.getElementById('ref2_email').focus();
+        return;
+    }
+
+    Swal.fire({
+        title: 'Saving...', text: 'Please wait.',
+        icon: 'info', allowOutsideClick: false,
+        showConfirmButton: false, position: 'center',
+        scrollbarPadding: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    Object.entries(fields).forEach(([k, v]) => formData.append(k, v));
+
+    fetch("{% url 'referees' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': CSRF },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+
+            // Update progress bar live
+            if (data.completion !== undefined) {
+                const bar = document.querySelector('.progress-bar');
+                if (bar) bar.style.width = data.completion + '%';
+            }
+
+            Swal.fire({
+                icon: 'success', title: 'Referees Saved',
+                text: data.message, confirmButtonText: 'Continue',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(() => {
+                window.location.href = "{% url 'referees' %}";
+            });
+        } else {
+            Swal.fire({
+                icon: 'error', title: 'Save Failed', text: data.message,
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({
+            icon: 'error', title: 'System Error',
+            text: 'Something went wrong. Please try again.',
+            position: 'center', scrollbarPadding: false, heightAuto: false,
+        });
+    });
+}
+</script>
+{% endblock %}

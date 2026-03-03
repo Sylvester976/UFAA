@@ -519,3 +519,37 @@ class ProfessionalBodyMembership(models.Model):
 
     def __str__(self):
         return f"{self.body_name} — {self.user}"
+
+# ── In recruitment/models.py ──────────────────────────────────
+# Add after ProfessionalBodyMembership model
+
+class Referee(models.Model):
+
+    PERIOD_CHOICES = [
+        ('Less than 1 year', 'Less than 1 year'),
+        ('1 - 2 years',      '1 - 2 years'),
+        ('3 - 5 years',      '3 - 5 years'),
+        ('6 - 10 years',     '6 - 10 years'),
+        ('Over 10 years',    'Over 10 years'),
+    ]
+
+    user         = models.ForeignKey(
+                       'accounts.JobseekerAccount',
+                       on_delete=models.CASCADE,
+                       related_name='referees'
+                   )
+    referee_no   = models.PositiveIntegerField()   # 1 or 2
+    name         = models.CharField(max_length=255)
+    occupation   = models.CharField(max_length=255)
+    mobile       = models.CharField(max_length=20)
+    email        = models.EmailField()
+    period_known = models.CharField(max_length=50, choices=PERIOD_CHOICES)
+    created_at   = models.DateTimeField(auto_now_add=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering          = ['referee_no']
+        unique_together   = ('user', 'referee_no')   # one referee 1, one referee 2 per user
+
+    def __str__(self):
+        return f"Referee {self.referee_no} — {self.name} ({self.user})"
