@@ -589,3 +589,114 @@ class Referee(models.Model):
 
     def __str__(self):
         return f"Referee {self.referee_no} — {self.name} ({self.user})"
+
+class JobApplicationStatus(models.Model):
+    code        = models.CharField(max_length=50, unique=True)
+    name        = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    order       = models.PositiveIntegerField(default=0)
+    is_terminal = models.BooleanField(default=False)   # no further changes after this
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+
+class JobApplication(models.Model):
+    user    = models.ForeignKey(
+                  'accounts.JobseekerAccount',
+                  on_delete=models.CASCADE,
+                  related_name='job_applications'
+              )
+    vacancy = models.ForeignKey(
+        Vacancy,
+        on_delete=models.CASCADE,
+        related_name='job_applications'
+    )
+    status  = models.ForeignKey(
+                  JobApplicationStatus,
+                  on_delete=models.SET_NULL,
+                  null=True,
+                  related_name='applications'
+              )
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    # ── Frozen profile snapshots at time of submission ─────────
+    snapshot_basic        = models.JSONField(default=dict)
+    snapshot_academic     = models.JSONField(default=list)
+    snapshot_professional = models.JSONField(default=list)
+    snapshot_work         = models.JSONField(default=list)
+    snapshot_memberships  = models.JSONField(default=list)
+    snapshot_referees     = models.JSONField(default=list)
+    snapshot_additional   = models.JSONField(default=dict)
+
+    class Meta:
+        unique_together = ('user', 'vacancy')
+        ordering        = ['-submitted_at']
+
+    def __str__(self):
+        return f"{self.user} — {self.vacancy.reference_number}"
+
+
+class JobApplicationStatusLog(models.Model):
+    application = models.ForeignKey(
+                      JobApplication,
+                      on_delete=models.CASCADE,
+                      related_name='status_logs'
+                  )
+    from_status = models.ForeignKey(
+                      JobApplicationStatus,
+                      on_delete=models.SET_NULL,
+                      null=True, blank=True,
+                      related_name='log_from'
+                  )
+    to_status   = models.ForeignKey(
+                      JobApplicationStatus,
+                      on_delete=models.SET_NULL,
+                      null=True,
+                      related_name='log_to'
+                  )
+    changed_by  = models.ForeignKey(
+                      settings.AUTH_USER_MODEL,
+                      on_delete=models.SET_NULL,
+                      null=True, blank=True
+                  )   # admin/HR user who made the change
+    changed_at  = models.DateTimeField(auto_now_add=True)
+    notes       = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ['-changed_at']
+
+    def __str__(self):
+        return f"{self.application} → {self.to_status}"
+
+
+class JobApplicationNotification(models.Model):
+    TYPE_CHOICES = [
+        ('application_submitted', 'Application Submitted'),
+        ('status_changed',        'Status Changed'),
+    ]
+
+    user                = models.ForeignKey(
+                              'accounts.JobseekerAccount',
+                              on_delete=models.CASCADE,
+                              related_name='notifications'
+                          )
+    title               = models.CharField(max_length=255)
+    message             = models.TextField()
+    notification_type   = models.CharField(max_length=50, choices=TYPE_CHOICES)
+    is_read             = models.BooleanField(default=False)
+    created_at          = models.DateTimeField(auto_now_add=True)
+    related_application = models.ForeignKey(
+                              JobApplication,
+                              on_delete=models.SET_NULL,
+                              null=True, blank=True
+                          )
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} — {self.title}"

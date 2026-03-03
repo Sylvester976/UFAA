@@ -16,9 +16,9 @@
                 </div>
                 <span class="badge px-3 py-2" id="completionBadge"
                       style="background: {% if completion == 100 %}linear-gradient(310deg,#2dce89,#17c1e8){% elif completion >= 60 %}linear-gradient(310deg,#17c1e8,#2dce89){% elif completion >= 30 %}linear-gradient(310deg,#f5a623,#f76b1c){% else %}linear-gradient(310deg,#f5365c,#f56036){% endif %}">
-                <i class="fas fa-tasks me-1"></i>
-                <span id="completionText">{{ completion }}% Complete</span>
-            </span>
+                    <i class="fas fa-tasks me-1"></i>
+                    <span id="completionText">{{ completion }}% Complete</span>
+                </span>
             </div>
 
             <!-- Progress Bar -->
@@ -50,8 +50,6 @@
                     <a class="nav-link" href="{% url 'profile' %}">
                         <i class="fas fa-user me-1"></i>
                         <span class="d-none d-sm-inline">Basic Details</span>
-                        {% if completion >= 40 %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
@@ -78,7 +76,6 @@
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
-                <!-- Memberships tab — enable when url is ready -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'memberships' %}">
                         <i class="fas fa-users me-1"></i>
@@ -87,9 +84,8 @@
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
-                <!-- Referees tab — enable when url is ready -->
                 <li class="nav-item">
-                    <a class="nav-link active" href="{% url 'referees' %}">
+                    <a class="nav-link" href="{% url 'referees' %}">
                         <i class="fas fa-user-tie me-1"></i>
                         <span class="d-none d-sm-inline">Referees</span>
                         {% if has_referees %}
@@ -110,22 +106,26 @@
             <div class="card mb-4 profile-content-card">
                 <div class="card-body p-3 p-md-4">
 
-                    <h6 class="font-weight-bolder mb-1">Step 5: Additional Details</h6>
+                    <h6 class="font-weight-bolder mb-1">Step 7: Additional Details</h6>
                     <p class="text-sm text-secondary mb-4">
-                        Upload your CV and fill in any additional information to complete your profile.
+                        Upload your CV and fill in the required fields to complete your profile.
+                        Fields marked <span class="text-danger">*</span> are required.
                     </p>
 
                     <!-- ── CV Upload ── -->
                     <div class="acad-add-card mb-4">
                         <div class="acad-add-header">
                             <i class="fas fa-file-pdf me-2"></i> CV / Resume
-                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">PDF only — max 2MB</small>
+                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">
+                                PDF only — max 2MB
+                            </small>
                         </div>
                         <div class="acad-add-body">
 
                             {% if detail and detail.cv %}
                                 <!-- CV Already Uploaded -->
-                                <div id="cvExisting" class="d-flex align-items-center gap-3 flex-wrap">
+                                <div id="cvExisting"
+                                     class="d-flex align-items-center gap-3 flex-wrap">
                                     <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
                                     <div class="flex-grow-1">
                                         <div class="font-weight-bold text-sm" id="cvFileName">
@@ -158,7 +158,7 @@
                                            onchange="handleCVReplace(this)">
                                 </div>
                             {% else %}
-                                <!-- CV Drop Zone -->
+                                <!-- CV selected but not yet saved -->
                                 <div id="cvExisting" style="display:none;"
                                      class="d-flex align-items-center gap-3 flex-wrap">
                                     <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
@@ -186,8 +186,7 @@
                                 </div>
                             {% endif %}
 
-                            <div id="cvDropZone"
-                                 class="drop-zone-sm"
+                            <div id="cvDropZone" class="drop-zone-sm"
                                  {% if detail and detail.cv %}style="display:none;"{% endif %}>
                                 <i class="fas fa-cloud-upload-alt me-2 text-danger"></i>
                                 <span class="text-sm">Drag & drop your CV or</span>
@@ -200,7 +199,6 @@
                                        accept=".pdf" style="display:none;">
                             </div>
 
-                            <!-- Selected CV file (new upload, not yet saved) -->
                             <input type="hidden" id="cvSelected" value="">
 
                         </div>
@@ -209,7 +207,61 @@
                     <!-- ── Details Form ── -->
                     <div class="row g-3 mb-4">
 
-                        <!-- Cover Letter -->
+                        <!-- Availability — REQUIRED -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-calendar-check me-1"></i> Availability
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select id="f_availability" class="form-control">
+                                <option value="">Select availability</option>
+                                <option {% if detail and detail.availability == 'Immediately' %}selected{% endif %}>
+                                    Immediately
+                                </option>
+                                <option {% if detail and detail.availability == '1 Week Notice' %}selected{% endif %}>1
+                                    Week Notice
+                                </option>
+                                <option {% if detail and detail.availability == '2 Weeks Notice' %}selected{% endif %}>2
+                                    Weeks Notice
+                                </option>
+                                <option {% if detail and detail.availability == '3 Weeks Notice' %}selected{% endif %}>3
+                                    Weeks Notice
+                                </option>
+                                <option {% if detail and detail.availability == '1 Month Notice' %}selected{% endif %}>1
+                                    Month Notice
+                                </option>
+                                <option {% if detail and detail.availability == '2 Months Notice' %}selected{% endif %}>
+                                    2 Months Notice
+                                </option>
+                                <option {% if detail and detail.availability == '3 Months Notice' %}selected{% endif %}>
+                                    3 Months Notice
+                                </option>
+                                <option {% if detail and detail.availability == 'Not Available' %}selected{% endif %}>
+                                    Not Available
+                                </option>
+                            </select>
+                        </div>
+
+                        <!-- Expected Salary — REQUIRED -->
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">
+                                <i class="fas fa-money-bill me-1"></i> Expected Salary (KES)
+                                <span class="text-danger">*</span>
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text"
+                                      style="background:#f8f9fa; border:1px solid #e9ecef;
+                                             font-size:0.82rem; color:#344767;">
+                                    KES
+                                </span>
+                                <input type="number" id="f_expected_salary" class="form-control"
+                                       placeholder="e.g. 80000" min="0"
+                                       value="
+                                               {% if detail and detail.expected_salary %}{{ detail.expected_salary }}{% endif %}">
+                            </div>
+                        </div>
+
+                        <!-- Cover Letter — optional -->
                         <div class="col-12">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fas fa-pen me-1"></i> Cover Letter
@@ -220,7 +272,7 @@
                                 {{ detail.cover_letter }}{% endif %}</textarea>
                         </div>
 
-                        <!-- LinkedIn -->
+                        <!-- LinkedIn — optional -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fab fa-linkedin me-1"></i> LinkedIn Profile URL
@@ -231,7 +283,7 @@
                                    value="{% if detail %}{{ detail.linkedin_url }}{% endif %}">
                         </div>
 
-                        <!-- Portfolio -->
+                        <!-- Portfolio — optional -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fas fa-globe me-1"></i> Portfolio / Website URL
@@ -242,7 +294,7 @@
                                    value="{% if detail %}{{ detail.portfolio_url }}{% endif %}">
                         </div>
 
-                        <!-- Languages -->
+                        <!-- Languages — optional -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fas fa-language me-1"></i> Languages Spoken
@@ -252,11 +304,11 @@
                                 {% if detail %}
                                     {% for lang in detail.languages_list %}
                                         <span class="lang-pill">
-                                    {{ lang }}
-                                    <button type="button" onclick="removeLang(this)">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </span>
+                                        {{ lang }}
+                                        <button type="button" onclick="removeLang(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </span>
                                     {% endfor %}
                                 {% endif %}
                             </div>
@@ -277,52 +329,6 @@
                                    value="{% if detail %}{{ detail.languages }}{% endif %}">
                         </div>
 
-                        <!-- Availability -->
-                        <div class="col-12 col-md-3">
-                            <label class="form-label text-sm font-weight-bold">
-                                <i class="fas fa-calendar-check me-1"></i> Availability
-                                <small class="text-secondary ms-1">(optional)</small>
-                            </label>
-                            <select id="f_availability" class="form-control">
-                                <option value="">Select availability</option>
-                                <option {% if detail and detail.availability == 'Immediately' %}selected{% endif %}>
-                                    Immediately
-                                </option>
-                                <option {% if detail and detail.availability == '1 Month Notice' %}selected{% endif %}>
-                                    1 Month Notice
-                                </option>
-                                <option {% if detail and detail.availability == '2 Months Notice' %}selected{% endif %}>
-                                    2 Months Notice
-                                </option>
-                                <option {% if detail and detail.availability == '3 Months Notice' %}selected{% endif %}>
-                                    3 Months Notice
-                                </option>
-                                <option {% if detail and detail.availability == 'Not Available' %}selected{% endif %}>
-                                    Not Available
-                                </option>
-                            </select>
-                        </div>
-
-                        <!-- Expected Salary -->
-                        <div class="col-12 col-md-3">
-                            <label class="form-label text-sm font-weight-bold">
-                                <i class="fas fa-money-bill me-1"></i> Expected Salary (KES)
-                                <small class="text-secondary ms-1">(optional)</small>
-                            </label>
-                            <div class="input-group">
-                            <span class="input-group-text"
-                                  style="background:#f8f9fa; border:1px solid #e9ecef;
-                                         font-size:0.82rem; color:#344767;">
-                                KES
-                            </span>
-                                <input type="number" id="f_expected_salary" class="form-control"
-                                       placeholder="e.g. 80000" min="0"
-                                       value="
-
-                                               {% if detail and detail.expected_salary %}{{ detail.expected_salary }}{% endif %}">
-                            </div>
-                        </div>
-
                     </div>
 
                     <!-- Save Button -->
@@ -333,9 +339,9 @@
                         </button>
                     </div>
 
-                    <!-- ── Nav Buttons ── -->
+                    <!-- Nav Buttons -->
                     <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                        <a href="{% url 'work_history' %}"
+                        <a href="{% url 'referees' %}"
                            class="btn btn-outline-secondary btn-sm mb-0">
                             <i class="fas fa-arrow-left me-1"></i> Back
                         </a>
@@ -354,9 +360,9 @@
 {% block extra_js %}
     <script>
         const CSRF = '{{ csrf_token }}';
-        const MAX_CV = 2 * 1024 * 1024;  // 2MB
+        const MAX_CV = 2 * 1024 * 1024;   // 2MB
 
-        // ── CV handling ──────────────────────────────────────────────
+        // ── CV Handling ──────────────────────────────────────────────
         let selectedCVFile = null;
 
         const cvDropZone = document.getElementById('cvDropZone');
@@ -404,7 +410,6 @@
                 });
                 return;
             }
-
             selectedCVFile = file;
             document.getElementById('cvFileName').textContent = file.name;
             document.getElementById('cvDropZone').style.display = 'none';
@@ -480,11 +485,9 @@
             const val = input.value.trim();
             if (!val) return;
 
-            // Handle comma-separated input
             val.split(',').forEach(v => {
                 const lang = v.trim();
                 if (!lang) return;
-
                 const existing = getLangs().map(l => l.toLowerCase());
                 if (existing.includes(lang.toLowerCase())) return;
 
@@ -515,6 +518,39 @@
 
         // ── Save Details ─────────────────────────────────────────────
         function saveDetails() {
+
+            // ── Required field validation ─────────────────────────────
+            const availability = document.getElementById('f_availability').value;
+            const expectedSalary = document.getElementById('f_expected_salary').value.trim();
+
+            if (!availability) {
+                Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Please select your availability.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                });
+                document.getElementById('f_availability').focus();
+                return;
+            }
+            if (!expectedSalary) {
+                Swal.fire({
+                    icon: 'error', title: 'Required',
+                    text: 'Expected salary is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                });
+                document.getElementById('f_expected_salary').focus();
+                return;
+            }
+            if (parseInt(expectedSalary) < 0) {
+                Swal.fire({
+                    icon: 'error', title: 'Invalid',
+                    text: 'Expected salary cannot be negative.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                });
+                document.getElementById('f_expected_salary').focus();
+                return;
+            }
+
             Swal.fire({
                 title: 'Saving...', icon: 'info',
                 allowOutsideClick: false, showConfirmButton: false,
@@ -525,12 +561,12 @@
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', CSRF);
             formData.append('action', 'save');
+            formData.append('availability', availability);
+            formData.append('expected_salary', expectedSalary);
             formData.append('cover_letter', document.getElementById('f_cover_letter').value.trim());
             formData.append('linkedin_url', document.getElementById('f_linkedin_url').value.trim());
             formData.append('portfolio_url', document.getElementById('f_portfolio_url').value.trim());
             formData.append('languages', document.getElementById('f_languages').value);
-            formData.append('availability', document.getElementById('f_availability').value);
-            formData.append('expected_salary', document.getElementById('f_expected_salary').value);
 
             if (selectedCVFile) {
                 formData.append('cv', selectedCVFile);
@@ -545,7 +581,8 @@
                 .then(data => {
                     Swal.close();
                     if (data.status === 'success') {
-                        // Update CV display if new file was uploaded
+
+                        // Update CV display if new file uploaded
                         if (data.cv_filename) {
                             document.getElementById('cvFileName').textContent = data.cv_filename;
                             document.getElementById('cvDropZone').style.display = 'none';
