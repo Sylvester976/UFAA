@@ -53,7 +53,7 @@
                 <a class="nav-link active" href="{% url 'profile' %}">
                     <i class="fas fa-user me-1"></i>
                     <span class="d-none d-sm-inline">Basic Details</span>
-                    {% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                    {% if completion >= 30 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                 </a>
             </li>
             <li class="nav-item">
@@ -75,6 +75,22 @@
                     <i class="fas fa-briefcase me-1"></i>
                     <span class="d-none d-sm-inline">Work History</span>
                     {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                </a>
+            </li>
+            <!-- Memberships tab — enable when url is ready -->
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#"
+                   title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="d-none d-sm-inline">Memberships</span>
+                </a>
+            </li>
+            <!-- Referees tab — enable when url is ready -->
+            <li class="nav-item">
+                <a class="nav-link disabled" href="#"
+                   title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="d-none d-sm-inline">Referees</span>
                 </a>
             </li>
             <li class="nav-item">
@@ -112,6 +128,24 @@
                                 <small class="text-secondary" style="font-size:0.72rem;">
                                     <i class="fas fa-lock me-1"></i>ID number cannot be changed
                                 </small>
+                            </div>
+
+                            <!-- Phone Number -->
+                            <div class="col-12 col-md-6">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Phone Number <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text"
+                                          style="background:#f8f9fa; border:1px solid #e9ecef;
+                                                 font-size:0.82rem; color:#344767;">
+                                        <i class="fas fa-phone"></i>
+                                    </span>
+                                    <input type="tel" name="phone_number" id="phone_number"
+                                           class="form-control"
+                                           placeholder="e.g. 0712 345 678"
+                                           value="{{ profile.phone_number|default:'' }}">
+                                </div>
                             </div>
 
                             <!-- Salutation -->
@@ -158,7 +192,8 @@
                                 <input type="date" name="date_of_birth" id="date_of_birth"
                                        class="form-control"
                                        value="{{ profile.date_of_birth|date:'Y-m-d' }}">
-                                <small id="dobError" class="text-danger" style="display:none; font-size:0.75rem;">
+                                <small id="dobError" class="text-danger"
+                                       style="display:none; font-size:0.75rem;">
                                     <i class="fas fa-exclamation-circle me-1"></i>
                                     <span id="dobErrorMsg"></span>
                                 </small>
@@ -168,7 +203,9 @@
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Gender</label>
                                 <select name="gender" id="gender" class="form-control">
-                                    <option value="" {% if not profile.gender %}selected{% endif %}>Select gender</option>
+                                    <option value="" {% if not profile.gender %}selected{% endif %}>
+                                        Select gender
+                                    </option>
                                     {% for g in genders %}
                                     <option value="{{ g.id }}"
                                             {% if profile.gender_id == g.id %}selected{% endif %}>
@@ -182,7 +219,9 @@
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Ethnic Group</label>
                                 <select name="ethnic_group" id="ethnic_group" class="form-control">
-                                    <option value="" {% if not profile.ethnic_group %}selected{% endif %}>Select ethnic group</option>
+                                    <option value="" {% if not profile.ethnic_group %}selected{% endif %}>
+                                        Select ethnic group
+                                    </option>
                                     {% for group in ethnic_groups %}
                                     <option value="{{ group.id }}"
                                             {% if profile.ethnic_group_id == group.id %}selected{% endif %}>
@@ -204,7 +243,6 @@
                     <div class="acad-add-body">
                         <div class="row g-3">
 
-                            <!-- County -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Home County</label>
                                 <select name="home_county" id="countySelect" class="form-control">
@@ -218,7 +256,6 @@
                                 </select>
                             </div>
 
-                            <!-- Constituency -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Constituency</label>
                                 <select name="constituency" id="constituencySelect" class="form-control">
@@ -233,7 +270,6 @@
                                 </select>
                             </div>
 
-                            <!-- Sub County -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Sub County</label>
                                 <select name="sub_county" id="subCountySelect" class="form-control">
@@ -248,7 +284,6 @@
                                 </select>
                             </div>
 
-                            <!-- Ward -->
                             <div class="col-12 col-md-6">
                                 <label class="form-label text-sm font-weight-bold">Ward</label>
                                 <select name="ward" id="wardSelect" class="form-control">
@@ -267,7 +302,7 @@
                     </div>
                 </div>
 
-                <!-- ── Section: Disability & Employment ── -->
+                <!-- ── Section: Other Details ── -->
                 <div class="acad-add-card mb-4">
                     <div class="acad-add-header">
                         <i class="fas fa-clipboard-list me-2"></i> Other Details
@@ -277,21 +312,51 @@
 
                             <!-- Disability Status -->
                             <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">Disability Status</label>
-                                <select name="disability_status" id="disabilitySelect" class="form-control"
-                                        onchange="toggleDisabilityOther(this.value)">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Disability Status
+                                </label>
+                                <select name="disability_status" id="disabilitySelect"
+                                        class="form-control"
+                                        onchange="toggleDisabilityFields(this.value)">
                                     <option value="" {% if not profile.disability_status %}selected{% endif %}>
                                         Select disability status
                                     </option>
-                                    <option value="None"     {% if profile.disability_status == 'None' %}selected{% endif %}>None</option>
-                                    <option value="Physical" {% if profile.disability_status == 'Physical' %}selected{% endif %}>Physical</option>
-                                    <option value="Visual"   {% if profile.disability_status == 'Visual' %}selected{% endif %}>Visual</option>
-                                    <option value="Hearing"  {% if profile.disability_status == 'Hearing' %}selected{% endif %}>Hearing</option>
-                                    <option value="Other"    {% if profile.disability_status == 'Other' %}selected{% endif %}>Other</option>
+                                    <option value="None"
+                                            {% if profile.disability_status == 'None' %}selected{% endif %}>
+                                        None
+                                    </option>
+                                    <option value="Physical"
+                                            {% if profile.disability_status == 'Physical' %}selected{% endif %}>
+                                        Physical
+                                    </option>
+                                    <option value="Visual"
+                                            {% if profile.disability_status == 'Visual' %}selected{% endif %}>
+                                        Visual
+                                    </option>
+                                    <option value="Hearing"
+                                            {% if profile.disability_status == 'Hearing' %}selected{% endif %}>
+                                        Hearing
+                                    </option>
+                                    <option value="Other"
+                                            {% if profile.disability_status == 'Other' %}selected{% endif %}>
+                                        Other
+                                    </option>
                                 </select>
                             </div>
 
-                            <!-- Disability Other (hidden unless Other selected) -->
+                            <!-- Disability Number (shown when disability is not None/empty) -->
+                            <div class="col-12 col-md-6" id="disabilityNoWrap"
+                                 style="{% if not profile.disability_status or profile.disability_status == 'None' %}display:none;{% endif %}">
+                                <label class="form-label text-sm font-weight-bold">
+                                    Disability Registration Number
+                                </label>
+                                <input type="text" name="disability_no" id="disability_no"
+                                       class="form-control"
+                                       placeholder="Enter disability registration number"
+                                       value="{{ profile.disability_no|default:'' }}">
+                            </div>
+
+                            <!-- Disability Other (shown only when Other selected) -->
                             <div class="col-12 col-md-6" id="disabilityOtherWrap"
                                  style="{% if profile.disability_status != 'Other' %}display:none;{% endif %}">
                                 <label class="form-label text-sm font-weight-bold">
@@ -303,7 +368,7 @@
                                        value="{{ profile.disability_other|default:'' }}">
                             </div>
 
-                            <!-- UFAA Employee Toggle -->
+                            <!-- UFAA Employee -->
                             <div class="col-12">
                                 <label class="form-label text-sm font-weight-bold d-block mb-2">
                                     Are you a UFAA Employee?
@@ -334,7 +399,7 @@
                                 </div>
                             </div>
 
-                            <!-- Employee Number (hidden unless Yes selected) -->
+                            <!-- Employee Number -->
                             <div class="col-12 col-md-6" id="employeeNumberWrap"
                                  style="{% if not user.is_employee %}display:none;{% endif %}">
                                 <label class="form-label text-sm font-weight-bold">
@@ -385,11 +450,21 @@
 <script>
 const CSRF = '{{ csrf_token }}';
 
-// ── Disability Other Toggle ──────────────────────────────────
-function toggleDisabilityOther(val) {
-    const wrap = document.getElementById('disabilityOtherWrap');
-    wrap.style.display = val === 'Other' ? '' : 'none';
-    if (val !== 'Other') {
+// ── Disability Fields Toggle ──────────────────────────────────
+// Called whenever disability select changes
+function toggleDisabilityFields(val) {
+    const hasDisability = val !== '' && val !== 'None';
+    const isOther       = val === 'Other';
+
+    // Disability number — show for any disability
+    document.getElementById('disabilityNoWrap').style.display = hasDisability ? '' : 'none';
+    if (!hasDisability) {
+        document.getElementById('disability_no').value = '';
+    }
+
+    // Disability other description — only for "Other"
+    document.getElementById('disabilityOtherWrap').style.display = isOther ? '' : 'none';
+    if (!isOther) {
         document.getElementById('disability_other').value = '';
     }
 }
@@ -403,7 +478,6 @@ function toggleEmployeeNumber(isEmployee) {
     }
 }
 
-// Sync radio buttons on load
 document.querySelectorAll('input[name="is_employee_radio"]').forEach(radio => {
     radio.addEventListener('change', function () {
         toggleEmployeeNumber(this.value === 'true');
@@ -423,7 +497,7 @@ dobInput.setAttribute('max', maxDate.toISOString().split('T')[0]);
 dobInput.setAttribute('min', minDate.toISOString().split('T')[0]);
 
 function validateDOB() {
-    const value = dobInput.value.trim();
+    const value    = dobInput.value.trim();
     if (!value) {
         dobErrorMsg.textContent = 'Date of birth is required.';
         dobError.style.display  = 'block';
@@ -465,7 +539,6 @@ function saveProfile() {
         return;
     }
 
-    // Collect all form fields manually (no <form> submit)
     const fields = {
         csrfmiddlewaretoken: CSRF,
         salutation:          document.querySelector('[name="salutation"]').value,
@@ -473,6 +546,7 @@ function saveProfile() {
         first_name:          document.querySelector('[name="first_name"]').value.trim(),
         second_name:         document.querySelector('[name="second_name"]').value.trim(),
         id_no:               document.getElementById('id_no').value.trim(),
+        phone_number:        document.getElementById('phone_number').value.trim(),
         date_of_birth:       dobInput.value,
         gender:              document.querySelector('[name="gender"]').value,
         ethnic_group:        document.querySelector('[name="ethnic_group"]').value,
@@ -481,12 +555,13 @@ function saveProfile() {
         sub_county:          document.getElementById('subCountySelect').value,
         ward:                document.getElementById('wardSelect').value,
         disability_status:   document.getElementById('disabilitySelect').value,
+        disability_no:       document.getElementById('disability_no').value.trim(),
         disability_other:    document.getElementById('disability_other').value.trim(),
         is_employee:         document.getElementById('is_employee_hidden').value,
         employee_number:     document.getElementById('employee_number').value.trim(),
     };
 
-    // Client-side required checks
+    // Client-side validations
     if (!fields.surname) {
         return Swal.fire({ icon: 'error', title: 'Required',
             text: 'Surname is required.',
@@ -495,6 +570,11 @@ function saveProfile() {
     if (!fields.first_name) {
         return Swal.fire({ icon: 'error', title: 'Required',
             text: 'First name is required.',
+            position: 'center', scrollbarPadding: false, heightAuto: false });
+    }
+    if (!fields.phone_number) {
+        return Swal.fire({ icon: 'error', title: 'Required',
+            text: 'Phone number is required.',
             position: 'center', scrollbarPadding: false, heightAuto: false });
     }
     if (fields.is_employee === 'true' && !fields.employee_number) {
@@ -559,17 +639,14 @@ $(document).ready(function () {
     $('#subCountySelect').select2({...s2cfg, placeholder: 'Select sub county'});
     $('#wardSelect').select2({...s2cfg, placeholder: 'Select ward'});
 
-    // Cache all options
     const allConstituencies = [];
     $('#constituencySelect option[data-county]').each(function () {
         allConstituencies.push({ id: $(this).val(), name: $(this).text(), county: $(this).data('county') });
     });
-
     const allSubCounties = [];
     $('#subCountySelect option[data-county]').each(function () {
         allSubCounties.push({ id: $(this).val(), name: $(this).text(), county: $(this).data('county') });
     });
-
     const allWards = [];
     $('#wardSelect option[data-constituency]').each(function () {
         allWards.push({ id: $(this).val(), name: $(this).text(), constituency: $(this).data('constituency') });
@@ -599,7 +676,6 @@ $(document).ready(function () {
         if (id) rebuildSelect('#wardSelect', allWards.filter(w => w.constituency == id), 'Select ward');
     });
 
-    // Restore saved values
     const savedCounty       = "{{ profile.home_county_id|default:'' }}";
     const savedConstituency = "{{ profile.constituency_id|default:'' }}";
     const savedSubCounty    = "{{ profile.sub_county_id|default:'' }}";

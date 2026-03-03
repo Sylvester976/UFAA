@@ -5,7 +5,6 @@ urlpatterns = [
     path('dashboard/', views.dashboard, name='dashboard'),
 
     path("profile/", views.profile_view, name="profile"),
-    path("profile/delete/", views.delete_profile, name="delete_profile"),
     path("academic/", views.academic_qualifications_view, name="academic_qualifications"),
     path("professional/", views.professional_qualifications_view, name="professional_qualifications"),
     path("work-history/", views.work_history_view, name="work_history"),

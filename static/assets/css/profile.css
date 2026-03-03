@@ -25,14 +25,14 @@
 
 #profileTabs .nav-item .nav-link:hover {
     background: #f0fbff;
-    color: #17c1e8;
-    border-color: #17c1e8;
+    color: #1D255B;
+    border-color: #1D255B;
     box-shadow: 0 4px 12px rgba(23, 193, 232, 0.15);
     transform: translateY(-1px);
 }
 
 #profileTabs .nav-item .nav-link.active {
-    background: linear-gradient(310deg, #2dce89, #17c1e8) !important;
+    background: linear-gradient(310deg, #1D255B, #3A4DB3) !important;
     color: #ffffff !important;
     border-color: transparent !important;
     font-weight: 600;
@@ -349,7 +349,7 @@
 }
 
 .acad-add-header {
-    background: linear-gradient(310deg, #2dce89, #17c1e8);
+    background: linear-gradient(310deg,#1D255B, #3A4DB3);
     color: #fff;
     font-weight: 600;
     font-size: 0.85rem;

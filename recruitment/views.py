@@ -203,8 +203,10 @@ def profile_view(request):
             ward_id           = request.POST.get('ward') or None
             disability_status = request.POST.get('disability_status', '').strip()
             disability_other  = request.POST.get('disability_other', '').strip()
+            disability_no     = request.POST.get('disability_no', '').strip()
             is_employee       = request.POST.get('is_employee') == 'true'
             employee_number   = request.POST.get('employee_number', '').strip()
+            phone_number      = request.POST.get('phone_number', '').strip()
 
             # ── Validations ───────────────────────────────────
             if not first_name:
@@ -219,6 +221,9 @@ def profile_view(request):
             if not date_of_birth:
                 return JsonResponse({'status': 'error',
                                      'message': 'Date of birth is required.'})
+            if not phone_number:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Phone number is required.'})
             if is_employee and not employee_number:
                 return JsonResponse({'status': 'error',
                                      'message': 'Please enter your UFAA employee number.'})
@@ -226,12 +231,15 @@ def profile_view(request):
                 return JsonResponse({'status': 'error',
                                      'message': 'Please describe your disability.'})
 
+            # Disability no — clear if no disability
+            has_disability = disability_status not in ('', 'None')
+
             # ── Save profile ──────────────────────────────────
             profile.salutation        = salutation
             profile.surname           = surname
             profile.first_name        = first_name
             profile.second_name       = second_name
-            profile.email             = user.email   # always from account
+            profile.email             = user.email
             profile.id_no             = id_no
             profile.date_of_birth     = date_of_birth
             profile.gender_id         = gender_id
@@ -242,16 +250,19 @@ def profile_view(request):
             profile.ward_id           = ward_id
             profile.disability_status = disability_status
             profile.disability_other  = disability_other if disability_status == 'Other' else ''
+            profile.disability_no     = disability_no if has_disability else ''
             profile.employee_number   = employee_number if is_employee else ''
+            profile.phone_number      = phone_number
             profile.save()
 
-            # ── Save is_employee on account ───────────────────
-            user.is_employee = is_employee
-            user.save(update_fields=['is_employee'])
+            # Save is_employee on account
+            JobseekerAccount.objects.filter(id=user.id).update(is_employee=is_employee)
 
-            return JsonResponse({'status': 'success',
-                                 'message': 'Profile saved successfully.',
-                                 'completion': calculate_profile_completion(user)})
+            return JsonResponse({
+                'status':     'success',
+                'message':    'Profile saved successfully.',
+                'completion': calculate_profile_completion(user),
+            })
 
         except Exception as e:
             return JsonResponse({'status': 'error',
@@ -272,6 +283,9 @@ def profile_view(request):
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
         'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
+        # Add these when models are ready:
+        # 'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        # 'has_referees':     Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'jobseekers/profile.html', context)
 
@@ -489,25 +503,11 @@ def academic_qualifications_view(request):
     return render(request, 'jobseekers/academic.html', context)
 
 
-# ── Profile Delete ───────────────────────────────────────────
-def delete_profile(request):
-    user_id = request.session.get('user_id')
-    if not user_id:
-        return redirect('index')
-
-    user = JobseekerAccount.objects.filter(id=user_id).first()
-    profile = JobSeekerProfile.objects.filter(user=user).first()
-    if profile:
-        profile.delete()
-
-    return redirect('profile')
-
-
 # ── Progress Calculation ─────────────────────────────────────
 def calculate_profile_completion(user):
     score = 0
 
-    # ── Section 1: Basic Details (40 points) ──────────────────
+    # ── Section 1: Basic Details (30 points) ──────────────────
     if hasattr(user, 'profile'):
         profile = user.profile
         fields  = [
@@ -520,31 +520,40 @@ def calculate_profile_completion(user):
             profile.home_county_id,
             profile.constituency_id,
             profile.disability_status,
+            profile.phone_number,          # ← new
         ]
         filled = sum(1 for f in fields if f)
-        score += int((filled / len(fields)) * 40)
+        score += int((filled / len(fields)) * 30)
 
     # ── Section 2: Academic Qualifications (15 points) ────────
     if AcademicQualification.objects.filter(user=user).exists():
         score += 15
 
-    # ── Section 3: Professional Qualifications (15 points) ────
+    # ── Section 3: Professional Qualifications (10 points) ────
     if ProfessionalQualification.objects.filter(user=user).exists():
-        score += 15
+        score += 10
 
-    # ── Section 4: Work History (15 points) ───────────────────
+    # ── Section 4: Work History (10 points) ───────────────────
     if WorkHistory.objects.filter(user=user).exists():
-        score += 15
+        score += 10
 
-    # ── Section 5: Additional Details (15 points) ─────────────
+    # ── Section 5: Professional Body Memberships (10 points) ──
+    # if ProfessionalBodyMembership.objects.filter(user=user).exists():
+    #     score += 10
+
+    # ── Section 6: Referees (15 points) ───────────────────────
+    # referees = Referee.objects.filter(user=user)
+    # if referees.count() >= 1: score += 8
+    # if referees.count() >= 2: score += 7
+
+    # ── Section 7: Additional Details (10 points) ─────────────
     detail = AdditionalDetail.objects.filter(user=user).first()
     if detail:
-        if detail.cv:              score += 5   # CV uploaded
-        if detail.cover_letter:    score += 4   # cover letter written
-        if detail.linkedin_url:    score += 2   # LinkedIn added
-        if detail.availability:    score += 2   # availability set
-        if detail.languages:       score += 2   # languages added
-                                                # total = 15
+        if detail.cv:            score += 4
+        if detail.cover_letter:  score += 3
+        if detail.linkedin_url:  score += 1
+        if detail.availability:  score += 1
+        if detail.languages:     score += 1
 
     return min(int(score), 100)
 
