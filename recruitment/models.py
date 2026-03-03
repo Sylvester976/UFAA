@@ -184,6 +184,11 @@ class Vacancy(models.Model):
         ('external', 'External'),
         ('internal', 'Internal'),
     ]
+    
+    GRADE_CHOICES = [
+        ('10-5', 'Grade 10-5'),
+        ('4-1', 'Grade 4-1'),
+    ]
 
     STATUS_CHOICES = [
         ('draft', 'Draft'),
