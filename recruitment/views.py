@@ -146,16 +146,15 @@ def _basic_score(profile):
 
 
 def _additional_score(detail):
-    """Return additional-details completion as 0–100."""
     if not detail:
         return 0
     score = 0
-    if detail.cv:           score += 5
-    if detail.cover_letter: score += 4
-    if detail.linkedin_url: score += 2
-    if detail.availability: score += 2
-    if detail.languages:    score += 2
-    return min(int(score / 15 * 100), 100)
+    if detail.cv:               score += 3
+    if detail.cover_letter:     score += 2
+    if detail.availability:     score += 2   # was 1 — now mandatory, more weight
+    if detail.expected_salary:  score += 2   # was 0 — now mandatory, add points
+    if detail.languages:        score += 1
+    return min(int(score / 10 * 100), 100)
 
 
 def get_next_step(user):
@@ -558,11 +557,11 @@ def calculate_profile_completion(user):
     # ── Section 7: Additional Details (10 points) ─────────────
     detail = AdditionalDetail.objects.filter(user=user).first()
     if detail:
-        if detail.cv:            score += 4
-        if detail.cover_letter:  score += 3
-        if detail.linkedin_url:  score += 1
-        if detail.availability:  score += 1
-        if detail.languages:     score += 1
+        if detail.cv:              score += 3
+        if detail.cover_letter:    score += 2
+        if detail.availability:    score += 2
+        if detail.expected_salary: score += 2
+        if detail.languages:       score += 1
 
     return min(int(score), 100)
 

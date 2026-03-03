@@ -480,3 +480,5 @@ class Referee(models.Model):
 
     def __str__(self):
         return f"Referee {self.referee_no} — {self.name} ({self.user})"
+
+
