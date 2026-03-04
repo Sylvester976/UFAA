@@ -20,6 +20,7 @@ from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, Aca
     EducationLevel, DocumentType, Document
 from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
 
+
 # ── Helper ───────────────────────────────────────────────────
 def get_logged_in_user(request):
     user_id = request.session.get('user_id')
@@ -154,8 +155,8 @@ def _additional_score(detail):
     score = 0
     if detail.cv:               score += 3
     if detail.cover_letter:     score += 2
-    if detail.availability:     score += 2   # was 1 — now mandatory, more weight
-    if detail.expected_salary:  score += 2   # was 0 — now mandatory, add points
+    if detail.availability:     score += 2  # was 1 — now mandatory, more weight
+    if detail.expected_salary:  score += 2  # was 0 — now mandatory, add points
     if detail.languages:        score += 1
     return min(int(score / 10 * 100), 100)
 
@@ -1227,7 +1228,7 @@ def additional_details_view(request):
     if request.method == 'POST':
         action = request.POST.get('action', 'save')
 
-        # ── DELETE CV ─────────────────────────────────────────
+        # ── DELETE CV ─────────────────────────────────────────────────
         if action == 'delete_cv':
             try:
                 if detail and detail.cv:
@@ -1235,32 +1236,59 @@ def additional_details_view(request):
                         os.remove(detail.cv.path)
                     detail.cv = None
                     detail.save()
-                return JsonResponse({'status': 'success',
-                                     'message': 'CV removed successfully.'})
+                return JsonResponse({'status': 'success', 'message': 'CV removed successfully.'})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
 
-        # ── SAVE / UPDATE ─────────────────────────────────────
+        # ── DELETE COVER LETTER ───────────────────────────────────────
+        if action == 'delete_cover_letter':
+            try:
+                if detail and detail.cover_letter:
+                    if os.path.isfile(detail.cover_letter.path):
+                        os.remove(detail.cover_letter.path)
+                    detail.cover_letter = None
+                    detail.save()
+                return JsonResponse({'status': 'success', 'message': 'Cover letter removed successfully.'})
+            except Exception as e:
+                return JsonResponse({'status': 'error', 'message': str(e)})
+
+        # ── SAVE / UPDATE ─────────────────────────────────────────────
         try:
-            cover_letter = request.POST.get('cover_letter', '').strip()
             linkedin_url = request.POST.get('linkedin_url', '').strip()
             portfolio_url = request.POST.get('portfolio_url', '').strip()
             languages_raw = request.POST.get('languages', '').strip()
             availability = request.POST.get('availability', '').strip()
             salary_raw = request.POST.get('expected_salary', '').strip()
             cv_file = request.FILES.get('cv')
+            cover_letter_file = request.FILES.get('cover_letter')
 
-            # Validate CV if uploaded
+            # ── Server-side validation ────────────────────────────────
+            if not availability:
+                return JsonResponse({'status': 'error', 'message': 'Please select your availability.'})
+
+            if not salary_raw:
+                return JsonResponse({'status': 'error', 'message': 'Expected salary is required.'})
+
+            # Cover letter required if not already saved
+            has_cover_letter = (detail and detail.cover_letter) or cover_letter_file
+            if not has_cover_letter:
+                return JsonResponse({'status': 'error', 'message': 'Please upload your cover letter (PDF).'})
+
+            # Validate CV file
             if cv_file:
-                ext = '.' + cv_file.name.split('.')[-1].lower()
-                if ext != '.pdf':
-                    return JsonResponse({'status': 'error',
-                                         'message': 'CV must be a PDF file.'})
+                if not cv_file.name.lower().endswith('.pdf'):
+                    return JsonResponse({'status': 'error', 'message': 'CV must be a PDF file.'})
                 if cv_file.size > 2 * 1024 * 1024:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'CV must be smaller than 2MB.'})
+                    return JsonResponse({'status': 'error', 'message': 'CV must be smaller than 2MB.'})
 
-            # Clean languages — remove blanks, de-dupe
+            # Validate cover letter file
+            if cover_letter_file:
+                if not cover_letter_file.name.lower().endswith('.pdf'):
+                    return JsonResponse({'status': 'error', 'message': 'Cover letter must be a PDF file.'})
+                if cover_letter_file.size > 2 * 1024 * 1024:
+                    return JsonResponse({'status': 'error', 'message': 'Cover letter must be smaller than 2MB.'})
+
+            # Clean languages
             languages = ', '.join(
                 dict.fromkeys(
                     l.strip().title()
@@ -1272,13 +1300,16 @@ def additional_details_view(request):
             expected_salary = int(salary_raw) if salary_raw.isdigit() else None
 
             if detail:
-                # Replace CV file if new one uploaded
                 if cv_file:
                     if detail.cv and os.path.isfile(detail.cv.path):
                         os.remove(detail.cv.path)
                     detail.cv = cv_file
 
-                detail.cover_letter = cover_letter
+                if cover_letter_file:
+                    if detail.cover_letter and os.path.isfile(detail.cover_letter.path):
+                        os.remove(detail.cover_letter.path)
+                    detail.cover_letter = cover_letter_file
+
                 detail.linkedin_url = linkedin_url
                 detail.portfolio_url = portfolio_url
                 detail.languages = languages
@@ -1289,7 +1320,7 @@ def additional_details_view(request):
                 detail = AdditionalDetail.objects.create(
                     user=user,
                     cv=cv_file,
-                    cover_letter=cover_letter,
+                    cover_letter=cover_letter_file,
                     linkedin_url=linkedin_url,
                     portfolio_url=portfolio_url,
                     languages=languages,
@@ -1304,12 +1335,13 @@ def additional_details_view(request):
                 'message': 'Additional details saved successfully.',
                 'cv_filename': detail.cv.name.split('/')[-1] if detail.cv else None,
                 'cv_url': detail.cv.url if detail.cv else None,
+                'cover_letter_filename': detail.cover_letter.name.split('/')[-1] if detail.cover_letter else None,
+                'cover_letter_url': detail.cover_letter.url if detail.cover_letter else None,
                 'completion': new_completion,
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     context = {
         'profile': profile,
@@ -1355,7 +1387,6 @@ def hr_dashboard(request):
 @login_required
 @role_required(['panelist'])
 def panelist_dashboard(request):
-
     vacancies = Vacancy.objects.filter(
         panel_assignments__panelist=request.user,
         status='interviews'
@@ -1380,10 +1411,10 @@ def officer_dashboard(request):
     }
     return render(request, 'officer/dashboard.html', context)
 
+
 @login_required
 @role_required(['panelist'])
 def respond_panel_assignment(request, assignment_id):
-
     assignment = get_object_or_404(
         PanelAssignment,
         id=assignment_id,
@@ -1408,6 +1439,7 @@ def respond_panel_assignment(request, assignment_id):
             messages.warning(request, "You declined the panel assignment.")
 
         return redirect('panelist_dashboard')
+
 
 @login_required
 @role_required(['panelist'])
@@ -1707,7 +1739,7 @@ def hr_view_applications(request, vacancy_id):
     #     return redirect('hr_dashboard')
 
     applications = Application.objects.filter(vacancy=vacancy) \
-    #     .select_related(
+        #     .select_related(
     #     "applicant",
     #     "applicant__profile",
     #     "applicant__additional_detail"
@@ -1754,6 +1786,7 @@ def start_longlisting(request, vacancy_id):
 
     messages.success(request, "Longlisting stage started.")
     return redirect('hr_view_applications', vacancy_id=vacancy.id)
+
 
 @login_required
 @role_required(['hod_hr'])
@@ -1885,6 +1918,7 @@ def appoint_committee(request, vacancy_id):
         'assigned_panelists': assigned_panelists
     })
 
+
 @login_required
 @role_required(['hod_hr'])
 def appointed_committee(request, vacancy_id):
@@ -1946,10 +1980,10 @@ def manage_panelists(request):
         "current_panelists": current_panelists
     })
 
+
 @login_required
 @role_required(['panelist'])
 def submit_shortlist(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'committee_stage':
@@ -2008,6 +2042,7 @@ def submit_shortlist(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
+
 
 @login_required
 def vacancy_panelists(request, vacancy_id):
@@ -2374,6 +2409,7 @@ def vacancy_longlisting(request):
         'vacancies': vacancies
     })
 
+
 # @login_required
 # @role_required(['hod_hr'])
 # def longlist_candidates(request, vacancy_id):
@@ -2493,7 +2529,6 @@ def vacancy_list(request):
 @login_required
 @role_required(['hod_hr'])
 def appoint_shortlisting_committee(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'longlisting':
@@ -2532,14 +2567,6 @@ def appoint_shortlisting_committee(request, vacancy_id):
         'vacancy': vacancy,
         'panelists': panelists
     })
-    
-# ── Add to recruitment/views.py ────────────────────────────────
-# Additional imports needed:
-# from django.core.mail import send_mail
-# from django.conf import settings
-# from django.utils import timezone
-# from .models import (..., Vacancy, JobApplication, JobApplicationStatus,
-#                      JobApplicationStatusLog, JobApplicationNotification)
 
 def _application_ready(user):
     issues  = []
@@ -2657,13 +2684,13 @@ def _build_snapshots(user):
     snap_additional = {}
     if detail:
         snap_additional = {
-            'cv_filename': detail.cv_filename if detail.cv else '',
-            'cover_letter': detail.cover_letter or '',
-            'linkedin_url': detail.linkedin_url or '',
-            'portfolio_url': detail.portfolio_url or '',
-            'languages': detail.languages or '',
-            'availability': detail.availability or '',
-            'expected_salary': str(detail.expected_salary) if detail.expected_salary else '',
+            'cv_filename':           detail.cv.name.split('/')[-1] if detail.cv else '',
+            'cover_letter_filename': detail.cover_letter.name.split('/')[-1] if detail.cover_letter else '',
+            'linkedin_url':          detail.linkedin_url or '',
+            'portfolio_url':         detail.portfolio_url or '',
+            'languages':             detail.languages or '',
+            'availability':          detail.availability or '',
+            'expected_salary':       str(detail.expected_salary) if detail.expected_salary else '',
         }
 
     return {
@@ -2677,38 +2704,78 @@ def _build_snapshots(user):
     }
 
 
+def _send_html_email(subject, to_email, message_html):
+    """Send a branded UFAA HTML email."""
+    from django.template.loader import render_to_string
+    from django.core.mail import EmailMultiAlternatives
+    from datetime import date
+
+    html_body = render_to_string('emails/email_base.html', {
+        'subject':         subject,
+        'message_content': message_html,
+        'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+        'year':            date.today().year,
+    })
+    email = EmailMultiAlternatives(
+        subject    = subject,
+        body       = 'Please view this email in an HTML-capable email client.',
+        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+        to         = [to_email],
+    )
+    email.attach_alternative(html_body, 'text/html')
+    email.send(fail_silently=False)
+
+
 def _notify_submission(user, application):
     vacancy = application.vacancy
+
+    # 1. In-app notification
+    msg = (
+        f'Your application for {vacancy.title} ({vacancy.reference_number}) '
+        f'has been received successfully. We will be in touch regarding next steps.'
+    )
     JobApplicationNotification.objects.create(
         user=user,
         title=f'Application Submitted — {vacancy.title}',
-        message=(
-            f'Your application for {vacancy.title} ({vacancy.reference_number}) '
-            f'has been received successfully. We will be in touch regarding next steps.'
-        ),
+        message=msg,
         notification_type='application_submitted',
         related_application=application,
     )
+
+    # 2. HTML email
     try:
-        first_name = user.profile.first_name if hasattr(user, 'profile') and user.profile.first_name else 'Applicant'
-        send_mail(
-            subject=f'Application Received — {vacancy.title} [{vacancy.reference_number}]',
-            message=(
-                f'Dear {first_name},\n\n'
-                f'Thank you for applying for the position of {vacancy.title} '
-                f'(Reference: {vacancy.reference_number}).\n\n'
-                f'Your application has been received and is currently under review. '
-                f'You can track your application status on the UFAA Job Portal.\n\n'
-                f'Please do not reply to this email.\n\n'
-                f'Regards,\nUFAA Human Resources\n'
-                f'Unclaimed Financial Assets Authority'
-            ),
-            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
-            recipient_list=[user.email],
-            fail_silently=True,
+        profile     = getattr(user, 'jobseekerprofile', None)
+        first_name  = profile.first_name  if profile and profile.first_name  else ''
+        second_name = profile.second_name if profile and profile.second_name else ''
+        surname     = profile.surname     if profile and profile.surname     else ''
+        full_name   = ' '.join(filter(None, [first_name, second_name, surname])) or 'Applicant'
+        site_url    = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+
+        message_html = f"""
+            <p>Dear <strong>{full_name}</strong>,</p>
+            <p>Thank you for submitting your application for the position of
+               <strong>{vacancy.title}</strong>
+               (Reference: <strong>{vacancy.reference_number}</strong>).</p>
+            <p>Your application has been received and is currently under review by the
+               UFAA Human Resources team. You will be notified of any updates through
+               the portal and via email.</p>
+            <p>You can track your application status anytime by logging into the
+               <a href='{site_url}/recruitment/job-status/'
+                  style='color:#1D255B;font-weight:bold;'>UFAA Job Portal</a>.</p>
+            <br>
+            <p style='margin:0;'>Regards,</p>
+            <p style='margin:0;'><strong>UFAA Human Resources</strong></p>
+            <p style='margin:0;color:#67748e;font-size:13px;'>Unclaimed Financial Assets Authority</p>
+        """
+
+        _send_html_email(
+            subject      = f'Application Received — {vacancy.title} [{vacancy.reference_number}]',
+            to_email     = user.email,
+            message_html = message_html,
         )
-    except Exception:
-        pass
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f'Email send failed for {user.email}: {e}')
 
 
 def apply_jobs_view(request):
@@ -2774,14 +2841,76 @@ def apply_jobs_view(request):
             return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     from django.utils import timezone
-    today     = timezone.now().date()
-    vacancies = Vacancy.objects.filter(
+    import re
+
+    def _parse_vacancy_fields(description):
+        """Parse vacancy description into structured fields for card display."""
+        if not description:
+            return [], ''
+
+        # 1. Produce clean snippet (strip all markdown)
+        clean = re.sub(r'\*+', '', description)
+        clean = re.sub(r'#{1,6}\s*', '', clean)
+        clean = re.sub(r'---+', '', clean)
+        clean = re.sub(r'\s+', ' ', clean).strip()
+        snippet = (clean[:120] + '\u2026') if len(clean) > 120 else clean
+
+        # 2. For field parsing, only use the header block (before ---, ###, or blank lines)
+        # Split on section dividers to isolate the key-value header block
+        header_block = re.split(r'(---|#{1,6}|\n\s*\n)', description)[0]
+        header_clean = re.sub(r'\*+', '', header_block)
+        header_clean = re.sub(r'\s+', ' ', header_clean).strip()
+
+        field_map = [
+            ('JOB TITLE',       'Position',        'fa-briefcase'),
+            ('LOCATION',        'Location',        'fa-map-marker-alt'),
+            ('EMPLOYMENT TYPE', 'Employment Type', 'fa-clock'),
+            ('DEPARTMENT',      'Department',      'fa-building'),
+            ('SALARY SCALE',    'Salary Scale',    'fa-money-bill-wave'),
+            ('REPORTS TO',      'Reports To',      'fa-sitemap'),
+            ('DIVISION',        'Division',        'fa-layer-group'),
+        ]
+
+        # Match ALL-CAPS KEY: value, stopping at next ALL-CAPS KEY: or end
+        kv_pattern = re.compile(
+            r'([A-Z][A-Z ]{2,25}?)\s*:\s*(.+?)(?=\s+[A-Z][A-Z ]{2,25}?\s*:|\Z)',
+            re.DOTALL
+        )
+        found = {}
+        for m in kv_pattern.finditer(header_clean):
+            key = m.group(1).strip()
+            val = re.sub(r'\s+', ' ', m.group(2)).strip()
+            if key and val and len(key) <= 28:
+                found[key] = val
+
+        result = []
+        for fkey, label, icon in field_map:
+            val = found.get(fkey)
+            if not val:
+                for k, v in found.items():
+                    if fkey in k or k in fkey:
+                        val = v
+                        break
+            if val:
+                if len(val) > 45:
+                    val = val[:43] + '\u2026'
+                result.append((label, icon, val))
+
+        return result, snippet
+
+    today = timezone.now().date()
+    vacancies_qs = Vacancy.objects.filter(
         status='open',
         start_date__lte=today,
         end_date__gte=today,
     ).order_by('end_date')
     if not user.is_employee:
-        vacancies = vacancies.filter(vacancy_type='external')
+        vacancies_qs = vacancies_qs.filter(vacancy_type='external')
+
+    vacancies = list(vacancies_qs)
+    for v in vacancies:
+        v.parsed_fields, v.plain_snippet = _parse_vacancy_fields(v.description)
+        print(f"[DEBUG] {v.title} | parsed_fields={v.parsed_fields} | snippet={v.plain_snippet[:60]!r}")
 
     applied_ids = set(JobApplication.objects.filter(user=user).values_list('vacancy_id', flat=True))
     snaps       = _build_snapshots(user)
@@ -2806,7 +2935,7 @@ def apply_jobs_view(request):
         'has_additional':   detail is not None,
         'page': 'Apply for Jobs',
     }
-    return render(request, 'Jobseekers/apply_jobs.html', context)
+    return render(request, 'jobseekers/apply_jobs.html', context)
 
 
 def job_status_view(request):
@@ -2843,4 +2972,53 @@ def job_status_view(request):
         'has_additional':   detail is not None,
         'page': 'Job Status',
     }
-    return render(request, 'Jobseekers/job_status.html', context)
+    return render(request, 'jobseekers/job_status.html', context)
+
+
+def mark_notification_read_view(request):
+    """AJAX: mark one or all notifications as read, return new unread count."""
+    user_id = request.session.get('user_id')
+    if not user_id or request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=400)
+
+    notif_id = request.POST.get('notif_id')   # blank = mark ALL read
+
+    if notif_id:
+        JobApplicationNotification.objects.filter(
+            id=notif_id, user_id=user_id
+        ).update(is_read=True)
+    else:
+        JobApplicationNotification.objects.filter(
+            user_id=user_id, is_read=False
+        ).update(is_read=True)
+
+    unread = JobApplicationNotification.objects.filter(
+        user_id=user_id, is_read=False
+    ).count()
+
+    return JsonResponse({'status': 'ok', 'unread_count': unread})
+
+
+def notification_poll_view(request):
+    """Lightweight polling endpoint — returns unread count + latest unseen notifs."""
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'unread_count': 0, 'notifications': []})
+
+    unread = JobApplicationNotification.objects.filter(
+        user_id=user_id, is_read=False
+    ).count()
+
+    # Return latest 10 for dropdown refresh
+    notifs = list(
+        JobApplicationNotification.objects
+        .filter(user_id=user_id)
+        .order_by('-created_at')[:10]
+        .values('id', 'title', 'message', 'notification_type', 'is_read', 'created_at')
+    )
+
+    # Make created_at JSON serializable
+    for n in notifs:
+        n['created_at'] = n['created_at'].strftime('%d %b %Y, %H:%M')
+
+    return JsonResponse({'unread_count': unread, 'notifications': notifs})

@@ -12,13 +12,14 @@
             <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
                 <div>
                     <h6 class="mb-0 font-weight-bolder">Additional Details</h6>
-                    <p class="text-sm text-secondary mb-0">Final step — upload your CV and add any extra information</p>
+                    <p class="text-sm text-secondary mb-0">Final step — upload your documents and add extra
+                        information</p>
                 </div>
                 <span class="badge px-3 py-2" id="completionBadge"
                       style="background: {% if completion == 100 %}linear-gradient(310deg,#2dce89,#17c1e8){% elif completion >= 60 %}linear-gradient(310deg,#17c1e8,#2dce89){% elif completion >= 30 %}linear-gradient(310deg,#f5a623,#f76b1c){% else %}linear-gradient(310deg,#f5365c,#f56036){% endif %}">
-                    <i class="fas fa-tasks me-1"></i>
-                    <span id="completionText">{{ completion }}% Complete</span>
-                </span>
+                <i class="fas fa-tasks me-1"></i>
+                <span id="completionText">{{ completion }}% Complete</span>
+            </span>
             </div>
 
             <!-- Progress Bar -->
@@ -30,17 +31,13 @@
                         {% elif completion >= 30 %}Good start — more to fill in.
                         {% else %}Just getting started...{% endif %}
                     </small>
-                    <small class="font-weight-bold" id="progressPct" style="font-size:0.75rem;">
-                        {{ completion }}%
-                    </small>
+                    <small class="font-weight-bold" id="progressPct"
+                           style="font-size:0.75rem;">{{ completion }}%</small>
                 </div>
                 <div class="progress" style="height:8px; border-radius:1rem;">
-                    <div class="progress-bar bg-gradient-info"
-                         id="progressBar"
-                         role="progressbar"
+                    <div class="progress-bar bg-gradient-info" id="progressBar" role="progressbar"
                          style="width:{{ completion }}%; transition:width 0.6s ease;"
-                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100">
-                    </div>
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100"></div>
                 </div>
             </div>
 
@@ -48,54 +45,47 @@
             <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'profile' %}">
-                        <i class="fas fa-user me-1"></i>
-                        <span class="d-none d-sm-inline">Basic Details</span>
+                        <i class="fas fa-user me-1"></i><span class="d-none d-sm-inline">Basic Details</span>
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'academic_qualifications' %}">
-                        <i class="fas fa-graduation-cap me-1"></i>
-                        <span class="d-none d-sm-inline">Academic</span>
+                        <i class="fas fa-graduation-cap me-1"></i><span class="d-none d-sm-inline">Academic</span>
                         {% if has_academic %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'professional_qualifications' %}">
-                        <i class="fas fa-certificate me-1"></i>
-                        <span class="d-none d-sm-inline">Professional</span>
+                        <i class="fas fa-certificate me-1"></i><span class="d-none d-sm-inline">Professional</span>
                         {% if has_professional %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'work_history' %}">
-                        <i class="fas fa-briefcase me-1"></i>
-                        <span class="d-none d-sm-inline">Work History</span>
+                        <i class="fas fa-briefcase me-1"></i><span class="d-none d-sm-inline">Work History</span>
                         {% if has_work_history %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'memberships' %}">
-                        <i class="fas fa-users me-1"></i>
-                        <span class="d-none d-sm-inline">Memberships</span>
+                        <i class="fas fa-users me-1"></i><span class="d-none d-sm-inline">Memberships</span>
                         {% if has_memberships %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'referees' %}">
-                        <i class="fas fa-user-tie me-1"></i>
-                        <span class="d-none d-sm-inline">Referees</span>
+                        <i class="fas fa-user-tie me-1"></i><span class="d-none d-sm-inline">Referees</span>
                         {% if has_referees %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'additional_details' %}">
-                        <i class="fas fa-info-circle me-1"></i>
-                        <span class="d-none d-sm-inline">Additional</span>
+                        <i class="fas fa-info-circle me-1"></i><span class="d-none d-sm-inline">Additional</span>
                         {% if has_additional %}
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
@@ -108,7 +98,7 @@
 
                     <h6 class="font-weight-bolder mb-1">Step 7: Additional Details</h6>
                     <p class="text-sm text-secondary mb-4">
-                        Upload your CV and fill in the required fields to complete your profile.
+                        Upload your documents and fill in the required fields.
                         Fields marked <span class="text-danger">*</span> are required.
                     </p>
 
@@ -116,25 +106,19 @@
                     <div class="acad-add-card mb-4">
                         <div class="acad-add-header">
                             <i class="fas fa-file-pdf me-2"></i> CV / Resume
-                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">
-                                PDF only — max 2MB
-                            </small>
+                            <span class="text-danger ms-1">*</span>
+                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">PDF only — max 2MB</small>
                         </div>
                         <div class="acad-add-body">
-
                             {% if detail and detail.cv %}
-                                <!-- CV Already Uploaded -->
-                                <div id="cvExisting"
-                                     class="d-flex align-items-center gap-3 flex-wrap">
+                                <div id="cvExisting" class="d-flex align-items-center gap-3 flex-wrap">
                                     <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
                                     <div class="flex-grow-1">
-                                        <div class="font-weight-bold text-sm" id="cvFileName">
-                                            {{ detail.cv.name|slice:"4:" }}
-                                        </div>
+                                        <div class="font-weight-bold text-sm"
+                                             id="cvFileName">{{ detail.cv_filename }}</div>
                                         <div class="text-secondary" style="font-size:0.75rem;">
                                             Uploaded successfully
-                                            <span class="badge bg-gradient-success ms-1"
-                                                  style="font-size:0.65rem;">Active</span>
+                                            <span class="badge bg-gradient-success ms-1" style="font-size:0.65rem;">Active</span>
                                         </div>
                                     </div>
                                     <div class="d-flex gap-2 flex-wrap">
@@ -142,76 +126,128 @@
                                            class="btn btn-outline-info btn-xs">
                                             <i class="fas fa-download me-1"></i> Download
                                         </a>
-                                        <label for="cvReplaceInput"
-                                               class="btn btn-outline-warning btn-xs mb-0"
+                                        <label for="cvReplaceInput" class="btn btn-outline-warning btn-xs mb-0"
                                                style="cursor:pointer;">
                                             <i class="fas fa-sync-alt me-1"></i> Replace
                                         </label>
-                                        <button type="button"
-                                                class="btn btn-outline-danger btn-xs"
-                                                onclick="deleteCV()">
+                                        <button type="button" class="btn btn-outline-danger btn-xs"
+                                                onclick="deleteFile('cv')">
                                             <i class="fas fa-trash me-1"></i> Remove
                                         </button>
                                     </div>
-                                    <input type="file" id="cvReplaceInput"
-                                           accept=".pdf" style="display:none;"
-                                           onchange="handleCVReplace(this)">
+                                    <input type="file" id="cvReplaceInput" accept=".pdf" style="display:none;"
+                                           onchange="handleReplace(this,'cv')">
                                 </div>
                             {% else %}
-                                <!-- CV selected but not yet saved -->
                                 <div id="cvExisting" style="display:none;"
                                      class="d-flex align-items-center gap-3 flex-wrap">
                                     <i class="fas fa-file-pdf text-danger" style="font-size:2rem;"></i>
                                     <div class="flex-grow-1">
                                         <div class="font-weight-bold text-sm" id="cvFileName"></div>
-                                        <div class="text-secondary" style="font-size:0.75rem;">
-                                            Ready to upload
-                                        </div>
+                                        <div class="text-secondary" style="font-size:0.75rem;">Ready to upload</div>
                                     </div>
                                     <div class="d-flex gap-2">
-                                        <label for="cvReplaceInput"
-                                               class="btn btn-outline-warning btn-xs mb-0"
+                                        <label for="cvReplaceInput" class="btn btn-outline-warning btn-xs mb-0"
                                                style="cursor:pointer;">
                                             <i class="fas fa-sync-alt me-1"></i> Replace
                                         </label>
-                                        <button type="button"
-                                                class="btn btn-outline-danger btn-xs"
-                                                onclick="clearCVSelection()">
+                                        <button type="button" class="btn btn-outline-danger btn-xs"
+                                                onclick="clearSelection('cv')">
                                             <i class="fas fa-times"></i>
                                         </button>
                                     </div>
-                                    <input type="file" id="cvReplaceInput"
-                                           accept=".pdf" style="display:none;"
-                                           onchange="handleCVReplace(this)">
+                                    <input type="file" id="cvReplaceInput" accept=".pdf" style="display:none;"
+                                           onchange="handleReplace(this,'cv')">
                                 </div>
                             {% endif %}
-
                             <div id="cvDropZone" class="drop-zone-sm"
                                  {% if detail and detail.cv %}style="display:none;"{% endif %}>
                                 <i class="fas fa-cloud-upload-alt me-2 text-danger"></i>
                                 <span class="text-sm">Drag & drop your CV or</span>
-                                <label for="cvFileInput"
-                                       class="btn btn-outline-danger btn-xs ms-2 mb-0"
-                                       style="cursor:pointer; font-size:0.75rem; padding:0.2rem 0.6rem;">
-                                    Browse
-                                </label>
-                                <input type="file" id="cvFileInput"
-                                       accept=".pdf" style="display:none;">
+                                <label for="cvFileInput" class="btn btn-outline-danger btn-xs ms-2 mb-0"
+                                       style="cursor:pointer;font-size:0.75rem;padding:0.2rem 0.6rem;">Browse</label>
+                                <input type="file" id="cvFileInput" accept=".pdf" style="display:none;">
                             </div>
+                        </div>
+                    </div>
 
-                            <input type="hidden" id="cvSelected" value="">
-
+                    <!-- ── Cover Letter Upload ── -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-file-alt me-2"></i> Cover Letter
+                            <span class="text-danger ms-1">*</span>
+                            <small class="ms-2 opacity-75" style="font-size:0.75rem;">PDF only — max 2MB</small>
+                        </div>
+                        <div class="acad-add-body">
+                            {% if detail and detail.cover_letter %}
+                                <div id="clExisting" class="d-flex align-items-center gap-3 flex-wrap">
+                                    <i class="fas fa-file-alt text-primary" style="font-size:2rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold text-sm"
+                                             id="clFileName">{{ detail.cover_letter_filename }}</div>
+                                        <div class="text-secondary" style="font-size:0.75rem;">
+                                            Uploaded successfully
+                                            <span class="badge bg-gradient-success ms-1" style="font-size:0.65rem;">Active</span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex gap-2 flex-wrap">
+                                        <a href="{{ detail.cover_letter.url }}" target="_blank"
+                                           class="btn btn-outline-info btn-xs">
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                        <label for="clReplaceInput" class="btn btn-outline-warning btn-xs mb-0"
+                                               style="cursor:pointer;">
+                                            <i class="fas fa-sync-alt me-1"></i> Replace
+                                        </label>
+                                        <button type="button" class="btn btn-outline-danger btn-xs"
+                                                onclick="deleteFile('cover_letter')">
+                                            <i class="fas fa-trash me-1"></i> Remove
+                                        </button>
+                                    </div>
+                                    <input type="file" id="clReplaceInput" accept=".pdf" style="display:none;"
+                                           onchange="handleReplace(this,'cover_letter')">
+                                </div>
+                            {% else %}
+                                <div id="clExisting" style="display:none;"
+                                     class="d-flex align-items-center gap-3 flex-wrap">
+                                    <i class="fas fa-file-alt text-primary" style="font-size:2rem;"></i>
+                                    <div class="flex-grow-1">
+                                        <div class="font-weight-bold text-sm" id="clFileName"></div>
+                                        <div class="text-secondary" style="font-size:0.75rem;">Ready to upload</div>
+                                    </div>
+                                    <div class="d-flex gap-2">
+                                        <label for="clReplaceInput" class="btn btn-outline-warning btn-xs mb-0"
+                                               style="cursor:pointer;">
+                                            <i class="fas fa-sync-alt me-1"></i> Replace
+                                        </label>
+                                        <button type="button" class="btn btn-outline-danger btn-xs"
+                                                onclick="clearSelection('cover_letter')">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <input type="file" id="clReplaceInput" accept=".pdf" style="display:none;"
+                                           onchange="handleReplace(this,'cover_letter')">
+                                </div>
+                            {% endif %}
+                            <div id="clDropZone" class="drop-zone-sm"
+                                 {% if detail and detail.cover_letter %}style="display:none;"{% endif %}>
+                                <i class="fas fa-cloud-upload-alt me-2 text-primary"></i>
+                                <span class="text-sm">Drag & drop your cover letter or</span>
+                                <label for="clFileInput" class="btn btn-outline-primary btn-xs ms-2 mb-0"
+                                       style="cursor:pointer;font-size:0.75rem;padding:0.2rem 0.6rem;">Browse</label>
+                                <input type="file" id="clFileInput" accept=".pdf" style="display:none;">
+                            </div>
                         </div>
                     </div>
 
                     <!-- ── Details Form ── -->
                     <div class="row g-3 mb-4">
 
-                        <!-- Availability — REQUIRED -->
+                        <!-- Availability -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
-                                <i class="fas fa-calendar-check me-1"></i> Availability
-                                <span class="text-danger">*</span>
+                                <i class="fas fa-calendar-check me-1"></i> Availability <span
+                                    class="text-danger">*</span>
                             </label>
                             <select id="f_availability" class="form-control">
                                 <option value="">Select availability</option>
@@ -242,38 +278,23 @@
                             </select>
                         </div>
 
-                        <!-- Expected Salary — REQUIRED -->
+                        <!-- Expected Salary -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
-                                <i class="fas fa-money-bill me-1"></i> Expected Salary (KES)
-                                <span class="text-danger">*</span>
+                                <i class="fas fa-money-bill me-1"></i> Expected Salary (KES) <span
+                                    class="text-danger">*</span>
                             </label>
                             <div class="input-group">
                                 <span class="input-group-text"
-                                      style="background:#f8f9fa; border:1px solid #e9ecef;
-                                             font-size:0.82rem; color:#344767;">
-                                    KES
-                                </span>
+                                      style="background:#f8f9fa;border:1px solid #e9ecef;font-size:0.82rem;color:#344767;">KES</span>
                                 <input type="number" id="f_expected_salary" class="form-control"
                                        placeholder="e.g. 80000" min="0"
                                        value="
-
                                                {% if detail and detail.expected_salary %}{{ detail.expected_salary }}{% endif %}">
                             </div>
                         </div>
 
-                        <!-- Cover Letter — optional -->
-                        <div class="col-12">
-                            <label class="form-label text-sm font-weight-bold">
-                                <i class="fas fa-pen me-1"></i> Cover Letter
-                                <small class="text-secondary ms-1">(optional)</small>
-                            </label>
-                            <textarea id="f_cover_letter" class="form-control" rows="6"
-                                      placeholder="Write a brief cover letter or personal statement that highlights your key strengths and career goals...">{% if detail %}
-                                {{ detail.cover_letter }}{% endif %}</textarea>
-                        </div>
-
-                        <!-- LinkedIn — optional -->
+                        <!-- LinkedIn -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fab fa-linkedin me-1"></i> LinkedIn Profile URL
@@ -284,7 +305,7 @@
                                    value="{% if detail %}{{ detail.linkedin_url }}{% endif %}">
                         </div>
 
-                        <!-- Portfolio — optional -->
+                        <!-- Portfolio -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fas fa-globe me-1"></i> Portfolio / Website URL
@@ -295,7 +316,7 @@
                                    value="{% if detail %}{{ detail.portfolio_url }}{% endif %}">
                         </div>
 
-                        <!-- Languages — optional -->
+                        <!-- Languages -->
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">
                                 <i class="fas fa-language me-1"></i> Languages Spoken
@@ -304,28 +325,23 @@
                             <div id="languagePills" class="language-pill-container mb-2">
                                 {% if detail %}
                                     {% for lang in detail.languages_list %}
-                                        <span class="lang-pill">
-                                        {{ lang }}
-                                        <button type="button" onclick="removeLang(this)">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </span>
+                                        <span class="lang-pill">{{ lang }}
+                                    <button type="button" onclick="removeLang(this)"><i
+                                            class="fas fa-times"></i></button>
+                                </span>
                                     {% endfor %}
                                 {% endif %}
                             </div>
                             <div class="d-flex gap-2">
                                 <input type="text" id="f_lang_input" class="form-control"
-                                       placeholder="e.g. English, Swahili"
-                                       onkeydown="handleLangKey(event)">
-                                <button type="button" class="btn btn-outline-info btn-sm"
-                                        onclick="addLanguage()"
+                                       placeholder="e.g. English, Swahili" onkeydown="handleLangKey(event)">
+                                <button type="button" class="btn btn-outline-info btn-sm" onclick="addLanguage()"
                                         style="white-space:nowrap;">
                                     <i class="fas fa-plus"></i>
                                 </button>
                             </div>
-                            <small class="text-secondary" style="font-size:0.73rem;">
-                                Press Enter or click + to add each language
-                            </small>
+                            <small class="text-secondary" style="font-size:0.73rem;">Press Enter or click + to add each
+                                language</small>
                             <input type="hidden" id="f_languages"
                                    value="{% if detail %}{{ detail.languages }}{% endif %}">
                         </div>
@@ -334,16 +350,14 @@
 
                     <!-- Save Button -->
                     <div class="d-flex justify-content-end mb-4">
-                        <button type="button" class="btn btn-outline-info btn-sm"
-                                onclick="saveDetails()">
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="saveDetails()">
                             <i class="fas fa-save me-1"></i> Save Details
                         </button>
                     </div>
 
                     <!-- Nav Buttons -->
                     <div class="d-flex justify-content-between align-items-center mt-2 flex-wrap gap-2">
-                        <a href="{% url 'referees' %}"
-                           class="btn btn-outline-secondary btn-sm mb-0">
+                        <a href="{% url 'referees' %}" class="btn btn-outline-secondary btn-sm mb-0">
                             <i class="fas fa-arrow-left me-1"></i> Back
                         </a>
                         <a href="{% url 'dashboard' %}"
@@ -361,108 +375,124 @@
 {% block extra_js %}
     <script>
         const CSRF = '{{ csrf_token }}';
-        const MAX_CV = 2 * 1024 * 1024;   // 2MB
+        const MAX_SZ = 2 * 1024 * 1024;  // 2MB
 
-        // ── CV Handling ──────────────────────────────────────────────
-        let selectedCVFile = null;
+        // ── File state ────────────────────────────────────────────────
+        const selectedFiles = {cv: null, cover_letter: null};
 
-        const cvDropZone = document.getElementById('cvDropZone');
-        const cvFileInput = document.getElementById('cvFileInput');
+        // ── Config per file type ──────────────────────────────────────
+        const fileCfg = {
+            cv: {
+                dropZone: 'cvDropZone',
+                existing: 'cvExisting',
+                fileName: 'cvFileName',
+                fileInput: 'cvFileInput',
+                replaceInput: 'cvReplaceInput',
+                iconClass: 'text-danger',
+                action: 'delete_cv',
+            },
+            cover_letter: {
+                dropZone: 'clDropZone',
+                existing: 'clExisting',
+                fileName: 'clFileName',
+                fileInput: 'clFileInput',
+                replaceInput: 'clReplaceInput',
+                iconClass: 'text-primary',
+                action: 'delete_cover_letter',
+            },
+        };
 
-        cvDropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            cvDropZone.classList.add('dragover');
-        });
-        cvDropZone.addEventListener('dragleave', () => cvDropZone.classList.remove('dragover'));
-        cvDropZone.addEventListener('drop', function (e) {
-            e.preventDefault();
-            cvDropZone.classList.remove('dragover');
-            const file = e.dataTransfer.files[0];
-            if (file) validateAndSetCV(file);
-        });
-        cvDropZone.addEventListener('click', function (e) {
-            if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') cvFileInput.click();
-        });
-        cvFileInput.addEventListener('change', function () {
-            if (this.files[0]) validateAndSetCV(this.files[0]);
-            this.value = '';
+        // ── Wire up drop zones ────────────────────────────────────────
+        ['cv', 'cover_letter'].forEach(type => {
+            const cfg = fileCfg[type];
+            const dz = document.getElementById(cfg.dropZone);
+            const fi = document.getElementById(cfg.fileInput);
+
+            dz.addEventListener('dragover', e => {
+                e.preventDefault();
+                dz.classList.add('dragover');
+            });
+            dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+            dz.addEventListener('drop', e => {
+                e.preventDefault();
+                dz.classList.remove('dragover');
+                if (e.dataTransfer.files[0]) validateAndSet(e.dataTransfer.files[0], type);
+            });
+            dz.addEventListener('click', e => {
+                if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') fi.click();
+            });
+            fi.addEventListener('change', function () {
+                if (this.files[0]) validateAndSet(this.files[0], type);
+                this.value = '';
+            });
         });
 
-        function handleCVReplace(input) {
-            if (input.files[0]) validateAndSetCV(input.files[0]);
+        function handleReplace(input, type) {
+            if (input.files[0]) validateAndSet(input.files[0], type);
             input.value = '';
         }
 
-        function validateAndSetCV(file) {
-            const ext = '.' + file.name.split('.').pop().toLowerCase();
-            if (ext !== '.pdf') {
+        function validateAndSet(file, type) {
+            if (!file.name.toLowerCase().endsWith('.pdf')) {
                 Swal.fire({
-                    icon: 'error', title: 'PDF Only',
-                    text: 'Please upload a PDF file for your CV.',
+                    icon: 'error', title: 'PDF Only', text: 'Please upload a PDF file.',
                     position: 'center', scrollbarPadding: false, heightAuto: false
                 });
                 return;
             }
-            if (file.size > MAX_CV) {
+            if (file.size > MAX_SZ) {
                 Swal.fire({
-                    icon: 'error', title: 'File Too Large',
-                    text: 'CV must be smaller than 2MB. Please compress and retry.',
+                    icon: 'error', title: 'File Too Large', text: 'File must be smaller than 2MB.',
                     position: 'center', scrollbarPadding: false, heightAuto: false
                 });
                 return;
             }
-            selectedCVFile = file;
-            document.getElementById('cvFileName').textContent = file.name;
-            document.getElementById('cvDropZone').style.display = 'none';
-            document.getElementById('cvExisting').style.display = '';
+            const cfg = fileCfg[type];
+            selectedFiles[type] = file;
+            document.getElementById(cfg.fileName).textContent = file.name;
+            document.getElementById(cfg.dropZone).style.display = 'none';
+            document.getElementById(cfg.existing).style.display = '';
         }
 
-        function clearCVSelection() {
-            selectedCVFile = null;
-            document.getElementById('cvFileName').textContent = '';
-            document.getElementById('cvDropZone').style.display = '';
-            document.getElementById('cvExisting').style.display = 'none';
+        function clearSelection(type) {
+            const cfg = fileCfg[type];
+            selectedFiles[type] = null;
+            document.getElementById(cfg.fileName).textContent = '';
+            document.getElementById(cfg.dropZone).style.display = '';
+            document.getElementById(cfg.existing).style.display = 'none';
         }
 
-        function deleteCV() {
+        function deleteFile(type) {
+            const label = type === 'cv' ? 'CV' : 'Cover Letter';
+            const cfg = fileCfg[type];
             Swal.fire({
-                icon: 'warning', title: 'Remove CV',
-                text: 'Are you sure you want to remove your CV?',
+                icon: 'warning', title: `Remove ${label}`,
+                text: `Are you sure you want to remove your ${label}?`,
                 showCancelButton: true,
                 confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Remove',
                 cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#8392ab',
+                confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
                 position: 'center', scrollbarPadding: false, heightAuto: false,
             }).then(result => {
                 if (!result.isConfirmed) return;
-
                 const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', CSRF);
-                formData.append('action', 'delete_cv');
-
+                formData.append('action', cfg.action);
                 fetch("{% url 'additional_details' %}", {
-                    method: 'POST',
-                    headers: {'X-CSRFToken': CSRF},
-                    body: formData
+                    method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData
                 })
                     .then(r => r.json())
                     .then(data => {
                         if (data.status === 'success') {
-                            selectedCVFile = null;
-                            document.getElementById('cvFileName').textContent = '';
-                            document.getElementById('cvDropZone').style.display = '';
-                            document.getElementById('cvExisting').style.display = 'none';
+                            clearSelection(type);
                             Swal.fire({
-                                icon: 'success', title: 'Removed',
-                                text: data.message, timer: 1500,
-                                showConfirmButton: false,
+                                icon: 'success', title: 'Removed', text: data.message,
+                                timer: 1500, showConfirmButton: false,
                                 position: 'center', scrollbarPadding: false, heightAuto: false
                             });
                         } else {
                             Swal.fire({
-                                icon: 'error', title: 'Error',
-                                text: data.message,
+                                icon: 'error', title: 'Error', text: data.message,
                                 position: 'center', scrollbarPadding: false, heightAuto: false
                             });
                         }
@@ -470,11 +500,10 @@
             });
         }
 
-        // ── Languages ────────────────────────────────────────────────
+        // ── Languages ─────────────────────────────────────────────────
         function getLangs() {
-            return Array.from(
-                document.getElementById('languagePills').querySelectorAll('.lang-pill')
-            ).map(p => p.firstChild.textContent.trim());
+            return Array.from(document.getElementById('languagePills').querySelectorAll('.lang-pill'))
+                .map(p => p.firstChild.textContent.trim());
         }
 
         function syncLangsHidden() {
@@ -485,22 +514,15 @@
             const input = document.getElementById('f_lang_input');
             const val = input.value.trim();
             if (!val) return;
-
             val.split(',').forEach(v => {
                 const lang = v.trim();
                 if (!lang) return;
-                const existing = getLangs().map(l => l.toLowerCase());
-                if (existing.includes(lang.toLowerCase())) return;
-
+                if (getLangs().map(l => l.toLowerCase()).includes(lang.toLowerCase())) return;
                 const pill = document.createElement('span');
                 pill.className = 'lang-pill';
-                pill.innerHTML = `${lang.charAt(0).toUpperCase() + lang.slice(1)}
-            <button type="button" onclick="removeLang(this)">
-                <i class="fas fa-times"></i>
-            </button>`;
+                pill.innerHTML = `${lang.charAt(0).toUpperCase() + lang.slice(1)}<button type="button" onclick="removeLang(this)"><i class="fas fa-times"></i></button>`;
                 document.getElementById('languagePills').appendChild(pill);
             });
-
             input.value = '';
             syncLangsHidden();
         }
@@ -517,45 +539,50 @@
             }
         }
 
-        // ── Save Details ─────────────────────────────────────────────
+        // ── Save ──────────────────────────────────────────────────────
         function saveDetails() {
-
-            // ── Required field validation ─────────────────────────────
             const availability = document.getElementById('f_availability').value;
             const expectedSalary = document.getElementById('f_expected_salary').value.trim();
 
+            // Check if cover letter exists (already saved OR newly selected)
+            const clExistingVisible = document.getElementById('clExisting').style.display !== 'none';
+            const hasCoverLetter = clExistingVisible || selectedFiles.cover_letter;
+
             if (!availability) {
                 Swal.fire({
-                    icon: 'error', title: 'Required',
-                    text: 'Please select your availability.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                    icon: 'error', title: 'Required', text: 'Please select your availability.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
                 });
                 document.getElementById('f_availability').focus();
                 return;
             }
             if (!expectedSalary) {
                 Swal.fire({
-                    icon: 'error', title: 'Required',
-                    text: 'Expected salary is required.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                    icon: 'error', title: 'Required', text: 'Expected salary is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
                 });
                 document.getElementById('f_expected_salary').focus();
                 return;
             }
             if (parseInt(expectedSalary) < 0) {
                 Swal.fire({
-                    icon: 'error', title: 'Invalid',
-                    text: 'Expected salary cannot be negative.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                    icon: 'error', title: 'Invalid', text: 'Expected salary cannot be negative.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
                 });
                 document.getElementById('f_expected_salary').focus();
                 return;
             }
+            if (!hasCoverLetter) {
+                Swal.fire({
+                    icon: 'error', title: 'Required', text: 'Please upload your cover letter (PDF).',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+                return;
+            }
 
             Swal.fire({
-                title: 'Saving...', icon: 'info',
-                allowOutsideClick: false, showConfirmButton: false,
-                position: 'center', scrollbarPadding: false,
+                title: 'Saving...', icon: 'info', allowOutsideClick: false,
+                showConfirmButton: false, position: 'center', scrollbarPadding: false,
                 didOpen: () => Swal.showLoading()
             });
 
@@ -564,58 +591,55 @@
             formData.append('action', 'save');
             formData.append('availability', availability);
             formData.append('expected_salary', expectedSalary);
-            formData.append('cover_letter', document.getElementById('f_cover_letter').value.trim());
             formData.append('linkedin_url', document.getElementById('f_linkedin_url').value.trim());
             formData.append('portfolio_url', document.getElementById('f_portfolio_url').value.trim());
             formData.append('languages', document.getElementById('f_languages').value);
 
-            if (selectedCVFile) {
-                formData.append('cv', selectedCVFile);
-            }
+            if (selectedFiles.cv) formData.append('cv', selectedFiles.cv);
+            if (selectedFiles.cover_letter) formData.append('cover_letter', selectedFiles.cover_letter);
 
             fetch("{% url 'additional_details' %}", {
-                method: 'POST',
-                headers: {'X-CSRFToken': CSRF},
-                body: formData
+                method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData
             })
                 .then(r => r.json())
                 .then(data => {
                     Swal.close();
                     if (data.status === 'success') {
-
-                        // Update CV display if new file uploaded
+                        // Update CV display
                         if (data.cv_filename) {
                             document.getElementById('cvFileName').textContent = data.cv_filename;
                             document.getElementById('cvDropZone').style.display = 'none';
                             document.getElementById('cvExisting').style.display = '';
-                            selectedCVFile = null;
+                            selectedFiles.cv = null;
                         }
-
-                        // Update progress bar live
+                        // Update cover letter display
+                        if (data.cover_letter_filename) {
+                            document.getElementById('clFileName').textContent = data.cover_letter_filename;
+                            document.getElementById('clDropZone').style.display = 'none';
+                            document.getElementById('clExisting').style.display = '';
+                            selectedFiles.cover_letter = null;
+                        }
+                        // Update progress
                         if (data.completion !== undefined) {
                             const pct = data.completion;
                             document.getElementById('progressBar').style.width = pct + '%';
                             document.getElementById('progressBar').setAttribute('aria-valuenow', pct);
                             document.getElementById('progressPct').textContent = pct + '%';
                             document.getElementById('completionText').textContent = pct + '% Complete';
-
                             const msg = document.getElementById('progressMsg');
                             if (pct === 100) msg.textContent = '🎉 Profile complete!';
                             else if (pct >= 60) msg.textContent = 'Almost there — keep going!';
                             else if (pct >= 30) msg.textContent = 'Good start — more to fill in.';
                             else msg.textContent = 'Just getting started...';
                         }
-
                         Swal.fire({
-                            icon: 'success', title: 'Saved!',
-                            text: data.message, timer: 1800,
-                            showConfirmButton: false,
-                            position: 'center', scrollbarPadding: false, heightAuto: false,
+                            icon: 'success', title: 'Saved!', text: data.message,
+                            timer: 1800, showConfirmButton: false,
+                            position: 'center', scrollbarPadding: false, heightAuto: false
                         });
                     } else {
                         Swal.fire({
-                            icon: 'error', title: 'Save Failed',
-                            text: data.message,
+                            icon: 'error', title: 'Save Failed', text: data.message,
                             position: 'center', scrollbarPadding: false, heightAuto: false
                         });
                     }
@@ -623,8 +647,7 @@
                 .catch(() => {
                     Swal.close();
                     Swal.fire({
-                        icon: 'error', title: 'System Error',
-                        text: 'Something went wrong. Please try again.',
+                        icon: 'error', title: 'System Error', text: 'Something went wrong. Please try again.',
                         position: 'center', scrollbarPadding: false, heightAuto: false
                     });
                 });
