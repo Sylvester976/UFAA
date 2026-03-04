@@ -1,5 +1,3 @@
-
-
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -9,43 +7,101 @@
     <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
     <title>UFAA Job Portal</title>
-    <!-- Fonts & Icons -->
     <link href="{% static 'assets/css/google_font.css?family=Open+Sans:300,400,600,700' %}" rel="stylesheet"/>
     <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet"/>
     <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet"/>
     <link href="{% static 'assets/css/font-awesome/all.min.css' %}" rel="stylesheet">
-
-    <!-- SweetAlert2 CSS -->
     <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
     <link href="{% static 'assets/css/select2.min.css' %}" rel="stylesheet"/>
-
-
-    <!-- Main CSS -->
     <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
     <link id="pagestyle" href="{% static 'assets/css/base.css' %}" rel="stylesheet"/>
+    <style>
+        /* Group toggle — nav-link handles padding/colour/font, we only add extras */
+        .nav-group-toggle {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+        }
+        .nav-group-toggle.open {
+            font-weight: 600;
+            color: #344767;
+        }
+        /* Chevron arrow pushed to far right */
+        .nav-group-toggle .toggle-arrow {
+            margin-left: auto;
+            font-size: 0.6rem;
+            opacity: 0.4;
+            flex-shrink: 0;
+            transition: transform 0.22s ease, opacity 0.22s ease;
+        }
+        .nav-group-toggle.open .toggle-arrow {
+            transform: rotate(90deg);
+            opacity: 0.65;
+        }
 
+        /* Children container */
+        .nav-group-children {
+            display: none;
+            padding-left: 0.5rem;
+            margin-left: 1.6rem;
+            border-left: 2px solid rgba(29,37,91,0.1);
+            margin-bottom: 0.1rem;
+        }
+        .nav-group-children.open { display: block; }
+        .nav-group-children .nav-link {
+            font-size: 0.82rem !important;
+            padding: 0.4rem 0.75rem !important;
+            color: #67748e !important;
+        }
+        .nav-group-children .nav-link.active,
+        .nav-group-children .nav-link:hover { color: #344767 !important; }
 
+        /* Notification unread/read states */
+        .notif-unread {
+            background: rgba(29,37,91,0.05) !important;
+            border-left: 3px solid #1D255B !important;
+        }
+        .notif-item {
+            border-left: 3px solid transparent;
+            transition: background 0.2s ease;
+            margin-bottom: 2px;
+        }
+        .notif-item:hover { background: rgba(29,37,91,0.04) !important; }
+
+        /* Notification badge */
+        .nav-group-badge {
+            font-size: 0.58rem;
+            font-weight: 700;
+            padding: 0.15rem 0.42rem;
+            border-radius: 0.35rem;
+            background: linear-gradient(135deg, #1D255B, #2E3A7A);
+            color: #F9E6A1;
+            margin-left: 0.35rem;
+            vertical-align: middle;
+            flex-shrink: 0;
+        }
+    </style>
     {% block extra_css %}{% endblock %}
 </head>
 
 <body class="g-sidenav-show bg-gray-100">
 <aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 ps ps--active-y bg-transparent"
        id="sidenav-main">
-    <div class="sidenav-header  m-0" href="{% url 'dashboard' %}">
+    <div class="sidenav-header m-0">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
            aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href="{% url 'dashboard' %}" target="_blank">
+        <a class="navbar-brand m-0" href="{% url 'dashboard' %}">
             <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" class="navbar-brand-img h-100" alt="main_logo">
-            <span class="ms-1 font-weight-bold">
-            {% comment %} {{ request.user.email|default:request.user.email }} {% endcomment %}
-        </span>
         </a>
     </div>
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse w-auto max-height-vh-100 h-100 ps" id="sidenav-collapse-main">
         <ul class="navbar-nav">
-            
+
             <!-- Instructions -->
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'instrutions_view' %}active{% endif %}"
@@ -54,7 +110,7 @@
                     Instructions
                 </a>
             </li>
-            
+
             <!-- Dashboard -->
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
@@ -63,97 +119,102 @@
                     Dashboard
                 </a>
             </li>
-            
-            <!-- Profile -->
+
+            {% with u=request.resolver_match.url_name %}
+
+            <!-- ══ PROFILE GROUP ══════════════════════════ -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
-                   href="{% url 'profile' %}">
-                    <i class="fas fa-user me-2"></i>
+                <div id="profileGroupToggle"
+                     class="nav-link nav-group-toggle {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}"
+                     onclick="toggleGroup('profileGroup','profileGroupToggle')">
+                    <i class="fas fa-id-card me-2"></i>
                     Profile
-                </a>
+                    <i class="fas fa-chevron-right toggle-arrow"></i>
+                </div>
             </li>
-
-            <!-- Academic Qualifications -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'academic_qualifications' %}active{% endif %}"
-                   href="{% url 'academic_qualifications' %}">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    Academic Qualifications
-                </a>
+                <div id="profileGroup"
+                     class="nav-group-children {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                                <i class="fas fa-user me-2"></i> Basic Details
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'academic_qualifications' %}active{% endif %}" href="{% url 'academic_qualifications' %}">
+                                <i class="fas fa-graduation-cap me-2"></i> Academic
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'professional_qualifications' %}active{% endif %}" href="{% url 'professional_qualifications' %}">
+                                <i class="fas fa-certificate me-2"></i> Professional
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'work_history' %}active{% endif %}" href="{% url 'work_history' %}">
+                                <i class="fas fa-briefcase me-2"></i> Work History
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'memberships' %}active{% endif %}" href="{% url 'memberships' %}">
+                                <i class="fas fa-users me-2"></i> Memberships
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'referees' %}active{% endif %}" href="{% url 'referees' %}">
+                                <i class="fas fa-user-tie me-2"></i> Referees
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'additional_details' %}active{% endif %}" href="{% url 'additional_details' %}">
+                                <i class="fas fa-info-circle me-2"></i> Additional Details
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
-
+            <!-- ══ JOB APPLICATION GROUP ═════════════════ -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'professional_qualifications' %}active{% endif %}"
-                   href="{% url 'professional_qualifications' %}">
-                    <i class="fas fa-certificate me-2"></i>
-                    <span class="nav-link-text ms-1">professional qualifications</span>
-                </a>
+                <div id="jobGroupToggle"
+                     class="nav-link nav-group-toggle {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}"
+                     onclick="toggleGroup('jobGroup','jobGroupToggle')">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Job Application
+                    <span id="sidebarGroupBadge" class="nav-group-badge" style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
+                    <i class="fas fa-chevron-right toggle-arrow"></i>
+                </div>
+            </li>
+            <li class="nav-item">
+                <div id="jobGroup"
+                     class="nav-group-children {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}">
+                    <ul class="navbar-nav">
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'apply_jobs' %}active{% endif %}" href="{% url 'apply_jobs' %}">
+                                <i class="fas fa-paper-plane me-2"></i> Apply for Jobs
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if u == 'job_status' %}active{% endif %}" href="{% url 'job_status' %}">
+                                <i class="fas fa-tasks me-2"></i> Job Status
+                                <span id="sidebarChildBadge" class="nav-group-badge ms-1" style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </li>
 
-
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}"
-                   href="{% url 'work_history' %}">
-                    <i class="fas fa-briefcase me-2"></i>
-                    <span class="nav-link-text ms-1">Work history</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'memberships' %}active{% endif %}"
-                   href="{% url 'memberships' %}">
-                    <i class="fas fa-user-tie me-1"></i>
-                    <span class="nav-link-text ms-1">Membership</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link  " href="{% url 'referees' %}">
-                    <i class="fas fa-user-tie me-2"></i>
-                    <span class="nav-link-text ms-1">Referees</span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'additional_details' %}">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <span class="nav-link-text ms-1">Additional details</span>
-                </a>
-            </li>
-
-            <!-- Applications -->
-            <li class="nav-item">
-                <a class="nav-link " href="{% url 'view_jobs' %}">
-                    <i class="fas fa-paper-plane me-2"></i>
-                    <span class="nav-link-text ms-1">Apply job</span>
-                </a>
-            </li>
-            
-            <!-- Applications -->
-            <li class="nav-item">
-                <a class="nav-link  " href="../pages/virtual-reality.html">
-                    <i class="fas fa-chart-line me-2"></i>
-                    <span class="nav-link-text ms-1">Status</span>
-                </a>
-            </li>
+            {% endwith %}
 
         </ul>
-        <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-            <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-        </div>
-        <div class="ps__rail-y" style="top: 0px; right: 0px;">
-            <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div>
-        </div>
+        <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
+        <div class="ps__rail-y" style="top:0;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:0;"></div></div>
     </div>
-
-    <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-        <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-    </div>
-    <div class="ps__rail-y" style="top: 0px; height: 747px; right: 0px;">
-        <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 510px;"></div>
-    </div>
+    <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
+    <div class="ps__rail-y" style="top:0;height:747px;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:510px;"></div></div>
 </aside>
+
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ps ps--active-y">
     <!-- Navbar -->
     <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl position-sticky blur shadow-blur mt-4 left-auto top-1 z-index-sticky"
@@ -161,42 +222,32 @@
         <div class="container-fluid py-1 px-3">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
-                    <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:">Pages</a>
+                    <li class="breadcrumb-item text-sm">
+                        <a class="opacity-5 text-dark" href="javascript:">Pages</a>
                     </li>
                     <li class="breadcrumb-item text-sm text-dark active" aria-current="page">{{ page }}</li>
                 </ol>
                 <h6 class="font-weight-bolder mb-0">{{ page }}</h6>
             </nav>
             <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
-                <div class="ms-md-auto pe-md-3 d-flex align-items-center">
-                </div>
-                <ul class="navbar-nav  justify-content-end">
+                <div class="ms-md-auto pe-md-3 d-flex align-items-center"></div>
+                <ul class="navbar-nav justify-content-end">
+
+                    <!-- User Dropdown -->
                     <li class="nav-item dropdown d-flex align-items-center">
-                        <a href="#"
-                           class="nav-link text-body p-0"
-                           id="userDropdown"
-                           role="button"
-                           data-bs-toggle="dropdown"
-                           aria-expanded="false">
+                        <a href="#" class="nav-link text-body p-0"
+                           id="userDropdown" role="button"
+                           data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="fa fa-user me-1"></i>
-                            {% if logged_user %}
-                                {{ logged_user.name }}
-                            {% endif %}
+                            {% if logged_user %}{{ logged_user.name }}{% endif %}
                         </a>
-                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
-                            aria-labelledby="userDropdown">
-                            <li>
-                                <a class="dropdown-item" href="{% url 'profile' %}">
-                                    My Profile
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
-                                    Logout
-                                </a>
-                            </li>
+                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3" aria-labelledby="userDropdown">
+                            <li><a class="dropdown-item" href="{% url 'profile' %}">My Profile</a></li>
+                            <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
                         </ul>
                     </li>
+
+                    <!-- Mobile toggle -->
                     <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
                         <a href="javascript:" class="nav-link text-body p-0" id="iconNavbarSidenav">
                             <div class="sidenav-toggler-inner">
@@ -206,74 +257,96 @@
                             </div>
                         </a>
                     </li>
-                    <li class="nav-item px-3 d-flex align-items-center">
-                    </li>
+                    <li class="nav-item px-3 d-flex align-items-center"></li>
+
+                    <!-- Notifications Bell -->
                     <li class="nav-item dropdown pe-2 d-flex align-items-center">
-                        <a href="javascript:" class="nav-link text-body p-0" id="dropdownMenuButton"
-                           data-bs-toggle="dropdown" aria-expanded="false">
+                        <a href="javascript:"
+                           class="nav-link text-body p-0 position-relative"
+                           id="dropdownMenuButton"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
                             <i class="fa fa-bell cursor-pointer"></i>
-                            <span class="d-sm-inline d-none">Notifications</span>
+                            <span id="bellBadge"
+                                  class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
+                                  style="background:#1D255B; color:#F9E6A1;
+                                         font-size:0.55rem; padding:0.18rem 0.38rem;
+                                         min-width:16px; line-height:1.3;
+                                         {% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">
+                                {{ unread_notif_count|default:0 }}
+                            </span>
+                            <span class="d-sm-inline d-none ms-1">Notifications</span>
                         </a>
-                        <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
-                            aria-labelledby="dropdownMenuButton">
-                            <li>
-                                <a class="dropdown-item border-radius-md" href="javascript:">
-                                    <div class="d-flex py-1">
-                                        <div class="avatar avatar-sm bg-gradient-secondary  me-3  my-auto">
-                                            <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1"
-                                                 xmlns="http://www.w3.org/2000/svg"
-                                            >
-                                                <title>credit-card</title>
-                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-                                                    <g transform="translate(-2169.000000, -745.000000)" fill="#FFFFFF"
-                                                       fill-rule="nonzero">
-                                                        <g transform="translate(1716.000000, 291.000000)">
-                                                            <g transform="translate(453.000000, 454.000000)">
-                                                                <path class="color-background"
-                                                                      d="M43,10.7482083 L43,3.58333333 C43,1.60354167 41.3964583,0 39.4166667,0 L3.58333333,0 C1.60354167,0 0,1.60354167 0,3.58333333 L0,10.7482083 L43,10.7482083 Z"
-                                                                      opacity="0.593633743"></path>
-                                                                <path class="color-background"
-                                                                      d="M0,16.125 L0,32.25 C0,34.2297917 1.60354167,35.8333333 3.58333333,35.8333333 L39.4166667,35.8333333 C41.3964583,35.8333333 43,34.2297917 43,32.25 L43,16.125 L0,16.125 Z M19.7083333,26.875 L7.16666667,26.875 L7.16666667,23.2916667 L19.7083333,23.2916667 L19.7083333,26.875 Z M35.8333333,26.875 L28.6666667,26.875 L28.6666667,23.2916667 L35.8333333,23.2916667 L35.8333333,26.875 Z"></path>
-                                                            </g>
-                                                        </g>
-                                                    </g>
-                                                </g>
-                                            </svg>
+                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4"
+                            aria-labelledby="dropdownMenuButton"
+                            id="notifDropdownList"
+                            style="min-width:320px; max-height:420px; overflow-y:auto;">
+                            {% if notifications %}
+                                {% for notif in notifications %}
+                                <li>
+                                    <a class="dropdown-item border-radius-md py-2 notif-item {% if not notif.is_read %}notif-unread{% endif %}"
+                                       href="{% url 'job_status' %}"
+                                       data-notif-id="{{ notif.id }}"
+                                       style="{% if not notif.is_read %}background:rgba(29,37,91,0.05); border-left:3px solid #1D255B; border-radius:0.5rem;{% else %}border-left:3px solid transparent;{% endif %}">
+                                        <div class="d-flex gap-3 align-items-start">
+                                            <div class="avatar avatar-sm flex-shrink-0 my-auto"
+                                                 style="background:{% if not notif.is_read %}linear-gradient(135deg,#1D255B,#2E3A7A){% else %}#e9ecef{% endif %};border-radius:0.6rem;">
+                                                <i class="fas {% if notif.notification_type == 'application_submitted' %}fa-paper-plane{% else %}fa-chart-line{% endif %} {% if not notif.is_read %}text-white{% else %}text-secondary{% endif %}"
+                                                   style="font-size:0.65rem;"></i>
+                                            </div>
+                                            <div class="flex-grow-1 overflow-hidden">
+                                                <h6 class="text-sm mb-0 notif-title"
+                                                    style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                                                           {% if not notif.is_read %}color:#1D255B;font-weight:700;{% else %}color:#67748e;font-weight:400;{% endif %}">
+                                                    {% if not notif.is_read %}<i class="fas fa-circle me-1" style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>{% endif %}
+                                                    {{ notif.title }}
+                                                </h6>
+                                                <p class="text-xs text-secondary mb-0 mt-1" style="white-space:normal;font-size:0.7rem;">
+                                                    {{ notif.message|truncatechars:60 }}
+                                                </p>
+                                                <p class="text-xs mb-0 mt-1" style="font-size:0.65rem;color:#adb5bd;">
+                                                    <i class="fa fa-clock me-1"></i>{{ notif.created_at|timesince }} ago
+                                                </p>
+                                            </div>
                                         </div>
-                                        <div class="d-flex flex-column justify-content-center">
-                                            <h6 class="text-sm font-weight-normal mb-1">
-                                                Payment successfully completed
-                                            </h6>
-                                            <p class="text-xs text-secondary mb-0">
-                                                <i class="fa fa-clock me-1"></i>
-                                                2 days
-                                            </p>
-                                        </div>
+                                    </a>
+                                </li>
+                                {% endfor %}
+                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <a class="dropdown-item text-center py-2" href="{% url 'job_status' %}"
+                                       style="color:#1D255B;font-weight:600;font-size:0.78rem;">
+                                        View all applications
+                                        <i class="fas fa-arrow-right ms-1" style="font-size:0.65rem;"></i>
+                                    </a>
+                                </li>
+                            {% else %}
+                                <li>
+                                    <div class="text-center py-4 px-2">
+                                        <i class="fas fa-bell-slash text-secondary mb-2"
+                                           style="font-size:1.5rem;opacity:0.25;"></i>
+                                        <p class="text-xs text-secondary mb-0">No notifications yet</p>
                                     </div>
-                                </a>
-                            </li>
+                                </li>
+                            {% endif %}
                         </ul>
                     </li>
+
                 </ul>
             </div>
         </div>
     </nav>
     <!-- End Navbar -->
-    <div class="container-fluid py-4">
-        <!-- Block content here -->
-        {% block content %}
 
-        {% endblock %}
-        <!-- END Block content -->
-        <footer class="footer pt-3  ">
+    <div class="container-fluid py-4">
+        {% block content %}{% endblock %}
+        <footer class="footer pt-3">
             <div class="container-fluid">
                 <div class="row align-items-center justify-content-lg-between">
                     <div class="col-lg-12 mb-lg-0 mb-4">
                         <div class="copyright text-center text-sm text-muted text-lg-start">
-                            ©
-                            <script>
-                                document.write(new Date().getFullYear())
-                            </script>
+                            &copy;
+                            <script>document.write(new Date().getFullYear())</script>
                             The Unclaimed Financial Assets Authority (UFAA). All rights reserved.
                         </div>
                     </div>
@@ -281,57 +354,240 @@
             </div>
         </footer>
     </div>
-    <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
-        <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
-    </div>
-    <div class="ps__rail-y" style="top: 0px; height: 779px; right: 0px;">
-        <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 358px;"></div>
-    </div>
+    <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
+    <div class="ps__rail-y" style="top:0;height:779px;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:358px;"></div></div>
 </main>
-<!--   Core JS Files   -->
 
-<!-- jQuery MUST be first -->
 <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
-
-<!-- Bootstrap — only once -->
 <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
-
-<!-- Plugins -->
 <script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
 <script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
-
-<!-- Select2 -->
 <script src="{% static 'assets/js/select2.min.js' %}"></script>
-
-<!-- SweetAlert2 — only once -->
 <script src="{% static 'assets/js/swal2/swal2.js' %}"></script>
-
-<!-- Soft UI Dashboard -->
 <script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
-
-<!-- Autologout -->
 <script src="{% static 'assets/js/autologout.js' %}"></script>
-
 <script>
     window.appConfig = {
         csrfToken: '{{ csrf_token }}',
         logoutUrl: '{% url "logout" %}',
-        loginUrl: '{% url "index" %}',
+        loginUrl:  '{% url "index" %}',
     };
-</script>
-
-<script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
-        var options = {damping: '0.5'}
-        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), {damping: '0.5'});
     }
+    function toggleGroup(groupId, toggleId) {
+        var group  = document.getElementById(groupId);
+        var toggle = document.getElementById(toggleId);
+        var isOpen = group.classList.contains('open');
+        group.classList.toggle('open', !isOpen);
+        toggle.classList.toggle('open', !isOpen);
+    }
+</script>
+<script>
+(function () {
+    const CSRF     = '{{ csrf_token }}';
+    const READ_URL = '{% url "mark_notification_read" %}';
+
+    function updateBadge(count) {
+        const bellBadge       = document.getElementById('bellBadge');
+        const sidebarGroup    = document.getElementById('sidebarGroupBadge');
+        const sidebarChild    = document.getElementById('sidebarChildBadge');
+        const unreadLabel     = document.getElementById('unreadLabel');
+        const markAllBtn      = document.getElementById('markAllReadBtn');
+
+        if (count > 0) {
+            [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+                if (el) { el.textContent = count; el.style.display = ''; }
+            });
+            if (unreadLabel) unreadLabel.textContent = count + ' unread';
+        } else {
+            [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+                if (el) el.style.display = 'none';
+            });
+            if (unreadLabel) unreadLabel.textContent = '';
+            if (markAllBtn)  markAllBtn.style.display = 'none';
+        }
+    }
+
+    function markRead(notifId) {
+        const body = new FormData();
+        body.append('csrfmiddlewaretoken', CSRF);
+        if (notifId) body.append('notif_id', notifId);
+        fetch(READ_URL, { method: 'POST', headers: { 'X-CSRFToken': CSRF }, body })
+            .then(r => r.json())
+            .then(data => { if (data.status === 'ok') updateBadge(data.unread_count); });
+    }
+
+    function resetItemStyle(item) {
+        item.classList.remove('notif-unread');
+        item.style.background = '';
+        item.style.borderLeft = '3px solid transparent';
+        // Icon back to grey
+        const avatar = item.querySelector('.avatar');
+        if (avatar) avatar.style.background = '#e9ecef';
+        const icon = item.querySelector('.avatar i');
+        if (icon) { icon.classList.remove('text-white'); icon.classList.add('text-secondary'); }
+        // Title back to grey normal weight
+        const title = item.querySelector('.notif-title');
+        if (title) { title.style.color = '#67748e'; title.style.fontWeight = '400'; }
+        // Remove the small dot circle before title
+        const dot = title ? title.querySelector('i.fa-circle') : null;
+        if (dot) dot.remove();
+    }
+
+    // Click individual notification → mark that one read
+    document.addEventListener('click', function (e) {
+        const item = e.target.closest('.notif-item');
+        if (!item) return;
+        if (item.classList.contains('notif-unread')) {
+            resetItemStyle(item);
+            markRead(item.dataset.notifId);
+        }
+    });
+
+    // Mark all read button
+    document.addEventListener('click', function (e) {
+        if (!e.target.closest('#markAllReadBtn')) return;
+        document.querySelectorAll('.notif-unread').forEach(resetItemStyle);
+        markRead(null);
+    });
+})();
+</script>
+<script>
+(function () {
+    const POLL_URL  = '{% url "notification_poll" %}';
+    const POLL_MS   = 30000;   // every 30 seconds
+    let   lastCount = {{ unread_notif_count|default:0 }};
+
+    function updateBadges(count) {
+        const bellBadge    = document.getElementById('bellBadge');
+        const sidebarGroup = document.getElementById('sidebarGroupBadge');
+        const sidebarChild = document.getElementById('sidebarChildBadge');
+
+        [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+            if (!el) return;
+            if (count > 0) {
+                el.textContent  = count;
+                el.style.display = '';
+            } else {
+                el.style.display = 'none';
+            }
+        });
+    }
+
+    function timeAgo(dateStr) {
+        const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+        if (diff < 60)   return diff + 's ago';
+        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
+        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
+        return Math.floor(diff/86400) + 'd ago';
+    }
+
+    function rebuildDropdown(notifs, unread) {
+        const list = document.getElementById('notifDropdownList');
+        if (!list) return;
+
+        if (!notifs.length) {
+            list.innerHTML = `
+                <li>
+                    <div class="text-center py-4 px-2">
+                        <i class="fas fa-bell-slash text-secondary mb-2" style="font-size:1.5rem;opacity:0.25;"></i>
+                        <p class="text-xs text-secondary mb-0">No notifications yet</p>
+                    </div>
+                </li>`;
+            return;
+        }
+
+        let html = '';
+        notifs.forEach(n => {
+            const isUnread  = !n.is_read;
+            const icon      = n.notification_type === 'application_submitted' ? 'fa-paper-plane' : 'fa-chart-line';
+            const dot       = isUnread ? '<i class="fas fa-circle me-1" style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>' : '';
+            html += `
+            <li>
+                <a class="dropdown-item border-radius-md py-2 notif-item ${isUnread ? 'notif-unread' : ''}"
+                   href="/recruitment/job-status/"
+                   data-notif-id="${n.id}"
+                   style="${isUnread ? 'background:rgba(29,37,91,0.05);border-left:3px solid #1D255B;border-radius:0.5rem;' : 'border-left:3px solid transparent;'}">
+                    <div class="d-flex gap-3 align-items-start">
+                        <div class="avatar avatar-sm flex-shrink-0 my-auto"
+                             style="background:${isUnread ? 'linear-gradient(135deg,#1D255B,#2E3A7A)' : '#e9ecef'};border-radius:0.6rem;">
+                            <i class="fas ${icon} ${isUnread ? 'text-white' : 'text-secondary'}" style="font-size:0.65rem;"></i>
+                        </div>
+                        <div class="flex-grow-1 overflow-hidden">
+                            <h6 class="text-sm mb-0 notif-title"
+                                style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                                       ${isUnread ? 'color:#1D255B;font-weight:700;' : 'color:#67748e;font-weight:400;'}">
+                                ${dot}${n.title}
+                            </h6>
+                            <p class="text-xs text-secondary mb-0 mt-1" style="white-space:normal;font-size:0.7rem;">
+                                ${n.message.length > 60 ? n.message.substring(0,60)+'…' : n.message}
+                            </p>
+                            <p class="text-xs mb-0 mt-1" style="font-size:0.65rem;color:#adb5bd;">
+                                <i class="fa fa-clock me-1"></i>${n.created_at}
+                            </p>
+                        </div>
+                    </div>
+                </a>
+            </li>`;
+        });
+
+        if (unread > 0) {
+            html += `
+            <li>
+                <div class="px-3 py-1 d-flex justify-content-between align-items-center">
+                    <small class="text-secondary" style="font-size:0.68rem;" id="unreadLabel">${unread} unread</small>
+                    <button class="btn btn-xs p-0" id="markAllReadBtn"
+                            style="font-size:0.68rem;font-weight:600;color:#1D255B;background:none;border:none;cursor:pointer;">
+                        <i class="fas fa-check-double me-1"></i>Mark all read
+                    </button>
+                </div>
+            </li>`;
+        }
+
+        html += `
+            <li><hr class="dropdown-divider my-1"></li>
+            <li>
+                <a class="dropdown-item text-center py-2" href="/recruitment/job-status/"
+                   style="color:#1D255B;font-weight:600;font-size:0.78rem;">
+                    View all applications <i class="fas fa-arrow-right ms-1" style="font-size:0.65rem;"></i>
+                </a>
+            </li>`;
+
+        list.innerHTML = html;
+    }
+
+    function poll() {
+        fetch(POLL_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(r => r.json())
+            .then(data => {
+                const newCount = data.unread_count;
+
+                // Flash bell if new notifications arrived
+                if (newCount > lastCount) {
+                    const bell = document.querySelector('#dropdownMenuButton i.fa-bell');
+                    if (bell) {
+                        bell.style.transition = 'color 0.3s';
+                        bell.style.color = '#F9E6A1';
+                        setTimeout(() => bell.style.color = '', 1000);
+                    }
+                }
+
+                lastCount = newCount;
+                updateBadges(newCount);
+                rebuildDropdown(data.notifications, newCount);
+            })
+            .catch(() => {});  // fail silently
+    }
+
+    // Start polling after 5s delay, then every 30s
+    setTimeout(() => { poll(); setInterval(poll, POLL_MS); }, 5000);
+})();
 </script>
 
 {% block extra_js %}{% endblock %}
-
-
 </body>
 </html>

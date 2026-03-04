@@ -2,107 +2,111 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
-<style>
-    .step-card {
-        border-radius: 0.75rem;
-        border: 1px solid #e9ecef;
-        transition: all 0.3s ease;
-    }
-    .step-card:hover {
-        box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-        transform: translateY(-2px);
-    }
-    .step-number {
-        width: 35px;
-        height: 35px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        color: #fff;
-        font-size: 0.9rem;
-    }
-</style>
+    <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+    <style>
+        .step-card {
+            border-radius: 0.75rem;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .step-card:hover {
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            transform: translateY(-2px);
+        }
+
+        .step-number {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mt-4">
+    <div class="row">
+        <div class="col-12 mt-4">
 
-        <!-- Page Header -->
-        <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
-            <div>
-                <h6 class="mb-0 font-weight-bolder">UFAA Recruitment</h6>
-                <p class="text-sm text-secondary mb-0">
-                    Follow the steps below to complete your application successfully
-                </p>
-            </div>
-        </div>
-
-        <!-- Content Card -->
-        <div class="card mb-4 profile-content-card">
-            <div class="card-body p-3 p-md-4">
-
-                <h5 class="font-weight-bolder mb-4 text-center">Application Steps</h5>
-
-                <!-- Step 1 -->
-                <div class="step-card p-4 mb-4 bg-white">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="step-number bg-gradient-primary me-3">1</div>
-                        <h6 class="mb-0 font-weight-bold">Register and Login</h6>
-                    </div>
+            <!-- Page Header -->
+            <div class="d-flex align-items-center justify-content-between mb-4 flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">UFAA Recruitment</h6>
                     <p class="text-sm text-secondary mb-0">
-                        Create an account using a valid email address, then log in using your email and password.
+                        Follow the steps below to complete your application successfully
                     </p>
                 </div>
-
-                <!-- Step 2 -->
-                <div class="step-card p-4 mb-4 bg-white">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="step-number bg-gradient-info me-3">2</div>
-                        <h6 class="mb-0 font-weight-bold">Complete Your Profile</h6>
-                    </div>
-                    <p class="text-sm text-secondary">
-                        Ensure your profile is complete and accurate by adding:
-                    </p>
-                    <ul class="text-sm text-secondary ps-3 mb-0">
-                        <li>Personal information</li>
-                        <li>Academic qualifications (KCSE to PhD, where applicable)</li>
-                        <li>Professional qualifications and certifications</li>
-                        <li>Membership to professional bodies (where applicable)</li>
-                        <li>Work experience</li>
-                        <li>National ID / Passport (for verification)</li>
-                    </ul>
-                </div>
-
-                <!-- Step 3 -->
-                <div class="step-card p-4 mb-4 bg-white">
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="step-number bg-gradient-success me-3">3</div>
-                        <h6 class="mb-0 font-weight-bold">Apply for Vacancies</h6>
-                    </div>
-                    <p class="text-sm text-secondary">
-                        Once your profile is complete, open the vacancy you are interested in and submit your application.
-                        You may apply for more than one vacancy, provided you meet the requirements for each position.
-                    </p>
-                    <p class="text-sm text-secondary mb-0">
-                        Please review your information carefully before submitting.
-                        Incomplete or inaccurate information may affect the outcome of your application.
-                    </p>
-                </div>
-
-                <!-- Important Notice -->
-                <div class="alert alert-warning mt-4">
-                    <strong>Important Notice:</strong>
-                    UFAA does not charge any fee at any stage of the recruitment process.
-                    Do not pay anyone claiming to offer recruitment assistance.
-                </div>
-
             </div>
-        </div>
 
+            <!-- Content Card -->
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body p-3 p-md-4">
+
+                    <h5 class="font-weight-bolder mb-4 text-center">Application Steps</h5>
+
+                    <!-- Step 1 -->
+                    <div class="step-card p-4 mb-4 bg-white">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="step-number bg-gradient-primary me-3">1</div>
+                            <h6 class="mb-0 font-weight-bold">Register and Login</h6>
+                        </div>
+                        <p class="text-sm text-secondary mb-0">
+                            Create an account using a valid email address, then log in using your email and password.
+                        </p>
+                    </div>
+
+                    <!-- Step 2 -->
+                    <div class="step-card p-4 mb-4 bg-white">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="step-number bg-gradient-info me-3">2</div>
+                            <h6 class="mb-0 font-weight-bold">Complete Your Profile</h6>
+                        </div>
+                        <p class="text-sm text-secondary">
+                            Ensure your profile is complete and accurate by adding:
+                        </p>
+                        <ul class="text-sm text-secondary ps-3 mb-0">
+                            <li>Personal information</li>
+                            <li>Academic qualifications (KCSE to PhD, where applicable)</li>
+                            <li>Professional qualifications and certifications</li>
+                            <li>Membership to professional bodies (where applicable)</li>
+                            <li>Work experience</li>
+                            <li>National ID / Passport (for verification)</li>
+                        </ul>
+                    </div>
+
+                    <!-- Step 3 -->
+                    <div class="step-card p-4 mb-4 bg-white">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="step-number bg-gradient-success me-3">3</div>
+                            <h6 class="mb-0 font-weight-bold">Apply for Vacancies</h6>
+                        </div>
+                        <p class="text-sm text-secondary">
+                            Once your profile is complete, open the vacancy you are interested in and submit your
+                            application.
+                            You may apply for more than one vacancy, provided you meet the requirements for each
+                            position.
+                        </p>
+                        <p class="text-sm text-secondary mb-0">
+                            Please review your information carefully before submitting.
+                            Incomplete or inaccurate information may affect the outcome of your application.
+                        </p>
+                    </div>
+
+                    <!-- Important Notice -->
+                    <div class="alert alert-warning mt-4">
+                        <strong>Important Notice:</strong>
+                        UFAA does not charge any fee at any stage of the recruitment process.
+                        Do not pay anyone claiming to offer recruitment assistance.
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
     </div>
-</div>
 {% endblock %}

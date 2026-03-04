@@ -14,10 +14,13 @@ urlpatterns = [
     path("additional/", views.additional_details_view, name="additional_details"),
     path("jobs/", views.view_jobs, name="view_jobs"),
     path("instrutions/", views.view_jobs, name="view_jobs"),
+    path('apply-jobs/', views.apply_jobs_view, name='apply_jobs'),
+    path('job-status/', views.job_status_view, name='job_status'),
+    path('notifications/read/', views.mark_notification_read_view, name='mark_notification_read'),
+    path('notifications/poll/', views.notification_poll_view, name='notification_poll'),
     # HR DASHBOARD
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
-
 
     # path(
     #     "hr/vacancy/<int:vacancy_id>/start-longlisting/",
@@ -135,7 +138,6 @@ urlpatterns = [
 
     # Appoint panelists to a vacancy
     path('vacancies/<int:vacancy_id>/appoint-panelists/', views.appoint_panelists, name='appoint_panelists'),
-
 
     path(
         'hr/vacancy/<int:vacancy_id>/appoint-shortlisting/',
