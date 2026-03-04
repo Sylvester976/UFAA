@@ -1,0 +1,65 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Applications for {{ vacancy.title }}</h3>
+
+    <p>
+        <strong>Reference:</strong> {{ vacancy.reference_number }} <br>
+        <strong>Status:</strong> {{ vacancy.status }}
+    </p>
+
+    <hr>
+
+    {% if vacancy.status == "closed" %}
+        <a href="{% url 'start_longlisting' vacancy.id %}"
+           class="btn btn-warning mb-3">
+            Start Longlisting
+        </a>
+    {% endif %}
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Applicant</th>
+                <th>Email</th>
+                <th>Applied At</th>
+                <th>Status</th>
+                <th>Profile</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for app in applications %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ app.applicant.get_full_name }}</td>
+                    <td>{{ app.applicant.email }}</td>
+                    <td>{{ app.applied_at }}</td>
+                    <td>{{ app.status }}</td>
+                    <td>
+                        <a href="{% url 'application_detail' app.id %}"
+                        class="btn btn-sm btn-outline-primary">
+                            View Profile
+                        </a>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="6">No applications received.</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% if vacancy.status == "longlisting" %}
+        <a href="{% url 'shortlist_candidates' vacancy.id %}"
+           class="btn btn-primary">
+            Proceed to Shortlisting
+        </a>
+    {% endif %}
+
+</div>
+
+{% endblock %}

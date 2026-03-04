@@ -43,6 +43,10 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/applications/',
          views.hr_view_applications,
          name='hr_view_applications'),
+    
+    path('hr/vacancy/<int:vacancy_id>/committee/',
+         views.committee_view_applications,
+         name='committee_view_applications'),
 
     path('hr/vacancy/<int:vacancy_id>/start-longlisting/',
          views.start_longlisting,
@@ -84,13 +88,17 @@ urlpatterns = [
          views.select_top_three,
          name='select_top_three'),
 
-    # path('ceo/vacancy/<int:vacancy_id>/review/',
-    #  views.ceo_review_view,
-    #  name='ceo_review_view'),
+    path('ceo/vacancy/<int:vacancy_id>/review/',
+     views.ceo_review_view,
+     name='ceo_review_view'),
 
-    # path('ceo/vacancy/<int:vacancy_id>/select/<int:application_id>/',
-    #     views.ceo_select_candidate,
-    #     name='ceo_select_candidate'),
+    path('ceo/vacancy/<int:vacancy_id>/select/<int:application_id>/',
+        views.ceo_select_candidate,
+        name='ceo_select_candidate'),
+    
+    path('hr/vacancy/<int:vacancy_id>/finalize/',
+     views.hr_finalize_appointment,
+     name='hr_finalize_appointment'),
 
     path(
         'ceo/dashboard/',

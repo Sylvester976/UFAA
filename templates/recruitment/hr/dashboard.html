@@ -2,51 +2,85 @@
 
 {% block title %}HR Dashboard{% endblock %}
 
-
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-4">
 
-    <h3>HR Dashboard</h3>
+<!-- ================= HEADER ================= -->
+<div class="row mb-4">
+    <div class="col-12">
+        <h4 class="font-weight-bolder text-dark mb-1">HR Dashboard</h4>
+        <p class="text-sm text-muted mb-0">
+            Overview of recruitment activities and vacancy workflow.
+        </p>
+    </div>
+</div>
 
-    
-    <div class="row mt-4">
-        <div class="col-md-3">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h6>Open Vacancies</h6>
-                    <h3>{{ open_vacancies_count }}</h3>
-                </div>
-            </div>
-        </div>
+<!-- ================= KPI CARDS ================= -->
+<div class="row g-4 mb-4">
 
-        <div class="col-md-3">
-            <div class="card bg-warning text-dark">
-                <div class="card-body">
-                    <h6>Pending CEO Approval</h6>
-                    <h3>{{ pending_ceo_count }}</h3>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-3">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h6>Appointments Completed</h6>
-                    <h3>{{ appointed_count }}</h3>
+    {% comment %} KPI Card: Open Vacancies {% endcomment %}
+    <div class="col-xl-4 col-md-6 col-12">
+        <div class="card kpi-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs text-uppercase kpi-label mb-1">Open Vacancies</p>
+                        <h3 class="kpi-value mb-0">{{ open_vacancies_count }}</h3>
+                    </div>
+                    <div class="kpi-icon"><i class="fas fa-briefcase"></i></div>
                 </div>
             </div>
         </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap">
-        <h5 class="mb-2">Vacancies</h5>
-        <a href="{% url 'create_vacancy' %}" class="btn btn-success mb-2">
-            + Create Vacancy
-        </a>
+    {% comment %} KPI Card: Pending CEO Approval {% endcomment %}
+    <div class="col-xl-4 col-md-6 col-12">
+        <div class="card kpi-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs text-uppercase kpi-label mb-1">Pending CEO Approval</p>
+                        <h3 class="kpi-value mb-0">{{ pending_ceo_count }}</h3>
+                    </div>
+                    <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <table class="table table-bordered">
+    {% comment %} KPI Card: Appointments Completed {% endcomment %}
+    <div class="col-xl-4 col-md-6 col-12">
+        <div class="card kpi-card h-100">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <p class="text-xs text-uppercase kpi-label mb-1">Appointments Completed</p>
+                        <h3 class="kpi-value mb-0">{{ appointed_count }}</h3>
+                    </div>
+                    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- ================= VACANCIES TABLE ================= -->
+<div class="row">
+<div class="col-12">
+<div class="card dash-card brand-card">
+
+    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+        <div>
+            <h6 class="mb-0 fw-bold">Vacancies</h6>
+            <p class="text-xs text-muted mb-0">Manage recruitment lifecycle stages</p>
+        </div>
+        <a href="{% url 'create_vacancy' %}" class="btn btn-brand btn-sm">+ Create Vacancy</a>
+    </div>
+
+    <div class="vacancy-table-container card p-0">
+    <table class="table vacancy-table mb-0">
         <thead>
             <tr>
                 <th>Title</th>
@@ -61,97 +95,107 @@
             <tr>
                 <td>{{ vacancy.title }}</td>
                 <td>{{ vacancy.reference_number }}</td>
-                <td>{{ vacancy.status }}</td>
-                <td>{{ vacancy.end_date }}</td>
-
                 <td>
-
-                    <!-- Draft Stage -->
                     {% if vacancy.status == "draft" %}
-                         | <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
-                        <a href="{% url 'publish_vacancy' vacancy.id %}">Publish</a> |
-                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
+                        <span class="vacancy-status vacancy-status-draft">Draft</span>
                     {% elif vacancy.status == "open" %}
-                         | <a href="{% url 'close_vacancy' vacancy.id %}">Close</a>  |  
+                        <span class="vacancy-status vacancy-status-open">Open</span>
                     {% elif vacancy.status == "closed" %}
-                        <a href="{% url 'open_vacancy' vacancy.id %}">Open</a> |  
+                        <span class="vacancy-status vacancy-status-closed">Closed</span>
+                    {% elif vacancy.status == "longlisting" %}
+                        <span class="vacancy-status vacancy-status-longlisting">Longlisting</span>
+                    {% elif vacancy.status == "shortlisting" %}
+                        <span class="vacancy-status vacancy-status-shortlisting">Shortlisting</span>
+                    {% elif vacancy.status == "interviews" %}
+                        <span class="vacancy-status vacancy-status-interviews">Interviews</span>
+                    {% elif vacancy.status == "ceo_review" %}
+                        <span class="vacancy-status vacancy-status-ceo_review">CEO Review</span>
                     {% endif %}
-
-                    <!-- Open / Closed -->
-                    {% if vacancy.status == "open" or vacancy.status == "closed" %}
-                         <a href="{% url 'hr_view_applications' vacancy.id %}">
-                            View Applications
-                        </a> |                        
-                        <a href="{% url 'update_vacancy' vacancy.id %}">Edit</a> |
-                        <a href="{% url 'delete_vacancy' vacancy.id %}">Delete</a> |
-                    {% endif %}
-
-                    <!-- Longlisting -->
-                    {% if vacancy.status == "longlisting" %}
-                        |
-                        <a href="{% url 'shortlist_candidates' vacancy.id %}">
-                            Shortlist
-                        </a>
-                    {% endif %}
-                    
-                    <!-- Longlisting -->
-                    {% if vacancy.status == "longlisting" %}
-                        |
-                        <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}">
-                            appoint Committee
-                        </a>
-                    {% endif %}
-
-                    <!-- Shortlisting -->
-                    {% if vacancy.status == "shortlisting" %}
-                        |
-                        <a href="{% url 'appoint_panelists' vacancy.id %}">
-                            Appoint Panel
-                        </a>
-                    {% endif %}
-
-                    <!-- Interviews -->
-                    {% if vacancy.status == "interviews" %}                        
-                        Interview Stage Active
-                    {% endif %}
-
-                    <!-- Interviews -->
-                    {% if vacancy.status == "interviews" %}
-                        |
-                    <a href="{% url 'vacancy_panelists' vacancy.id %}">
-                        View Panelists
-                    </a>
-                    {% endif %}
-
-                    {% if vacancy.status == "interviews" %}
-                        <span class="text-primary fw-bold">Interview Stage Active</span> |
-                        
-                        <a href="{% url 'vacancy_panelists' vacancy.id %}">
-                            View Panelists
-                        </a> |
-                        
-                        <a href="{% url 'hr_ranking_view' vacancy.id %}" 
-                        class="text-success fw-bold">
-                            View Ranking
-                        </a>
-                    {% endif %}
-
-                    {% if vacancy.status == "ceo_review" %}
-                        <span class="text-success fw-bold">Top Three Selected</span> |
-                        <a href="{% url 'hr_ranking_view' vacancy.id %}">
-                            View Final Ranking
-                        </a>
-                    {% endif %}
+                </td>
+                <td>{{ vacancy.end_date }}</td>
+                <td>
+                    <div class="vacancy-actions">
+                        {% if vacancy.status == "draft" %}
+                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-draft">Edit</a>
+                            <a href="{% url 'publish_vacancy' vacancy.id %}" class="btn-draft">Publish</a>
+                            <a href="{% url 'delete_vacancy' vacancy.id %}" class="btn-draft">Delete</a>
+                        {% elif vacancy.status == "open" %}
+                            <a href="{% url 'close_vacancy' vacancy.id %}" class="btn-open">Close</a>
+                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-open">Applications</a>
+                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-open">Edit</a>
+                        {% elif vacancy.status == "closed" %}
+                            <a href="{% url 'open_vacancy' vacancy.id %}" class="btn-closed">Open</a>
+                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-closed">Applications</a>
+                        {% elif vacancy.status == "longlisting" %}
+                            <a href="{% url 'shortlist_candidates' vacancy.id %}" class="btn-longlisting">Shortlist</a>
+                        {% elif vacancy.status == "shortlisting" %}
+                            <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting">Appoint Panel</a>
+                        {% elif vacancy.status == "interviews" %}
+                            <span class="text-primary fw-bold">Interview Stage</span>
+                            <a href="{% url 'vacancy_panelists' vacancy.id %}" class="btn-interviews">View Panelists</a>
+                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-interviews">View Ranking</a>
+                        {% elif vacancy.status == "ceo_review" %}
+                            <span class="text-success fw-bold">Top Three Selected</span>
+                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-ceo_review">Final Ranking</a>
+                        {% endif %}
+                    </div>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="5">No vacancies created.</td>
+                <td colspan="5" class="text-center text-muted py-3">No vacancies created.</td>
             </tr>
             {% endfor %}
-            
         </tbody>
     </table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- ================= FINAL APPOINTMENT ================= -->
+<div class="row mt-4">
+<div class="col-12">
+<div class="card dash-card brand-card">
+
+    <div class="card-header">
+        <h6 class="fw-bold text-success mb-0">Vacancies Awaiting Final Appointment</h6>
+    </div>
+
+    <div class="card-body p-0">
+        {% if vacancies_ready %}
+        <div class="table-responsive">
+            <table class="table brand-table mb-0 w-100">
+                <thead class="bg-light sticky-top">
+                    <tr>
+                        <th class="ps-3">Vacancy</th>
+                        <th class="text-end pe-3">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for vacancy in vacancies_ready %}
+                    <tr>
+                        <td class="fw-bold text-dark ps-3">{{ vacancy.title }}</td>
+                        <td class="text-end pe-3">
+                            <a href="{% url 'hr_finalize_appointment' vacancy.id %}" class="btn btn-brand btn-sm">
+                                Finalize Appointment
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-4">
+            <p class="text-muted mb-0">No vacancies awaiting final appointment.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+</div>
+</div>
 
 </div>
 
