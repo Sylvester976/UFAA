@@ -1,10 +1,10 @@
 import json
 import os
+import re
 from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.core.mail import send_mail
 from django.http import FileResponse, Http404
 from django.http import JsonResponse
 from django.utils import timezone
@@ -15,7 +15,7 @@ from recruitment.utils import check_and_lock_application
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
     ProfessionalQualification, ShortlistVote, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee, \
-    JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog
+    JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog, VacancyApplicationCounter
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
@@ -2616,18 +2616,29 @@ def appoint_shortlisting_committee(request, vacancy_id):
         'panelists': panelists
     })
 
+
+# ── Add to recruitment/views.py ────────────────────────────────
+# Additional imports needed:
+# from django.core.mail import send_mail
+# from django.conf import settings
+# from django.utils import timezone
+# from .models import (..., Vacancy, JobApplication, JobApplicationStatus,
+#                      JobApplicationStatusLog, JobApplicationNotification,
+#                      VacancyApplicationCounter)
+
 def _application_ready(user):
-    issues  = []
+    issues = []
     profile = JobSeekerProfile.objects.filter(user=user).first()
-    detail  = AdditionalDetail.objects.filter(user=user).first()
+    detail = AdditionalDetail.objects.filter(user=user).first()
 
     if not profile or not all([profile.first_name, profile.surname,
-            profile.date_of_birth, profile.phone_number,
-            profile.gender_id, profile.home_county_id]):
+                               profile.date_of_birth, profile.phone_number,
+                               profile.gender_id, profile.home_county_id]):
         issues.append({'label': 'Complete your basic details', 'url': 'profile', 'icon': 'fa-user'})
 
     if not AcademicQualification.objects.filter(user=user).exists():
-        issues.append({'label': 'Add at least one academic qualification', 'url': 'academic_qualifications', 'icon': 'fa-graduation-cap'})
+        issues.append({'label': 'Add at least one academic qualification', 'url': 'academic_qualifications',
+                       'icon': 'fa-graduation-cap'})
 
     if not WorkHistory.objects.filter(user=user).exists():
         issues.append({'label': 'Add your work history', 'url': 'work_history', 'icon': 'fa-briefcase'})
@@ -2695,7 +2706,7 @@ def hr_finalize_appointment(request, vacancy_id):
     })
 def _build_snapshots(user):
     profile = JobSeekerProfile.objects.filter(user=user).first()
-    detail  = AdditionalDetail.objects.filter(user=user).first()
+    detail = AdditionalDetail.objects.filter(user=user).first()
 
     snap_basic = {}
     if profile:
@@ -2780,13 +2791,13 @@ def _build_snapshots(user):
     snap_additional = {}
     if detail:
         snap_additional = {
-            'cv_filename':           detail.cv.name.split('/')[-1] if detail.cv else '',
+            'cv_filename': detail.cv.name.split('/')[-1] if detail.cv else '',
             'cover_letter_filename': detail.cover_letter.name.split('/')[-1] if detail.cover_letter else '',
-            'linkedin_url':          detail.linkedin_url or '',
-            'portfolio_url':         detail.portfolio_url or '',
-            'languages':             detail.languages or '',
-            'availability':          detail.availability or '',
-            'expected_salary':       str(detail.expected_salary) if detail.expected_salary else '',
+            'linkedin_url': detail.linkedin_url or '',
+            'portfolio_url': detail.portfolio_url or '',
+            'languages': detail.languages or '',
+            'availability': detail.availability or '',
+            'expected_salary': str(detail.expected_salary) if detail.expected_salary else '',
         }
 
     return {
@@ -2807,16 +2818,16 @@ def _send_html_email(subject, to_email, message_html):
     from datetime import date
 
     html_body = render_to_string('emails/email_base.html', {
-        'subject':         subject,
+        'subject': subject,
         'message_content': message_html,
-        'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
-        'year':            date.today().year,
+        'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+        'year': date.today().year,
     })
     email = EmailMultiAlternatives(
-        subject    = subject,
-        body       = 'Please view this email in an HTML-capable email client.',
-        from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
-        to         = [to_email],
+        subject=subject,
+        body='Please view this email in an HTML-capable email client.',
+        from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+        to=[to_email],
     )
     email.attach_alternative(html_body, 'text/html')
     email.send(fail_silently=False)
@@ -2827,12 +2838,13 @@ def _notify_submission(user, application):
 
     # 1. In-app notification
     msg = (
-        f'Your application for {vacancy.title} ({vacancy.reference_number}) '
-        f'has been received successfully. We will be in touch regarding next steps.'
+        f'Your application for {vacancy.title} has been received. '
+        f'Application No: {application.application_number}. '
+        f'We will be in touch regarding next steps.'
     )
     JobApplicationNotification.objects.create(
         user=user,
-        title=f'Application Submitted — {vacancy.title}',
+        title=f'Application Submitted — {application.application_number}',
         message=msg,
         notification_type='application_submitted',
         related_application=application,
@@ -2840,18 +2852,39 @@ def _notify_submission(user, application):
 
     # 2. HTML email
     try:
-        profile     = getattr(user, 'jobseekerprofile', None)
-        first_name  = profile.first_name  if profile and profile.first_name  else ''
+        profile = getattr(user, 'jobseekerprofile', None)
+        first_name = profile.first_name if profile and profile.first_name else ''
         second_name = profile.second_name if profile and profile.second_name else ''
-        surname     = profile.surname     if profile and profile.surname     else ''
-        full_name   = ' '.join(filter(None, [first_name, second_name, surname])) or 'Applicant'
-        site_url    = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+        surname = profile.surname if profile and profile.surname else ''
+        full_name = ' '.join(filter(None, [first_name, second_name, surname])) or 'Applicant'
+        site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
 
         message_html = f"""
             <p>Dear <strong>{full_name}</strong>,</p>
             <p>Thank you for submitting your application for the position of
                <strong>{vacancy.title}</strong>
-               (Reference: <strong>{vacancy.reference_number}</strong>).</p>
+               (Vacancy Reference: <strong>{vacancy.reference_number}</strong>).</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                   style="background:#f0f4ff; border:1px solid #c7d2fe;
+                          border-radius:8px; margin:16px 0;">
+                <tr>
+                    <td style="padding:16px 20px;">
+                        <p style="margin:0 0 4px; font-size:11px; color:#6b7280;
+                                  text-transform:uppercase; letter-spacing:0.05em;">
+                            Your Application Number
+                        </p>
+                        <p style="margin:0; font-size:22px; font-weight:700;
+                                  color:#1D255B; letter-spacing:0.5px;">
+                            {application.application_number}
+                        </p>
+                        <p style="margin:6px 0 0; font-size:12px; color:#6b7280;">
+                            Please quote this number in all correspondence with UFAA HR.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
             <p>Your application has been received and is currently under review by the
                UFAA Human Resources team. You will be notified of any updates through
                the portal and via email.</p>
@@ -2865,9 +2898,9 @@ def _notify_submission(user, application):
         """
 
         _send_html_email(
-            subject      = f'Application Received — {vacancy.title} [{vacancy.reference_number}]',
-            to_email     = user.email,
-            message_html = message_html,
+            subject=f'Application Received — {application.application_number} | {vacancy.title}',
+            to_email=user.email,
+            message_html=message_html,
         )
     except Exception as e:
         import logging
@@ -2883,7 +2916,7 @@ def apply_jobs_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
     is_ready, readiness_issues = _application_ready(user)
 
@@ -2893,7 +2926,7 @@ def apply_jobs_view(request):
             ready, issues = _application_ready(user)
             if not ready:
                 return JsonResponse({'status': 'error',
-                    'message': 'Your profile is incomplete. Please address all required sections before applying.'})
+                                     'message': 'Your profile is incomplete. Please address all required sections before applying.'})
 
             vacancy = Vacancy.objects.filter(id=vacancy_id).first()
             if not vacancy:
@@ -2907,21 +2940,36 @@ def apply_jobs_view(request):
 
             submitted_status = JobApplicationStatus.objects.filter(code='submitted').first()
             if not submitted_status:
-                return JsonResponse({'status': 'error', 'message': 'System configuration error. Please contact support.'})
+                return JsonResponse(
+                    {'status': 'error', 'message': 'System configuration error. Please contact support.'})
 
             snaps = _build_snapshots(user)
-            application = JobApplication.objects.create(
-                user=user,
-                vacancy=vacancy,
-                status=submitted_status,
-                snapshot_basic=snaps['basic'],
-                snapshot_academic=snaps['academic'],
-                snapshot_professional=snaps['professional'],
-                snapshot_work=snaps['work'],
-                snapshot_memberships=snaps['memberships'],
-                snapshot_referees=snaps['referees'],
-                snapshot_additional=snaps['additional'],
-            )
+
+            # ── Generate atomic application number ──────────────────
+            from django.db import transaction
+            with transaction.atomic():
+                counter, _ = VacancyApplicationCounter.objects.select_for_update().get_or_create(
+                    vacancy=vacancy
+                )
+                counter.last_number += 1
+                counter.save()
+                seq = str(counter.last_number).zfill(3)
+                application_number = f"{vacancy.reference_number}/{seq}"
+
+                application = JobApplication.objects.create(
+                    user=user,
+                    vacancy=vacancy,
+                    status=submitted_status,
+                    application_number=application_number,
+                    snapshot_basic=snaps['basic'],
+                    snapshot_academic=snaps['academic'],
+                    snapshot_professional=snaps['professional'],
+                    snapshot_work=snaps['work'],
+                    snapshot_memberships=snaps['memberships'],
+                    snapshot_referees=snaps['referees'],
+                    snapshot_additional=snaps['additional'],
+                )
+
             JobApplicationStatusLog.objects.create(
                 application=application,
                 from_status=None,
@@ -2931,13 +2979,11 @@ def apply_jobs_view(request):
             _notify_submission(user, application)
 
             return JsonResponse({'status': 'success',
-                'message': f'Your application for {vacancy.title} has been submitted successfully.'})
+                                 'message': f'Your application for {vacancy.title} has been submitted successfully.',
+                                 'application_number': application_number})
 
         except Exception as e:
             return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
-
-    from django.utils import timezone
-    import re
 
     def _parse_vacancy_fields(description):
         """Parse vacancy description into structured fields for card display."""
@@ -2958,13 +3004,13 @@ def apply_jobs_view(request):
         header_clean = re.sub(r'\s+', ' ', header_clean).strip()
 
         field_map = [
-            ('JOB TITLE',       'Position',        'fa-briefcase'),
-            ('LOCATION',        'Location',        'fa-map-marker-alt'),
+            ('JOB TITLE', 'Position', 'fa-briefcase'),
+            ('LOCATION', 'Location', 'fa-map-marker-alt'),
             ('EMPLOYMENT TYPE', 'Employment Type', 'fa-clock'),
-            ('DEPARTMENT',      'Department',      'fa-building'),
-            ('SALARY SCALE',    'Salary Scale',    'fa-money-bill-wave'),
-            ('REPORTS TO',      'Reports To',      'fa-sitemap'),
-            ('DIVISION',        'Division',        'fa-layer-group'),
+            ('DEPARTMENT', 'Department', 'fa-building'),
+            ('SALARY SCALE', 'Salary Scale', 'fa-money-bill-wave'),
+            ('REPORTS TO', 'Reports To', 'fa-sitemap'),
+            ('DIVISION', 'Division', 'fa-layer-group'),
         ]
 
         # Match ALL-CAPS KEY: value, stopping at next ALL-CAPS KEY: or end
@@ -3009,10 +3055,10 @@ def apply_jobs_view(request):
         print(f"[DEBUG] {v.title} | parsed_fields={v.parsed_fields} | snippet={v.plain_snippet[:60]!r}")
 
     applied_ids = set(JobApplication.objects.filter(user=user).values_list('vacancy_id', flat=True))
-    snaps       = _build_snapshots(user)
-    detail      = AdditionalDetail.objects.filter(user=user).first()
-    ref1        = Referee.objects.filter(user=user, referee_no=1).first()
-    ref2        = Referee.objects.filter(user=user, referee_no=2).first()
+    snaps = _build_snapshots(user)
+    detail = AdditionalDetail.objects.filter(user=user).first()
+    ref1 = Referee.objects.filter(user=user, referee_no=1).first()
+    ref2 = Referee.objects.filter(user=user, referee_no=2).first()
 
     context = {
         'user': user, 'profile': profile, 'completion': completion,
@@ -3023,12 +3069,12 @@ def apply_jobs_view(request):
         'snap_work_count': len(snaps['work']),
         'snap_memberships_count': len(snaps['memberships']),
         'ref1': ref1, 'ref2': ref2, 'detail': detail,
-        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
-        'has_additional':   detail is not None,
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+        'has_additional': detail is not None,
         'page': 'Apply for Jobs',
     }
     return render(request, 'jobseekers/apply_jobs.html', context)
@@ -3043,9 +3089,9 @@ def job_status_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
-    detail     = AdditionalDetail.objects.filter(user=user).first()
+    detail = AdditionalDetail.objects.filter(user=user).first()
 
     applications = (
         JobApplication.objects
@@ -3060,12 +3106,12 @@ def job_status_view(request):
     context = {
         'user': user, 'profile': profile, 'detail': detail,
         'completion': completion, 'applications': applications,
-        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
+        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
-        'has_additional':   detail is not None,
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+        'has_additional': detail is not None,
         'page': 'Job Status',
     }
     return render(request, 'jobseekers/job_status.html', context)
@@ -3077,7 +3123,7 @@ def mark_notification_read_view(request):
     if not user_id or request.method != 'POST':
         return JsonResponse({'status': 'error'}, status=400)
 
-    notif_id = request.POST.get('notif_id')   # blank = mark ALL read
+    notif_id = request.POST.get('notif_id')  # blank = mark ALL read
 
     if notif_id:
         JobApplicationNotification.objects.filter(
