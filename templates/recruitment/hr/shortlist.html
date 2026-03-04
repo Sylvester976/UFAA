@@ -36,13 +36,14 @@
                                value="{{ app.id }}">
                     </td>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.get_full_name }}</td>
+                    <td>{{ app.applicant.name }}</td>
                     <td>{{ app.applicant.email }}</td>
                     <td>{{ app.applied_at }}</td>
                     <td>{{ app.status }}</td>
-                    <td>
-                        <a href="{{ app.cv.url }}" target="_blank">
-                            View CV
+                    <td>                        
+                        <a href="{% url 'application_detail' app.id %}"
+                        class="btn btn-sm btn-outline-primary">
+                            View Profile
                         </a>
                     </td>
                 </tr>

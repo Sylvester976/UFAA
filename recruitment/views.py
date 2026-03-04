@@ -108,6 +108,9 @@ def dashboard(request):
         incomplete.append({'label': 'Upload your CV',
                            'url': 'additional_details', 'icon': 'fa-file-pdf'})
 
+    applications = Application.objects.filter(
+        applicant=JobseekerAccount.objects.filter(pk=user_id).first()
+    )
     context = {
         'user': user,
         'profile': profile,
@@ -128,6 +131,7 @@ def dashboard(request):
         'has_referees': referee_count >= 2,  # ← new
         'has_additional': detail is not None,
         'page': 'Dashboard',
+        'applications': applications
     }
     return render(request, 'jobseekers/dashboard.html', context)
 
@@ -1329,7 +1333,9 @@ def additional_details_view(request):
 # @permission_required("view_reports")
 def hr_dashboard(request):
     vacancies = Vacancy.objects.all()  # Or filter(status='draft') if you only want drafts
+    vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
     context = {
+        'vacancies_ready':vacancies_ready,
         'vacancies': vacancies,
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
@@ -1695,7 +1701,7 @@ def apply_for_vacancy(request, vacancy_id):
 
 
 @login_required
-# @role_required(['hod_hr'])
+@role_required(['hod_hr','panelist'])
 def hr_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
@@ -1704,16 +1710,16 @@ def hr_view_applications(request, vacancy_id):
     #     return redirect('hr_dashboard')
 
     applications = Application.objects.filter(vacancy=vacancy) \
-    #     .select_related(
-    #     "applicant",
-    #     "applicant__profile",
-    #     "applicant__additional_detail"
-    # ).prefetch_related(
-    #     "applicant__academic_qualifications",
-    #     "applicant__work_history",
-    #     "applicant__professional_qualifications",
-    #     "applicant__documents"
-    # )
+        .select_related(
+        "applicant",
+        "applicant__profile",
+        "applicant__additional_detail"
+    ).prefetch_related(
+        "applicant__academic_qualifications",
+        "applicant__work_history",
+        "applicant__professional_qualifications",
+        "applicant__documents"
+    )
 
     return render(request, 'recruitment/hr/view_applications.html', {
         'vacancy': vacancy,
@@ -1721,7 +1727,7 @@ def hr_view_applications(request, vacancy_id):
     })
 
 @login_required
-# @role_required(['hod_hr'])
+@role_required(['committee'])
 def committee_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
@@ -1730,18 +1736,18 @@ def committee_view_applications(request, vacancy_id):
     #     return redirect('hr_dashboard')
 
     applications = Application.objects.filter(vacancy=vacancy) \
-    #     .select_related(
-    #     "applicant",
-    #     "applicant__profile",
-    #     "applicant__additional_detail"
-    # ).prefetch_related(
-    #     "applicant__academic_qualifications",
-    #     "applicant__work_history",
-    #     "applicant__professional_qualifications",
-    #     "applicant__documents"
-    # )
+        .select_related(
+        "applicant",
+        "applicant__profile",
+        "applicant__additional_detail"
+    ).prefetch_related(
+        "applicant__academic_qualifications",
+        "applicant__work_history",
+        "applicant__professional_qualifications",
+        "applicant__documents"
+    )
 
-    return render(request, 'recruitment/hr/view_applications.html', {
+    return render(request, 'recruitment/hr/committee_view_applications.html', {
         'vacancy': vacancy,
         'applications': applications
     })
@@ -1777,7 +1783,7 @@ def start_longlisting(request, vacancy_id):
     vacancy.save()
 
     messages.success(request, "Longlisting stage started.")
-    return redirect('committee_view_applications', vacancy_id=vacancy.id)
+    return redirect('hr_dashboard')
 
 @login_required
 @role_required(['hod_hr'])
@@ -2095,6 +2101,20 @@ def panelist_interview_list(request, vacancy_id):
     ).exists():
         raise PermissionDenied
 
+    vacancies = Vacancy.objects.all()
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    applications = Application.objects.filter(vacancy=vacancy) \
+        .select_related(
+        "applicant",
+        "applicant__profile",
+        "applicant__additional_detail"
+    ).prefetch_related(
+        "applicant__academic_qualifications",
+        "applicant__work_history",
+        "applicant__professional_qualifications",
+        "applicant__documents"
+    )
     applications = Application.objects.filter(
         vacancy=vacancy,
         status='shortlisted'
@@ -2102,7 +2122,8 @@ def panelist_interview_list(request, vacancy_id):
 
     return render(request, 'recruitment/panelist/interview_list.html', {
         'vacancy': vacancy,
-        'applications': applications
+        'applications': applications,
+        'vacancies':vacancies
     })
 
 
@@ -2598,3 +2619,46 @@ def appoint_shortlisting_committee(request, vacancy_id):
 #         'applications': applications
 #     })
     
+
+@login_required
+@role_required(['hr', 'ceo'])  # optional: allow CEO to view but not click
+def hr_finalize_appointment(request, vacancy_id):
+
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'ceo_approved':
+        messages.error(request, "Vacancy not ready for appointment.")
+        return redirect('hr_dashboard')
+
+    selected_application = Application.objects.filter(
+        vacancy=vacancy,
+        ceo_selected=True
+    ).first()
+
+    if not selected_application:
+        messages.error(request, "No CEO approved candidate found.")
+        return redirect('hr_dashboard')
+
+    if request.method == 'POST':
+
+        # Appoint selected candidate
+        selected_application.status = 'appointed'
+        selected_application.save()
+
+        # Reject all others
+        Application.objects.filter(
+            vacancy=vacancy
+        ).exclude(
+            id=selected_application.id
+        ).update(status='rejected')
+
+        vacancy.status = 'appointed'
+        vacancy.save()
+
+        messages.success(request, "Candidate successfully appointed.")
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/finalize_appointment.html', {
+        'vacancy': vacancy,
+        'selected_application': selected_application
+    })

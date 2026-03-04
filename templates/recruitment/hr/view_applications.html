@@ -18,12 +18,14 @@
             Start Longlisting
         </a>
     {% endif %}
+<div class="applications-table-container card p-0 mt-3">
 
-    <table class="table table-bordered">
+    <table class="table applications-table mb-0">
         <thead>
             <tr>
                 <th>#</th>
                 <th>Applicant</th>
+                <th>National ID</th>
                 <th>Email</th>
                 <th>Applied At</th>
                 <th>Status</th>
@@ -32,26 +34,40 @@
         </thead>
         <tbody>
             {% for app in applications %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.get_full_name }}</td>
-                    <td>{{ app.applicant.email }}</td>
-                    <td>{{ app.applied_at }}</td>
-                    <td>{{ app.status }}</td>
-                    <td>
-                        <a href="{% url 'application_detail' app.id %}"
-                        class="btn btn-sm btn-outline-primary">
-                            View Profile
-                        </a>
-                    </td>
-                </tr>
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ app.applicant.name }}</td>
+                <td>{{ app.applicant.id_no }}</td>
+                <td>{{ app.applicant.email }}</td>
+                <td>{{ app.applied_at }}</td>
+                <td>
+                    {% if app.status == "pending" %}
+                        <span class="app-status app-status-pending">Pending</span>
+                    {% elif app.status == "reviewed" %}
+                        <span class="app-status app-status-reviewed">Reviewed</span>
+                    {% elif app.status == "selected" %}
+                        <span class="app-status app-status-selected">Selected</span>
+                    {% elif app.status == "rejected" %}
+                        <span class="app-status app-status-rejected">Rejected</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{% url 'application_detail' app.id %}" 
+                       class="app-action-btn app-action-btn-primary">
+                        View Profile
+                    </a>
+                </td>
+            </tr>
             {% empty %}
-                <tr>
-                    <td colspan="6">No applications received.</td>
-                </tr>
+            <tr>
+                <td colspan="7" class="text-center text-muted py-3">
+                    No applications received.
+                </td>
+            </tr>
             {% endfor %}
         </tbody>
     </table>
+</div>
 
 
 </div>

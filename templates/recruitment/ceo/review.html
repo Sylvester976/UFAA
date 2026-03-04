@@ -18,20 +18,21 @@
         <tbody>
             {% for app in applications %}
             <tr>
+                {% if app.status == 'selected_top_three' %}
                 <td>{{ forloop.counter }}</td>
-                <td>{{ app.applicant.get_full_name }}</td>
+                <td>{{ app.applicant.first_name }}</td>
                 <td>{{ app.avg_score|floatformat:2 }}</td>
                 <td>
-                    {% if app.status == 'selected_top_three' %}
                         <span class="badge bg-success">Top 3</span>
-                    {% endif %}
+                        <td>
+                            <a href="{% url 'ceo_select_candidate' vacancy.id app.id %}"
+                            class="btn btn-primary btn-sm">
+                            Select
+                            </a>
+                        </td>
                 </td>
-                <td>
-                    <a href="{% url 'ceo_select_candidate' vacancy.id app.id %}"
-                       class="btn btn-primary btn-sm">
-                       Select
-                    </a>
-                </td>
+                {% endif %}
+
             </tr>
             {% endfor %}
         </tbody>

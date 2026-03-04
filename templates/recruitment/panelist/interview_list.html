@@ -10,19 +10,22 @@
         <thead>
             <tr>
                 <th>#</th>
+                <th>National ID</th>
                 <th>Candidate</th>
-                <th>CV</th>
+                <th>Details</th>
                 <th>Your Score</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
+            
             {% for app in applications %}
             <tr>
                 <td>{{ forloop.counter }}</td>
-                <td>{{ app.applicant.get_full_name }}</td>
+                <td>{{ app.applicant.id_no }}</td>
+                <td>{{ app.applicant.name }}</td>
                 <td>
-                    <a href="{{ app.cv.url }}" target="_blank">View CV</a>
+                    <a href="{% url 'application_detail' vacancy.id %}" target="_blank">profile</a>
                 </td>
                 <td>
                     {% with score=app.scores.all|dictsort:"panelist_id" %}

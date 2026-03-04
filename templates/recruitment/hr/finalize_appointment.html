@@ -1,0 +1,32 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block content %}
+
+<div class="container mt-4">
+
+    <h3>Finalize Appointment</h3>
+
+    <div class="card p-3">
+        <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
+        <p><strong>Approved Candidate:</strong> 
+            {{ selected_application.applicant.get_full_name }}
+        </p>
+    </div>
+
+    <div class="alert alert-danger mt-3">
+        This action is FINAL.
+        All other candidates will be marked as rejected.
+    </div>
+
+    <form method="POST">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-success">
+            Appoint Candidate
+        </button>
+        <a href="{% url 'hr_dashboard' %}" class="btn btn-secondary">
+            Cancel
+        </a>
+    </form>
+
+</div>
+
+{% endblock %}

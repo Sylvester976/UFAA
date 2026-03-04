@@ -1,3 +1,5 @@
+
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
@@ -23,439 +25,6 @@
     <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
     <link id="pagestyle" href="{% static 'assets/css/base.css' %}" rel="stylesheet"/>
 
-    <style>
-/* ══════════════════════════════════════════════════
-   UFAA Job Portal Dashboard
-   Brand: Navy #1D255B · Gold #F9E6A1 / #C7B77F
-   Cleaned + Scrollable Tables Version
-══════════════════════════════════════════════════ */
-
-:root {
-    --ufaa-navy:      #1D255B;
-    --ufaa-navy-deep: #141A45;
-    --ufaa-gold:      #F9E6A1;
-    --ufaa-gold-dark: #C7B77F;
-    --ufaa-gold-mid:  #E0CA7A;
-}
-
-/* ───────────────── KPI CARDS ───────────────── */
-
-.kpi-card {
-    background: #262561;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-.kpi-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: #f5f5f5;
-}
-
-.kpi-value {
-    font-weight: 700;
-    color: #fff;
-}
-
-.kpi-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #262561;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #fff;
-}
-
-/* ───────────────── DASH CARDS ───────────────── */
-
-.dash-card {
-    background: #fff;
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 4px 20px rgba(29,37,91,0.06);
-    /* allow scrollable tables inside cards */
-    overflow: visible;
-}
-
-.dash-card .card-header {
-    background: transparent;
-    border-bottom: 1px solid #f1f1f1;
-    padding: 1rem 1.25rem 0.8rem;
-}
-
-.dash-card .card-body {
-    padding: 1rem 1.25rem;
-}
-
-/* Brand accent */
-.brand-card {
-    border-left: 5px solid #C39545;
-}
-
-/* ───────────────── TABLE FIXED + SCROLL ───────────────── */
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(198, 198, 198, 0.5) transparent;
-    padding-bottom: 0.5rem;
-}
-
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: rgba(198, 198, 198, 0.5);
-    border-radius: 4px;
-}
-
-.brand-table {
-    width: 100%;
-    border-collapse: separate;
-    table-layout: auto;
-    min-width: 900px; /* ensure horizontal scroll if table is wider */
-}
-
-.brand-table th,
-.brand-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-/* Sticky header */
-.brand-table thead th {
-    position: sticky;
-    top: 0;
-    background: #262561;
-    color: #fff;
-    z-index: 2;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-}
-
-.brand-table tbody tr:hover {
-    background-color: #FBF1A9;
-}
-
-/* Keep action buttons aligned */
-.table-actions,
-.brand-table td:last-child .d-flex {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: .5rem;
-    justify-content: center;
-}
-
-/* ───────────────── BUTTONS ───────────────── */
-
-.btn-brand {
-    background: #C39545;
-    color: #fff;
-    border: none;
-}
-
-.btn-brand:hover {
-    background: #262561;
-    color: #fff;
-}
-
-.btn-outline-brand {
-    border: 2px solid #C39545;
-    color: #C39545;
-    background: transparent;
-}
-
-.btn-outline-brand:hover {
-    background: #C39545;
-    color: #fff;
-}
-
-.btn-outline-blue {
-    border: 2px solid #262561;
-    color: #262561;
-    background: transparent;
-}
-
-.btn-outline-blue:hover {
-    background: #262561;
-    color: #fff;
-}
-
-/* ───────────────── BADGES ───────────────── */
-
-.status-badge {
-    background: #262561;
-    color: #fff;
-    font-size: 11px;
-    padding: 6px 10px;
-    border-radius: 20px;
-}
-
-/* ───────────────── VACANCY TITLE ───────────────── */
-
-.vacancy-title {
-    font-weight: 700;
-    color: #262561;
-}
-
-.vacancy-ref {
-    font-size: 12px;
-    color: #6c757d;
-}
-
-/* ───────────────── MOBILE VACANCY CARDS ───────────────── */
-
-.vacancy-card {
-    border-radius: 10px;
-    border-left: 4px solid #C39545;
-    background: #fff;
-    padding: 16px;
-    margin-bottom: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-}
-
-.vacancy-card-title {
-    font-weight: 700;
-    color: #262561;
-}
-
-.vacancy-meta {
-    font-size: 13px;
-    color: #6c757d;
-}
-
-.vacancy-actions {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* Hide table on small screens */
-@media (max-width: 768px) {
-    .vacancy-table-wrapper {
-        display: none;
-    }
-}
-
-/* Hide cards on desktop */
-@media (min-width: 769px) {
-    .vacancy-card-wrapper {
-        display: none;
-    }
-}
-
-/* ───────────────── FINAL APPOINTMENT ───────────────── */
-
-.final-appointment-card {
-    border-left: 4px solid #262561;
-    border-radius: 10px;
-    padding: 16px;
-    background: #f8f9fa;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.final-appointment-title {
-    font-weight: 600;
-    color: #262561;
-}
-
-@media (max-width:768px){
-    .final-appointment-card{
-        flex-direction: column;
-        align-items: flex-start;
-        gap:10px;
-    }
-}
-/* ───────────────── CUSTOM VACANCY TABLE ───────────────── */
-
-.vacancy-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-bottom: 1rem;
-    width: 100%;
-}
-
-.vacancy-table {
-    width: 100%;
-    min-width: 900px; /* ensures horizontal scroll if needed */
-    border-collapse: separate;
-    table-layout: auto;
-}
-
-.vacancy-table th,
-.vacancy-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-.vacancy-table thead th {
-    position: sticky;
-    top: 0;
-    background: #262561;
-    color: #fff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    z-index: 2;
-}
-
-.vacancy-table tbody tr:hover {
-    background-color: #FBF1A9;
-}
-
-/* Status badges */
-.vacancy-status {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.vacancy-status-draft      { background: #6c757d; } /* gray */
-.vacancy-status-open       { background: #0d6efd; } /* blue */
-.vacancy-status-closed     { background: #343a40; } /* dark */
-.vacancy-status-longlisting { background: #17a2b8; } /* teal */
-.vacancy-status-shortlisting { background: #ffc107; color:#212529; } /* gold */
-.vacancy-status-interviews { background: #6c757d; } /* gray */
-.vacancy-status-ceo_review { background: #198754; } /* green */
-
-/* Action buttons in table */
-.vacancy-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    justify-content: center;
-}
-
-.vacancy-actions a {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #fff;
-}
-
-.vacancy-actions .btn-draft       { background: #6c757d; }
-.vacancy-actions .btn-open        { background: #0d6efd; }
-.vacancy-actions .btn-closed      { background: #343a40; }
-.vacancy-actions .btn-longlisting { background: #17a2b8; }
-.vacancy-actions .btn-shortlisting { background: #ffc107; color:#212529; }
-.vacancy-actions .btn-interviews  { background: #6c757d; }
-.vacancy-actions .btn-ceo_review  { background: #198754; }
-
-/* Responsive: allow scroll on small screens */
-@media (max-width: 768px) {
-    .vacancy-table-container {
-        overflow-x: auto;
-    }
-    .vacancy-actions {
-        justify-content: flex-start;
-    }
-}
-
-/* ───────────────── APPLICATIONS TABLE ───────────────── */
-
-.applications-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    margin-bottom: 1rem;
-}
-
-.applications-table {
-    width: 100%;
-    min-width: 900px;
-    border-collapse: separate;
-    table-layout: auto;
-}
-
-.applications-table th,
-.applications-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-/* Sticky header */
-.applications-table thead th {
-    position: sticky;
-    top: 0;
-    background: var(--ufaa-navy);
-    color: #fff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    z-index: 2;
-}
-
-/* Hover effect for rows */
-.applications-table tbody tr:hover {
-    background-color: var(--ufaa-gold-mid);
-}
-
-/* Status badges aligned with dashboard */
-.app-status {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    display: inline-block;
-}
-
-.app-status-pending    { background: var(--ufaa-gold); color: #262561; } /* gold */
-.app-status-reviewed   { background: #262561; } /* navy */
-.app-status-selected   { background: var(--ufaa-gold-dark); color: #fff; } /* dark gold */
-.app-status-rejected   { background: #dc3545; color: #fff; } /* red for rejected */
-
-/* Action buttons styled like dashboard */
-.app-action-btn {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.app-action-btn-primary {
-    background: var(--ufaa-navy);
-    color: #fff;
-    border: none;
-}
-
-.app-action-btn-primary:hover {
-    background: var(--ufaa-gold);
-    color: #262561;
-    transition: 0.3s;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .applications-table-container {
-        overflow-x: auto;
-    }
-    .app-action-btn {
-        margin-bottom: 0.25rem;
-    }
-}
-    </style>
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -469,7 +38,7 @@
         <a class="navbar-brand m-0" href="{% url 'dashboard' %}" target="_blank">
             <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" class="navbar-brand-img h-100" alt="main_logo">
             <span class="ms-1 font-weight-bold">
-            
+            {% comment %} {{ request.user.email|default:request.user.email }} {% endcomment %}
         </span>
         </a>
     </div>
@@ -477,85 +46,95 @@
     <div class="collapse navbar-collapse w-auto max-height-vh-100 h-100 ps" id="sidenav-collapse-main">
         <ul class="navbar-nav">
             
+            <!-- Instructions -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'instrutions_view' %}active{% endif %}"
+                   href="{% url 'instrutions_view' %}">
+                    <i class="fa-solid fa-book me-2"></i>
+                    Instructions
+                </a>
+            </li>
+            
             <!-- Dashboard -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
-                   href="{% url 'hr_dashboard' %}">
-                    <i class="fa-solid fa-book me-2"></i>
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+                   href="{% url 'dashboard' %}">
+                    <i class="fa-solid fa-home me-2"></i>
                     Dashboard
                 </a>
             </li>
             
-        
-            <!--   -->
+            <!-- Profile -->
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
-                   href="{% url 'vacancy_list' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}"
+                   href="{% url 'profile' %}">
+                    <i class="fas fa-user me-2"></i>
+                    Profile
+                </a>
+            </li>
+
+            <!-- Academic Qualifications -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'academic_qualifications' %}active{% endif %}"
+                   href="{% url 'academic_qualifications' %}">
                     <i class="fas fa-graduation-cap me-2"></i>
-                    Published Vacancies 
+                    Academic Qualifications
                 </a>
             </li>
 
-            
-            <!--   -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
-                   href="{% url 'vacancy_longlisting' %}">
-                    <i class="fas fa-graduation-cap me-2"></i>
-                    Longlists 
-                </a>
-            </li>
 
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
-                   href="{% url 'vacancy_shortlisting' %}">
-                    <i class="fas fa-briefcase me-2"></i>
-                    <span class="nav-link-text ms-1">Shortlists </span>
-                </a>
-            </li>
-
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
-                   href="{% url 'vacancy_interviews' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'professional_qualifications' %}active{% endif %}"
+                   href="{% url 'professional_qualifications' %}">
                     <i class="fas fa-certificate me-2"></i>
-                    <span class="nav-link-text ms-1">Interviews</span>
+                    <span class="nav-link-text ms-1">professional qualifications</span>
                 </a>
             </li>
 
 
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
-                   href="{% url 'vacancy_appointments' %}">
+                <a class="nav-link {% if request.resolver_match.url_name == 'work_history' %}active{% endif %}"
+                   href="{% url 'work_history' %}">
+                    <i class="fas fa-briefcase me-2"></i>
+                    <span class="nav-link-text ms-1">Work history</span>
+                </a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'memberships' %}active{% endif %}"
+                   href="{% url 'memberships' %}">
                     <i class="fas fa-user-tie me-1"></i>
-                    <span class="nav-link-text ms-1">Appointments</span>
+                    <span class="nav-link-text ms-1">Membership</span>
                 </a>
             </li>
 
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Administration
-                </h6>
-            </li>
-
-            <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
-                <a class="nav-link  " href="{% url 'user_list' %}">
+            <li class="nav-item">
+                <a class="nav-link  " href="{% url 'referees' %}">
                     <i class="fas fa-user-tie me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Users</span>
+                    <span class="nav-link-text ms-1">Referees</span>
                 </a>
             </li>
 
-            <li class="nav-item {% if request.resolver_match.url_name == 'role_list' %}active{% endif %}">
-                <a class="nav-link" href="{% url 'role_list' %}">
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'additional_details' %}">
                     <i class="fas fa-info-circle me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Roles</span>
+                    <span class="nav-link-text ms-1">Additional details</span>
                 </a>
             </li>
 
             <!-- Applications -->
-            <li class="nav-item {% if request.resolver_match.url_name == 'permission_list' %}active{% endif %}">
-                <a class="nav-link " href="{% url 'permission_list' %}">
+            <li class="nav-item">
+                <a class="nav-link " href="{% url 'view_jobs' %}">
                     <i class="fas fa-paper-plane me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Permissions</span>
+                    <span class="nav-link-text ms-1">Apply job</span>
+                </a>
+            </li>
+            
+            <!-- Applications -->
+            <li class="nav-item">
+                <a class="nav-link  " href="../pages/virtual-reality.html">
+                    <i class="fas fa-chart-line me-2"></i>
+                    <span class="nav-link-text ms-1">Status</span>
                 </a>
             </li>
 
@@ -601,11 +180,16 @@
                            aria-expanded="false">
                             <i class="fa fa-user me-1"></i>
                             {% if logged_user %}
-                               {{ request.user.first_name }} {{ request.user.last_name }}
+                                {{ logged_user.name }}
                             {% endif %}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
                             aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item" href="{% url 'profile' %}">
+                                    My Profile
+                                </a>
+                            </li>
                             <li>
                                 <a class="dropdown-item text-danger" href="{% url 'logout' %}">
                                     Logout
