@@ -610,22 +610,10 @@ class JobApplicationStatus(models.Model):
 
 
 class JobApplication(models.Model):
-    user    = models.ForeignKey(
-                  'accounts.JobseekerAccount',
-                  on_delete=models.CASCADE,
-                  related_name='job_applications'
-              )
-    vacancy = models.ForeignKey(
-        Vacancy,
-        on_delete=models.CASCADE,
-        related_name='job_applications'
-    )
-    status  = models.ForeignKey(
-                  JobApplicationStatus,
-                  on_delete=models.SET_NULL,
-                  null=True,
-                  related_name='applications'
-              )
+    user = models.ForeignKey(JobseekerAccount, on_delete=models.CASCADE)
+    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE)
+    status = models.ForeignKey(JobApplicationStatus, on_delete=models.PROTECT)
+    application_number = models.CharField(max_length=100, unique=True, blank=True)  # ← ADD THIS
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     # ── Frozen profile snapshots at time of submission ─────────
@@ -705,3 +693,17 @@ class JobApplicationNotification(models.Model):
 
     def __str__(self):
         return f"{self.user} — {self.title}"
+
+class VacancyApplicationCounter(models.Model):
+    """
+    Atomic per-vacancy sequence counter.
+    Guarantees unique sequential application numbers even under concurrent submissions.
+    """
+    vacancy     = models.OneToOneField(
+                      Vacancy, on_delete=models.CASCADE,
+                      related_name='application_counter'
+                  )
+    last_number = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.vacancy.reference_number} — {self.last_number} applications"
