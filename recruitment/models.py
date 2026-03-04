@@ -503,33 +503,38 @@ class WorkHistory(models.Model):
 class AdditionalDetail(models.Model):
     AVAILABILITY_CHOICES = [
         ('Immediately', 'Immediately'),
+        ('1 Week Notice', '1 Week Notice'),
+        ('2 Weeks Notice', '2 Weeks Notice'),
+        ('3 Weeks Notice', '3 Weeks Notice'),
         ('1 Month Notice', '1 Month Notice'),
         ('2 Months Notice', '2 Months Notice'),
         ('3 Months Notice', '3 Months Notice'),
         ('Not Available', 'Not Available'),
     ]
 
-    user = models.OneToOneField(JobseekerAccount, on_delete=models.CASCADE,
-                                related_name='additional_detail'
-                                )
-    cv = models.FileField(upload_to='cvs/', null=True, blank=True)
-    cover_letter = models.TextField(blank=True)
-    linkedin_url = models.URLField(max_length=300, blank=True)
-    portfolio_url = models.URLField(max_length=300, blank=True)
-    languages = models.CharField(max_length=500, blank=True)  # comma-separated
-    availability = models.CharField(max_length=50, blank=True,
-                                    choices=AVAILABILITY_CHOICES)
-    expected_salary = models.PositiveIntegerField(null=True, blank=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    user             = models.OneToOneField(
+                           JobseekerAccount, on_delete=models.CASCADE,
+                           related_name='additional_detail'
+                       )
+    cv               = models.FileField(upload_to='cvs/', null=True, blank=True)
+    cover_letter     = models.FileField(upload_to='cover_letters/', null=True, blank=True)  # changed from TextField
+    linkedin_url     = models.URLField(max_length=300, blank=True)
+    portfolio_url    = models.URLField(max_length=300, blank=True)
+    languages        = models.CharField(max_length=500, blank=True)
+    availability     = models.CharField(max_length=50, blank=True, choices=AVAILABILITY_CHOICES)
+    expected_salary  = models.PositiveIntegerField(null=True, blank=True)
+    updated_at       = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return f"Additional Details — {self.user}"
 
     @property
     def cv_filename(self):
-        if self.cv:
-            return self.cv.name.split('/')[-1]
-        return None
+        return self.cv.name.split('/')[-1] if self.cv else None
+
+    @property
+    def cover_letter_filename(self):
+        return self.cover_letter.name.split('/')[-1] if self.cover_letter else None
 
     @property
     def languages_list(self):
