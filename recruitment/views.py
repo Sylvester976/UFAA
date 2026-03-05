@@ -1457,13 +1457,22 @@ def respond_panel_assignment(request, assignment_id):
 
 @login_required
 @role_required(['panelist'])
-def submit_panel_report(request, vacancy_id):
+def panelist_submit_report(request, vacancy_id):
 
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
+    assignment = PanelAssignment.objects.get(
+        vacancy=vacancy,
+        panelist=request.user
+    )
+
+    interviews_done = InterviewScore.objects.filter(
+        panelist=request.user,
+        application__vacancy=vacancy
+    ).count()
+
     if request.method == "POST":
 
-        interviewed = request.POST.get("candidates_interviewed")
         summary = request.POST.get("summary")
         recommendations = request.POST.get("recommendations")
 
@@ -1471,20 +1480,25 @@ def submit_panel_report(request, vacancy_id):
             vacancy=vacancy,
             panelist=request.user,
             defaults={
-                "candidates_interviewed": interviewed,
-                "summary": summary,
+                "assignment": assignment,
+                "candidates_interviewed": interviews_done,
+                "report_summary": summary,
                 "recommendations": recommendations
             }
         )
 
-        messages.success(request, "Interview report submitted.")
-
+        messages.success(request, "Report submitted successfully.")
         return redirect("panelist_dashboard")
 
-    return render(request, "recruitment/panelist/report_form.html", {
-        "vacancy": vacancy
-    })
+    return render(request,
+        "recruitment/panelist/submit_report.html",
+        {
+            "vacancy": vacancy,
+            "interviews_done": interviews_done
+        }
+    )
     
+ 
 @login_required
 @role_required(['panelist'])
 def panelist_reports(request):

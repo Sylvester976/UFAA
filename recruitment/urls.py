@@ -186,8 +186,8 @@ urlpatterns = [
 
     path(
         "panel/report/<int:vacancy_id>/",
-        views.submit_panel_report,
-        name="submit_panel_report"
+        views.panelist_submit_report,
+        name="panelist_submit_report"
     ),
 
     path(
