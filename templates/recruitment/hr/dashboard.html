@@ -131,7 +131,6 @@
                         {% elif vacancy.status == "shortlisting" %}
                             <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting">Appoint Panel</a>
                         {% elif vacancy.status == "interviews" %}
-                            <span class="text-primary fw-bold">Interview Stage</span>
                             <a href="{% url 'vacancy_panelists' vacancy.id %}" class="btn-interviews">View Panelists</a>
                             <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-interviews">View Ranking</a>
                         {% elif vacancy.status == "ceo_review" %}
