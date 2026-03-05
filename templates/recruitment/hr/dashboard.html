@@ -127,7 +127,7 @@
                             <a href="{% url 'open_vacancy' vacancy.id %}" class="btn-closed">Open</a>
                             <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-closed">Applications</a>
                         {% elif vacancy.status == "longlisting" %}
-                            <a href="{% url 'shortlist_candidates' vacancy.id %}" class="btn-longlisting">Shortlist</a>
+                            <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}" class="btn-shortlisting">Appoint shortlisting committee</a>
                         {% elif vacancy.status == "shortlisting" %}
                             <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting">Appoint Panel</a>
                         {% elif vacancy.status == "interviews" %}

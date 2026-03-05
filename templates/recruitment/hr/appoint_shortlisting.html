@@ -1,12 +1,24 @@
 {% extends 'recruitment/hr/base_hr.html' %}
 {% block content %}
 
+
 <div class="container mt-4">
     <h4>Appoint Shortlisting Committee</h4>
     <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
 
     <form method="POST">
         {% csrf_token %}
+
+    {% for panelist in panelists %}
+        <div>
+            <input type="checkbox"
+                   name="panelists"
+                   value="{{ panelist.id }}"
+                   class="panelist-checkbox"
+                   {% if panelist in assigned_panelists %}checked{% endif %}>
+            {{ panelist.first_name }} {{ panelist.last_name }}
+        </div>
+    {% endfor %}
 
         <div class="card p-3">
             {% for panelist in panelists %}
@@ -24,10 +36,48 @@
             {% endfor %}
         </div>
 
-        <button type="submit" class="btn btn-primary mt-3">
+        {% comment %} <button type="submit" class="btn btn-primary mt-3">
             Appoint Committee
-        </button>
+        </button> {% endcomment %}
+        
+        <button type="submit" id="submitBtn" disabled>Appoint Committee</button>
     </form>
+
+    <form method="POST">
+    {% csrf_token %}
+    <h4>Appoint Shortlisting Committee</h4>
+
+    {% for member in members %}
+        <div>
+            <input type="checkbox"
+                   name="members"
+                   value="{{ member.id }}">
+            {{ member.first_name }} {{ member.last_name }}
+        </div>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-primary">
+        Save Committee
+    </button>
+</form>
 </div>
 
+
+<script>
+    const checkboxes = document.querySelectorAll('.panelist-checkbox');
+    const submitBtn = document.getElementById('submitBtn');
+
+    function toggleSubmit() {
+        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+        submitBtn.disabled = !atLeastOneChecked;
+    }
+
+    // Run on page load (in case some are pre-checked)
+    toggleSubmit();
+
+    // Listen for changes
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', toggleSubmit);
+    });
+</script>
 {% endblock %}

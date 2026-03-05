@@ -71,6 +71,7 @@ urlpatterns = [
 
     # Panelist area
     path('panelist/dashboard/', views.panelist_dashboard, name='panelist_dashboard'),
+    path('committee/dashboard/', views.shortlisting_dashboard, name='shortlisting_dashboard'),
 
     path('panelist/vacancy/<int:vacancy_id>/interviews/',
          views.panelist_interview_list,

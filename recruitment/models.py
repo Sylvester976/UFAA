@@ -204,7 +204,7 @@ class Vacancy(models.Model):
         ('open', 'Open'),
         ('longlisting', 'Longlisting'),
         ('committee_stage', 'Committee Appointed'),
-        ('shortlisting', 'Shortlisting'),
+        ('shortlisting', 'Shortlisting Stage'),
         ('interviews', 'Interviews'),
         ('top_three_selected', 'Top Three Selected'),
         ('pending_ceo_approval', 'Pending CEO Approval'),
@@ -707,3 +707,41 @@ class VacancyApplicationCounter(models.Model):
 
     def __str__(self):
         return f"{self.vacancy.reference_number} — {self.last_number} applications"
+
+class ShortlistingCommittee(models.Model):
+    vacancy = models.OneToOneField(
+        Vacancy,
+        on_delete=models.CASCADE,
+        related_name='shortlisting_committee'
+    )
+
+    members = models.ManyToManyField(
+        settings.AUTH_USER_MODEL,
+        related_name='shortlisting_committees'
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+   
+class ShortlistingDecision(models.Model):
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name='shortlisting_votes'
+    )
+    committee_member = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+    decision = models.CharField(
+        max_length=10,
+        choices=[
+            ('approve', 'Approve'),
+            ('reject', 'Reject')
+        ]
+    )
+    comment = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('application', 'committee_member')

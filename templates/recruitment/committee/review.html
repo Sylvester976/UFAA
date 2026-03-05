@@ -1,0 +1,19 @@
+<h4>Review: {{ application.applicant.name }}</h4>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <button name="decision" value="approve"
+            class="btn btn-success">
+        Shortlist
+    </button>
+
+    <button name="decision" value="reject"
+            class="btn btn-danger">
+        Reject
+    </button>
+
+    <textarea name="comment"
+              class="form-control mt-3"
+              placeholder="Optional comment"></textarea>
+</form>
