@@ -62,37 +62,33 @@
 
 
 <!-- Hero Section -->
-<section class="hero text-center">
-    <div class="container">
-        <h1 class="display-4 fw-bold">Apply Now Through our Portal</h1>
-        <p class="lead mb-4">Welcome to the Unclaimed Financial Assets Authority (UFAA) Recruitment Portal</p>
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="input-group input-group-lg">
-                    <input type="text" class="form-control" placeholder="Job title">
-                    <button class="btn btn-primary" style="background-color: #003366; border-color: #003366;">
-                        Search Jobs
-                    </button>
-                </div>
-            </div>
-        </div>
+<section class="hero py-5" style="background:#f4f6f9;">
+    <div class="container text-center">
+
+        <h1 class="fw-bold mb-3" style="color:#003366;">
+            UFAA Recruitment Portal
+        </h1>
+
+        <p class="lead mb-4" style="color:#003366;">
+            Welcome to the official recruitment portal of the 
+            <strong>Unclaimed Financial Assets Authority (UFAA)</strong>. 
+            View current vacancies and submit your applications online.
+        </p>
+
+
     </div>
 </section>
-
 
 <!-- Featured Jobs Section -->
 <section id="jobs" class="bg-light py-5">
     <div class="container">
         <h2 class="text-center mb-5">Vacancies</h2>
         <div class="alert mt-3" style="background-color: #C39545; color: #fff; border-color: #C39545;">
-            Persons abled differently are encouraged to apply.
+            Persons abled differently are encouraged to apply. <br>
+            <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process. 
+            Applicants are advised not to pay any person claiming to offer recruitment assistance.
         </div>
 
-        <div class="alert alert-info">
-            <strong>Before you apply:</strong> Please create an account and verify your email address. 
-            A verification email will be sent to the address you provide during registration. 
-            Click the verification link to activate your account and access the application area.
-        </div>
         
         <div class="row">
             {% for vacancy in vacancies %}
@@ -102,9 +98,15 @@
                             <h5 class="card-title">{{ vacancy.title }}</h5>
                             <p class="card-text">• Ref: {{ vacancy.reference_number }}</p>
                             {% if vacancy.advert_pdf %}
-                                <a href="{% url 'download_vacancy_pdf' vacancy.id %}" class="btn btn-outline-primary btn-sm">Download PDF</a>
+                                <a href="{% url 'download_vacancy_pdf' vacancy.id %}" class="btn btn-primary px-4"
+                                style="background-color:#003366; border-color:#003366;">
+                                    Download PDF
+                                </a>
                             {% endif %}
-                            <a href="{% url 'vacancy_detail' vacancy.id %}" class="btn btn-outline-primary btn-sm">View Details</a>
+                            <a href="{% url 'vacancy_detail' vacancy.id %}" class="btn btn-primary px-4"
+                            style="background-color:#003366; border-color:#003366;">
+                                View Details
+                            </a>
                         </div>
                     </div>
                 </div>

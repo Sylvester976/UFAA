@@ -18,7 +18,7 @@
                         style="max-height: 80px;">
                 </a>
                 
-                <h3 class="font-weight-bolder text-info text-gradient">Create an Account</h3>
+                <h3 class="font-weight-bolder " style="color:#003366;">Create an Account</h3>
             </div>
             
             <div class="card-body">
@@ -102,14 +102,18 @@
                     </div>
 
                     <div class="text-center">
-                        <button class="btn bg-gradient-info w-100 mt-4 mb-0" type="submit">Sign Up</button>
+                        <button class="btn w-100 mt-4 mb-0" 
+                                style="background-color:#003366; border-color:#003366; color:white;"
+                                type="submit">
+                            Sign Up
+                        </button>
                     </div>
                 </form>
             </div>
             <div class="card-footer text-center pt-0 px-lg-2 px-1">
                 <p class="mb-0 text-sm mx-auto">
                     Already have an account?
-                    <a class="text-info text-gradient font-weight-bold" href="{% url 'index' %}">Sign in</a>
+                    <a class=" font-weight-bold" style="color:#003366;" href="{% url 'index' %}">Sign in</a>
                 </p>
             </div>
         </div>
