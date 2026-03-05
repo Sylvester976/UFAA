@@ -601,6 +601,22 @@
                 </a>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                   href="{% url 'vacancy_appointments' %}">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="nav-link-text ms-1">Panelist dashboard</span>
+                </a>
+            </li>
+            
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                   href="{% url 'vacancy_appointments' %}">
+                    <i class="fas fa-user-tie me-1"></i>
+                    <span class="nav-link-text ms-1">Committee dashboard</span>
+                </a>
+            </li>
+
             <li class="nav-item mt-3">
                 <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
                     Administration
