@@ -259,6 +259,7 @@ class Vacancy(models.Model):
         choices=STATUS_CHOICES,
         default='draft',
     )
+    screening_criteria = models.JSONField(default=dict, blank=True)
 
     start_date = models.DateField(null=True, blank=True)
     end_date   = models.DateField(null=True, blank=True)
@@ -685,6 +686,49 @@ class JobApplication(models.Model):
     snapshot_memberships  = models.JSONField(default=list)
     snapshot_referees     = models.JSONField(default=list)
     snapshot_additional   = models.JSONField(default=dict)
+
+    # ── SCREENING ─────────────────────────────────────────────────────────
+    # Set by system during auto-longlist. null = not yet screened.
+    screening_passed = models.BooleanField(null=True, blank=True)
+    screening_reasons = models.JSONField(default=list)  # internal/audit only — NEVER shown to applicant
+    screening_flags = models.JSONField(default=list)  # soft warnings — committee sees on dossier
+    screening_ran_at = models.DateTimeField(null=True, blank=True)
+
+    # ── ASSIGNMENT ────────────────────────────────────────────────────────
+    # Set by committee lead when distributing applications to officers
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='assigned_applications',
+    )
+    assigned_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='assignments_made',
+    )
+    assigned_at = models.DateTimeField(null=True, blank=True)
+
+    # ── LONGLIST DECISION ─────────────────────────────────────────────────
+    # Set by officer during manual longlist review
+    longlist_decision = models.CharField(
+        max_length=20,
+        choices=[
+            ('shortlisted', 'Shortlisted'),
+            ('rejected', 'Rejected'),
+            ('hold', 'Hold'),
+        ],
+        null=True, blank=True,
+    )
+    longlist_decision_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='longlist_decisions',
+    )
+    longlist_decision_at = models.DateTimeField(null=True, blank=True)
+    longlist_notes = models.TextField(blank=True)
 
     class Meta:
         unique_together = ('user', 'vacancy')
