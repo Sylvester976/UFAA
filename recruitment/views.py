@@ -1509,7 +1509,11 @@ def appoint_candidate(request, vacancy_id):
 @role_required(['hod_hr'])
 # ── Create Vacancy ─────────────────────────────────────────────────────────
 def create_vacancy(request):
+    education_levels = EducationLevel.objects.all().order_by('rank')
+
     if request.method == 'POST':
+
+        # ── Step 1: Position ───────────────────────────────
         title            = request.POST.get('title', '').strip()
         reference_number = request.POST.get('reference_number', '').strip()
         description      = request.POST.get('description', '').strip()
@@ -1519,6 +1523,31 @@ def create_vacancy(request):
         end_date         = request.POST.get('end_date', '').strip()
         advert_pdf       = request.FILES.get('advert_pdf')
 
+        # ── Step 2: Screening criteria ─────────────────────
+        screening_criteria = {
+            'require_cv':
+                bool(request.POST.get('sc_require_cv')),
+            'require_cover_letter':
+                bool(request.POST.get('sc_require_cover_letter')),
+            'require_academic_cert':
+                bool(request.POST.get('sc_require_academic_cert')),
+            'require_professional_qualification':
+                bool(request.POST.get('sc_require_professional_qualification')),
+            'minimum_education_level':
+                int(request.POST.get('sc_minimum_education_level') or 0),
+            'minimum_experience_years':
+                int(request.POST.get('sc_minimum_experience_years') or 0),
+            'check_salary':
+                bool(request.POST.get('sc_check_salary')),
+            'salary_max':
+                int(request.POST.get('sc_salary_max') or 0),
+            'check_availability':
+                bool(request.POST.get('sc_check_availability')),
+            'maximum_notice_days':
+                int(request.POST.get('sc_maximum_notice_days') or 30),
+        }
+
+        # ── Validation ─────────────────────────────────────
         errors = []
 
         if not all([title, reference_number, description, start_date, end_date]):
@@ -1550,35 +1579,45 @@ def create_vacancy(request):
             if parsed_end <= parsed_start:
                 errors.append("End date must be after the start date.")
 
-        if Vacancy.objects.filter(reference_number=reference_number).exists():
-            errors.append(f"Reference number '{reference_number}' already exists.")
+        if reference_number and Vacancy.objects.filter(
+                reference_number=reference_number).exists():
+            errors.append(
+                f"Reference number '{reference_number}' already exists.")
+
+        min_edu = screening_criteria['minimum_education_level']
+        if min_edu > 0 and not EducationLevel.objects.filter(
+                rank=min_edu).exists():
+            errors.append("Invalid minimum education level selected.")
 
         if errors:
             for error in errors:
                 messages.error(request, error)
             return render(request, 'recruitment/hr/create_vacancy.html', {
-                'page':   'Create Vacancy',
-                'posted': request.POST,
+                'page':             'Create Vacancy',
+                'posted':           request.POST,
+                'education_levels': education_levels,
             })
 
         Vacancy.objects.create(
-            title            = title,
-            reference_number = reference_number,
-            description      = description,
-            vacancy_type     = vacancy_type,
-            grade_category   = grade_category,
-            advert_pdf       = advert_pdf,
-            start_date       = parsed_start,
-            end_date         = parsed_end,
-            created_by       = request.user,
-            status           = 'draft',
+            title              = title,
+            reference_number   = reference_number,
+            description        = description,
+            vacancy_type       = vacancy_type,
+            grade_category     = grade_category,
+            advert_pdf         = advert_pdf,
+            start_date         = parsed_start,
+            end_date           = parsed_end,
+            screening_criteria = screening_criteria,
+            created_by         = request.user,
+            status             = 'draft',
         )
 
-        messages.success(request, f"Vacancy '{title}' created successfully as Draft.")
+        messages.success(request, f"Vacancy '{title}' created as Draft.")
         return redirect('hr_dashboard')
 
     return render(request, 'recruitment/hr/create_vacancy.html', {
-        'page': 'Create Vacancy',
+        'page':             'Create Vacancy',
+        'education_levels': education_levels,
     })
 
 

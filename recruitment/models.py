@@ -737,6 +737,38 @@ class JobApplication(models.Model):
     def __str__(self):
         return f"{self.user} — {self.vacancy.reference_number}"
 
+class LonglistReviewLog(models.Model):
+    ACTION_CHOICES = [
+        ('viewed',           'Viewed Application'),
+        ('shortlisted',      'Marked Shortlist'),
+        ('rejected',         'Marked Reject'),
+        ('held',             'Marked Hold'),
+        ('override',         'Override System Decision'),
+        ('assigned',         'Assigned to Officer'),
+        ('bulk_shortlist',   'Bulk Shortlist'),
+        ('bulk_reject',      'Bulk Reject'),
+        ('bulk_assign',      'Bulk Assign'),
+        ('note_added',       'Added Note'),
+        ('decision_changed', 'Decision Changed'),
+        ('system_screening', 'System Auto-Screening'),
+    ]
+
+    vacancy     = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='longlist_logs')
+    application = models.ForeignKey(JobApplication, on_delete=models.CASCADE, related_name='longlist_logs', null=True, blank=True)
+    officer     = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='longlist_logs', null=True, blank=True)
+    action      = models.CharField(max_length=30, choices=ACTION_CHOICES)
+    notes       = models.TextField(blank=True)
+    metadata    = models.JSONField(default=dict)
+    actioned_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-actioned_at']
+
+    def __str__(self):
+        who = self.officer.get_full_name() if self.officer else 'System'
+        app = f" — App #{self.application_id}" if self.application_id else ''
+        return f"{who} | {self.get_action_display()}{app} | {self.actioned_at:%d %b %Y %H:%M}"
+
 
 class JobApplicationStatusLog(models.Model):
     application = models.ForeignKey(
