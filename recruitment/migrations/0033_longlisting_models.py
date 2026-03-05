@@ -12,59 +12,8 @@ class Migration(migrations.Migration):
 
     operations = [
 
-        # ── 1. EducationLevel — add level integer ─────────────────────
-        migrations.AddField(
-            model_name='educationlevel',
-            name='level',
-            field=models.PositiveIntegerField(
-                default=0,
-                help_text='Hierarchy integer — higher = more qualified. Not unique — equivalent quals share the same level.'
-            ),
-        ),
-
-        # Populate level values for existing rows
-        migrations.RunSQL(
-            sql="""
-                UPDATE recruitment_educationlevel SET level = CASE name
-                    WHEN 'Kenya Certificate of Primary Education (KCPE)' THEN 1
-                    WHEN 'Kenya Certificate of Secondary Education (KCSE)' THEN 2
-                    WHEN 'O-Levels (British System)'                      THEN 2
-                    WHEN 'IGCSE'                                          THEN 2
-                    WHEN 'GED (American System)'                          THEN 2
-                    WHEN 'A-Levels (British System)'                      THEN 3
-                    WHEN 'International Baccalaureate (IB)'               THEN 3
-                    WHEN 'Certificate'                                     THEN 4
-                    WHEN 'Diploma'                                         THEN 5
-                    WHEN 'Higher National Diploma (HND)'                  THEN 6
-                    WHEN 'Bachelor''s Degree'                             THEN 7
-                    WHEN 'Masters Degree'                                  THEN 9
-                    WHEN 'PhD / Doctorate'                                 THEN 10
-                    WHEN 'Other Foreign Qualification'                     THEN 11
-                    ELSE 0
-                END
-                WHERE level = 0;
-            """,
-            reverse_sql=migrations.RunSQL.noop,
-        ),
-
-        # level is NOT unique — equivalent qualifications share the same level.
-        # e.g. KCSE, O-Levels, IGCSE, GED are all level 2.
-        # Screening uses >= comparison so ties work correctly.
-        migrations.AlterField(
-            model_name='educationlevel',
-            name='level',
-            field=models.PositiveIntegerField(
-                default=0,
-                help_text=(
-                    'Hierarchy integer — higher = more qualified. '
-                    'Equivalent qualifications share the same level. '
-                    '1=KCPE, 2=KCSE/O-Levels/IGCSE/GED, '
-                    '3=A-Levels/IB, 4=Certificate, 5=Diploma, '
-                    '6=HND, 7=Degree, 9=Masters, 10=PhD, '
-                    '11=Other Foreign (soft flag).'
-                ),
-            ),
-        ),
+        # ── 1. EducationLevel — rank field already exists in this model.
+        # No changes needed — screening engine will use existing `rank` field.
 
         # ── 2. Vacancy — add screening_criteria ──────────────────────
         migrations.AddField(
