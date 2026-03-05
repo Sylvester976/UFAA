@@ -1,45 +1,608 @@
 {% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Edit Vacancy{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-light: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dark: #C39545;
+        }
+
+        .page-header-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            border-radius: 0.85rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, 0.18);
+        }
+
+        .page-header-banner::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, 0.07);
+            pointer-events: none;
+        }
+
+        .page-header-banner h5 {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 0;
+        }
+
+        .page-header-banner p {
+            color: rgba(249, 230, 161, 0.7);
+            font-size: 0.78rem;
+            margin: 0;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            text-decoration: none;
+            transition: all 0.18s ease;
+        }
+
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
+
+        .form-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 24px rgba(38, 37, 97, 0.08);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
+
+        .form-card-header {
+            background: #fff;
+            border-bottom: 1px solid rgba(38, 37, 97, 0.07);
+            padding: 0.9rem 1.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .section-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: 0.5rem;
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--gold);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .form-card-header h6 {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .form-card-header p {
+            font-size: 0.7rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        .form-card-body {
+            padding: 1.3rem 1.4rem;
+        }
+
+        .form-label-c {
+            font-size: 0.74rem;
+            font-weight: 600;
+            color: #344767;
+            margin-bottom: 0.3rem;
+            display: block;
+        }
+
+        .form-label-c .req {
+            color: #dc3545;
+            margin-left: 2px;
+        }
+
+        .form-ctrl {
+            border: 1px solid #e0e4ef;
+            border-radius: 0.6rem;
+            padding: 0.55rem 0.85rem;
+            font-size: 0.82rem;
+            color: #344767;
+            background: #fafbff;
+            width: 100%;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .form-ctrl:focus {
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(38, 37, 97, 0.08);
+            background: #fff;
+            outline: none;
+        }
+
+        .form-ctrl::placeholder {
+            color: #b0b8cc;
+        }
+
+        textarea.form-ctrl {
+            resize: vertical;
+            min-height: 150px;
+            line-height: 1.65;
+        }
+
+        .form-hint {
+            font-size: 0.67rem;
+            color: #adb5bd;
+            margin-top: 0.2rem;
+        }
+
+        .type-toggle {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .type-option {
+            flex: 1;
+        }
+
+        .type-option input[type="radio"] {
+            display: none;
+        }
+
+        .type-option label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.65rem 1rem;
+            border: 2px solid #e0e4ef;
+            border-radius: 0.65rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: #67748e;
+            background: #fafbff;
+            transition: all 0.18s ease;
+            width: 100%;
+        }
+
+        .type-option input:checked + label {
+            border-color: var(--navy);
+            background: rgba(38, 37, 97, 0.05);
+            color: var(--navy);
+        }
+
+        .file-zone {
+            border: 2px dashed #dde1f0;
+            border-radius: 0.75rem;
+            padding: 1.2rem 1rem;
+            text-align: center;
+            background: #fafbff;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+            position: relative;
+        }
+
+        .file-zone:hover {
+            border-color: var(--navy);
+            background: rgba(38, 37, 97, 0.03);
+        }
+
+        .file-zone input[type="file"] {
+            position: absolute;
+            inset: 0;
+            opacity: 0;
+            cursor: pointer;
+            width: 100%;
+            height: 100%;
+        }
+
+        .file-zone i {
+            font-size: 1.4rem;
+            color: var(--navy);
+            opacity: 0.25;
+            display: block;
+            margin-bottom: 0.35rem;
+        }
+
+        .file-zone .fz-t {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--navy);
+        }
+
+        .file-zone .fz-s {
+            font-size: 0.67rem;
+            color: #adb5bd;
+        }
+
+        .current-file {
+            padding: 0.5rem 0.85rem;
+            background: #f0f4ff;
+            border: 1px solid #c7d2fe;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--navy);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-update {
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            color: var(--gold) !important;
+            border: none;
+            border-radius: 0.6rem;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 0.6rem 1.6rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-update:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(38, 37, 97, 0.28);
+        }
+
+        .btn-cancel-link {
+            display: block;
+            text-align: center;
+            padding: 0.55rem;
+            background: #f1f3f9;
+            color: #67748e !important;
+            border: 1px solid #dee2e6;
+            border-radius: 0.6rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.18s ease;
+        }
+
+        .btn-cancel-link:hover {
+            background: #e2e6f0;
+        }
+
+        .status-banner {
+            padding: 0.65rem 1rem;
+            border-radius: 0.6rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-banner.open {
+            background: #d4f5e2;
+            color: #1a7a45;
+            border: 1px solid #b2dfca;
+        }
+
+        .status-banner.draft {
+            background: #f1f3f9;
+            color: #344767;
+            border: 1px solid #dee2e6;
+        }
+
+        .status-banner.closed {
+            background: #fde8e8;
+            color: #c0392b;
+            border: 1px solid #f5c6c6;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
+    <div class="container-fluid py-2">
 
-<h3>Edit Vacancy</h3>
+        <!-- ── PAGE HEADER ─────────────────────── -->
+        <div class="page-header-banner mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h5><i class="fas fa-edit me-2" style="color:var(--gold-dark);"></i>Edit Vacancy</h5>
+                    <p>{{ vacancy.title }} &mdash; {{ vacancy.reference_number }}</p>
+                </div>
+                <a href="{% url 'hr_dashboard' %}" class="btn-back">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
+        </div>
 
-<form method="POST" enctype="multipart/form-data">
-    {% csrf_token %}
-    
-    <div class="mb-3">
-        <label>Title</label>
-        <input type="text" name="title" value="{{ vacancy.title }}" class="form-control" required>
+        <form method="POST" enctype="multipart/form-data" id="updateForm" novalidate>
+            {% csrf_token %}
+            <div class="row g-3">
+
+                <!-- ── LEFT: Main Details ───────── -->
+                <div class="col-lg-8">
+
+                    <!-- Status notice -->
+                    <div class="status-banner {{ vacancy.status }}">
+                        <i class="fas fa-info-circle"></i>
+                        Current status: <strong>{{ vacancy.get_status_display }}</strong>
+                        {% if vacancy.status == 'open' %} — Editing this vacancy will not affect active
+                            applications.{% endif %}
+                    </div>
+
+                    <!-- Basic Info -->
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <div class="section-icon"><i class="fas fa-briefcase"></i></div>
+                            <div>
+                                <h6>Position Details</h6>
+                                <p>Core information about the vacancy</p>
+                            </div>
+                        </div>
+                        <div class="form-card-body">
+                            <div class="row g-3">
+                                <div class="col-12">
+                                    <label class="form-label-c">Job Title <span class="req">*</span></label>
+                                    <input type="text" name="title" class="form-ctrl"
+                                           value="{{ vacancy.title }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-c">Reference Number <span class="req">*</span></label>
+                                    <input type="text" name="reference_number" class="form-ctrl"
+                                           value="{{ vacancy.reference_number }}" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label-c">Grade / Category</label>
+                                    <select name="grade_category" class="form-ctrl">
+                                        <option value="4-1" {% if vacancy.grade_category == '4-1' %}selected{% endif %}>
+                                            Grade 4-1
+                                        </option>
+                                        <option value="10-5"
+                                                {% if vacancy.grade_category == '10-5' %}selected{% endif %}>Grade 10-5
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label-c">Vacancy Type <span class="req">*</span></label>
+                                    <div class="type-toggle">
+                                        <div class="type-option">
+                                            <input type="radio" name="vacancy_type" id="type_ext" value="external"
+                                                   {% if vacancy.vacancy_type == 'external' %}checked{% endif %}>
+                                            <label for="type_ext">
+                                                <i class="fas fa-globe"></i> External
+                                                <small style="font-weight:400;color:#adb5bd;font-size:0.68rem;margin-left:auto;">Open
+                                                    to public</small>
+                                            </label>
+                                        </div>
+                                        <div class="type-option">
+                                            <input type="radio" name="vacancy_type" id="type_int" value="internal"
+                                                   {% if vacancy.vacancy_type == 'internal' %}checked{% endif %}>
+                                            <label for="type_int">
+                                                <i class="fas fa-lock"></i> Internal
+                                                <small style="font-weight:400;color:#adb5bd;font-size:0.68rem;margin-left:auto;">UFAA
+                                                    staff only</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <div class="section-icon"><i class="fas fa-align-left"></i></div>
+                            <div>
+                                <h6>Job Description</h6>
+                                <p>Responsibilities, requirements and details</p>
+                            </div>
+                        </div>
+                        <div class="form-card-body">
+                            <label class="form-label-c">Description <span class="req">*</span></label>
+                            <textarea name="description" id="f-desc" class="form-ctrl" rows="10"
+                                      required>{{ vacancy.description }}</textarea>
+                            <div class="d-flex justify-content-between mt-1">
+                                <p class="form-hint"><i class="fas fa-lightbulb me-1"></i>Use <code>**KEY:**
+                                    Value</code> format e.g. <code>**LOCATION:** Nairobi</code></p>
+                                <span id="charCount" style="font-size:0.67rem;color:#adb5bd;">0 chars</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- ── RIGHT: Dates, PDF, Actions ── -->
+                <div class="col-lg-4">
+
+                    <!-- Dates -->
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <div class="section-icon"><i class="fas fa-calendar-alt"></i></div>
+                            <div>
+                                <h6>Vacancy Period</h6>
+                                <p>Opening and closing dates</p>
+                            </div>
+                        </div>
+                        <div class="form-card-body">
+                            <div class="mb-3">
+                                <label class="form-label-c">Opening Date <span class="req">*</span></label>
+                                <input type="date" name="start_date" class="form-ctrl"
+                                       value="{{ vacancy.start_date|date:'Y-m-d' }}" required>
+                            </div>
+                            <div>
+                                <label class="form-label-c">Closing Date <span class="req">*</span></label>
+                                <input type="date" name="end_date" class="form-ctrl"
+                                       value="{{ vacancy.end_date|date:'Y-m-d' }}" required>
+                                <p class="form-hint mt-1">Must be after the opening date.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PDF -->
+                    <div class="form-card">
+                        <div class="form-card-header">
+                            <div class="section-icon"><i class="fas fa-file-pdf"></i></div>
+                            <div>
+                                <h6>Advert Document</h6>
+                                <p>Replace or keep existing</p>
+                            </div>
+                        </div>
+                        <div class="form-card-body">
+                            {% if vacancy.advert_pdf %}
+                                <div class="current-file mb-2">
+                                    <i class="fas fa-file-pdf" style="color:#dc3545;"></i>
+                                    <span>Current PDF attached</span>
+                                    <a href="{{ vacancy.advert_pdf.url }}" target="_blank"
+                                       style="margin-left:auto;font-size:0.68rem;color:var(--navy);">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                </div>
+                            {% endif %}
+                            <div class="file-zone" id="pdfZone">
+                                <input type="file" name="advert_pdf" id="f-pdf" accept="application/pdf">
+                                <i class="fas fa-file-pdf"></i>
+                                <div class="fz-t">{% if vacancy.advert_pdf %}Replace PDF{% else %}Upload
+                                    PDF{% endif %}</div>
+                                <div class="fz-s">Leave blank to keep existing · PDF · max 5MB</div>
+                            </div>
+                            <div id="pdfSelected" style="display:none;margin-top:0.5rem;
+                             padding:0.4rem 0.75rem;background:#fef3e2;border-radius:0.5rem;
+                             font-size:0.74rem;font-weight:600;color:#b7770d;">
+                                <i class="fas fa-file-pdf me-1"></i><span id="pdfName"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="form-card">
+                        <div class="form-card-body">
+                            <button type="submit" class="btn-update mb-2">
+                                <i class="fas fa-save me-2"></i>Save Changes
+                            </button>
+                            <a href="{% url 'hr_dashboard' %}" class="btn-cancel-link">
+                                <i class="fas fa-times me-1"></i>Cancel
+                            </a>
+
+                            {% if vacancy.status == 'draft' %}
+                                <div style="margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f1f3f9;">
+                                    <button type="button" class="btn-cancel-link"
+                                            style="color:#1a7a45!important;background:#d4f5e2;border-color:#b2dfca;"
+                                            onclick="confirmDelete({{ vacancy.id }}, '{{ vacancy.title|escapejs }}')">
+                                        <i class="fas fa-trash me-1"></i>Delete this Vacancy
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+
     </div>
 
-    <div class="mb-3">
-        <label>Reference Number</label>
-        <input type="text" name="reference_number" value="{{ vacancy.reference_number }}" class="form-control" required>
-    </div>
+    <form id="deleteForm" method="POST" action="" style="display:none;">
+        {% csrf_token %}
+    </form>
+{% endblock %}
 
-    <div class="mb-3">
-        <label>Description</label>
-        <textarea name="description" class="form-control" required>{{ vacancy.description }}</textarea>
-    </div>
+{% block extra_js %}
+    <script>
+        (function () {
+            // ── Char counter ───────────────────────
+            const desc = document.getElementById('f-desc');
+            const counter = document.getElementById('charCount');
+            if (desc && counter) {
+                function update() {
+                    const n = desc.value.length;
+                    counter.textContent = n + ' chars';
+                    counter.style.color = n > 1800 ? '#dc3545' : n > 1400 ? '#f39c12' : '#adb5bd';
+                }
 
-    <div class="mb-3">
-        <label>Start Date</label>
-        <input type="date" name="start_date" value="{{ vacancy.start_date }}" class="form-control" required>
-    </div>
+                desc.addEventListener('input', update);
+                update();
+            }
 
-    <div class="mb-3">
-        <label>End Date</label>
-        <input type="date" name="end_date" value="{{ vacancy.end_date }}" class="form-control" required>
-    </div>
+            // ── PDF display ────────────────────────
+            const pdfInput = document.getElementById('f-pdf');
+            const pdfSelected = document.getElementById('pdfSelected');
+            const pdfName = document.getElementById('pdfName');
+            if (pdfInput) {
+                pdfInput.addEventListener('change', function () {
+                    if (this.files.length) {
+                        pdfName.textContent = this.files[0].name;
+                        pdfSelected.style.display = 'block';
+                    }
+                });
+            }
 
-    <div class="mb-3">
-        <label>Advert PDF (Leave blank to keep existing)</label>
-        <input type="file" name="advert_pdf" class="form-control">
-        {% if vacancy.advert_pdf %}
-            <small>Current file: <a href="{{ vacancy.advert_pdf.url }}" target="_blank">Download</a></small>
-        {% endif %}
-    </div>
+            // ── Date constraint ────────────────────
+            const startEl = document.querySelector('input[name="start_date"]');
+            const endEl = document.querySelector('input[name="end_date"]');
+            if (startEl && endEl) {
+                startEl.addEventListener('change', () => {
+                    endEl.setAttribute('min', startEl.value);
+                    if (endEl.value && endEl.value <= startEl.value) endEl.value = '';
+                });
+            }
 
-    <button type="submit" class="btn btn-primary">Update Vacancy</button>
-</form>
+            // ── Django messages → Swal ─────────────
+            {% if messages %}
+                window.addEventListener('DOMContentLoaded', () => {
+                    const msgs = [
+                        {% for message in messages %}
+                            {level: "{{ message.tags }}", text: "{{ message|escapejs }}"},
+                        {% endfor %}
+                    ];
+                    const errors = msgs.filter(m => m.level.includes('error'));
+                    if (errors.length) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Please fix the following',
+                            html: errors.map(e => `<p style="margin:0.3rem 0;font-size:0.85rem;">• ${e.text}</p>`).join(''),
+                            confirmButtonColor: '#262561',
+                        });
+                    }
+                });
+            {% endif %}
+        })();
 
+        // ── Delete confirmation ─────────────────────────────────
+        function confirmDelete(id, title) {
+            Swal.fire({
+                title: 'Delete vacancy?',
+                html: `<p style="font-size:0.85rem;color:#67748e;">
+               <strong style="color:#c0392b;">${title}</strong> will be permanently deleted.
+               This cannot be undone.</p>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#c0392b',
+                cancelButtonColor: '#adb5bd',
+                confirmButtonText: '<i class="fas fa-trash me-1"></i>Yes, Delete',
+            }).then(result => {
+                if (result.isConfirmed) {
+                    const f = document.getElementById('deleteForm');
+                    f.action = `/recruitment/hr/vacancy/${id}/delete/`;
+                    f.submit();
+                }
+            });
+        }
+    </script>
 {% endblock %}
