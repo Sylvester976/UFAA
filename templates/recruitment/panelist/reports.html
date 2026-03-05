@@ -1,0 +1,57 @@
+{% extends 'recruitment/panelist/base_panelist.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>My Interview Reports</h3>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>#</th>
+<th>Vacancy</th>
+<th>Candidates Interviewed</th>
+<th>Date Submitted</th>
+<th>Action</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for report in reports %}
+
+<tr>
+
+<td>{{ forloop.counter }}</td>
+
+<td>{{ report.vacancy.title }}</td>
+
+<td>{{ report.candidates_interviewed }}</td>
+
+<td>{{ report.submitted_at }}</td>
+
+<td>
+<a href="{% url 'submit_panel_report' report.vacancy.id %}" class="btn btn-sm btn-primary">
+View
+</a>
+</td>
+
+</tr>
+
+{% empty %}
+
+<tr>
+<td colspan="5">No reports submitted yet.</td>
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

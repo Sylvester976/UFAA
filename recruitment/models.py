@@ -389,14 +389,22 @@ class PanelAssignment(models.Model):
         ('accepted', 'Accepted'),
         ('declined', 'Declined'),
     ]
-    
+
     COMMITTEE_TYPES = [
         ('shortlisting', 'Shortlisting'),
         ('interview', 'Interview'),
     ]
 
-    vacancy = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='panel_assignments')
-    panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    vacancy = models.ForeignKey(
+        Vacancy,
+        on_delete=models.CASCADE,
+        related_name='panel_assignments'
+    )
+
+    panelist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
 
     committee_type = models.CharField(
         max_length=30,
@@ -405,12 +413,49 @@ class PanelAssignment(models.Model):
         blank=True
     )
 
-    status = models.CharField(max_length=20, choices=COMMITTEE_TYPES, default='pending')
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='pending'
+    )
+
     decline_reason = models.TextField(blank=True, null=True)
+
+    signed_decline_document = models.FileField(
+        upload_to="panel_declines/",
+        null=True,
+        blank=True
+    )
+
     responded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         unique_together = ('vacancy', 'panelist', 'committee_type')
+    
+
+class PanelistReport(models.Model):
+
+    vacancy = models.ForeignKey(
+        Vacancy,
+        on_delete=models.CASCADE
+    )
+
+    panelist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    candidates_interviewed = models.IntegerField(default=0)
+
+    summary = models.TextField()
+
+    recommendations = models.TextField(blank=True)
+
+    submitted_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('vacancy', 'panelist')
+
 
 class ShortlistVote(models.Model):
 

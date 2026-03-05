@@ -22,7 +22,7 @@
                 <p>Status: {{ assignment.status }}</p>
 
                 {% if assignment.status == "pending" %}
-                <form method="POST" action="{% url 'respond_panel_assignment' assignment.id %}">
+                {% comment %} <form method="POST" action="{% url 'respond_panel_assignment' assignment.id %}">
                     {% csrf_token %}
 
                     <button name="action" value="accept" class="btn btn-success">
@@ -42,6 +42,45 @@
                             Confirm Decline
                         </button>
                     </div>
+                </form> {% endcomment %}
+                <form method="POST"
+                    action="{% url 'respond_panel_assignment' assignment.id %}"
+                    enctype="multipart/form-data">
+
+                {% csrf_token %}
+
+                <button name="action" value="accept" class="btn btn-success">
+                Accept
+                </button>
+
+                <button type="button"
+                        class="btn btn-danger"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#decline{{ assignment.id }}">
+                Decline
+                </button>
+
+                <div id="decline{{ assignment.id }}" class="collapse mt-3">
+
+                <textarea name="reason"
+                        class="form-control"
+                        placeholder="Reason for conflict of interest"></textarea>
+
+                <div class="mt-2">
+                <label>Upload Signed Declaration</label>
+                <input type="file"
+                    name="decline_document"
+                    class="form-control">
+                </div>
+
+                <button name="action"
+                        value="decline"
+                        class="btn btn-danger mt-2">
+                Confirm Decline
+                </button>
+
+                </div>
+
                 </form>
                 {% endif %}
             </div>
