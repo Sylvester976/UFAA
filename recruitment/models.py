@@ -193,84 +193,104 @@ class Vacancy(models.Model):
         ('external', 'External'),
         ('internal', 'Internal'),
     ]
-    
+
     GRADE_CHOICES = [
         ('10-5', 'Grade 10-5'),
-        ('4-1', 'Grade 4-1'),
+        ('4-1',  'Grade 4-1'),
     ]
 
     STATUS_CHOICES = [
-        ('draft', 'Draft'),
-        ('open', 'Open'),
-        ('longlisting', 'Longlisting'),
-        ('committee_stage', 'Committee Appointed'),
-        ('shortlisting', 'Shortlisting Stage'),
-        ('interviews', 'Interviews'),
-        ('top_three_selected', 'Top Three Selected'),
+        ('draft',                'Draft'),
+        ('open',                 'Open'),
+        ('closed',               'Closed'),               # ← ADDED: HR closes after deadline
+        ('longlisting',          'Longlisting'),
+        ('committee_stage',      'Committee Appointed'),
+        ('shortlisting',         'Shortlisting Stage'),
+        ('interviews',           'Interviews'),
+        ('top_three_selected',   'Top Three Selected'),
         ('pending_ceo_approval', 'Pending CEO Approval'),
-        ('approved', 'Approved'),
-        ('appointed', 'Appointed'),
+        ('approved',             'Approved'),
+        ('appointed',            'Appointed'),
     ]
 
-    grade_category = models.CharField(
-        max_length=10,
-        choices=GRADE_CHOICES,
-        default='4-1'
-    )
-    title = models.CharField(max_length=255)
+    title            = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
-    description = models.TextField()
-    advert_pdf = models.FileField(upload_to='media/vacancy_adverts/')
+    description      = models.TextField()
+
+    # ↓ CHANGED: null=True, blank=True — PDF is optional at creation
+    advert_pdf = models.FileField(
+        upload_to='vacancy_adverts/',
+        null=True,
+        blank=True,
+    )
+
+    grade_category = models.CharField(
+        max_length=20,  # increased from 10
+        choices=GRADE_CHOICES,
+        default='4-1',
+    )
+    vacancy_type = models.CharField(
+        max_length=20,
+        choices=TYPE_CHOICES,
+        default='external',
+    )
+    status = models.CharField(
+        max_length=50,
+        choices=STATUS_CHOICES,
+        default='draft',
+    )
 
     start_date = models.DateField(null=True, blank=True)
-    end_date = models.DateField(null=True, blank=True)
+    end_date   = models.DateField(null=True, blank=True)
 
-    status = models.CharField(max_length=50, choices=STATUS_CHOICES, default='draft')
-
-    created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    created_at = models.DateTimeField(auto_now_add=True)
-
+    created_by       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    created_at       = models.DateTimeField(auto_now_add=True)
     ranking_finalized = models.BooleanField(default=False)
 
     def is_open(self):
         today = timezone.now().date()
         return (
-                self.status == 'open'
-                and self.start_date <= today <= self.end_date
+            self.status == 'open'
+            and self.start_date is not None
+            and self.end_date is not None
+            and self.start_date <= today <= self.end_date
         )
 
-    def __str__(self):
-        return f"{self.title} ({self.reference_number})"
-
-    vacancy_type = models.CharField(
-        max_length=20,
-        choices=TYPE_CHOICES,
-        default='external'
-    )
-
     def auto_close_if_expired(self):
+        """
+        Called by a scheduled task / management command.
+        Moves open vacancies past their end_date to 'closed'.
+        """
         if self.status == 'open' and self.end_date < timezone.now().date():
-            self.status = 'closed'
+            self.status = 'closed'   # ← now valid — 'closed' is in STATUS_CHOICES
             self.save()
-       
+
     def move_to(self, new_status):
+        """
+        Enforces the recruitment workflow progression.
+        Returns True if the transition was applied, False otherwise.
+        """
         allowed = {
-            'draft': ['open'],
-            'open': ['longlisting'],
-            'longlisting': ['shortlisting'],
-            'shortlisting': ['interviews'],
-            'interviews': ['top_three_selected'],
-            'top_three_selected': ['pending_ceo_approval'],
+            'draft':                ['open'],
+            'open':                 ['closed'],             # HR closes vacancy
+            'closed':               ['longlisting'],        # ← NEW: closed → longlisting
+            'longlisting':          ['committee_stage'],    # ← FIXED: was jumping to shortlisting
+            'committee_stage':      ['shortlisting'],
+            'shortlisting':         ['interviews'],
+            'interviews':           ['top_three_selected'],
+            'top_three_selected':   ['pending_ceo_approval'],
             'pending_ceo_approval': ['approved'],
-            'approved': ['appointed'],
+            'approved':             ['appointed'],
         }
 
         if new_status in allowed.get(self.status, []):
             self.status = new_status
             self.save()
             return True
-
         return False
+
+    def __str__(self):
+        return f"{self.title} ({self.reference_number})"
 
 
 class Application(models.Model):

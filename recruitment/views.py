@@ -1375,6 +1375,7 @@ def hr_dashboard(request):
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
+        'page':'HR Dashboard',
     }
     return render(request, 'recruitment/hr/dashboard.html', context)
 
@@ -1512,64 +1513,77 @@ def appoint_candidate(request, vacancy_id):
 @role_required(['hod_hr'])
 def create_vacancy(request):
     if request.method == 'POST':
-        title = request.POST.get('title')
-        reference_number = request.POST.get('reference_number')
-        description = request.POST.get('description')
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        advert_pdf = request.FILES.get('advert_pdf')
+        title            = request.POST.get('title', '').strip()
+        reference_number = request.POST.get('reference_number', '').strip()
+        description      = request.POST.get('description', '').strip()
+        vacancy_type     = request.POST.get('vacancy_type', 'external').strip()
+        grade_category   = request.POST.get('grade_category', '').strip()
+        start_date       = request.POST.get('start_date', '').strip()
+        end_date         = request.POST.get('end_date', '').strip()
+        advert_pdf       = request.FILES.get('advert_pdf')
 
-        # ---- Validation ----
+        # ── Validation ────────────────────────────────────────────
+        errors = []
 
         if not all([title, reference_number, description, start_date, end_date]):
-            messages.error(request, "All fields are required.")
-            return redirect('create_vacancy')
+            errors.append("All required fields must be filled.")
 
-        # Validate PDF
+        if vacancy_type not in ['external', 'internal']:
+            errors.append("Invalid vacancy type.")
+
         if advert_pdf:
             if not advert_pdf.name.lower().endswith('.pdf'):
-                messages.error(request, "Only PDF files are allowed.")
-                return redirect('create_vacancy')
+                errors.append("Only PDF files are allowed for the advert.")
+            elif advert_pdf.size > 5 * 1024 * 1024:
+                errors.append("Advert PDF must be under 5MB.")
 
-        # Validate Dates
+        # Date validation
+        parsed_start = parsed_end = None
         try:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            parsed_start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            parsed_end   = datetime.strptime(end_date,   "%Y-%m-%d").date()
         except ValueError:
-            messages.error(request, "Invalid date format.")
-            return redirect('create_vacancy')
+            errors.append("Invalid date format.")
 
-        today = timezone.now().date()
+        if parsed_start and parsed_end:
+            today = timezone.now().date()
+            if parsed_start < today:
+                errors.append("Start date cannot be in the past.")
+            if parsed_end <= parsed_start:
+                errors.append("End date must be after the start date.")
 
-        if start_date < today:
-            messages.error(request, "Start date cannot be in the past.")
-            return redirect('create_vacancy')
-
-        if end_date <= start_date:
-            messages.error(request, "End date must be after start date.")
-            return redirect('create_vacancy')
-
-        # Prevent duplicate reference numbers
         if Vacancy.objects.filter(reference_number=reference_number).exists():
-            messages.error(request, "Reference number already exists.")
-            return redirect('create_vacancy')
+            errors.append(f"Reference number '{reference_number}' already exists.")
 
-        # ---- Save Vacancy ----
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            # Re-render with POSTed values so user doesn't lose input
+            return render(request, 'recruitment/hr/create_vacancy.html', {
+                'page':   'Create Vacancy',
+                'posted': request.POST,
+            })
+
+        # ── Save ──────────────────────────────────────────────────
         Vacancy.objects.create(
-            title=title,
-            reference_number=reference_number,
-            description=description,
-            advert_pdf=advert_pdf,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=request.user,
-            status='draft'
+            title            = title,
+            reference_number = reference_number,
+            description      = description,
+            vacancy_type     = vacancy_type,
+            grade_category   = grade_category or None,
+            advert_pdf       = advert_pdf,
+            start_date       = parsed_start,
+            end_date         = parsed_end,
+            created_by       = request.user,
+            status           = 'draft',
         )
 
-        messages.success(request, "Vacancy created successfully as Draft.")
+        messages.success(request, f"Vacancy '{title}' created successfully as Draft.")
         return redirect('hr_dashboard')
 
-    return render(request, 'recruitment/hr/create_vacancy.html')
+    return render(request, 'recruitment/hr/create_vacancy.html', {
+        'page': 'Create Vacancy',
+    })
 
 
 def download_vacancy_pdf(request, vacancy_id):
