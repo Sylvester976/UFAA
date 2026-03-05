@@ -1,201 +1,458 @@
 {% extends 'recruitment/hr/base_hr.html' %}
-
 {% block title %}HR Dashboard{% endblock %}
 
+{% block extra_css %}
+<style>
+    :root {
+        --navy:      #262561;
+        --navy-deep: #1a1a45;
+        --gold:      #F9E6A1;
+        --gold-dark: #C39545;
+    }
+
+    /* ── HEADER BANNER ─────────────────────────────────── */
+    .dash-header-banner {
+        background: linear-gradient(135deg, var(--navy) 0%, #2E3A7A 60%, #3D4FA0 100%);
+        border-radius: 0.85rem;
+        padding: 0.9rem 1.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(38,37,97,0.18);
+    }
+    .dash-header-banner::before,
+    .dash-header-banner::after {
+        content: '';
+        position: absolute;
+        border-radius: 50%;
+        pointer-events: none;
+    }
+    .dash-header-banner::before {
+        top: -40px; right: -40px;
+        width: 180px; height: 180px;
+        background: rgba(249,230,161,0.07);
+    }
+    .dash-header-banner::after {
+        bottom: -50px; right: 100px;
+        width: 130px; height: 130px;
+        background: rgba(249,230,161,0.04);
+    }
+    .dash-header-banner h4   { color: #fff; font-weight: 800; font-size: 1.1rem; margin-bottom: 0.1rem; }
+    .dash-header-banner p    { color: rgba(249,230,161,0.72); font-size: 0.82rem; margin: 0; }
+    .dash-header-banner .header-date {
+        color: var(--gold);
+        font-size: 0.75rem;
+        font-weight: 600;
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+    .btn-banner {
+        background: linear-gradient(135deg, var(--gold-dark), #e0b55a);
+        color: var(--navy) !important;
+        border: none;
+        border-radius: 0.6rem;
+        font-size: 0.78rem;
+        font-weight: 700;
+        padding: 0.48rem 1.1rem;
+        text-decoration: none;
+        transition: all 0.2s ease;
+        display: inline-block;
+    }
+    .btn-banner:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(195,149,69,0.4);
+    }
+
+    /* ── GOLD DIVIDER ──────────────────────────────────── */
+    .gold-divider {
+        height: 2px;
+        background: linear-gradient(90deg, var(--navy), var(--gold-dark), #F9E6A1, var(--gold-dark), var(--navy));
+        border-radius: 2px;
+        opacity: 0.5;
+        margin: 0.6rem 0;
+    }
+
+    /* ── KPI CARD ENHANCEMENTS ─────────────────────────── */
+    /* Base .kpi-card already navy from base_hr.html — just add hover + radius */
+    .kpi-card {
+        border-radius: 1rem !important;
+        box-shadow: 0 6px 24px rgba(38,37,97,0.14) !important;
+        transition: transform 0.22s ease, box-shadow 0.22s ease;
+    }
+    .kpi-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 14px 32px rgba(38,37,97,0.22) !important;
+    }
+    .kpi-card .card-body { padding: 0.85rem 1.1rem; }
+    .kpi-sub { color: rgba(255,255,255,0.55); font-size: 0.7rem; margin-top: 0.3rem; }
+
+    /* Gold variant */
+    .kpi-gold { background: linear-gradient(135deg, var(--gold-dark) 0%, #e8cc7a 100%) !important; }
+    .kpi-gold .kpi-label { color: rgba(38,37,97,0.65) !important; }
+    .kpi-gold .kpi-value { color: var(--navy) !important; }
+    .kpi-gold .kpi-icon  { background: rgba(38,37,97,0.12) !important; color: var(--navy) !important; }
+    .kpi-gold .kpi-sub   { color: rgba(38,37,97,0.5) !important; }
+
+    /* White accent variant */
+    .kpi-white {
+        background: #fff !important;
+        border-left: 4px solid var(--navy) !important;
+    }
+    .kpi-white .kpi-label { color: #8392ab !important; }
+    .kpi-white .kpi-value { color: var(--navy) !important; }
+    .kpi-white .kpi-icon  { background: linear-gradient(135deg, var(--navy), #2E3A7A) !important; color: var(--gold) !important; }
+    .kpi-white .kpi-sub   { color: #adb5bd !important; }
+
+    /* ── DASH CARD HEADER ──────────────────────────────── */
+    .dash-card .card-header { padding: 1rem 1.4rem !important; }
+    .dash-card .card-header h6 { font-size: 0.92rem; font-weight: 700; color: var(--navy); margin-bottom: 0.1rem; }
+    .dash-card .card-header p  { font-size: 0.72rem; color: #8392ab; margin: 0; }
+
+    /* ── STATUS BADGE PILL OVERRIDES ───────────────────── */
+    .vacancy-status {
+        display: inline-flex !important;
+        align-items: center;
+        gap: 0.3rem;
+        padding: 0.28rem 0.72rem !important;
+        border-radius: 2rem !important;
+        font-size: 0.67rem !important;
+        font-weight: 700 !important;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        white-space: nowrap;
+    }
+    .vacancy-status::before {
+        content: '';
+        width: 5px; height: 5px;
+        border-radius: 50%;
+        display: inline-block;
+        background: currentColor;
+        flex-shrink: 0;
+    }
+    .vacancy-status-draft        { background: #f1f3f9 !important; color: #8392ab !important; }
+    .vacancy-status-open         { background: #d4f5e2 !important; color: #1a7a45 !important; }
+    .vacancy-status-closed       { background: #fde8e8 !important; color: #c0392b !important; }
+    .vacancy-status-longlisting  { background: #e8f4fd !important; color: #1a6fa8 !important; }
+    .vacancy-status-shortlisting { background: #fef3e2 !important; color: #b7770d !important; }
+    .vacancy-status-interviews   { background: #ede9fe !important; color: #5b21b6 !important; }
+    .vacancy-status-ceo_review   { background: #fef9e7 !important; color: #7d6608 !important; }
+
+    /* ── ACTION BUTTON OVERRIDES ───────────────────────── */
+    .vacancy-actions a {
+        display: inline-flex !important;
+        align-items: center;
+        padding: 0.26rem 0.65rem !important;
+        border-radius: 0.4rem !important;
+        font-size: 0.68rem !important;
+        font-weight: 600 !important;
+        text-decoration: none !important;
+        transition: all 0.18s ease !important;
+        border: 1px solid transparent !important;
+    }
+    .vacancy-actions .btn-draft        { background:#f1f3f9!important; color:#344767!important; border-color:#dee2e6!important; }
+    .vacancy-actions .btn-draft:hover  { background:var(--navy)!important; color:var(--gold)!important; }
+    .vacancy-actions .btn-open         { background:#d4f5e2!important; color:#1a7a45!important; border-color:#b2dfca!important; }
+    .vacancy-actions .btn-open:hover   { background:#1a7a45!important; color:#fff!important; }
+    .vacancy-actions .btn-closed       { background:#fde8e8!important; color:#c0392b!important; border-color:#f5c6c6!important; }
+    .vacancy-actions .btn-closed:hover { background:#c0392b!important; color:#fff!important; }
+    .vacancy-actions .btn-shortlisting       { background:#fef3e2!important; color:#b7770d!important; border-color:#fdd99a!important; }
+    .vacancy-actions .btn-shortlisting:hover { background:#b7770d!important; color:#fff!important; }
+    .vacancy-actions .btn-interviews         { background:#ede9fe!important; color:#5b21b6!important; border-color:#d4c5fc!important; }
+    .vacancy-actions .btn-interviews:hover   { background:#5b21b6!important; color:#fff!important; }
+    .vacancy-actions .btn-ceo_review         { background:#fef9e7!important; color:#7d6608!important; border-color:#f5e48a!important; }
+    .vacancy-actions .btn-ceo_review:hover   { background:#7d6608!important; color:#fff!important; }
+
+    /* ── TABLE ROW STYLING ─────────────────────────────── */
+    .vacancy-table tbody tr:hover td { background:#fbf6e0!important; }
+    .vacancy-title-cell { font-weight:600; color:var(--navy)!important; }
+    .vacancy-ref-cell   { font-family:monospace; font-size:0.78rem; color:#67748e!important; }
+
+    /* ── PULSE DOT ─────────────────────────────────────── */
+    .pulse-dot {
+        width:9px; height:9px; border-radius:50%;
+        background:#1a7a45;
+        box-shadow:0 0 0 3px rgba(26,122,69,0.2);
+        display:inline-block; flex-shrink:0;
+        animation: pulse-anim 1.8s infinite;
+    }
+    @keyframes pulse-anim {
+        0%,100% { box-shadow:0 0 0 3px rgba(26,122,69,0.2); }
+        50%      { box-shadow:0 0 0 7px rgba(26,122,69,0.06); }
+    }
+
+    /* ── EMPTY STATE ───────────────────────────────────── */
+    .empty-state { padding:2.5rem 1rem; text-align:center; }
+    .empty-state i { font-size:2.2rem; opacity:0.12; color:var(--navy); display:block; margin-bottom:0.6rem; }
+    .empty-state p { color:#adb5bd; font-size:0.82rem; margin:0; }
+    .empty-state a { color:var(--navy); font-weight:600; }
+
+    /* Appointment table */
+    .appoint-title { font-weight:600; color:var(--navy); }
+    .appoint-ref   { font-family:monospace; font-size:0.78rem; color:#67748e; }
+
+    /* ── SCROLLABLE TABLE BODIES ───────────────────────── */
+    /* Vacancy table — fixed height, thead stays sticky */
+    .vacancy-table-container {
+        max-height: 260px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(38,37,97,0.2) transparent;
+    }
+    .vacancy-table-container::-webkit-scrollbar       { width: 5px; }
+    .vacancy-table-container::-webkit-scrollbar-thumb { background: rgba(38,37,97,0.18); border-radius: 3px; }
+
+    /* Appointment table — fixed height */
+    .appoint-scroll {
+        max-height: 180px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(38,37,97,0.2) transparent;
+    }
+    .appoint-scroll::-webkit-scrollbar       { width: 5px; }
+    .appoint-scroll::-webkit-scrollbar-thumb { background: rgba(38,37,97,0.18); border-radius: 3px; }
+
+    /* Compact table row heights */
+    .vacancy-table thead th { padding: 0.6rem 1rem !important; }
+    .vacancy-table tbody tr td { padding: 0.55rem 1rem !important; }
+    .brand-table thead th  { padding: 0.6rem 1rem !important; }
+    .brand-table tbody tr td { padding: 0.55rem 1rem !important; }
+
+    /* Compact card headers */
+    .dash-card .card-header { padding: 0.7rem 1.2rem !important; }
+
+    /* Tighten KPI row */
+    .kpi-value { font-size: 1.7rem !important; }
+    .kpi-sub   { font-size: 0.65rem; margin-top: 0.1rem; }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="container-fluid py-2">
 
-<div class="container-fluid py-4">
-
-<!-- ================= HEADER ================= -->
-<div class="row mb-4">
-    <div class="col-12">
-        <h4 class="font-weight-bolder text-dark mb-1">HR Dashboard</h4>
-        <p class="text-sm text-muted mb-0">
-            Overview of recruitment activities and vacancy workflow.
-        </p>
+    <!-- ── HEADER BANNER ───────────────────────────────── -->
+    <div class="dash-header-banner mb-2">
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+            <div>
+                <h4><i class="fas fa-tachometer-alt me-2" style="color:var(--gold-dark);"></i>HR Dashboard</h4>
+                <p>Overview of recruitment activities and vacancy lifecycle</p>
+            </div>
+            <div class="text-end">
+                <span class="header-date"><i class="fas fa-calendar-alt me-1"></i>{% now "l, d F Y" %}</span>
+                <a href="{% url 'create_vacancy' %}" class="btn-banner">
+                    <i class="fas fa-plus me-1"></i> New Vacancy
+                </a>
+            </div>
+        </div>
     </div>
-</div>
 
-<!-- ================= KPI CARDS ================= -->
-<div class="row g-4 mb-4">
+    <div class="gold-divider"></div>
 
-    {% comment %} KPI Card: Open Vacancies {% endcomment %}
-    <div class="col-xl-4 col-md-6 col-12">
-        <div class="card kpi-card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs text-uppercase kpi-label mb-1">Open Vacancies</p>
-                        <h3 class="kpi-value mb-0">{{ open_vacancies_count }}</h3>
+    <!-- ── KPI CARDS ───────────────────────────────────── -->
+    <div class="row g-2 mb-3">
+
+        <div class="col-xl-4 col-md-6 col-12">
+            <div class="card kpi-card h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="kpi-label mb-1">Open Vacancies</p>
+                            <h3 class="kpi-value mb-0">{{ open_vacancies_count }}</h3>
+                            <p class="kpi-sub">Currently accepting applications</p>
+                        </div>
+                        <div class="kpi-icon"><i class="fas fa-briefcase"></i></div>
                     </div>
-                    <div class="kpi-icon"><i class="fas fa-briefcase"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 col-12">
+            <div class="card kpi-card kpi-gold h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="kpi-label mb-1">Pending CEO Approval</p>
+                            <h3 class="kpi-value mb-0">{{ pending_ceo_count }}</h3>
+                            <p class="kpi-sub">Awaiting final review</p>
+                        </div>
+                        <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-4 col-md-6 col-12">
+            <div class="card kpi-card kpi-white h-100">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <p class="kpi-label mb-1">Appointments Completed</p>
+                            <h3 class="kpi-value mb-0">{{ appointed_count }}</h3>
+                            <p class="kpi-sub">Successfully appointed</p>
+                        </div>
+                        <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- ── VACANCIES TABLE ─────────────────────────────── -->
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="card dash-card brand-card">
+                <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
+                    <div>
+                        <h6 class="mb-0"><i class="fas fa-list-alt me-2" style="opacity:0.5;"></i>All Vacancies</h6>
+                        <p>Manage recruitment lifecycle stages</p>
+                    </div>
+                    <a href="{% url 'create_vacancy' %}" class="btn btn-brand btn-sm">
+                        <i class="fas fa-plus me-1"></i> Create Vacancy
+                    </a>
+                </div>
+                <div class="vacancy-table-container card p-0">
+                    <table class="table vacancy-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Position</th>
+                                <th>Reference No.</th>
+                                <th>Status</th>
+                                <th>Closing Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vacancy in vacancies %}
+                            <tr>
+                                <td class="vacancy-title-cell">
+                                    <i class="fas fa-briefcase me-2" style="opacity:0.25;font-size:0.72rem;"></i>
+                                    {{ vacancy.title }}
+                                </td>
+                                <td class="vacancy-ref-cell">{{ vacancy.reference_number }}</td>
+                                <td>
+                                    {% if vacancy.status == "draft" %}
+                                        <span class="vacancy-status vacancy-status-draft">Draft</span>
+                                    {% elif vacancy.status == "open" %}
+                                        <span class="vacancy-status vacancy-status-open">Open</span>
+                                    {% elif vacancy.status == "closed" %}
+                                        <span class="vacancy-status vacancy-status-closed">Closed</span>
+                                    {% elif vacancy.status == "longlisting" %}
+                                        <span class="vacancy-status vacancy-status-longlisting">Longlisting</span>
+                                    {% elif vacancy.status == "committee_stage" %}
+                                        <span class="vacancy-status vacancy-status-shortlisting">Committee Stage</span>
+                                    {% elif vacancy.status == "shortlisting" %}
+                                        <span class="vacancy-status vacancy-status-shortlisting">Shortlisting</span>
+                                    {% elif vacancy.status == "interviews" %}
+                                        <span class="vacancy-status vacancy-status-interviews">Interviews</span>
+                                    {% elif vacancy.status == "top_three_selected" %}
+                                        <span class="vacancy-status vacancy-status-interviews">Top 3 Selected</span>
+                                    {% elif vacancy.status == "pending_ceo_approval" %}
+                                        <span class="vacancy-status vacancy-status-ceo_review">Pending CEO</span>
+                                    {% elif vacancy.status == "approved" %}
+                                        <span class="vacancy-status vacancy-status-open">Approved</span>
+                                    {% elif vacancy.status == "appointed" %}
+                                        <span class="vacancy-status vacancy-status-open">Appointed</span>
+                                    {% endif %}
+                                </td>
+                                <td style="font-size:0.8rem;color:#67748e;">
+                                    <i class="fas fa-calendar-times me-1" style="color:#dc3545;font-size:0.7rem;"></i>
+                                    {{ vacancy.end_date|date:"d M Y" }}
+                                </td>
+                                <td>
+                                    <div class="vacancy-actions">
+                                        {% if vacancy.status == "draft" %}
+                                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-draft"><i class="fas fa-edit me-1"></i>Edit</a>
+                                            <a href="{% url 'publish_vacancy' vacancy.id %}" class="btn-open"><i class="fas fa-paper-plane me-1"></i>Publish</a>
+                                            <a href="{% url 'delete_vacancy' vacancy.id %}" class="btn-closed"><i class="fas fa-trash me-1"></i>Delete</a>
+                                        {% elif vacancy.status == "open" %}
+                                            <a href="{% url 'close_vacancy' vacancy.id %}" class="btn-closed"><i class="fas fa-lock me-1"></i>Close</a>
+                                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-open"><i class="fas fa-users me-1"></i>Applications</a>
+                                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-draft"><i class="fas fa-edit me-1"></i>Edit</a>
+                                        {% elif vacancy.status == "closed" %}
+                                            <a href="{% url 'open_vacancy' vacancy.id %}" class="btn-open"><i class="fas fa-lock-open me-1"></i>Reopen</a>
+                                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-draft"><i class="fas fa-users me-1"></i>Applications</a>
+                                            <a href="{% url 'move_to_longlisting' vacancy.id %}" class="btn-shortlisting"><i class="fas fa-list me-1"></i>Start Longlisting</a>
+                                        {% elif vacancy.status == "longlisting" %}
+                                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-draft"><i class="fas fa-users me-1"></i>Applications</a>
+                                            <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}" class="btn-shortlisting"><i class="fas fa-user-plus me-1"></i>Appoint Committee</a>
+                                        {% elif vacancy.status == "committee_stage" %}
+                                            <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting"><i class="fas fa-users-cog me-1"></i>Appoint Panel</a>
+                                        {% elif vacancy.status == "shortlisting" %}
+                                            <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting"><i class="fas fa-users-cog me-1"></i>Manage Panel</a>
+                                        {% elif vacancy.status == "interviews" %}
+                                            <a href="{% url 'vacancy_panelists' vacancy.id %}" class="btn-interviews"><i class="fas fa-user-tie me-1"></i>Panelists</a>
+                                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-interviews"><i class="fas fa-chart-bar me-1"></i>Ranking</a>
+                                        {% elif vacancy.status == "top_three_selected" %}
+                                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-interviews"><i class="fas fa-trophy me-1"></i>View Top 3</a>
+                                        {% elif vacancy.status == "pending_ceo_approval" %}
+                                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-ceo_review"><i class="fas fa-star me-1"></i>Final Ranking</a>
+                                        {% elif vacancy.status == "approved" or vacancy.status == "appointed" %}
+                                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-open"><i class="fas fa-users me-1"></i>Applications</a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5">
+                                    <div class="empty-state">
+                                        <i class="fas fa-folder-open"></i>
+                                        <p>No vacancies created yet. <a href="{% url 'create_vacancy' %}">Create your first vacancy</a></p>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
 
-    {% comment %} KPI Card: Pending CEO Approval {% endcomment %}
-    <div class="col-xl-4 col-md-6 col-12">
-        <div class="card kpi-card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs text-uppercase kpi-label mb-1">Pending CEO Approval</p>
-                        <h3 class="kpi-value mb-0">{{ pending_ceo_count }}</h3>
-                    </div>
-                    <div class="kpi-icon"><i class="fas fa-user-check"></i></div>
+    <!-- ── FINAL APPOINTMENT ───────────────────────────── -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card dash-card brand-card">
+                <div class="card-header">
+                    <h6 class="mb-0 d-flex align-items-center gap-2">
+                        <span class="pulse-dot"></span>
+                        Vacancies Awaiting Final Appointment
+                    </h6>
+                    <p>These vacancies have completed the full selection process</p>
                 </div>
+                {% if vacancies_ready %}
+                <div class="appoint-scroll">
+                    <table class="table brand-table mb-0">
+                        <thead>
+                            <tr>
+                                <th>Vacancy</th>
+                                <th>Reference No.</th>
+                                <th class="text-end pe-3">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vacancy in vacancies_ready %}
+                            <tr>
+                                <td><span class="appoint-title">{{ vacancy.title }}</span></td>
+                                <td><span class="appoint-ref">{{ vacancy.reference_number }}</span></td>
+                                <td class="text-end pe-3">
+                                    <a href="{% url 'hr_finalize_appointment' vacancy.id %}" class="btn btn-brand btn-sm">
+                                        <i class="fas fa-check-double me-1"></i>Finalize Appointment
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty-state" style="padding:1rem;">
+                    <i class="fas fa-clipboard-check"></i>
+                    <p>No vacancies awaiting final appointment at this time.</p>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
 
-    {% comment %} KPI Card: Appointments Completed {% endcomment %}
-    <div class="col-xl-4 col-md-6 col-12">
-        <div class="card kpi-card h-100">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                    <div>
-                        <p class="text-xs text-uppercase kpi-label mb-1">Appointments Completed</p>
-                        <h3 class="kpi-value mb-0">{{ appointed_count }}</h3>
-                    </div>
-                    <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
 </div>
-
-<!-- ================= VACANCIES TABLE ================= -->
-<div class="row">
-<div class="col-12">
-<div class="card dash-card brand-card">
-
-    <div class="card-header d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2">
-        <div>
-            <h6 class="mb-0 fw-bold">Vacancies</h6>
-            <p class="text-xs text-muted mb-0">Manage recruitment lifecycle stages</p>
-        </div>
-        <a href="{% url 'create_vacancy' %}" class="btn btn-brand btn-sm">+ Create Vacancy</a>
-    </div>
-
-    <div class="vacancy-table-container card p-0">
-    <table class="table vacancy-table mb-0">
-        <thead>
-            <tr>
-                <th>Title</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Valid Until</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for vacancy in vacancies %}
-            <tr>
-                <td>{{ vacancy.title }}</td>
-                <td>{{ vacancy.reference_number }}</td>
-                <td>
-                    {% if vacancy.status == "draft" %}
-                        <span class="vacancy-status vacancy-status-draft">Draft</span>
-                    {% elif vacancy.status == "open" %}
-                        <span class="vacancy-status vacancy-status-open">Open</span>
-                    {% elif vacancy.status == "closed" %}
-                        <span class="vacancy-status vacancy-status-closed">Closed</span>
-                    {% elif vacancy.status == "longlisting" %}
-                        <span class="vacancy-status vacancy-status-longlisting">Longlisting</span>
-                    {% elif vacancy.status == "shortlisting" %}
-                        <span class="vacancy-status vacancy-status-shortlisting">Shortlisting</span>
-                    {% elif vacancy.status == "interviews" %}
-                        <span class="vacancy-status vacancy-status-interviews">Interviews</span>
-                    {% elif vacancy.status == "ceo_review" %}
-                        <span class="vacancy-status vacancy-status-ceo_review">CEO Review</span>
-                    {% endif %}
-                </td>
-                <td>{{ vacancy.end_date }}</td>
-                <td>
-                    <div class="vacancy-actions">
-                        {% if vacancy.status == "draft" %}
-                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-draft">Edit</a>
-                            <a href="{% url 'publish_vacancy' vacancy.id %}" class="btn-draft">Publish</a>
-                            <a href="{% url 'delete_vacancy' vacancy.id %}" class="btn-draft">Delete</a>
-                        {% elif vacancy.status == "open" %}
-                            <a href="{% url 'close_vacancy' vacancy.id %}" class="btn-open">Close</a>
-                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-open">Applications</a>
-                            <a href="{% url 'update_vacancy' vacancy.id %}" class="btn-open">Edit</a>
-                        {% elif vacancy.status == "closed" %}
-                            <a href="{% url 'open_vacancy' vacancy.id %}" class="btn-closed">Open</a>
-                            <a href="{% url 'hr_view_applications' vacancy.id %}" class="btn-closed">Applications</a>
-                        {% elif vacancy.status == "longlisting" %}
-                            <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}" class="btn-shortlisting">Appoint shortlisting committee</a>
-                        {% elif vacancy.status == "shortlisting" %}
-                            <a href="{% url 'appoint_panelists' vacancy.id %}" class="btn-shortlisting">Appoint Panel</a>
-                        {% elif vacancy.status == "interviews" %}
-                            <a href="{% url 'vacancy_panelists' vacancy.id %}" class="btn-interviews">View Panelists</a>
-                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-interviews">View Ranking</a>
-                        {% elif vacancy.status == "ceo_review" %}
-                            <span class="text-success fw-bold">Top Three Selected</span>
-                            <a href="{% url 'hr_ranking_view' vacancy.id %}" class="btn-ceo_review">Final Ranking</a>
-                        {% endif %}
-                    </div>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="5" class="text-center text-muted py-3">No vacancies created.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
-</div>
-</div>
-</div>
-
-<!-- ================= FINAL APPOINTMENT ================= -->
-<div class="row mt-4">
-<div class="col-12">
-<div class="card dash-card brand-card">
-
-    <div class="card-header">
-        <h6 class="fw-bold text-success mb-0">Vacancies Awaiting Final Appointment</h6>
-    </div>
-
-    <div class="card-body p-0">
-        {% if vacancies_ready %}
-        <div class="table-responsive">
-            <table class="table brand-table mb-0 w-100">
-                <thead class="bg-light sticky-top">
-                    <tr>
-                        <th class="ps-3">Vacancy</th>
-                        <th class="text-end pe-3">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vacancy in vacancies_ready %}
-                    <tr>
-                        <td class="fw-bold text-dark ps-3">{{ vacancy.title }}</td>
-                        <td class="text-end pe-3">
-                            <a href="{% url 'hr_finalize_appointment' vacancy.id %}" class="btn btn-brand btn-sm">
-                                Finalize Appointment
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center py-4">
-            <p class="text-muted mb-0">No vacancies awaiting final appointment.</p>
-        </div>
-        {% endif %}
-    </div>
-
-</div>
-</div>
-</div>
-
-</div>
-
 {% endblock %}
