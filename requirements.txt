@@ -28,3 +28,4 @@ gunicorn
 #psycopg2-binary==2.9.9
 #mysqlclient==2.1.1
 django-dbbackup
+python-dateutil

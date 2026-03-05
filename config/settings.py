@@ -74,6 +74,7 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "accounts.context_processors.logged_in_user",
                 "accounts.context_processors.notifications",
+                "accounts.context_processors.auto_close_vacancies",
             ],
         },
     },
