@@ -1,0 +1,38 @@
+{% extends 'recruitment/panelist/base_panelist.html' %}
+
+{% block content %}
+
+<h3>Interview Report - {{ vacancy.title }}</h3>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="mb-3">
+<label>Candidates Interviewed</label>
+<input type="number"
+       name="candidates_interviewed"
+       class="form-control">
+</div>
+
+<div class="mb-3">
+<label>Interview Summary</label>
+<textarea name="summary"
+          class="form-control"
+          rows="5"></textarea>
+</div>
+
+<div class="mb-3">
+<label>Recommendations</label>
+<textarea name="recommendations"
+          class="form-control"
+          rows="5"></textarea>
+</div>
+
+<button class="btn btn-success">
+Submit Report
+</button>
+
+</form>
+
+{% endblock %}

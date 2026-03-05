@@ -7,7 +7,7 @@
     <h4>Confirm Selection</h4>
 
     {% if application %}
-        <p><strong>Candidate:</strong> {{ application.applicant.get_full_name }}</p>
+        <p><strong>Candidate:</strong> {{ application.applicant.name }}</p>
 
         {% if is_override %}
             <div class="alert alert-warning">

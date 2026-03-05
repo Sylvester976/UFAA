@@ -169,4 +169,30 @@ urlpatterns = [
     path('sections/create/<int:template_id>/', views.section_create, name='section_create'),
     path('sections/<int:pk>/edit/', views.section_edit, name='section_edit'),
     path('sections/<int:pk>/delete/', views.section_delete, name='section_delete'),
+    
+    
+
+    path(
+        "panelist/dashboard/",
+        views.panelist_dashboard,
+        name="panelist_dashboard"
+    ),
+
+    path(
+        "panel/respond/<int:assignment_id>/",
+        views.respond_panel_assignment,
+        name="respond_panel_assignment"
+    ),
+
+    path(
+        "panel/report/<int:vacancy_id>/",
+        views.submit_panel_report,
+        name="submit_panel_report"
+    ),
+
+    path(
+        "panelist/reports/",
+        views.panelist_reports,
+        name="panelist_reports"
+    ),
 ]

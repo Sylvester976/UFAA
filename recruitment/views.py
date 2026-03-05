@@ -13,7 +13,7 @@ from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, PanelistReport, \
     ProfessionalQualification, ShortlistVote, ShortlistingCommittee, ShortlistingDecision, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee, \
     JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog, VacancyApplicationCounter
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
@@ -1418,31 +1418,85 @@ def officer_dashboard(request):
 @login_required
 @role_required(['panelist'])
 def respond_panel_assignment(request, assignment_id):
+
     assignment = get_object_or_404(
         PanelAssignment,
         id=assignment_id,
         panelist=request.user
     )
 
-    if request.method == 'POST':
-        action = request.POST.get('action')
+    if request.method == "POST":
 
-        if action == 'accept':
-            assignment.status = 'accepted'
+        action = request.POST.get("action")
+
+        if action == "accept":
+
+            assignment.status = "accepted"
             assignment.responded_at = timezone.now()
             assignment.save()
-            messages.success(request, "You accepted the panel assignment.")
 
-        elif action == 'decline':
-            reason = request.POST.get('reason')
-            assignment.status = 'declined'
+            messages.success(request, "You have accepted the assignment.")
+
+        elif action == "decline":
+
+            reason = request.POST.get("reason")
+            doc = request.FILES.get("decline_document")
+
+            assignment.status = "declined"
             assignment.decline_reason = reason
+            assignment.signed_decline_document = doc
             assignment.responded_at = timezone.now()
             assignment.save()
-            messages.warning(request, "You declined the panel assignment.")
 
-        return redirect('panelist_dashboard')
+            messages.warning(
+                request,
+                "You have declined this assignment. HR has been notified."
+            )
 
+        return redirect("panelist_dashboard")
+
+@login_required
+@role_required(['panelist'])
+def submit_panel_report(request, vacancy_id):
+
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if request.method == "POST":
+
+        interviewed = request.POST.get("candidates_interviewed")
+        summary = request.POST.get("summary")
+        recommendations = request.POST.get("recommendations")
+
+        PanelistReport.objects.update_or_create(
+            vacancy=vacancy,
+            panelist=request.user,
+            defaults={
+                "candidates_interviewed": interviewed,
+                "summary": summary,
+                "recommendations": recommendations
+            }
+        )
+
+        messages.success(request, "Interview report submitted.")
+
+        return redirect("panelist_dashboard")
+
+    return render(request, "recruitment/panelist/report_form.html", {
+        "vacancy": vacancy
+    })
+    
+@login_required
+@role_required(['panelist'])
+def panelist_reports(request):
+
+    reports = PanelistReport.objects.filter(
+        panelist=request.user
+    ).select_related("vacancy")
+
+    return render(request, "recruitment/panelist/reports.html", {
+        "reports": reports
+    })
+    
 
 @login_required
 @role_required(['panelist'])
@@ -2645,7 +2699,7 @@ def ceo_select_candidate(request, vacancy_id, application_id):
         return redirect('ceo_dashboard')
 
     # Determine if this candidate is in Top 3
-    is_override = application.status != 'ceo_review'
+    is_override = application.status != 'selected_top_three'
 
     if request.method == 'POST':
         override_reason = request.POST.get('override_reason', '').strip()
