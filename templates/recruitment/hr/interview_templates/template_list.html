@@ -1,0 +1,58 @@
+{% extends "recruitment/hr/base_hr.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>Interview Templates</h3>
+
+<a href="{% url 'template_create' %}" class="btn btn-primary mb-3">
+Create Template
+</a>
+
+<table class="table table-bordered">
+
+<thead>
+<tr>
+<th>Name</th>
+<th>Created</th>
+<th>Actions</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for template in templates %}
+
+<tr>
+
+<td>{{ template.name }}</td>
+<td>{{ template.created_at }}</td>
+
+<td>
+
+<a href="{% url 'template_detail' template.id %}" class="btn btn-info btn-sm">
+View
+</a>
+
+<a href="{% url 'template_edit' template.id %}" class="btn btn-warning btn-sm">
+Edit
+</a>
+
+<a href="{% url 'template_delete' template.id %}" class="btn btn-danger btn-sm">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

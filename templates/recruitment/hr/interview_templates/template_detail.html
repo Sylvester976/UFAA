@@ -1,0 +1,62 @@
+{% extends "recruitment/hr/base_hr.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>{{ template.name }}</h3>
+
+<p>{{ template.description }}</p>
+
+<a href="{% url 'section_create' template.id %}" class="btn btn-primary mb-3">
+Add Section
+</a>
+
+<table class="table table-bordered">
+
+<thead>
+
+<tr>
+<th>Section</th>
+<th>Max Score</th>
+<th>Weight</th>
+<th>Order</th>
+<th>Actions</th>
+</tr>
+
+</thead>
+
+<tbody>
+
+{% for section in sections %}
+
+<tr>
+
+<td>{{ section.name }}</td>
+<td>{{ section.max_score }}</td>
+<td>{{ section.weight }}</td>
+<td>{{ section.order }}</td>
+
+<td>
+
+<a href="{% url 'section_edit' section.id %}" class="btn btn-warning btn-sm">
+Edit
+</a>
+
+<a href="{% url 'section_delete' section.id %}" class="btn btn-danger btn-sm">
+Delete
+</a>
+
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+{% endblock %}

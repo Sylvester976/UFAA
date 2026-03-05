@@ -86,6 +86,7 @@
                 <th>Title</th>
                 <th>Reference</th>
                 <th>Status</th>
+                <th>Applications</th>
                 <th>Valid Until</th>
                 <th>Actions</th>
             </tr>
@@ -112,6 +113,7 @@
                         <span class="vacancy-status vacancy-status-ceo_review">CEO Review</span>
                     {% endif %}
                 </td>
+                <td>{{ vacancy.applications_count }}</td>
                 <td>{{ vacancy.end_date }}</td>
                 <td>
                     <div class="vacancy-actions">

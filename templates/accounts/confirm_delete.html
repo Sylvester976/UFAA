@@ -1,0 +1,8 @@
+<h3>Are you sure you want to delete {{ user.username }}?</h3>
+
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Yes, Delete</button>
+</form>
+
+<a href="{% url 'user_list' %}">Cancel</a>

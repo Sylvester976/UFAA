@@ -152,4 +152,17 @@ urlpatterns = [
         views.submit_shortlist,
         name='submit_shortlist'
     ),
+    
+    
+    # Templates
+    path('interview-templates/', views.template_list, name='template_list'),
+    path('interview-templates/create/', views.template_create, name='template_create'),
+    path('interview-templates/<int:pk>/', views.template_detail, name='template_detail'),
+    path('interview-templates/<int:pk>/edit/', views.template_edit, name='template_edit'),
+    path('interview-templates/<int:pk>/delete/', views.template_delete, name='template_delete'),
+
+    # Sections
+    path('sections/create/<int:template_id>/', views.section_create, name='section_create'),
+    path('sections/<int:pk>/edit/', views.section_edit, name='section_edit'),
+    path('sections/<int:pk>/delete/', views.section_delete, name='section_delete'),
 ]

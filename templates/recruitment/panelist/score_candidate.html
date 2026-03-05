@@ -1,44 +1,76 @@
 {% extends 'recruitment/panelist/base_panelist.html' %}
-
+{% load custom_tags %}
 {% block content %}
 
 <div class="container mt-4">
 
-    <h3>Score Candidate</h3>
+<h3>Score Candidate</h3>
 
-    <p><strong>Name:</strong> {{ application.applicant.get_full_name }}</p>
-    <p><strong>Vacancy:</strong> {{ application.vacancy.title }}</p>
+<p><strong>Name:</strong> {{ application.applicant.get_full_name }}</p>
+<p><strong>Vacancy:</strong> {{ application.vacancy.title }}</p>
 
-    <form method="POST">
-        {% csrf_token %}
+<form method="POST">
 
-        <div class="mb-3">
-            <label>Score (0 - 100)</label>
-            <input type="number"
-                   name="score"
-                   min="0"
-                   max="100"
-                   step="0.01"
-                   class="form-control"
-                   value="{% if existing_score %}{{ existing_score.score }}{% endif %}"
-                   required>
-        </div>
+{% csrf_token %}
 
-        <div class="mb-3">
-            <label>Remarks</label>
-            <textarea name="remarks"
-                      class="form-control">{% if existing_score %}{{ existing_score.remarks }}{% endif %}</textarea>
-        </div>
+<table class="table table-bordered">
 
-        <button type="submit" class="btn btn-primary">
-            Save Score
-        </button>
+<thead>
+<tr>
+<th>Section</th>
+<th>Max Score</th>
+<th>Your Score</th>
+</tr>
+</thead>
 
-        <a href="{% url 'panelist_interview_list' application.vacancy.id %}"
-           class="btn btn-secondary">
-            Back
-        </a>
-    </form>
+<tbody>
+
+{% for section in sections %}
+
+<tr>
+
+<td>{{ section.name }}</td>
+<td>{{ section.max_score }}</td>
+
+<td>
+<input type="number"
+       name="section_{{ section.id }}"
+       class="form-control"
+       max="{{ section.max_score }}"
+       step="0.01"
+       value="{{ existing_scores|get_item:section.id }}">
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+
+<div class="mb-3">
+
+<label>Remarks</label>
+
+<textarea name="remarks" class="form-control">
+{{ score_obj.remarks }}
+</textarea>
+
+</div>
+
+
+<button class="btn btn-primary">
+Save Score
+</button>
+
+<a href="{% url 'panelist_interview_list' application.vacancy.id %}"
+   class="btn btn-secondary">
+Back
+</a>
+
+</form>
 
 </div>
 
