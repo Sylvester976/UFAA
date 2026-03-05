@@ -437,7 +437,8 @@ class PanelistReport(models.Model):
 
     vacancy = models.ForeignKey(
         Vacancy,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        related_name="panel_reports"
     )
 
     panelist = models.ForeignKey(
@@ -445,16 +446,21 @@ class PanelistReport(models.Model):
         on_delete=models.CASCADE
     )
 
+    assignment = models.ForeignKey(
+        PanelAssignment,
+        on_delete=models.CASCADE, blank=True, null=True
+    )
+
     candidates_interviewed = models.IntegerField(default=0)
 
-    summary = models.TextField()
+    report_summary = models.TextField()
 
     recommendations = models.TextField(blank=True)
 
     submitted_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('vacancy', 'panelist')
+        unique_together = ("vacancy", "panelist")
 
 
 class ShortlistVote(models.Model):
