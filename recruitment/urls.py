@@ -43,6 +43,9 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/applications/',
          views.hr_view_applications,
          name='hr_view_applications'),
+    path('hr/vacancy/<int:vacancy_id>/applications/json/',
+     views.hr_view_applications_json,
+     name='hr_applications_json'),
     
     path('hr/vacancy/<int:vacancy_id>/committee/',
          views.committee_view_applications,
@@ -135,6 +138,7 @@ urlpatterns = [
     path('vacancies/shortlisting/', views.vacancy_shortlisting, name='vacancy_shortlisting'),
     path('vacancies/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
     path('vacancies/list/', views.vacancy_list, name='vacancy_list'),
+    path('hr/vacancy/<int:vacancy_id>/longlisting/', views.move_to_longlisting, name='move_to_longlisting'),
     path('vacancies/appointments/', views.vacancy_appointments, name='vacancy_appointments'),
 
     # Appoint panelists to a vacancy

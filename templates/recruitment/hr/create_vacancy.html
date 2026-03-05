@@ -1,54 +1,702 @@
 {% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Create Vacancy{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --navy:      #262561;
+        --navy-light:#2E3A7A;
+        --gold:      #F9E6A1;
+        --gold-dark: #C39545;
+    }
+
+    /* ── PAGE HEADER ───────────────────────── */
+    .page-header-banner {
+        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+        border-radius: 0.85rem;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1.25rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(38,37,97,0.18);
+    }
+    .page-header-banner::before {
+        content:''; position:absolute;
+        top:-30px; right:-30px;
+        width:130px; height:130px;
+        border-radius:50%;
+        background:rgba(249,230,161,0.07);
+        pointer-events:none;
+    }
+    .page-header-banner h5 { color:#fff; font-weight:700; font-size:1.05rem; margin:0; }
+    .page-header-banner p  { color:rgba(249,230,161,0.7); font-size:0.78rem; margin:0; }
+    .btn-back {
+        background:rgba(255,255,255,0.12);
+        color:#fff !important;
+        border:1px solid rgba(255,255,255,0.2);
+        border-radius:0.5rem;
+        font-size:0.75rem;
+        font-weight:600;
+        padding:0.4rem 0.9rem;
+        text-decoration:none;
+        transition:all 0.18s ease;
+    }
+    .btn-back:hover { background:rgba(255,255,255,0.22); }
+
+    /* ── STEPPER ───────────────────────────── */
+    .stepper {
+        display:flex;
+        align-items:center;
+        padding:1.2rem 1.5rem 0;
+        gap:0;
+    }
+    .step-item {
+        display:flex;
+        align-items:center;
+        flex:1;
+        position:relative;
+    }
+    .step-item:last-child { flex:0; }
+    .step-circle {
+        width:32px; height:32px;
+        border-radius:50%;
+        border:2px solid #dee2e6;
+        background:#fff;
+        display:flex; align-items:center; justify-content:center;
+        font-size:0.72rem; font-weight:700;
+        color:#adb5bd;
+        transition:all 0.25s ease;
+        flex-shrink:0;
+        z-index:1;
+    }
+    .step-item.active   .step-circle { border-color:var(--navy); background:var(--navy); color:var(--gold); }
+    .step-item.done     .step-circle { border-color:#1a7a45; background:#1a7a45; color:#fff; }
+    .step-label {
+        font-size:0.68rem;
+        font-weight:600;
+        color:#adb5bd;
+        margin-left:0.45rem;
+        white-space:nowrap;
+        transition:color 0.25s ease;
+    }
+    .step-item.active .step-label { color:var(--navy); }
+    .step-item.done   .step-label { color:#1a7a45; }
+    .step-line {
+        flex:1;
+        height:2px;
+        background:#dee2e6;
+        margin:0 0.5rem;
+        transition:background 0.25s ease;
+    }
+    .step-item.done + .step-line,
+    .step-line.done { background:#1a7a45; }
+
+    /* ── MAIN CARD ─────────────────────────── */
+    .wizard-card {
+        background:#fff;
+        border-radius:1rem;
+        border:none;
+        box-shadow:0 4px 24px rgba(38,37,97,0.09);
+        overflow:hidden;
+    }
+
+    /* ── STEP PANELS ───────────────────────── */
+    .step-panel { display:none; padding:1.5rem; }
+    .step-panel.active { display:block; }
+
+    .step-panel-title {
+        font-size:0.85rem;
+        font-weight:700;
+        color:var(--navy);
+        margin-bottom:0.15rem;
+    }
+    .step-panel-sub {
+        font-size:0.72rem;
+        color:#8392ab;
+        margin-bottom:1.25rem;
+    }
+
+    /* ── FORM ELEMENTS ─────────────────────── */
+    .form-label-c {
+        font-size:0.74rem;
+        font-weight:600;
+        color:#344767;
+        margin-bottom:0.3rem;
+        display:block;
+    }
+    .form-label-c .req { color:#dc3545; margin-left:2px; }
+
+    .form-ctrl {
+        border:1px solid #e0e4ef;
+        border-radius:0.6rem;
+        padding:0.55rem 0.85rem;
+        font-size:0.82rem;
+        color:#344767;
+        background:#fafbff;
+        width:100%;
+        transition:border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .form-ctrl:focus {
+        border-color:var(--navy);
+        box-shadow:0 0 0 3px rgba(38,37,97,0.08);
+        background:#fff;
+        outline:none;
+    }
+    .form-ctrl::placeholder { color:#b0b8cc; }
+    textarea.form-ctrl { resize:vertical; min-height:150px; line-height:1.65; }
+    select.form-ctrl   { cursor:pointer; }
+
+    .form-hint {
+        font-size:0.67rem;
+        color:#adb5bd;
+        margin-top:0.2rem;
+    }
+
+    /* ── TYPE TOGGLE ───────────────────────── */
+    .type-toggle { display:flex; gap:0.75rem; }
+    .type-option { flex:1; }
+    .type-option input[type="radio"] { display:none; }
+    .type-option label {
+        display:flex; align-items:center; gap:0.5rem;
+        padding:0.65rem 1rem;
+        border:2px solid #e0e4ef;
+        border-radius:0.65rem;
+        cursor:pointer;
+        font-size:0.8rem; font-weight:600;
+        color:#67748e;
+        background:#fafbff;
+        transition:all 0.18s ease;
+        width:100%;
+    }
+    .type-option input:checked + label {
+        border-color:var(--navy);
+        background:rgba(38,37,97,0.05);
+        color:var(--navy);
+    }
+
+    /* ── FILE ZONE ─────────────────────────── */
+    .file-zone {
+        border:2px dashed #dde1f0;
+        border-radius:0.75rem;
+        padding:1.4rem 1rem;
+        text-align:center;
+        background:#fafbff;
+        cursor:pointer;
+        transition:border-color 0.2s, background 0.2s;
+        position:relative;
+    }
+    .file-zone:hover, .file-zone.dragover {
+        border-color:var(--navy);
+        background:rgba(38,37,97,0.03);
+    }
+    .file-zone input[type="file"] {
+        position:absolute; inset:0;
+        opacity:0; cursor:pointer; width:100%; height:100%;
+    }
+    .file-zone i       { font-size:1.6rem; color:var(--navy); opacity:0.25; display:block; margin-bottom:0.4rem; }
+    .file-zone .fz-t   { font-size:0.8rem; font-weight:600; color:var(--navy); }
+    .file-zone .fz-s   { font-size:0.68rem; color:#adb5bd; }
+    .file-selected {
+        display:none;
+        margin-top:0.6rem;
+        padding:0.4rem 0.75rem;
+        background:#fef3e2;
+        border-radius:0.5rem;
+        font-size:0.74rem;
+        font-weight:600;
+        color:#b7770d;
+    }
+
+    /* ── CARD FOOTER / NAV ─────────────────── */
+    .wizard-footer {
+        border-top:1px solid rgba(38,37,97,0.07);
+        padding:1rem 1.5rem;
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        background:#fafbff;
+    }
+    .btn-next {
+        background:linear-gradient(135deg,var(--navy),var(--navy-light));
+        color:var(--gold) !important;
+        border:none;
+        border-radius:0.6rem;
+        font-size:0.8rem; font-weight:700;
+        padding:0.55rem 1.4rem;
+        transition:all 0.2s ease;
+        cursor:pointer;
+    }
+    .btn-next:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(38,37,97,0.28); }
+    .btn-prev {
+        background:#f1f3f9;
+        color:#67748e !important;
+        border:1px solid #dee2e6;
+        border-radius:0.6rem;
+        font-size:0.8rem; font-weight:600;
+        padding:0.55rem 1.2rem;
+        cursor:pointer;
+        transition:all 0.18s ease;
+    }
+    .btn-prev:hover { background:#e2e6f0; }
+    .btn-submit {
+        background:linear-gradient(135deg,#1a7a45,#22a05a);
+        color:#fff !important;
+        border:none;
+        border-radius:0.6rem;
+        font-size:0.8rem; font-weight:700;
+        padding:0.55rem 1.6rem;
+        transition:all 0.2s ease;
+        cursor:pointer;
+    }
+    .btn-submit:hover { transform:translateY(-1px); box-shadow:0 6px 16px rgba(26,122,69,0.3); }
+
+    .step-progress {
+        font-size:0.7rem; color:#adb5bd; font-weight:600;
+    }
+
+    /* ── REVIEW PANEL ──────────────────────── */
+    .review-grid {
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:0.75rem;
+    }
+    .review-item { }
+    .review-item .rv-label {
+        font-size:0.65rem; font-weight:700; text-transform:uppercase;
+        letter-spacing:0.06em; color:#8392ab; margin-bottom:0.15rem;
+    }
+    .review-item .rv-value {
+        font-size:0.82rem; font-weight:600; color:var(--navy);
+    }
+    .review-item.full { grid-column:1/-1; }
+    .review-item .rv-desc {
+        font-size:0.78rem; color:#344767; line-height:1.6;
+        background:#f8f9fa; border-radius:0.5rem;
+        padding:0.75rem; border-left:3px solid var(--navy);
+        max-height:100px; overflow-y:auto;
+    }
+    .review-badge {
+        display:inline-flex; align-items:center; gap:0.3rem;
+        padding:0.25rem 0.65rem; border-radius:2rem;
+        font-size:0.68rem; font-weight:700; text-transform:uppercase;
+    }
+    .review-badge.external { background:#d4f5e2; color:#1a7a45; }
+    .review-badge.internal { background:#ede9fe; color:#5b21b6; }
+
+    /* ── CHAR COUNTER ──────────────────────── */
+    .char-counter { font-size:0.67rem; color:#adb5bd; }
+    .char-counter.warn { color:#f39c12; }
+    .char-counter.over { color:#dc3545; }
+</style>
+{% endblock %}
+
 {% block content %}
+<div class="container-fluid py-2">
 
-<div class="container mt-4">
-    <h3>Create Vacancy</h3>
+    <!-- ── PAGE HEADER ─────────────────────── -->
+    <div class="page-header-banner mb-3">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h5><i class="fas fa-plus-circle me-2" style="color:var(--gold-dark);"></i>Create New Vacancy</h5>
+                <p>Complete all steps — vacancy saves as Draft until you publish.</p>
+            </div>
+            <a href="{% url 'hr_dashboard' %}" class="btn-back">
+                <i class="fas fa-arrow-left me-1"></i> Back
+            </a>
+        </div>
+    </div>
 
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
+    <!-- ── WIZARD CARD ─────────────────────── -->
+    <div class="wizard-card">
 
-        <div class="mb-3">
-            <label>Vacancy Title</label>
-            <input type="text" name="title" class="form-control" required>
+        <!-- Stepper -->
+        <div class="stepper" id="stepper">
+            <div class="step-item active" id="si-1">
+                <div class="step-circle" id="sc-1">1</div>
+                <span class="step-label">Position</span>
+            </div>
+            <div class="step-line" id="sl-1"></div>
+            <div class="step-item" id="si-2">
+                <div class="step-circle" id="sc-2">2</div>
+                <span class="step-label">Description</span>
+            </div>
+            <div class="step-line" id="sl-2"></div>
+            <div class="step-item" id="si-3">
+                <div class="step-circle" id="sc-3">3</div>
+                <span class="step-label">Dates & Document</span>
+            </div>
+            <div class="step-line" id="sl-3"></div>
+            <div class="step-item" id="si-4">
+                <div class="step-circle" id="sc-4">4</div>
+                <span class="step-label">Review</span>
+            </div>
         </div>
 
-        <div class="mb-3">
-            <label>Reference Number</label>
-            <input type="text" name="reference_number" class="form-control" required>
-        </div>
+        <form method="POST" enctype="multipart/form-data" id="vacancyForm" novalidate>
+            {% csrf_token %}
 
-        <div class="mb-3">
-            <label>Description</label>
-            <textarea name="description" class="form-control" rows="4" required></textarea>
-        </div>
-        
-        <div class="mb-3">
-            <label for="vacancy-type">Vacancy Type</label>
-            <select name="vacancy_type" id="vacancy-type" class="form-control" required>
-                <option value="external">External</option>
-                <option value="internal">Internal</option>
-            </select>
-        </div>
+            <!-- ── STEP 1: Position Details ──── -->
+            <div class="step-panel active" id="panel-1">
+                <p class="step-panel-title">Position Details</p>
+                <p class="step-panel-sub">Basic information about the vacancy</p>
 
-        <div class="mb-3">
-            <label>Advert PDF</label>
-            <input type="file" name="advert_pdf" class="form-control" accept="application/pdf">
-        </div>
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label class="form-label-c">Job Title <span class="req">*</span></label>
+                        <input type="text" name="title" id="f-title"
+                               class="form-ctrl"
+                               placeholder="e.g. Senior Finance Officer"
+                               value="{{ posted.title|default:'' }}"
+                               maxlength="200">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-c">Reference Number <span class="req">*</span></label>
+                        <input type="text" name="reference_number" id="f-ref"
+                               class="form-ctrl"
+                               placeholder="e.g. UFAA/HR/003/2025"
+                               value="{{ posted.reference_number|default:'' }}">
+                        <p class="form-hint">Must be unique. Used to generate applicant tracking numbers.</p>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-c">Grade / Category</label>
+                        <input type="text" name="grade_category" id="f-grade"
+                               class="form-ctrl"
+                               placeholder="e.g. Job Grade 4"
+                               value="{{ posted.grade_category|default:'' }}">
+                        <p class="form-hint">Optional — shown on vacancy cards.</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-c">Vacancy Type <span class="req">*</span></label>
+                        <div class="type-toggle">
+                            <div class="type-option">
+                                <input type="radio" name="vacancy_type" id="type_ext" value="external"
+                                       {% if posted.vacancy_type != 'internal' %}checked{% endif %}>
+                                <label for="type_ext">
+                                    <i class="fas fa-globe"></i> External
+                                    <small style="font-weight:400;color:#adb5bd;font-size:0.68rem;margin-left:auto;">Open to public</small>
+                                </label>
+                            </div>
+                            <div class="type-option">
+                                <input type="radio" name="vacancy_type" id="type_int" value="internal"
+                                       {% if posted.vacancy_type == 'internal' %}checked{% endif %}>
+                                <label for="type_int">
+                                    <i class="fas fa-lock"></i> Internal
+                                    <small style="font-weight:400;color:#adb5bd;font-size:0.68rem;margin-left:auto;">UFAA staff only</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
-        <div class="mb-3">
-            <label>Start Date</label>
-            <input type="date" name="start_date" class="form-control" required>
-        </div>
+            <!-- ── STEP 2: Description ───────── -->
+            <div class="step-panel" id="panel-2">
+                <p class="step-panel-title">Job Description</p>
+                <p class="step-panel-sub">Detailed responsibilities, requirements and any other relevant information</p>
 
-        <div class="mb-3">
-            <label>End Date</label>
-            <input type="date" name="end_date" class="form-control" required>
-        </div>
+                <label class="form-label-c">Description <span class="req">*</span></label>
+                <textarea name="description" id="f-desc" class="form-ctrl"
+                          rows="10"
+                          placeholder="Include job purpose, key responsibilities, qualifications required...&#10;&#10;Tip: use **KEY:** Value format for structured fields&#10;e.g. **LOCATION:** Nairobi  **DEPARTMENT:** Finance">{{ posted.description|default:'' }}</textarea>
+                <div class="d-flex justify-content-between mt-1">
+                    <p class="form-hint"><i class="fas fa-lightbulb me-1"></i>Use <code>**KEY:** Value</code> e.g. <code>**LOCATION:** Nairobi</code> to show structured fields on vacancy cards.</p>
+                    <span class="char-counter" id="charCount">0 chars</span>
+                </div>
+            </div>
 
-        <button type="submit" class="btn btn-primary">
-            Save as Draft
-        </button>
-    </form>
+            <!-- ── STEP 3: Dates & Document ──── -->
+            <div class="step-panel" id="panel-3">
+                <p class="step-panel-title">Vacancy Period & Document</p>
+                <p class="step-panel-sub">Set the opening and closing dates, and optionally attach the advert PDF</p>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label-c">Opening Date <span class="req">*</span></label>
+                        <input type="date" name="start_date" id="f-start"
+                               class="form-ctrl"
+                               value="{{ posted.start_date|default:'' }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label-c">Closing Date <span class="req">*</span></label>
+                        <input type="date" name="end_date" id="f-end"
+                               class="form-ctrl"
+                               value="{{ posted.end_date|default:'' }}">
+                        <p class="form-hint">Must be after opening date.</p>
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label-c">Advert PDF <small style="font-weight:400;color:#adb5bd;">(optional · max 5MB)</small></label>
+                        <div class="file-zone" id="pdfZone">
+                            <input type="file" name="advert_pdf" id="f-pdf" accept="application/pdf">
+                            <i class="fas fa-file-pdf"></i>
+                            <div class="fz-t">Drop PDF here or click to browse</div>
+                            <div class="fz-s">PDF only · max 5MB</div>
+                        </div>
+                        <div class="file-selected" id="pdfSelected">
+                            <i class="fas fa-file-pdf me-1"></i><span id="pdfName"></span>
+                            <span id="pdfClear" style="margin-left:auto;cursor:pointer;color:#c0392b;"
+                                  onclick="clearPdf()">✕ Remove</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ── STEP 4: Review ────────────── -->
+            <div class="step-panel" id="panel-4">
+                <p class="step-panel-title">Review & Confirm</p>
+                <p class="step-panel-sub">Confirm all details before saving as Draft</p>
+
+                <div class="review-grid" id="reviewGrid">
+                    <!-- Populated by JS -->
+                </div>
+
+                <div class="mt-3 p-3" style="background:#fff8e1;border-radius:0.65rem;border:1px solid #F9E6A1;">
+                    <p style="margin:0;font-size:0.75rem;color:#664d03;">
+                        <i class="fas fa-info-circle me-1"></i>
+                        The vacancy will be saved as <strong>Draft</strong>.
+                        It will not be visible to applicants until you publish it from the dashboard.
+                    </p>
+                </div>
+            </div>
+
+            <!-- ── WIZARD FOOTER ─────────────── -->
+            <div class="wizard-footer">
+                <button type="button" class="btn-prev" id="btnPrev" style="display:none;"
+                        onclick="navigate(-1)">
+                    <i class="fas fa-chevron-left me-1"></i> Back
+                </button>
+                <span class="step-progress" id="stepProgress">Step 1 of 4</span>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn-next" id="btnNext" onclick="navigate(1)">
+                        Next <i class="fas fa-chevron-right ms-1"></i>
+                    </button>
+                    <button type="submit" class="btn-submit" id="btnSubmit" style="display:none;"
+                            onclick="return confirmSubmit(event)">
+                        <i class="fas fa-save me-1"></i> Save as Draft
+                    </button>
+                </div>
+            </div>
+
+        </form>
+    </div>
 </div>
+{% endblock %}
 
+{% block extra_js %}
+<script>
+(function () {
+    let current = 1;
+    const TOTAL = 4;
+
+    // ── Char counter ────────────────────────────────────
+    const desc    = document.getElementById('f-desc');
+    const counter = document.getElementById('charCount');
+    if (desc) {
+        desc.addEventListener('input', () => {
+            const n = desc.value.length;
+            counter.textContent = n + ' chars';
+            counter.className = 'char-counter' + (n > 1800 ? ' over' : n > 1400 ? ' warn' : '');
+        });
+    }
+
+    // ── PDF picker ──────────────────────────────────────
+    const pdfInput    = document.getElementById('f-pdf');
+    const pdfSelected = document.getElementById('pdfSelected');
+    const pdfName     = document.getElementById('pdfName');
+    const pdfZone     = document.getElementById('pdfZone');
+
+    if (pdfInput) {
+        pdfInput.addEventListener('change', function () {
+            if (this.files.length) {
+                pdfName.textContent = this.files[0].name;
+                pdfSelected.style.display = 'flex';
+                pdfZone.style.borderColor = 'var(--navy)';
+            }
+        });
+        pdfZone.addEventListener('dragover',  e => { e.preventDefault(); pdfZone.classList.add('dragover'); });
+        pdfZone.addEventListener('dragleave', () => pdfZone.classList.remove('dragover'));
+        pdfZone.addEventListener('drop',      () => pdfZone.classList.remove('dragover'));
+    }
+
+    window.clearPdf = function () {
+        pdfInput.value = '';
+        pdfSelected.style.display = 'none';
+        pdfZone.style.borderColor = '';
+    };
+
+    // ── Date min constraints ────────────────────────────
+    const startEl = document.getElementById('f-start');
+    const endEl   = document.getElementById('f-end');
+    if (startEl && endEl) {
+        startEl.setAttribute('min', new Date().toISOString().split('T')[0]);
+        startEl.addEventListener('change', () => {
+            endEl.setAttribute('min', startEl.value);
+            if (endEl.value && endEl.value <= startEl.value) endEl.value = '';
+        });
+    }
+
+    // ── Stepper navigation ──────────────────────────────
+    function showStep(n) {
+        document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+        document.getElementById('panel-' + n).classList.add('active');
+
+        // Update stepper visuals
+        for (let i = 1; i <= TOTAL; i++) {
+            const si = document.getElementById('si-' + i);
+            const sc = document.getElementById('sc-' + i);
+            const sl = document.getElementById('sl-' + i);
+            si.classList.remove('active', 'done');
+            if (sl) sl.classList.remove('done');
+            if (i < n)      { si.classList.add('done'); sc.innerHTML = '<i class="fas fa-check" style="font-size:0.6rem;"></i>'; if(sl) sl.classList.add('done'); }
+            else if (i === n) { si.classList.add('active'); sc.textContent = i; }
+            else              { sc.textContent = i; }
+        }
+
+        document.getElementById('btnPrev').style.display  = n > 1     ? '' : 'none';
+        document.getElementById('btnNext').style.display  = n < TOTAL ? '' : 'none';
+        document.getElementById('btnSubmit').style.display = n === TOTAL ? '' : 'none';
+        document.getElementById('stepProgress').textContent = 'Step ' + n + ' of ' + TOTAL;
+
+        if (n === TOTAL) buildReview();
+    }
+
+    function validate(step) {
+        if (step === 1) {
+            const title = document.getElementById('f-title').value.trim();
+            const ref   = document.getElementById('f-ref').value.trim();
+            if (!title) { swalErr('Job title is required.'); return false; }
+            if (!ref)   { swalErr('Reference number is required.'); return false; }
+        }
+        if (step === 2) {
+            const d = document.getElementById('f-desc').value.trim();
+            if (!d) { swalErr('Description is required.'); return false; }
+        }
+        if (step === 3) {
+            const s = document.getElementById('f-start').value;
+            const e = document.getElementById('f-end').value;
+            if (!s) { swalErr('Opening date is required.'); return false; }
+            if (!e) { swalErr('Closing date is required.'); return false; }
+            if (e <= s) { swalErr('Closing date must be after the opening date.'); return false; }
+        }
+        return true;
+    }
+
+    window.navigate = function (dir) {
+        if (dir === 1 && !validate(current)) return;
+        current = Math.min(Math.max(current + dir, 1), TOTAL);
+        showStep(current);
+    };
+
+    // ── Build review panel ──────────────────────────────
+    function buildReview() {
+        const type = document.querySelector('input[name="vacancy_type"]:checked')?.value || 'external';
+        const pdf  = document.getElementById('f-pdf')?.files[0];
+        const grid = document.getElementById('reviewGrid');
+        grid.innerHTML = `
+            <div class="review-item">
+                <div class="rv-label">Job Title</div>
+                <div class="rv-value">${esc(document.getElementById('f-title').value)}</div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Reference Number</div>
+                <div class="rv-value" style="font-family:monospace;">${esc(document.getElementById('f-ref').value)}</div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Grade / Category</div>
+                <div class="rv-value">${esc(document.getElementById('f-grade').value) || '<span style="color:#adb5bd;font-weight:400;">Not specified</span>'}</div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Vacancy Type</div>
+                <div class="rv-value">
+                    <span class="review-badge ${type}">${type === 'external' ? '<i class="fas fa-globe me-1"></i>External' : '<i class="fas fa-lock me-1"></i>Internal'}</span>
+                </div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Opening Date</div>
+                <div class="rv-value">${esc(document.getElementById('f-start').value)}</div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Closing Date</div>
+                <div class="rv-value" style="color:#c0392b;">${esc(document.getElementById('f-end').value)}</div>
+            </div>
+            <div class="review-item">
+                <div class="rv-label">Advert PDF</div>
+                <div class="rv-value">${pdf ? '<i class="fas fa-file-pdf me-1" style="color:#dc3545;"></i>' + esc(pdf.name) : '<span style="color:#adb5bd;font-weight:400;">No file attached</span>'}</div>
+            </div>
+            <div class="review-item full">
+                <div class="rv-label">Description Preview</div>
+                <div class="rv-desc">${esc(document.getElementById('f-desc').value)}</div>
+            </div>
+        `;
+    }
+
+    function esc(s) {
+        if (!s) return '';
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    }
+
+    // ── SweetAlert helpers ──────────────────────────────
+    function swalErr(msg) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Required',
+            text: msg,
+            confirmButtonColor: '#262561',
+            confirmButtonText: 'OK',
+            customClass: { popup: 'swal2-sm' }
+        });
+    }
+
+    window.confirmSubmit = function (e) {
+        e.preventDefault();
+        Swal.fire({
+            title: 'Save as Draft?',
+            html: `<p style="font-size:0.85rem;color:#67748e;">The vacancy <strong style="color:#262561;">${esc(document.getElementById('f-title').value)}</strong> will be saved as a Draft.<br>You can publish it from the dashboard.</p>`,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#262561',
+            cancelButtonColor: '#adb5bd',
+            confirmButtonText: '<i class="fas fa-save me-1"></i> Yes, Save',
+            cancelButtonText: 'Cancel',
+        }).then(result => {
+            if (result.isConfirmed) {
+                document.getElementById('vacancyForm').submit();
+            }
+        });
+        return false;
+    };
+
+    // ── Django messages → Swal on load ─────────────────
+    {% if messages %}
+    window.addEventListener('DOMContentLoaded', () => {
+        const msgs = [
+            {% for message in messages %}
+            { level: "{{ message.tags }}", text: "{{ message|escapejs }}" },
+            {% endfor %}
+        ];
+        const errors = msgs.filter(m => m.level.includes('error'));
+        const success = msgs.filter(m => m.level.includes('success'));
+        if (errors.length) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Please fix the following',
+                html: errors.map(e => `<p style="margin:0.3rem 0;font-size:0.85rem;">• ${e.text}</p>`).join(''),
+                confirmButtonColor: '#262561',
+            });
+        } else if (success.length) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Saved!',
+                text: success[0].text,
+                confirmButtonColor: '#262561',
+                timer: 2500,
+                showConfirmButton: false,
+            });
+        }
+    });
+    {% endif %}
+
+    // Init
+    showStep(1);
+})();
+</script>
 {% endblock %}

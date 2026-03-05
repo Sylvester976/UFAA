@@ -1381,6 +1381,7 @@ def hr_dashboard(request):
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
+        'page':'HR Dashboard',
     }
 
     return render(request, 'recruitment/hr/dashboard.html', context)
@@ -1506,66 +1507,79 @@ def appoint_candidate(request, vacancy_id):
 
 @login_required
 @role_required(['hod_hr'])
+# ── Create Vacancy ─────────────────────────────────────────────────────────
 def create_vacancy(request):
     if request.method == 'POST':
-        title = request.POST.get('title')
-        reference_number = request.POST.get('reference_number')
-        description = request.POST.get('description')
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        advert_pdf = request.FILES.get('advert_pdf')
+        title            = request.POST.get('title', '').strip()
+        reference_number = request.POST.get('reference_number', '').strip()
+        description      = request.POST.get('description', '').strip()
+        vacancy_type     = request.POST.get('vacancy_type', 'external').strip()
+        grade_category   = request.POST.get('grade_category', '4-1').strip()
+        start_date       = request.POST.get('start_date', '').strip()
+        end_date         = request.POST.get('end_date', '').strip()
+        advert_pdf       = request.FILES.get('advert_pdf')
 
-        # ---- Validation ----
+        errors = []
 
         if not all([title, reference_number, description, start_date, end_date]):
-            messages.error(request, "All fields are required.")
-            return redirect('create_vacancy')
+            errors.append("All required fields must be filled.")
 
-        # Validate PDF
+        if vacancy_type not in ['external', 'internal']:
+            errors.append("Invalid vacancy type.")
+
+        if grade_category not in ['4-1', '10-5']:
+            errors.append("Invalid grade category.")
+
         if advert_pdf:
             if not advert_pdf.name.lower().endswith('.pdf'):
-                messages.error(request, "Only PDF files are allowed.")
-                return redirect('create_vacancy')
+                errors.append("Only PDF files are allowed for the advert.")
+            elif advert_pdf.size > 5 * 1024 * 1024:
+                errors.append("Advert PDF must be under 5MB.")
 
-        # Validate Dates
+        parsed_start = parsed_end = None
         try:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            parsed_start = datetime.strptime(start_date, "%Y-%m-%d").date()
+            parsed_end   = datetime.strptime(end_date,   "%Y-%m-%d").date()
         except ValueError:
-            messages.error(request, "Invalid date format.")
-            return redirect('create_vacancy')
+            errors.append("Invalid date format.")
 
-        today = timezone.now().date()
+        if parsed_start and parsed_end:
+            today = timezone.now().date()
+            if parsed_start < today:
+                errors.append("Start date cannot be in the past.")
+            if parsed_end <= parsed_start:
+                errors.append("End date must be after the start date.")
 
-        if start_date < today:
-            messages.error(request, "Start date cannot be in the past.")
-            return redirect('create_vacancy')
-
-        if end_date <= start_date:
-            messages.error(request, "End date must be after start date.")
-            return redirect('create_vacancy')
-
-        # Prevent duplicate reference numbers
         if Vacancy.objects.filter(reference_number=reference_number).exists():
-            messages.error(request, "Reference number already exists.")
-            return redirect('create_vacancy')
+            errors.append(f"Reference number '{reference_number}' already exists.")
 
-        # ---- Save Vacancy ----
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'recruitment/hr/create_vacancy.html', {
+                'page':   'Create Vacancy',
+                'posted': request.POST,
+            })
+
         Vacancy.objects.create(
-            title=title,
-            reference_number=reference_number,
-            description=description,
-            advert_pdf=advert_pdf,
-            start_date=start_date,
-            end_date=end_date,
-            created_by=request.user,
-            status='draft'
+            title            = title,
+            reference_number = reference_number,
+            description      = description,
+            vacancy_type     = vacancy_type,
+            grade_category   = grade_category,
+            advert_pdf       = advert_pdf,
+            start_date       = parsed_start,
+            end_date         = parsed_end,
+            created_by       = request.user,
+            status           = 'draft',
         )
 
-        messages.success(request, "Vacancy created successfully as Draft.")
+        messages.success(request, f"Vacancy '{title}' created successfully as Draft.")
         return redirect('hr_dashboard')
 
-    return render(request, 'recruitment/hr/create_vacancy.html')
+    return render(request, 'recruitment/hr/create_vacancy.html', {
+        'page': 'Create Vacancy',
+    })
 
 
 def download_vacancy_pdf(request, vacancy_id):
@@ -1580,72 +1594,108 @@ def download_vacancy_pdf(request, vacancy_id):
 
 @login_required
 @role_required(['hod_hr'])
+# ── Update Vacancy ─────────────────────────────────────────────────────────
 def update_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if request.method == 'POST':
-        # Get values from HTML form
-        title = request.POST.get('title')
-        reference_number = request.POST.get('reference_number')
-        description = request.POST.get('description')
-        start_date = request.POST.get('start_date')
-        end_date = request.POST.get('end_date')
-        advert_pdf = request.FILES.get('advert_pdf')
+        title            = request.POST.get('title', '').strip()
+        reference_number = request.POST.get('reference_number', '').strip()
+        description      = request.POST.get('description', '').strip()
+        vacancy_type     = request.POST.get('vacancy_type', vacancy.vacancy_type).strip()
+        grade_category   = request.POST.get('grade_category', vacancy.grade_category).strip()
+        start_date_str   = request.POST.get('start_date', '').strip()
+        end_date_str     = request.POST.get('end_date', '').strip()
+        advert_pdf       = request.FILES.get('advert_pdf')
 
-        # --- Basic validation ---
-        if not all([title, reference_number, description, start_date, end_date]):
-            messages.error(request, "All fields are required.")
-            return redirect('update_vacancy', vacancy_id=vacancy.id)
+        errors = []
 
+        if not all([title, reference_number, description, start_date_str, end_date_str]):
+            errors.append("All required fields must be filled.")
+
+        if vacancy_type not in ['external', 'internal']:
+            errors.append("Invalid vacancy type.")
+
+        if grade_category not in ['4-1', '10-5']:
+            errors.append("Invalid grade category.")
+
+        parsed_start = parsed_end = None
         try:
-            start_date = datetime.strptime(start_date, "%Y-%m-%d").date()
-            end_date = datetime.strptime(end_date, "%Y-%m-%d").date()
+            parsed_start = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+            parsed_end   = datetime.strptime(end_date_str,   "%Y-%m-%d").date()
         except ValueError:
-            messages.error(request, "Invalid date format.")
-            return redirect('update_vacancy', vacancy_id=vacancy.id)
+            errors.append("Invalid date format.")
 
-        today = timezone.now().date()
-        if start_date < today:
-            messages.error(request, "Start date cannot be in the past.")
-            return redirect('update_vacancy', vacancy_id=vacancy.id)
-        if end_date <= start_date:
-            messages.error(request, "End date must be after start date.")
-            return redirect('update_vacancy', vacancy_id=vacancy.id)
+        if parsed_start and parsed_end:
+            if parsed_end <= parsed_start:
+                errors.append("End date must be after start date.")
 
-        # Update the vacancy
-        vacancy.title = title
-        vacancy.reference_number = reference_number
-        vacancy.description = description
-        vacancy.start_date = start_date
-        vacancy.end_date = end_date
+        # Check duplicate ref — exclude current vacancy
+        if Vacancy.objects.filter(
+            reference_number=reference_number
+        ).exclude(id=vacancy.id).exists():
+            errors.append(f"Reference number '{reference_number}' is already used by another vacancy.")
+
         if advert_pdf:
             if not advert_pdf.name.lower().endswith('.pdf'):
-                messages.error(request, "Only PDF files are allowed.")
-                return redirect('update_vacancy', vacancy_id=vacancy.id)
-            vacancy.advert_pdf = advert_pdf
+                errors.append("Only PDF files are allowed.")
+            elif advert_pdf.size > 5 * 1024 * 1024:
+                errors.append("Advert PDF must be under 5MB.")
 
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'recruitment/hr/update_vacancy.html', {
+                'page':    'Edit Vacancy',
+                'vacancy': vacancy,
+            })
+
+        vacancy.title            = title
+        vacancy.reference_number = reference_number
+        vacancy.description      = description
+        vacancy.vacancy_type     = vacancy_type
+        vacancy.grade_category   = grade_category
+        vacancy.start_date       = parsed_start
+        vacancy.end_date         = parsed_end
+        if advert_pdf:
+            vacancy.advert_pdf = advert_pdf
         vacancy.save()
-        messages.success(request, "Vacancy updated successfully.")
+
+        messages.success(request, f"Vacancy '{title}' updated successfully.")
         return redirect('hr_dashboard')
 
-    return render(request, 'recruitment/hr/update_vacancy.html', {'vacancy': vacancy})
+    return render(request, 'recruitment/hr/update_vacancy.html', {
+        'page':    'Edit Vacancy',
+        'vacancy': vacancy,
+    })
+
 
 
 @login_required
 @role_required(['hod_hr'])
+# ── Delete Vacancy (AJAX POST from Swal confirm) ───────────────────────────
 def delete_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
+    # Accept both AJAX (from Swal) and standard POST (from confirm_delete page)
     if request.method == 'POST':
+        title = vacancy.title
         vacancy.delete()
-        messages.success(request, "Vacancy deleted successfully.")
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok', 'message': f"Vacancy '{title}' deleted."})
+        messages.success(request, f"Vacancy '{title}' deleted successfully.")
         return redirect('hr_dashboard')
 
-    return render(request, 'recruitment/hr/confirm_delete.html', {'vacancy': vacancy})
+    # GET — fallback confirm page (keep for safety)
+    return render(request, 'recruitment/hr/confirm_delete.html', {
+        'page':    'Delete Vacancy',
+        'vacancy': vacancy,
+    })
 
 
 @login_required
 @role_required(['hod_hr'])
+# ── Publish Vacancy (draft → open) ────────────────────────────────────────
 def publish_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
@@ -1655,7 +1705,7 @@ def publish_vacancy(request, vacancy_id):
 
     vacancy.status = 'open'
     vacancy.save()
-    messages.success(request, "Vacancy published successfully.")
+    messages.success(request, f"Vacancy '{vacancy.title}' is now live and open for applications.")
     return redirect('hr_dashboard')
 
 
@@ -1707,28 +1757,120 @@ def apply_for_vacancy(request, vacancy_id):
 
     return render(request, 'recruitment/applicant/apply.html', {'vacancy': vacancy})
 
+@login_required
+@role_required(['hod_hr'])
+# ── Move to Longlisting (closed → longlisting) ────────────────────────────
+def move_to_longlisting(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'closed':
+        messages.error(request, "Vacancy must be closed before moving to longlisting.")
+        return redirect('hr_dashboard')
+
+    vacancy.status = 'longlisting'
+    vacancy.save()
+    messages.success(request, f"'{vacancy.title}' moved to Longlisting stage.")
+    return redirect('hr_dashboard')
 
 @login_required
 @role_required(['hod_hr','panelist'])
 def hr_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    applications = Application.objects.filter(vacancy=vacancy) \
-        .select_related(
-        "applicant",
-        "applicant__profile",
-        "applicant__additional_detail"
-    ).prefetch_related(
-        "applicant__academic_qualifications",
-        "applicant__work_history",
-        "applicant__professional_qualifications",
-        "applicant__documents"
+    # Only counts for KPI cards — no full queryset loaded into memory
+    status_counts = (
+        JobApplication.objects
+        .filter(vacancy=vacancy)
+        .values('status__name', 'status__code')
+        .annotate(count=Count('id'))
+        .order_by('status__order')
     )
 
-    return render(request, 'recruitment/hr/view_applications.html', {
-        'vacancy': vacancy,
-        'applications': applications
+    total = JobApplication.objects.filter(vacancy=vacancy).count()
+
+    context = {
+        'page':          f'Applications — {vacancy.title}',
+        'vacancy':       vacancy,
+        'total':         total,
+        'status_counts': status_counts,
+    }
+    return render(request, 'recruitment/hr/view_applications.html', context)
+
+@login_required
+@role_required(['hod_hr','panelist'])
+def hr_view_applications_json(request, vacancy_id):
+    """
+    Server-side DataTables JSON endpoint.
+    Add to urls.py:
+    path('hr/vacancy/<int:vacancy_id>/applications/json/', views.hr_view_applications_json, name='hr_applications_json'),
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    draw   = int(request.GET.get('draw', 1))
+    start  = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 25))
+    search = request.GET.get('search[value]', '').strip()
+
+    # Column index → DB field for ordering
+    col_map = {
+        '1': 'application_number',
+        '6': 'submitted_at',
+        '7': 'status__order',
+    }
+    order_col   = request.GET.get('order[0][column]', '6')
+    order_dir   = request.GET.get('order[0][dir]', 'desc')
+    order_field = col_map.get(order_col, 'submitted_at')
+    if order_dir == 'desc':
+        order_field = '-' + order_field
+
+    qs = (
+        JobApplication.objects
+        .filter(vacancy=vacancy)
+        .select_related('status', 'user')
+    )
+
+    total_records = qs.count()
+
+    if search:
+        qs = qs.filter(
+            Q(application_number__icontains=search) |
+            Q(user__email__icontains=search)        |
+            Q(snapshot_basic__id_no__icontains=search)
+        )
+
+    filtered_records = qs.count()
+    qs = qs.order_by(order_field)[start: start + length]
+
+    rows = []
+    for i, app in enumerate(qs, start=start + 1):
+        basic     = app.snapshot_basic or {}
+        full_name = ' '.join(filter(None, [
+            basic.get('first_name', ''),
+            basic.get('second_name', ''),
+            basic.get('surname', ''),
+        ])) or app.user.email
+
+        rows.append({
+            'row_num':            i,
+            'application_number': app.application_number or '—',
+            'full_name':          full_name,
+            'id_no':              basic.get('id_no', '—'),
+            'email':              app.user.email,
+            'phone':              basic.get('phone_number', '—'),
+            'submitted_at':       app.submitted_at.strftime('%d %b %Y'),
+            'status_code':        app.status.code,
+            'status_name':        app.status.name,
+            'detail_url':         f'/recruitment/hr/application/{app.id}/',
+        })
+
+    return JsonResponse({
+        'draw':            draw,
+        'recordsTotal':    total_records,
+        'recordsFiltered': filtered_records,
+        'data':            rows,
     })
+
+
 
 @login_required
 @role_required(['committee'])
@@ -2163,30 +2305,33 @@ from django.core.exceptions import PermissionDenied
 
 @login_required
 @role_required(['hod_hr'])
+# ── Reopen Vacancy (closed → open) ────────────────────────────────────────
 def open_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
     if vacancy.status != 'closed':
-        messages.warning(request, "Only closed vacancies can be opened.")
+        messages.warning(request, "Only closed vacancies can be reopened.")
         return redirect('hr_dashboard')
 
     vacancy.status = 'open'
     vacancy.save()
-    messages.success(request, "Vacancy is now open.")
-    return redirect('hr_dashboard')
+    messages.success(request, f"Vacancy '{vacancy.title}' has been reopened.")
+    return redirect('vacancy_list')
 
 
 @login_required
 @role_required(['hod_hr'])
 def close_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
     if vacancy.status != 'open':
         messages.warning(request, "Only open vacancies can be closed.")
         return redirect('hr_dashboard')
 
     vacancy.status = 'closed'
     vacancy.save()
-    messages.success(request, "Vacancy is now closed.")
-    return redirect('hr_dashboard')
+    messages.success(request, f"Vacancy '{vacancy.title}' has been closed.")
+    return redirect('vacancy_list')
 
 
 @login_required
@@ -2298,7 +2443,8 @@ def panelist_score_candidate(request, application_id):
         'score_obj': score_obj
     })
 
-from django.db.models import Count
+
+from django.db.models import Count, Q
 
 
 from django.db.models import Avg, Count
@@ -2649,13 +2795,20 @@ def appointed_panelists(request, vacancy_id):
 
 @login_required
 @role_required(['hod_hr'])
+# ── Vacancy List (Published = all non-draft) ───────────────────────────────
 def vacancy_list(request):
-    vacancies = Vacancy.objects.filter(status='open')
+    vacancies = (
+        Vacancy.objects
+        .exclude(status='draft')
+        .annotate(application_count=Count('jobapplication'))
+        .order_by('-created_at')
+    )
     context = {
+        'page':      'Published Vacancies',
         'vacancies': vacancies,
-        'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
     }
     return render(request, 'recruitment/hr/vacancy_list.html', context)
+
 
 
 
