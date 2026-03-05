@@ -15,6 +15,10 @@ class LoginRequiredMiddleware:
         'vacancy_detail',
         'login_view',
         'hr_dashboard',
+        'panelist_dashboard',
+        'shortlisting_dashboard',
+        'ceo_dashboard',
+        'shortlist_candidates',
 
     }
 
