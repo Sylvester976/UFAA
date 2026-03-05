@@ -1,0 +1,61 @@
+{% extends "recruitment/hr/base_hr.html" %}
+
+{% block content %}
+
+<div class="container mt-4">
+
+<h3>Add Section to {{ template.name }}</h3>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="mb-3">
+
+<label class="form-label">Section Name</label>
+
+<input type="text" name="name" class="form-control"
+value="{{ section.name|default:'' }}" required>
+
+</div>
+
+
+<div class="mb-3">
+
+<label class="form-label">Max Score</label>
+
+<input type="number" name="max_score" class="form-control"
+value="{{ section.max_score|default:'' }}" required>
+
+</div>
+
+
+<div class="mb-3">
+
+<label class="form-label">Weight</label>
+
+<input type="number" step="0.01" name="weight" class="form-control"
+value="{{ section.weight|default:1 }}">
+
+</div>
+
+
+<div class="mb-3">
+
+<label class="form-label">Order</label>
+
+<input type="number" name="order" class="form-control"
+value="{{ section.order|default:0 }}">
+
+</div>
+
+
+<button class="btn btn-success">
+Save Section
+</button>
+
+</form>
+
+</div>
+
+{% endblock %}

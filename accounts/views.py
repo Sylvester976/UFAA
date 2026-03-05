@@ -342,12 +342,15 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
     
 
 class UserDeleteView(SuperAdminRequiredMixin, View):
+    def get(self, request, pk):
+        user = get_object_or_404(User, pk=pk)
+        return render(request, "accounts/confirm_delete.html", {"user": user})
+
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         user.delete()
         messages.success(request, "User deleted successfully")
         return redirect("user_list")
-    
 
 # Sample permissions view for reference
 @permission_required("view_dashboard")

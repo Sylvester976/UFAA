@@ -1,70 +1,45 @@
-{% extends 'recruitment/panelist/base_panelist.html' %}
+{% extends 'recruitment/committee/base_committee.html' %}
 
 {% block content %}
 
 <div class="container mt-4">
 
-    <h3>Panelist Dashboard</h3>
+<h3>Shortlisting Committee Dashboard</h3>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Vacancy</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for assignment in assignments %}
-            <div class="card mb-3 p-3">
-                <h5>{{ assignment.vacancy.title }}</h5>
-                <p>Status: {{ assignment.status }}</p>
+<table class="table table-bordered">
+    <thead>
+        <tr>
+            <th>Vacancy</th>
+            <th>Reference</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
 
-                {% if assignment.status == "pending" %}
-                <form method="POST" action="{% url 'respond_panel_assignment' assignment.id %}">
-                    {% csrf_token %}
+    <tbody>
 
-                    <button name="action" value="accept" class="btn btn-success">
-                        Accept
-                    </button>
+        {% for vacancy in vacancies %}
+        <tr>
+            <td>{{ vacancy.title }}</td>
+            <td>{{ vacancy.reference_number }}</td>
+            <td>{{ vacancy.status }}</td>
+            <td>
+                <a class="btn btn-primary btn-sm"
+                   href="{% url 'shortlist_candidates' vacancy.id %}">
+                   Start Shortlisting
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="4" class="text-center">
+                No vacancies assigned for shortlisting.
+            </td>
+        </tr>
+        {% endfor %}
 
-                    <button type="button" class="btn btn-danger" data-bs-toggle="collapse"
-                            data-bs-target="#decline{{ assignment.id }}">
-                        Decline
-                    </button>
-
-                    <div id="decline{{ assignment.id }}" class="collapse mt-2">
-                        <textarea name="reason" class="form-control"
-                                placeholder="Reason for conflict of interest"></textarea>
-                        <button name="action" value="decline"
-                                class="btn btn-danger mt-2">
-                            Confirm Decline
-                        </button>
-                    </div>
-                </form>
-                {% endif %}
-            </div>
-            {% endfor %}
-            
-            {% for vacancy in vacancies %}
-            <tr>
-                <td>{{ vacancy.title }}</td>
-                <td>{{ vacancy.reference_number }}</td>
-                <td>{{ vacancy.status }}</td>
-                <td>
-                    <a href="{% url 'panelist_interview_list' vacancy.id %}">
-                        Conduct Interviews
-                    </a>
-                </td>
-            </tr>
-            {% empty %}
-            <tr>
-                <td colspan="4">No active interview assignments.</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+    </tbody>
+</table>
 
 </div>
 

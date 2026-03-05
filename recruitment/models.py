@@ -188,6 +188,20 @@ class Document(models.Model):
         return f'{self.unique_ref} — {self.document_type.name}'
 
 
+class InterviewTemplate(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+ 
+
 class Vacancy(models.Model):
     TYPE_CHOICES = [
         ('external', 'External'),
@@ -212,7 +226,13 @@ class Vacancy(models.Model):
         ('approved',             'Approved'),
         ('appointed',            'Appointed'),
     ]
-
+    interview_template = models.ForeignKey(
+        InterviewTemplate,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="vacancies"
+    )
     title            = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
     description      = models.TextField()
@@ -416,10 +436,31 @@ class ShortlistVote(models.Model):
         unique_together = ('vacancy', 'committee_member', 'application')
 
 class InterviewScore(models.Model):
-    application = models.ForeignKey(Application, on_delete=models.CASCADE, related_name='scores')
-    panelist = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    score = models.DecimalField(max_digits=5, decimal_places=2)
+    application = models.ForeignKey(
+        Application,
+        on_delete=models.CASCADE,
+        related_name="scores"
+    )
+
+    panelist = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE
+    )
+
+    template = models.ForeignKey(
+        InterviewTemplate,
+        on_delete=models.PROTECT,  blank=True, null=True
+    )
+
+    total_score = models.DecimalField(
+        max_digits=6,
+        decimal_places=2,
+        default=0
+    )
+
     remarks = models.TextField(blank=True)
+
+    submitted_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
 
     class Meta:
         unique_together = ('application', 'panelist')
@@ -765,3 +806,37 @@ class ShortlistingDecision(models.Model):
 
     class Meta:
         unique_together = ('application', 'committee_member')
+        
+   
+class InterviewSection(models.Model):
+    template = models.ForeignKey(
+        InterviewTemplate,
+        on_delete=models.CASCADE,
+        related_name="sections"
+    )
+    name = models.CharField(max_length=255)
+    max_score = models.DecimalField(max_digits=5, decimal_places=2)
+    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1)
+
+    order = models.PositiveIntegerField(default=0)
+
+    def __str__(self):
+        return f"{self.name} ({self.max_score})"
+    
+class InterviewSectionScore(models.Model):
+
+    interview_score = models.ForeignKey(
+        InterviewScore,
+        on_delete=models.CASCADE,
+        related_name="section_scores"
+    )
+
+    section = models.ForeignKey(
+        InterviewSection,
+        on_delete=models.CASCADE
+    )
+
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+
+    class Meta:
+        unique_together = ("interview_score", "section")

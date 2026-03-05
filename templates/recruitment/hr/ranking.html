@@ -1,3 +1,8 @@
+
+
+
+
+
 {% extends 'recruitment/panelist/base_panelist.html' %}
 
 {% block content %}
@@ -30,7 +35,7 @@
                                {% if total_applications == 1 %}checked{% endif %}>
                     </td>
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.get_full_name }}</td>
+                    <td>{{ app.applicant.name }}</td>
                     <td>{{ app.avg_score|floatformat:2 }}</td>
                 </tr>
                 {% endfor %}

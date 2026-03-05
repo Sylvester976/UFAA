@@ -13,7 +13,7 @@ from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
     ProfessionalQualification, ShortlistVote, ShortlistingCommittee, ShortlistingDecision, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee, \
     JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog, VacancyApplicationCounter
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
@@ -1363,34 +1363,30 @@ def additional_details_view(request):
     return render(request, 'jobseekers/additional.html', context)
 
 
+from django.db.models import Count
+
 @login_required
 @role_required(['hod_hr'])
-# @permission_required("view_reports")
 def hr_dashboard(request):
-    vacancies = Vacancy.objects.all()  # Or filter(status='draft') if you only want drafts
+
+    vacancies = Vacancy.objects.annotate(
+        applications_count=Count('applications')
+    )
+
     vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
+
     context = {
-        'vacancies_ready':vacancies_ready,
+        'vacancies_ready': vacancies_ready,
         'vacancies': vacancies,
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
         'page':'HR Dashboard',
     }
+
     return render(request, 'recruitment/hr/dashboard.html', context)
 
 
-# @login_required
-# @role_required(['panelist'])
-# def panelist_dashboard(request):
-#     vacancies = Vacancy.objects.filter(
-#         panel_assignments__panelist=request.user,
-#         status='interviews'
-#     ).distinct()
-
-#     return render(request, 'recruitment/panelist/dashboard.html', {
-#         'vacancies': vacancies
-#     })
 @login_required
 @role_required(['panelist'])
 def panelist_dashboard(request):
@@ -1732,22 +1728,7 @@ def apply_for_vacancy(request, vacancy_id):
     if not user_id:
         return redirect('index')
 
-    # user = JobseekerAccount.objects.filter(id=user_id).first()
     user = JobseekerAccount.objects.filter(pk=user_id).first()
-    # # Check if vacancy is open
-    # if not vacancy.is_open():
-    #     messages.error(request, "This vacancy is no longer open.")
-    #     return redirect('public_vacancies')
-
-    # # Restrict internal vacancies
-    # if vacancy.vacancy_type == 'internal' and request.user.role == 'applicant':
-    #     messages.error(request, "You cannot apply for internal vacancies.")
-    #     return redirect('public_vacancies')
-
-    # # Prevent duplicate application (DB + view)
-    # if Application.objects.filter(vacancy=vacancy, applicant=request.user).exists():
-    #     messages.error(request, "You have already applied for this vacancy.")
-    #     return redirect('public_vacancies')
 
     if request.method == 'POST':
         cv_file = request.FILES.get('cv')
@@ -1896,10 +1877,6 @@ def hr_view_applications_json(request, vacancy_id):
 def committee_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    # if vacancy.status not in ['closed', 'longlisting', 'shortlisting', 'interviews']:
-    #     messages.error(request, "Applications not available for review yet.")
-    #     return redirect('hr_dashboard')
-
     applications = Application.objects.filter(vacancy=vacancy) \
         .select_related(
         "applicant",
@@ -1919,19 +1896,6 @@ def committee_view_applications(request, vacancy_id):
 
 
 
-# HR View to Move Vacancy to Longlisting
-# @login_required
-# @role_required(['hod_hr'])
-# def start_longlisting(request, vacancy_id):
-#     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-#     if vacancy.status != 'open':
-#         messages.error(request, "Vacancy must be open to start longlisting.")
-#         return redirect('hr_dashboard')
-
-#     vacancy.move_to('longlisting')
-#     messages.success(request, "Vacancy moved to Longlisting stage.")
-#     return redirect('longlist_candidates', vacancy_id=vacancy.id)
 
 # HR View to Move Vacancy to Longlisting
 
@@ -2101,82 +2065,47 @@ def appoint_committee(request, vacancy_id):
 @login_required
 @role_required(['hr'])
 def appoint_shortlisting_committee(request, vacancy_id):
-    
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-        # panelists = User.objects.filter(role__name='panelist')
-    panelist_role = get_object_or_404(Role, name='panelist')
 
-    panelists = User.objects.filter(
-        user_type=2,
-        role=panelist_role
-    )
+    # Get all HR committee members
+    hr_committee_role = get_object_or_404(Role, name='hr_committee')
+    members = User.objects.filter(role=hr_committee_role)
 
     if request.method == 'POST':
-        selected_panelists = request.POST.getlist('panelists')
+        # member_ids comes from the multi-select form
+        member_ids = request.POST.getlist('members')
 
-        PanelAssignment.objects.filter(vacancy=vacancy).delete()
+        # Get or create the committee for this vacancy
+        committee, created = ShortlistingCommittee.objects.get_or_create(vacancy=vacancy)
 
-        for user_id in selected_panelists:
-            PanelAssignment.objects.create(
-                vacancy=vacancy,
-                panelist_id=user_id
-            )
+        # Assign selected members
+        committee.members.set(member_ids)
 
+        # Optional: change vacancy status
         vacancy.status = 'shortlisting'
         vacancy.save()
 
-        messages.success(request, "Panel appointed. Interview stage started.")
-        return redirect('hr_dashboard')
-
-    # Already assigned panelists for this vacancy
-    assigned_panelists = User.objects.filter(
-        panelassignment__vacancy=vacancy
-    )
-
-
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-    panelist_role = get_object_or_404(Role, name='panelist')
-
-    panelists = User.objects.filter(
-        user_type=2,
-        role=panelist_role
-    )
-
-
-    if request.method == 'POST':
-        member_ids = request.POST.getlist('members')
-
-        committee, created = ShortlistingCommittee.objects.get_or_create(
-            vacancy=vacancy
-        )
-
-        committee.members.set(member_ids)
-
-
-
         messages.success(request, "Shortlisting committee appointed.")
         return redirect('hr_dashboard')
-
-    hr_committee_role = get_object_or_404(Role, name='hr_committee')
-    members = User.objects.filter(role=hr_committee_role)
 
     return render(request, 'recruitment/hr/appoint_shortlisting.html', {
         'vacancy': vacancy,
         'members': members
     })
-    
+         
 @login_required
 @role_required(['hr_committee'])
 def shortlisting_dashboard(request):
 
-    committees = ShortlistingCommittee.objects.filter(
-        members=request.user
+    vacancies = Vacancy.objects.filter(
+        shortlisting_committee__members=request.user
     )
 
-    return render(request, 'committee/dashboard.html', {
-        'committees': committees
+    return render(request, 'recruitment/committee/dashboard.html', {
+        'vacancies': vacancies
     })
-
+    
+    
 @login_required
 @role_required(['hr_committee'])
 def review_application(request, application_id):
@@ -2408,6 +2337,7 @@ def close_vacancy(request, vacancy_id):
 @login_required
 @role_required(['panelist'])
 def panelist_interview_list(request, vacancy_id):
+
     vacancy = get_object_or_404(
         Vacancy,
         id=vacancy_id,
@@ -2421,11 +2351,10 @@ def panelist_interview_list(request, vacancy_id):
     ).exists():
         raise PermissionDenied
 
-    vacancies = Vacancy.objects.all()
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    applications = Application.objects.filter(vacancy=vacancy) \
-        .select_related(
+    applications = Application.objects.filter(
+        vacancy=vacancy,
+        status='shortlisted'
+    ).select_related(
         "applicant",
         "applicant__profile",
         "applicant__additional_detail"
@@ -2433,23 +2362,21 @@ def panelist_interview_list(request, vacancy_id):
         "applicant__academic_qualifications",
         "applicant__work_history",
         "applicant__professional_qualifications",
-        "applicant__documents"
-    )
-    applications = Application.objects.filter(
-        vacancy=vacancy,
-        status='shortlisted'
+        "applicant__documents",
+        "scores"
     )
 
     return render(request, 'recruitment/panelist/interview_list.html', {
         'vacancy': vacancy,
-        'applications': applications,
-        'vacancies':vacancies
+        'applications': applications
     })
 
+from recruitment.models import InterviewSection
 
 @login_required
 @role_required(['panelist'])
 def panelist_score_candidate(request, application_id):
+
     application = get_object_or_404(Application, id=application_id)
     vacancy = application.vacancy
 
@@ -2457,56 +2384,75 @@ def panelist_score_candidate(request, application_id):
         messages.error(request, "Interview stage is not active.")
         return redirect('panelist_dashboard')
 
-    # Ensure panelist is assigned
     if not PanelAssignment.objects.filter(
             vacancy=vacancy,
             panelist=request.user
     ).exists():
         raise PermissionDenied
 
-    score_obj = InterviewScore.objects.filter(
-        application=application,
-        panelist=request.user
-    ).first()
-
     if application.interview_locked:
         messages.error(request, "Scoring for this candidate is locked.")
         return redirect('panelist_interview_list', vacancy_id=vacancy.id)
 
+    template = vacancy.interview_template
+    sections = template.sections.all().order_by("order")
+
+    score_obj, created = InterviewScore.objects.get_or_create(
+        application=application,
+        panelist=request.user,
+        defaults={"template": template}
+    )
+
     if request.method == 'POST':
-        score_value = request.POST.get('score')
-        remarks = request.POST.get('remarks')
 
-        if not score_value:
-            messages.error(request, "Score is required.")
-            return redirect('panelist_score_candidate', application_id=application.id)
+        remarks = request.POST.get("remarks")
+        total_score = 0
 
-        InterviewScore.objects.update_or_create(
-            application=application,
-            panelist=request.user,
-            defaults={
-                'score': score_value,
-                'remarks': remarks
-            }
-        )
+        for section in sections:
+
+            value = request.POST.get(f"section_{section.id}", 0)
+            value = float(value)
+
+            total_score += value
+
+            InterviewSectionScore.objects.update_or_create(
+                interview_score=score_obj,
+                section=section,
+                defaults={"score": value}
+            )
+
+        score_obj.total_score = total_score
+        score_obj.remarks = remarks
+        score_obj.save()
 
         check_and_lock_application(application)
 
         messages.success(request, "Score saved successfully.")
+
         return redirect('panelist_interview_list', vacancy_id=vacancy.id)
+
+    existing_scores = {
+        s.section_id: s.score
+        for s in score_obj.section_scores.all()
+    }
 
     return render(request, 'recruitment/panelist/score_candidate.html', {
         'application': application,
-        'existing_score': score_obj
+        'sections': sections,
+        'existing_scores': existing_scores,
+        'score_obj': score_obj
     })
 
 
 from django.db.models import Count, Q
 
 
+from django.db.models import Avg, Count
+
 @login_required
 @role_required(['hod_hr'])
 def hr_ranking_view(request, vacancy_id):
+
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'interviews':
@@ -2515,12 +2461,11 @@ def hr_ranking_view(request, vacancy_id):
 
     applications = Application.objects.filter(
         vacancy=vacancy
-        # ,interview_locked=True
     ).annotate(
-        avg_score=Avg('scores__score'),
+        avg_score=Avg('scores__total_score'),
         score_count=Count('scores')
     ).filter(
-        score_count__gt=0  # Only show applications with at least one score
+        score_count__gt=0
     ).order_by('-avg_score')
 
     total_applications = applications.count()
@@ -2579,7 +2524,7 @@ from django.db.models import Avg
 @login_required
 @role_required(['ceo'])
 def ceo_dashboard(request):
-    vacancies = Vacancy.objects.filter(status='selected_top_three')
+    vacancies = Vacancy.objects.filter(status='ceo_review')
 
     context = {
         'pending_approval_count': vacancies.count(),
@@ -2617,10 +2562,12 @@ def ceo_approve(request, vacancy_id):
 
     return redirect('ceo_dashboard')
 
+from django.db.models import Avg, Count
 
 @login_required
 @role_required(['ceo'])
 def ceo_review_view(request, vacancy_id):
+
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'ceo_review':
@@ -2629,16 +2576,17 @@ def ceo_review_view(request, vacancy_id):
 
     applications = Application.objects.filter(
         vacancy=vacancy
-        # interview_locked=True
     ).annotate(
-        avg_score=Avg('scores__score')
+        avg_score=Avg('scores__total_score'),
+        score_count=Count('scores')
+    ).filter(
+        score_count__gt=0
     ).order_by('-avg_score')
 
     return render(request, 'recruitment/ceo/review.html', {
         'vacancy': vacancy,
         'applications': applications
     })
-
 
 @login_required
 @role_required(['ceo'])
@@ -3411,3 +3359,175 @@ def notification_poll_view(request):
         n['created_at'] = n['created_at'].strftime('%d %b %Y, %H:%M')
 
     return JsonResponse({'unread_count': unread, 'notifications': notifs})
+
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib import messages
+from recruitment.models import InterviewTemplate, InterviewSection
+
+
+# --------------------------------
+# LIST TEMPLATES
+# --------------------------------
+
+def template_list(request):
+
+    templates = InterviewTemplate.objects.all()
+
+    return render(request, "recruitment/hr/interview_templates/template_list.html", {
+        "templates": templates
+    })
+
+
+# --------------------------------
+# CREATE TEMPLATE
+# --------------------------------
+
+def template_create(request):
+
+    if request.method == "POST":
+
+        name = request.POST.get("name")
+        description = request.POST.get("description")
+
+        InterviewTemplate.objects.create(
+            name=name,
+            description=description,
+            created_by=request.user
+        )
+
+        messages.success(request, "Template created successfully")
+
+        return redirect("template_list")
+
+    return render(request, "recruitment/hr/interview_templates/template_form.html")
+    
+
+# --------------------------------
+# TEMPLATE DETAIL
+# --------------------------------
+
+def template_detail(request, pk):
+
+    template = get_object_or_404(InterviewTemplate, pk=pk)
+
+    sections = template.sections.all().order_by("order")
+
+    return render(request, "recruitment/hr/interview_templates/template_detail.html", {
+        "template": template,
+        "sections": sections
+    })
+
+
+# --------------------------------
+# EDIT TEMPLATE
+# --------------------------------
+
+def template_edit(request, pk):
+
+    template = get_object_or_404(InterviewTemplate, pk=pk)
+
+    if request.method == "POST":
+
+        template.name = request.POST.get("name")
+        template.description = request.POST.get("description")
+        template.save()
+
+        messages.success(request, "Template updated")
+
+        return redirect("template_detail", pk=pk)
+
+    return render(request, "recruitment/hr/interview_templates/template_form.html", {
+        "template": template
+    })
+
+
+# --------------------------------
+# DELETE TEMPLATE
+# --------------------------------
+
+def template_delete(request, pk):
+
+    template = get_object_or_404(InterviewTemplate, pk=pk)
+
+    template.delete()
+
+    messages.success(request, "Template deleted")
+
+    return redirect("template_list")
+
+
+# --------------------------------
+# CREATE SECTION
+# --------------------------------
+
+def section_create(request, template_id):
+
+    template = get_object_or_404(InterviewTemplate, id=template_id)
+
+    if request.method == "POST":
+
+        name = request.POST.get("name")
+        max_score = request.POST.get("max_score")
+        weight = request.POST.get("weight")
+        order = request.POST.get("order")
+
+        InterviewSection.objects.create(
+            template=template,
+            name=name,
+            max_score=max_score,
+            weight=weight,
+            order=order
+        )
+
+        messages.success(request, "Section added")
+
+        return redirect("template_detail", pk=template.id)
+
+    return render(request, "recruitment/hr/interview_templates/section_form.html", {
+        "template": template
+    })
+
+
+# --------------------------------
+# EDIT SECTION
+# --------------------------------
+
+def section_edit(request, pk):
+
+    section = get_object_or_404(InterviewSection, pk=pk)
+
+    if request.method == "POST":
+
+        section.name = request.POST.get("name")
+        section.max_score = request.POST.get("max_score")
+        section.weight = request.POST.get("weight")
+        section.order = request.POST.get("order")
+
+        section.save()
+
+        messages.success(request, "Section updated")
+
+        return redirect("template_detail", pk=section.template.id)
+
+    return render(request, "recruitment/hr/interview_templates/section_form.html", {
+        "section": section,
+        "template": section.template
+    })
+
+
+# --------------------------------
+# DELETE SECTION
+# --------------------------------
+
+def section_delete(request, pk):
+
+    section = get_object_or_404(InterviewSection, pk=pk)
+
+    template_id = section.template.id
+
+    section.delete()
+
+    messages.success(request, "Section deleted")
+
+    return redirect("template_detail", pk=template_id)

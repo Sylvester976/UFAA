@@ -54,13 +54,13 @@
                 <td>{{ vacancy.status }}</td>
                 <td>
                     <a href="{% url 'panelist_interview_list' vacancy.id %}">
-                        Conduct Interviews
+                        Shortlist 
                     </a>
                 </td>
             </tr>
             {% empty %}
             <tr>
-                <td colspan="4">No active interview assignments.</td>
+                <td colspan="4">No active shortlisting assignments.</td>
             </tr>
             {% endfor %}
         </tbody>

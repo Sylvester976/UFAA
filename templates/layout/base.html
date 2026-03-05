@@ -84,6 +84,34 @@
             vertical-align: middle;
             flex-shrink: 0;
         }
+
+                
+        .logo {
+        display: flex;
+        align-items: center;        /* Vertical alignment */
+        justify-content: center;    /* Horizontal centering */
+        width: 100%;                /* Full width so centering works */
+        }
+
+        .logo-divider {
+        width: 3px;
+        height: 50px;               /* Match logo height */
+        background: linear-gradient(
+            to bottom,
+            #000000 0%, 
+            #000000 28%,
+            #ffffff 28%, 
+            #ffffff 34%, 
+            #BD272F 34%, 
+            #BD272F 62%, 
+            #ffffff 62%, 
+            #ffffff 68%, 
+            #136B38 68%, 
+            #136B38 100%
+        );
+        margin: 0 12px;
+        }
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -93,9 +121,12 @@
        id="sidenav-main">
     <div class="sidenav-header m-0">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-           aria-hidden="true" id="iconSidenav"></i>
-        <a class="navbar-brand m-0" href="{% url 'dashboard' %}">
-            <img src="{% static 'assets/img/logos/ufaa_logo.png' %}" class="navbar-brand-img h-100" alt="main_logo">
+        aria-hidden="true" id="iconSidenav"></i>
+        
+        <a href="#" class="logo d-flex align-items-center justify-content-center w-100">
+        <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
+        <div class="logo-divider mx-2"></div>
+        <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
         </a>
     </div>
     <hr class="horizontal dark mt-0">
