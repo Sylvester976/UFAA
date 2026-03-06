@@ -329,9 +329,6 @@
                                                             <div class="tl-dot {% if forloop.first %}latest{% endif %}"></div>
                                                             <div class="tl-status">{{ log.to_status.name|default:'—' }}</div>
                                                             <div class="tl-date">{{ log.changed_at|date:"d M Y, H:i" }}</div>
-                                                            {% if log.notes %}
-                                                                <div class="tl-notes">{{ log.notes }}</div>
-                                                            {% endif %}
                                                         </div>
                                                     {% endfor %}
                                                 </div>
