@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -1366,8 +1366,9 @@ def additional_details_view(request):
 from django.db.models import Count
 
 @login_required
-@role_required(['hod_hr'])
 def hr_dashboard(request):
+
+    user_roles = request.user.role.values_list('name', flat=True)
 
     vacancies = Vacancy.objects.annotate(
         applications_count=Count('applications')
@@ -1376,12 +1377,13 @@ def hr_dashboard(request):
     vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
 
     context = {
+        'user_roles': user_roles,
         'vacancies_ready': vacancies_ready,
         'vacancies': vacancies,
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
-        'page':'HR Dashboard',
+        'page': 'HR Dashboard',
     }
 
     return render(request, 'recruitment/hr/dashboard.html', context)
@@ -2201,7 +2203,7 @@ def appoint_shortlisting_committee(request, vacancy_id):
     })
          
 @login_required
-@role_required(['hr_committee'])
+@role_required(['committee'])
 def shortlisting_dashboard(request):
 
     vacancies = Vacancy.objects.filter(
@@ -2974,7 +2976,7 @@ def _application_ready(user):
     
 
 @login_required
-@role_required(['hr', 'ceo'])  # optional: allow CEO to view but not click
+@role_required(['hr', 'ceo'])  # CEO can view but not appoint
 def hr_finalize_appointment(request, vacancy_id):
 
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
@@ -2998,12 +3000,19 @@ def hr_finalize_appointment(request, vacancy_id):
         selected_application.status = 'appointed'
         selected_application.save()
 
-        # Reject all others
-        Application.objects.filter(
+        # Send appointment notification
+        _notify_appointment(selected_application.user, selected_application)
+
+        # Reject all other applicants
+        other_applications = Application.objects.filter(
             vacancy=vacancy
         ).exclude(
             id=selected_application.id
-        ).update(status='rejected')
+        )
+
+        for application in other_applications:
+            application.status = 'rejected'
+            application.save()
 
         vacancy.status = 'appointed'
         vacancy.save()
@@ -3015,6 +3024,8 @@ def hr_finalize_appointment(request, vacancy_id):
         'vacancy': vacancy,
         'selected_application': selected_application
     })
+    
+
 def _build_snapshots(user):
     profile = JobSeekerProfile.objects.filter(user=user).first()
     detail = AdditionalDetail.objects.filter(user=user).first()
@@ -3216,6 +3227,87 @@ def _notify_submission(user, application):
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f'Email send failed for {user.email}: {e}')
+
+def _notify_appointment(user, application):
+    vacancy = application.vacancy
+
+    # 1. In-app notification
+    msg = (
+        f'Congratulations! You have been appointed for the position of {vacancy.title}. '
+        f'Application No: {application.application_number}. '
+        f'Please log into the portal for further instructions.'
+    )
+
+    JobApplicationNotification.objects.create(
+        user=user,
+        title=f'Appointment Notification — {vacancy.title}',
+        message=msg,
+        notification_type='appointment',
+        related_application=application,
+    )
+
+    # 2. HTML Email
+    try:
+        profile = getattr(user, 'jobseekerprofile', None)
+
+        first_name = profile.first_name if profile and profile.first_name else ''
+        second_name = profile.second_name if profile and profile.second_name else ''
+        surname = profile.surname if profile and profile.surname else ''
+
+        full_name = ' '.join(filter(None, [first_name, second_name, surname])) or 'Applicant'
+
+        site_url = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+
+        message_html = f"""
+            <p>Dear <strong>{full_name}</strong>,</p>
+
+            <p>We are pleased to inform you that following the completion of the
+            recruitment process for the position of
+            <strong>{vacancy.title}</strong>
+            (Vacancy Reference: <strong>{vacancy.reference_number}</strong>),
+            you have been <strong>successfully selected for appointment</strong>.</p>
+
+            <table width="100%" cellpadding="0" cellspacing="0" role="presentation"
+                   style="background:#f0f4ff; border:1px solid #c7d2fe;
+                          border-radius:8px; margin:16px 0;">
+                <tr>
+                    <td style="padding:16px 20px;">
+                        <p style="margin:0 0 4px; font-size:11px; color:#6b7280;
+                                  text-transform:uppercase; letter-spacing:0.05em;">
+                            Application Number
+                        </p>
+                        <p style="margin:0; font-size:22px; font-weight:700;
+                                  color:#1D255B; letter-spacing:0.5px;">
+                            {application.application_number}
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
+            <p>The UFAA Human Resources Department will contact you shortly with
+            further instructions regarding your appointment and onboarding process.</p>
+
+            <p>You may also log into the
+            <a href='{site_url}/recruitment/job-status/'
+               style='color:#1D255B;font-weight:bold;'>UFAA Job Portal</a>
+            to view your application status.</p>
+
+            <br>
+
+            <p style='margin:0;'>Congratulations and welcome.</p>
+            <p style='margin:0;'><strong>UFAA Human Resources</strong></p>
+            <p style='margin:0;color:#67748e;font-size:13px;'>Unclaimed Financial Assets Authority</p>
+        """
+
+        _send_html_email(
+            subject=f'Appointment Notification — {vacancy.title}',
+            to_email=user.email,
+            message_html=message_html,
+        )
+
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(f'Appointment email failed for {user.email}: {e}')
 
 
 def apply_jobs_view(request):

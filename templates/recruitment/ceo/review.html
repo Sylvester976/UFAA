@@ -20,7 +20,7 @@
             <tr>
                 {% if app.status == 'selected_top_three' %}
                 <td>{{ forloop.counter }}</td>
-                <td>{{ app.applicant.first_name }}</td>
+                <td>{{ app.applicant.name }}</td>
                 <td>{{ app.avg_score|floatformat:2 }}</td>
                 <td>
                         <span class="badge bg-success">Top 3</span>
