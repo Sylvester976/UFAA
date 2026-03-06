@@ -39,9 +39,9 @@ urlpatterns = [
          views.hr_view_applications,
          name='hr_view_applications'),
     path('hr/vacancy/<int:vacancy_id>/applications/json/',
-     views.hr_view_applications_json,
-     name='hr_applications_json'),
-    
+         views.hr_view_applications_json,
+         name='hr_applications_json'),
+
     path('hr/vacancy/<int:vacancy_id>/committee/',
          views.committee_view_applications,
          name='committee_view_applications'),
@@ -88,16 +88,16 @@ urlpatterns = [
          name='select_top_three'),
 
     path('ceo/vacancy/<int:vacancy_id>/review/',
-     views.ceo_review_view,
-     name='ceo_review_view'),
+         views.ceo_review_view,
+         name='ceo_review_view'),
 
     path('ceo/vacancy/<int:vacancy_id>/select/<int:application_id>/',
-        views.ceo_select_candidate,
-        name='ceo_select_candidate'),
-    
+         views.ceo_select_candidate,
+         name='ceo_select_candidate'),
+
     path('hr/vacancy/<int:vacancy_id>/finalize/',
-     views.hr_finalize_appointment,
-     name='hr_finalize_appointment'),
+         views.hr_finalize_appointment,
+         name='hr_finalize_appointment'),
 
     path(
         'ceo/dashboard/',
@@ -151,8 +151,7 @@ urlpatterns = [
         views.submit_shortlist,
         name='submit_shortlist'
     ),
-    
-    
+
     # Templates
     path('interview-templates/', views.template_list, name='template_list'),
     path('interview-templates/create/', views.template_create, name='template_create'),
@@ -164,8 +163,6 @@ urlpatterns = [
     path('sections/create/<int:template_id>/', views.section_create, name='section_create'),
     path('sections/<int:pk>/edit/', views.section_edit, name='section_edit'),
     path('sections/<int:pk>/delete/', views.section_delete, name='section_delete'),
-    
-    
 
     path(
         "panelist/dashboard/",
@@ -190,4 +187,11 @@ urlpatterns = [
         views.panelist_reports,
         name="panelist_reports"
     ),
+    path('hr/vacancy/<int:vacancy_id>/longlist/', views.hr_longlist_dashboard, name='hr_longlist_dashboard'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/', views.hr_longlist_dossier, name='hr_longlist_dossier'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/decision/', views.hr_longlist_decision,
+         name='hr_longlist_decision'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/bulk/', views.hr_longlist_bulk, name='hr_longlist_bulk'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/recall/', views.hr_longlist_recall,
+         name='hr_longlist_recall'),
 ]
