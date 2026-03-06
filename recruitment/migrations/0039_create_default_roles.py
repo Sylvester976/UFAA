@@ -1,4 +1,6 @@
 from django.db import migrations
+from django.contrib.auth.hashers import make_password
+import os
 
 
 def seed_roles_and_admin(apps, schema_editor):
@@ -17,27 +19,26 @@ def seed_roles_and_admin(apps, schema_editor):
     roles = []
 
     for name in role_names:
-
         role, created = Role.objects.get_or_create(
             name=name,
             defaults={"description": f"{name} role"}
         )
-
         roles.append(role)
 
     email = "admin@ufaa.go.ke"
 
-    if not User.objects.filter(email=email).exists():
+    # get password from environment variable
+    password = os.getenv("DEFAULT_ADMIN_PASSWORD")
+
+    if password and not User.objects.filter(email=email).exists():
 
         superadmin = User.objects.create(
             email=email,
             is_superadmin=True,
             user_type=2,
             is_active=True,
+            password=make_password(password),
         )
-
-        superadmin.password = make_password("Admin@123")
-        superadmin.save()
 
         superadmin.role.set(roles)
 
@@ -46,7 +47,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("roles", "0001_initial"),
-        ("recruitment", "0037_rename_summary_panelistreport_report_summary_and_more"),  # last migration in users app
+        ("recruitment", "0038_seed_application_statuses"),
     ]
 
     operations = [
