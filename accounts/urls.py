@@ -11,7 +11,7 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('verify/<uuid:token>/', views.verify_email, name='verify_email'),
     
-    path("super/login/", views.login_view, name="login"),
+    path("staff/login/", views.login_view, name="login"),
     
     path("users/", UserListView.as_view(), name="user_list"),
     path("users/create/", UserCreateView.as_view(), name="user_create"),

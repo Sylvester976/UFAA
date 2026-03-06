@@ -22,11 +22,7 @@ urlpatterns = [
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
 
-    # path(
-    #     "hr/vacancy/<int:vacancy_id>/start-longlisting/",
-    #     views.longlist_candidates,
-    #     name="longlist_candidates",
-    # ),
+
     path(
         "panel/assignment/<int:assignment_id>/respond/",
         views.respond_panel_assignment,
