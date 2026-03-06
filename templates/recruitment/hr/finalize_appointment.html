@@ -8,7 +8,9 @@
     <div class="card p-3">
         <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
         <p><strong>Approved Candidate:</strong> 
-            {{ selected_application.applicant.get_full_name }}
+            {{ selected_application.applicant.name }} |
+            {{ selected_application.applicant.id_no }} |           
+            {{ selected_application.applicant.email }} 
         </p>
     </div>
 
