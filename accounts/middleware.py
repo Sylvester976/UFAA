@@ -20,6 +20,7 @@ class LoginRequiredMiddleware:
         'shortlisting_dashboard',
         'ceo_dashboard',
         'test_dashbord',
+        'redirect_dashboard',
 
         # users
         'user_list',
@@ -93,7 +94,20 @@ class LoginRequiredMiddleware:
         'section_create',
         'section_edit',
         'section_delete',
+        
+        # permissions
+        'permission_list',
+        'permission_create',
+        'permission_update',
+        'permission_delete',
+
+        # roles
+        'role_list',
+        'role_create',
+        'role_update',
+        'role_delete',
     }
+    
     def __init__(self, get_response):
         self.get_response = get_response
 

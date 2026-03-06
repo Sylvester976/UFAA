@@ -21,6 +21,7 @@ class UserManager(BaseUserManager):
     def create_superadmin(self, email, password=None, **extra_fields):
         extra_fields.setdefault("is_superadmin", True)
         extra_fields.setdefault("is_active", True)
+        extra_fields.setdefault("user_type", 2)  # internal user
 
         return self.create_user(email, password, **extra_fields)
 

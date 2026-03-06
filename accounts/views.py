@@ -215,9 +215,41 @@ def login_view(request):
         if user:
             login(request, user)
             # return HttpResponse("Logged in successfully")
-            return redirect('user_list')
+            return redirect('redirect_dashboard')
 
     return render(request, "roles/login.html")
+
+from django.shortcuts import redirect
+from django.contrib.auth.decorators import login_required
+
+
+@login_required
+def redirect_dashboard(request):
+
+    priority = ["hod_hr",  "committee", "panelist", "ceo"]
+
+    roles = request.user.role.values_list("name", flat=True)
+
+    for role in priority:
+
+        if role in roles:
+
+            if role == "ceo":
+                return redirect("ceo_dashboard")
+
+            if role == "hod_hr":
+                return redirect("hr_dashboard")
+
+            if role == "committee":
+                return redirect("shortlisting_dashboard")
+
+            if role == "panelist":
+                return redirect("panelist_dashboard")
+
+    # fallback if user has no role
+    return redirect("hr_dashboard")
+    # return HttpResponse("User has no role")
+
 
 from django.shortcuts import render, redirect
 from django.views import View

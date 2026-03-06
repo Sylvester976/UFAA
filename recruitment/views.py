@@ -5,7 +5,7 @@ from datetime import datetime
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404
+from django.http import FileResponse, Http404, HttpResponse
 from django.http import JsonResponse
 from django.utils import timezone
 
@@ -1366,8 +1366,9 @@ def additional_details_view(request):
 from django.db.models import Count
 
 @login_required
-@role_required(['hod_hr'])
 def hr_dashboard(request):
+
+    user_roles = request.user.role.values_list('name', flat=True)
 
     vacancies = Vacancy.objects.annotate(
         applications_count=Count('applications')
@@ -1376,12 +1377,13 @@ def hr_dashboard(request):
     vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
 
     context = {
+        'user_roles': user_roles,
         'vacancies_ready': vacancies_ready,
         'vacancies': vacancies,
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
         'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
-        'page':'HR Dashboard',
+        'page': 'HR Dashboard',
     }
 
     return render(request, 'recruitment/hr/dashboard.html', context)
@@ -2201,7 +2203,7 @@ def appoint_shortlisting_committee(request, vacancy_id):
     })
          
 @login_required
-@role_required(['hr_committee'])
+@role_required(['committee'])
 def shortlisting_dashboard(request):
 
     vacancies = Vacancy.objects.filter(

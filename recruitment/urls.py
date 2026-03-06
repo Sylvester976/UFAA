@@ -21,8 +21,7 @@ urlpatterns = [
     # HR DASHBOARD
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
-
-
+    
     path(
         "panel/assignment/<int:assignment_id>/respond/",
         views.respond_panel_assignment,

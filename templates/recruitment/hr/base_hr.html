@@ -572,129 +572,183 @@
     <hr class="horizontal dark mt-0">
     <div class="collapse navbar-collapse w-auto max-height-vh-100 h-100 ps" id="sidenav-collapse-main">
         <ul class="navbar-nav">
-            
-            <!-- Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
-                href="{% url 'hr_dashboard' %}">
-                    <i class="fas fa-chart-pie me-2"></i>
-                    Dashboard
-                </a>
-            </li>
 
 
-            <!-- Published Vacancies -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
-                href="{% url 'vacancy_list' %}">
-                    <i class="fas fa-bullhorn me-2"></i>
-                    Published Vacancies
-                </a>
-            </li>
 
 
-            <!-- Longlists -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
-                href="{% url 'vacancy_longlisting' %}">
-                    <i class="fas fa-list-ul me-2"></i>
-                    Longlists
-                </a>
-            </li>
 
 
-            <!-- Shortlists -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
-                href="{% url 'vacancy_shortlisting' %}">
-                    <i class="fas fa-user-check me-2"></i>
-                    <span class="nav-link-text ms-1">Shortlists</span>
-                </a>
-            </li>
-
-
-            <!-- Interviews -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
-                href="{% url 'vacancy_interviews' %}">
-                    <i class="fas fa-comments me-2"></i>
-                    <span class="nav-link-text ms-1">Interviews</span>
-                </a>
-            </li>
-
-
-            <!-- Appointments -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
-                href="{% url 'vacancy_appointments' %}">
-                    <i class="fas fa-user-tie me-2"></i>
-                    <span class="nav-link-text ms-1">Appointments</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
-                href="{% url 'template_list' %}">
-                    <i class="fas fa-file-alt me-1"></i>
-                    <span class="nav-link-text ms-1">Interview Templates</span>
-                </a>
-            </li>
-
+            {% if 'hod_hr' in user_roles %}
+            <!-- System User Dashboards -->
             <li class="nav-item mt-3">
                 <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    System User Dashboards
+                    Human Resource
                 </h6>
-            </li>
+            </li> 
+                
+                        <!-- Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
+                            href="{% url 'hr_dashboard' %}">
+                                <i class="fas fa-chart-pie me-2"></i>
+                                Dashboard
+                            </a>
+                        </li>
 
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
-                href="{% url 'shortlisting_dashboard' %}">
-                    <i class="fas fa-users me-1"></i>
-                    <span class="nav-link-text ms-1">Committee Dashboard</span>
-                </a>
-            </li>
 
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
-                href="{% url 'panelist_dashboard' %}">
-                    <i class="fas fa-comments me-1"></i>
-                    <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
-                </a>
-            </li>
+                        <!-- Published Vacancies -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
+                            href="{% url 'vacancy_list' %}">
+                                <i class="fas fa-bullhorn me-2"></i>
+                                Published Vacancies
+                            </a>
+                        </li>
 
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
-                href="{% url 'ceo_dashboard' %}">
-                    <i class="fas fa-chart-line me-1"></i>
-                    <span class="nav-link-text ms-1">CEO Dashboard</span>
-                </a>
-            </li>
 
+                        <!-- Longlists -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
+                            href="{% url 'vacancy_longlisting' %}">
+                                <i class="fas fa-list-ul me-2"></i>
+                                Longlists
+                            </a>
+                        </li>
+
+
+                        <!-- Shortlists -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
+                            href="{% url 'vacancy_shortlisting' %}">
+                                <i class="fas fa-user-check me-2"></i>
+                                <span class="nav-link-text ms-1">Shortlists</span>
+                            </a>
+                        </li>
+
+
+                        <!-- Interviews -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
+                            href="{% url 'vacancy_interviews' %}">
+                                <i class="fas fa-comments me-2"></i>
+                                <span class="nav-link-text ms-1">Interviews</span>
+                            </a>
+                        </li>
+
+
+                        <!-- Appointments -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                            href="{% url 'vacancy_appointments' %}">
+                                <i class="fas fa-user-tie me-2"></i>
+                                <span class="nav-link-text ms-1">Appointments</span>
+                            </a>
+                        </li>
+
+                        <!-- Interview Templates -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
+                            href="{% url 'template_list' %}">
+                                <i class="fas fa-file-alt me-1"></i>
+                                <span class="nav-link-text ms-1">Interview Templates</span>
+                            </a>
+                        </li>
+            {% endif %}
+
+
+            
+            {% if 'committee' in user_roles %}
+
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Committee
+                </h6>
+            </li>   
+                        <!-- Committee Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
+                            href="{% url 'shortlisting_dashboard' %}">
+                                <i class="fas fa-users me-1"></i>
+                                <span class="nav-link-text ms-1">Committee Dashboard</span>
+                            </a>
+                        </li>
+            {% endif %}
+
+
+            {% if 'panelist' in user_roles %}
+            
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Panelist
+                </h6>
+            </li>   
+                 
+                        <!-- Panelist / Interview Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
+                            href="{% url 'panelist_dashboard' %}">
+                                <i class="fas fa-comments me-1"></i>
+                                <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
+                            </a>
+                        </li>
+            {% endif %}
+
+
+
+            {% if 'ceo' in user_roles %}
+                
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    CEO
+                </h6>
+            </li>  
+                        <!-- CEO Dashboard -->
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
+                            href="{% url 'ceo_dashboard' %}">
+                                <i class="fas fa-chart-line me-1"></i>
+                                <span class="nav-link-text ms-1">CEO Dashboard</span>
+                            </a>
+                        </li>
+            {% endif %}
+
+            
+            <!-- Administration -->
             <li class="nav-item mt-3">
                 <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
                     Administration
                 </h6>
             </li>
+            {% if 'hod_hr' in user_roles %}
 
-            <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
-                <a class="nav-link" href="{% url 'user_list' %}">
-                    <i class="fas fa-users-cog me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Users</span>
-                </a>
-            </li>
+                <!-- Manage Users -->
+                <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'user_list' %}">
+                        <i class="fas fa-users-cog me-2"></i>
+                        <span class="nav-link-text ms-1">Manage Users</span>
+                    </a>
+                </li>
 
-            <li class="nav-item {% if request.resolver_match.url_name == 'role_list' %}active{% endif %}">
-                <a class="nav-link" href="{% url 'role_list' %}">
-                    <i class="fas fa-user-shield me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Roles</span>
-                </a>
-            </li>
+                <!-- Manage Roles -->
+                <li class="nav-item {% if request.resolver_match.url_name == 'role_list' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'role_list' %}">
+                        <i class="fas fa-user-shield me-2"></i>
+                        <span class="nav-link-text ms-1">Manage Roles</span>
+                    </a>
+                </li>
 
-            <li class="nav-item {% if request.resolver_match.url_name == 'permission_list' %}active{% endif %}">
-                <a class="nav-link" href="{% url 'permission_list' %}">
-                    <i class="fas fa-key me-2"></i>
-                    <span class="nav-link-text ms-1">Manage Permissions</span>
-                </a>
-            </li>
+                <!-- Manage Permissions -->
+                <li class="nav-item {% if request.resolver_match.url_name == 'permission_list' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'permission_list' %}">
+                        <i class="fas fa-key me-2"></i>
+                        <span class="nav-link-text ms-1">Manage Permissions</span>
+                    </a>
+                </li>
+            {% endif %}
+            
         </ul>
         <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
             <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
