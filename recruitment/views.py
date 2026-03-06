@@ -3744,8 +3744,7 @@ def section_delete(request, pk):
 """
 recruitment/views_longlisting.py
 
-All views for the manual longlisting stage.
-Drop into recruitment/views.py or keep as separate module and import.
+Manual longlisting views for UFAA recruitment portal.
 
 URL patterns to add to recruitment/urls.py:
     path('hr/vacancy/<int:vacancy_id>/longlist/',
@@ -3758,14 +3757,24 @@ URL patterns to add to recruitment/urls.py:
          views.hr_longlist_bulk, name='hr_longlist_bulk'),
     path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/recall/',
          views.hr_longlist_recall, name='hr_longlist_recall'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/finalise/',
+         views.hr_longlist_finalise, name='hr_longlist_finalise'),
+
+Decisions:
+    accepted  — HR accepts into final longlist
+    rejected  — HR rejects (immediate regret email + not_selected status)
+
+Finalise:
+    Accepted  → final_longlisted (presented to shortlisting committee)
+    Remaining rejected → not_selected (already done immediately)
+    Vacancy   → committee_stage
 """
 
-import json
 from datetime import date
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Q
+from django.db import transaction
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -3782,97 +3791,68 @@ from .models import (
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _get_filter_queryset(vacancy, params):
-    """
-    Apply sidebar filters to the longlisted applications queryset.
-    Used by both dashboard and dossier navigation.
-    params: dict-like (request.GET)
-    """
-    longlisted_status = JobApplicationStatus.objects.filter(
-        code='longlisted').first()
-    not_selected_status = JobApplicationStatus.objects.filter(
-        code='not_selected').first()
+def _status(code):
+    return JobApplicationStatus.objects.filter(code=code).first()
 
-    # Tab: 'active' = longlisted, 'rejected' = not_selected
+
+def _get_filter_queryset(vacancy, params):
+    """Return filtered queryset for the given tab and filter params."""
     tab = params.get('tab', 'active')
 
     if tab == 'rejected':
+        # System-rejected — for recall
         qs = JobApplication.objects.filter(
             vacancy=vacancy,
-            status=not_selected_status,
+            status=_status('not_selected'),
         )
     else:
         qs = JobApplication.objects.filter(
             vacancy=vacancy,
-            status=longlisted_status,
+            status=_status('longlisted'),
         )
 
-    # ── Filters ────────────────────────────────────────────────────────
     gender = params.get('gender', '')
     if gender:
-        qs = qs.filter(
-            snapshot_basic__gender__iexact=gender
-        )
+        qs = qs.filter(snapshot_basic__gender__iexact=gender)
 
     disability = params.get('disability', '')
     if disability == 'yes':
-        qs = qs.filter(
-            snapshot_basic__disability=True
+        # disability_status stored as string e.g. "Yes", "None", "No"
+        qs = qs.exclude(
+            snapshot_basic__disability_status__in=['None', 'No', 'no', '', None]
         )
     elif disability == 'no':
         qs = qs.filter(
-            snapshot_basic__disability=False
-        )
-
-    ethnicity = params.get('ethnicity', '')
-    if ethnicity:
-        qs = qs.filter(
-            snapshot_basic__ethnic_group__icontains=ethnicity
+            snapshot_basic__disability_status__in=['None', 'No', 'no', '', None]
         )
 
     county = params.get('county', '')
     if county:
-        qs = qs.filter(
-            snapshot_basic__county__icontains=county
-        )
-
-    applicant_type = params.get('applicant_type', '')
-    if applicant_type == 'internal':
-        qs = qs.filter(user__jobseekerprofile__is_internal=True)
-    elif applicant_type == 'external':
-        qs = qs.filter(user__jobseekerprofile__is_internal=False)
+        qs = qs.filter(snapshot_basic__home_county__icontains=county)
 
     screening = params.get('screening', '')
     if screening == 'passed':
         qs = qs.filter(screening_passed=True)
     elif screening == 'flagged':
-        qs = qs.filter(
-            screening_passed=True,
-        ).exclude(screening_flags=[])
+        qs = qs.filter(screening_passed=True).exclude(screening_flags=[])
 
     decision = params.get('decision', '')
     if decision == 'unreviewed':
         qs = qs.filter(longlist_decision__isnull=True)
-    elif decision in ['shortlisted', 'rejected', 'hold']:
+    elif decision in ['accepted', 'rejected']:
         qs = qs.filter(longlist_decision=decision)
 
     return qs.select_related('user', 'status').order_by('application_number')
 
 
 def _build_filter_params(params):
-    """Return a dict of active filter params (excluding empty values)."""
-    keys = ['tab', 'gender', 'disability', 'ethnicity',
-            'county', 'applicant_type', 'screening', 'decision']
+    keys = ['tab', 'gender', 'disability', 'county', 'screening', 'decision']
     return {k: params.get(k, '') for k in keys if params.get(k, '')}
 
 
 def _extract_basic(app):
-    """Safely extract snapshot_basic fields."""
     b = app.snapshot_basic or {}
     return {
-        'first_name':   b.get('first_name', ''),
-        'second_name':  b.get('second_name', ''),
-        'surname':      b.get('surname', ''),
         'full_name':    ' '.join(filter(None, [
                             b.get('first_name', ''),
                             b.get('second_name', ''),
@@ -3884,79 +3864,145 @@ def _extract_basic(app):
         'phone':        b.get('phone_number', '—'),
         'county':       b.get('home_county', '—'),
         'subcounty':    b.get('sub_county', '—'),
-        'disability':   b.get('disability_status', False),
-        'ethnicity':    b.get('ethnic_group', '—'),
-        'ward':         b.get('ward', '—'),
         'constituency': b.get('constituency', '—'),
+        'ward':         b.get('ward', '—'),
+        'disability':   b.get('disability_status') not in (None, '', 'None', 'No', 'no', False),
+        'ethnicity':    b.get('ethnic_group', '—'),
     }
 
 
-def _safe_int(val):
-    try:
-        return int(val)
-    except (ValueError, TypeError):
-        return 0
-
-
-def _parse_work_date(s):
-    """Parse ISO date or human-readable string (e.g. 'March 2008') to date."""
+def _parse_date(s):
     from datetime import datetime
     if not s:
         return None
-    s = str(s).strip()
     for fmt in ('%Y-%m-%d', '%Y-%m', '%B %Y', '%b %Y', '%Y'):
         try:
-            return datetime.strptime(s, fmt).date()
+            return datetime.strptime(str(s).strip(), fmt).date()
         except ValueError:
             continue
     return None
 
 
 def _calculate_experience(work_list):
-    """Calculate total experience months from snapshot_work."""
     if not work_list:
         return 0, 0
     today = date.today()
-    total_months = 0
+    total = 0
     for job in work_list:
         try:
-            # Support both ISO (2008-03-01) and display strings (March 2008)
-            start_str = job.get('start_date') or job.get('start_display') or ''
-            end_str   = job.get('end_date')   or job.get('end_display')   or ''
-
-            if not start_str or start_str in ('Present', 'present', '—'):
+            start_str = job.get('start_display') or job.get('start_date') or ''
+            end_str   = job.get('end_display')   or job.get('end_date')   or ''
+            if not start_str:
                 continue
-
-            start = _parse_work_date(start_str)
-            if start is None:
+            start = _parse_date(start_str)
+            if not start:
                 continue
-
-            if end_str and end_str not in ('Present', 'present', '—'):
-                end = _parse_work_date(end_str) or today
-            else:
-                end = today
-
-            if end < start:
-                continue
-            diff = (end.year - start.year) * 12 + (end.month - start.month)
-            total_months += max(diff, 0)
+            end = today if (not end_str or end_str.lower() in ('present', '—')) \
+                  else (_parse_date(end_str) or today)
+            if end >= start:
+                total += max((end.year - start.year) * 12 + (end.month - start.month), 0)
         except (ValueError, TypeError):
             continue
-    return total_months // 12, total_months % 12
+    return total // 12, total % 12
 
 
-def _send_recall_email(app, vacancy):
-    """Send reconsideration email to applicant."""
+def _highest_edu(academic):
+    """Return highest education_level string from snapshot_academic list."""
+    if not academic:
+        return '—'
+    # Education level rank map — same as screening engine
+    RANKS = {
+        'kenya certificate of primary education (kcpe)': 1, 'kcpe': 1,
+        'kenya certificate of secondary education (kcse)': 2, 'kcse': 2,
+        'o-levels': 2, 'o levels': 2, 'igcse': 2, 'ged': 2,
+        'a-levels': 3, 'a levels': 3,
+        'certificate': 4,
+        'diploma': 5,
+        'higher national diploma': 6, 'hnd': 6,
+        "bachelor's degree": 7, 'bachelors degree': 7, 'degree': 7,
+        'postgraduate diploma': 8,
+        "master's degree": 9, 'masters degree': 9, 'msc': 9, 'mba': 9,
+        'phd': 10, 'doctorate': 10,
+        'other foreign qualification': 11,
+    }
+    best_rank  = -1
+    best_label = '—'
+    for entry in academic:
+        label = entry.get('education_level', '')
+        rank  = RANKS.get(label.strip().lower(), 0)
+        if rank > best_rank:
+            best_rank  = rank
+            best_label = label
+    return best_label or '—'
+
+
+def _send_regret_email(app, vacancy):
+    """Send regret email for HR manual rejection."""
     try:
         from django.template.loader import render_to_string
         from django.core.mail import EmailMultiAlternatives
         from django.conf import settings
 
-        basic = app.snapshot_basic or {}
-        name = ' '.join(filter(None, [
-            basic.get('first_name', ''),
-            basic.get('surname', ''),
-        ])) or app.user.email
+        b    = app.snapshot_basic or {}
+        name = ' '.join(filter(None, [b.get('first_name',''), b.get('surname','')])) \
+               or app.user.email
+
+        subject = (f"Application Outcome — {vacancy.title} "
+                   f"({vacancy.reference_number})")
+
+        message_html = f"""
+        <p>Dear <strong>{name}</strong>,</p>
+
+        <p>Thank you for your interest in the position of
+        <strong>{vacancy.title}</strong>
+        (Ref: <span style="font-family:monospace;">{vacancy.reference_number}</span>)
+        at the Unclaimed Financial Assets Authority (UFAA).</p>
+
+        <p>Following a careful review of all applications received, we regret to
+        inform you that your application has <strong>not been successful</strong>
+        at this stage of the recruitment process.</p>
+
+        <p>We appreciate the time and effort you invested in your application and
+        encourage you to apply for future opportunities that match your
+        qualifications and experience.</p>
+
+        <p style="margin-top:24px; color:#6b7280; font-size:13px;">
+            Yours sincerely,<br>
+            <strong style="color:#1D255B;">Human Resources &amp; Administration</strong><br>
+            Unclaimed Financial Assets Authority (UFAA)
+        </p>
+        """
+
+        html_body = render_to_string('emails/email_base.html', {
+            'subject':         subject,
+            'message_content': message_html,
+            'year':            date.today().year,
+        })
+
+        msg = EmailMultiAlternatives(
+            subject    = subject,
+            body       = 'Please view this email in an HTML-capable client.',
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to         = [app.user.email],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=True)
+    except Exception as e:
+        import logging
+        logging.getLogger(__name__).error(
+            f"Regret email failed for app {app.id}: {e}", exc_info=True)
+
+
+def _send_recall_email(app, vacancy):
+    """Send reconsideration email when system-rejected app is recalled."""
+    try:
+        from django.template.loader import render_to_string
+        from django.core.mail import EmailMultiAlternatives
+        from django.conf import settings
+
+        b    = app.snapshot_basic or {}
+        name = ' '.join(filter(None, [b.get('first_name',''), b.get('surname','')])) \
+               or app.user.email
 
         subject = (f"Application Update — {vacancy.title} "
                    f"({vacancy.reference_number})")
@@ -3969,9 +4015,9 @@ def _send_recall_email(app, vacancy):
         (Ref: <span style="font-family:monospace;">{vacancy.reference_number}</span>)
         has been <strong style="color:#1a7a45;">reconsidered</strong>.</p>
 
-        <p>Following a review by our recruitment committee, your application is now
-        back under active consideration. You will receive further communication
-        regarding the next steps in the recruitment process.</p>
+        <p>Your application is now back under active consideration. You will
+        receive further communication regarding the next steps in the
+        recruitment process.</p>
 
         <p style="margin-top:24px; color:#6b7280; font-size:13px;">
             Yours sincerely,<br>
@@ -3983,124 +4029,88 @@ def _send_recall_email(app, vacancy):
         html_body = render_to_string('emails/email_base.html', {
             'subject':         subject,
             'message_content': message_html,
-            'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
-            'year':     date.today().year,
+            'year':            date.today().year,
         })
 
-        email = EmailMultiAlternatives(
+        msg = EmailMultiAlternatives(
             subject    = subject,
             body       = 'Please view this email in an HTML-capable client.',
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL',
-                                 'noreply@ufaa.go.ke'),
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
             to         = [app.user.email],
         )
-        email.attach_alternative(html_body, 'text/html')
-        email.send(fail_silently=True)
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=True)
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(
             f"Recall email failed for app {app.id}: {e}", exc_info=True)
 
 
-# ── View 1: Longlisting Dashboard ──────────────────────────────────────────
+# ── View 1: Dashboard ──────────────────────────────────────────────────────
 
 @login_required
 def hr_longlist_dashboard(request, vacancy_id):
-    vacancy = get_object_or_404(
-        Vacancy, id=vacancy_id, status='longlisting')
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
-    longlisted_status  = JobApplicationStatus.objects.filter(
-        code='longlisted').first()
-    not_selected_status = JobApplicationStatus.objects.filter(
-        code='not_selected').first()
+    longlisted_st    = _status('longlisted')
+    not_selected_st  = _status('not_selected')
 
-    # Counts for stats strip
-    total_longlisted  = JobApplication.objects.filter(
-        vacancy=vacancy, status=longlisted_status).count()
-    total_rejected    = JobApplication.objects.filter(
-        vacancy=vacancy, status=not_selected_status).count()
-    total_shortlisted = JobApplication.objects.filter(
-        vacancy=vacancy,
-        status=longlisted_status,
-        longlist_decision='shortlisted').count()
-    total_hold        = JobApplication.objects.filter(
-        vacancy=vacancy,
-        status=longlisted_status,
-        longlist_decision='hold').count()
-    total_unreviewed  = JobApplication.objects.filter(
-        vacancy=vacancy,
-        status=longlisted_status,
-        longlist_decision__isnull=True).count()
-    total_manual_rejected = JobApplication.objects.filter(
-        vacancy=vacancy,
-        status=longlisted_status,
+    total_longlisted = JobApplication.objects.filter(
+        vacancy=vacancy, status=longlisted_st).count()
+    total_accepted   = JobApplication.objects.filter(
+        vacancy=vacancy, status=longlisted_st,
+        longlist_decision='accepted').count()
+    total_rejected   = JobApplication.objects.filter(
+        vacancy=vacancy, status=longlisted_st,
         longlist_decision='rejected').count()
+    total_unreviewed = JobApplication.objects.filter(
+        vacancy=vacancy, status=longlisted_st,
+        longlist_decision__isnull=True).count()
+    total_sys_rejected = JobApplication.objects.filter(
+        vacancy=vacancy, status=not_selected_st).count()
 
-    # Apply filters
     qs = _get_filter_queryset(vacancy, request.GET)
 
-    # Build application rows for table
     applications = []
     for app in qs:
-        basic   = _extract_basic(app)
         yrs, mo = _calculate_experience(app.snapshot_work or [])
-        academic = app.snapshot_academic or []
-        highest_edu = '—'
-        if academic:
-            best = max(academic,
-                key=lambda e: int(e.get('education_level_value') or
-                                  e.get('rank') or 0),
-                default=None)
-            if best:
-                highest_edu = best.get('education_level_name') or best.get('education_level', '—')
-
         applications.append({
             'app':         app,
-            'basic':       basic,
+            'basic':       _extract_basic(app),
             'exp_years':   yrs,
             'exp_months':  mo,
-            'highest_edu': highest_edu,
+            'highest_edu': _highest_edu(app.snapshot_academic or []),
         })
 
-    # Filter params for passing to dossier links
     filter_params = _build_filter_params(request.GET)
     filter_query  = '&'.join(f"{k}={v}" for k, v in filter_params.items())
 
     context = {
-        'vacancy':              vacancy,
-        'applications':         applications,
-        'filter_query':         filter_query,
-        'filter_params':        filter_params,
-        'active_tab':           request.GET.get('tab', 'active'),
-
-        # Stats
-        'total_longlisted':     total_longlisted,
-        'total_rejected':       total_rejected,
-        'total_shortlisted':    total_shortlisted,
-        'total_hold':           total_hold,
-        'total_unreviewed':     total_unreviewed,
-        'total_manual_rejected':total_manual_rejected,
-
-        # Filter options
-        'gender_choices':    [('Male', 'Male'), ('Female', 'Female'),
-                              ('Other', 'Other')],
+        'vacancy':           vacancy,
+        'applications':      applications,
+        'filter_query':      filter_query,
+        'filter_params':     filter_params,
+        'active_tab':        request.GET.get('tab', 'active'),
+        'total_longlisted':  total_longlisted,
+        'total_accepted':    total_accepted,
+        'total_rejected':    total_rejected,
+        'total_unreviewed':  total_unreviewed,
+        'total_sys_rejected':total_sys_rejected,
+        'gender_choices':    [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
         'decision_choices':  [('unreviewed', 'Unreviewed'),
-                              ('shortlisted', 'Shortlisted'),
-                              ('hold', 'Hold'),
+                              ('accepted', 'Accepted'),
                               ('rejected', 'Rejected')],
     }
-    return render(request,
-                  'recruitment/hr/longlisting/dashboard.html', context)
+    return render(request, 'recruitment/hr/longlisting/dashboard.html', context)
 
 
-# ── View 2: Candidate Dossier ──────────────────────────────────────────────
+# ── View 2: Dossier ────────────────────────────────────────────────────────
 
 @login_required
 def hr_longlist_dossier(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
     app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
 
-    # Navigation — compute prev/next within filtered list
     qs         = _get_filter_queryset(vacancy, request.GET)
     app_ids    = list(qs.values_list('id', flat=True))
     filter_params = _build_filter_params(request.GET)
@@ -4109,73 +4119,49 @@ def hr_longlist_dossier(request, vacancy_id, app_id):
     try:
         current_idx = app_ids.index(app_id)
     except ValueError:
-        # App not in current filter — show anyway, no nav
         current_idx = None
 
-    prev_id = app_ids[current_idx - 1] if (
-        current_idx is not None and current_idx > 0) else None
-    next_id = app_ids[current_idx + 1] if (
-        current_idx is not None and
-        current_idx < len(app_ids) - 1) else None
-
+    prev_id  = app_ids[current_idx - 1] if current_idx not in (None, 0) else None
+    next_id  = app_ids[current_idx + 1] if (
+        current_idx is not None and current_idx < len(app_ids) - 1) else None
     position = (current_idx + 1) if current_idx is not None else None
-    total    = len(app_ids)
 
-    # Log dossier view
     LonglistReviewLog.objects.create(
-        vacancy     = vacancy,
-        application = app,
-        officer     = request.user,
-        action      = 'viewed',
-        metadata    = {'filter_params': filter_params},
+        vacancy=vacancy, application=app,
+        officer=request.user, action='viewed',
+        metadata={'filter_params': filter_params},
     )
 
-    # Build rich data from snapshots
-    basic        = _extract_basic(app)
-    academic     = app.snapshot_academic     or []
-    professional = app.snapshot_professional or []
-    work         = app.snapshot_work         or []
-    referees     = app.snapshot_referees     or []
-    additional   = app.snapshot_additional   or {}
-    memberships  = app.snapshot_memberships  or []
-
-    yrs, mo = _calculate_experience(work)
+    yrs, mo = _calculate_experience(app.snapshot_work or [])
 
     context = {
         'vacancy':       vacancy,
         'app':           app,
-        'basic':         basic,
-        'academic':      academic,
-        'professional':  professional,
-        'work':          work,
-        'referees':      referees,
-        'additional':    additional,
-        'memberships':   memberships,
+        'basic':         _extract_basic(app),
+        'academic':      app.snapshot_academic     or [],
+        'professional':  app.snapshot_professional or [],
+        'work':          app.snapshot_work         or [],
+        'referees':      app.snapshot_referees     or [],
+        'additional':    app.snapshot_additional   or {},
+        'memberships':   app.snapshot_memberships  or [],
         'exp_years':     yrs,
         'exp_months':    mo,
-
-        # Navigation
         'prev_id':       prev_id,
         'next_id':       next_id,
         'position':      position,
-        'total':         total,
+        'total':         len(app_ids),
         'filter_query':  filter_query,
         'filter_params': filter_params,
-
-        # Filter options for dossier sidebar
         'active_tab':    request.GET.get('tab', 'active'),
-        'gender_choices': [('Male', 'Male'), ('Female', 'Female'),
-                           ('Other', 'Other')],
+        'gender_choices': [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
         'decision_choices': [('unreviewed', 'Unreviewed'),
-                             ('shortlisted', 'Shortlisted'),
-                             ('hold', 'Hold'),
+                             ('accepted', 'Accepted'),
                              ('rejected', 'Rejected')],
     }
-    return render(request,
-                  'recruitment/hr/longlisting/dossier.html', context)
+    return render(request, 'recruitment/hr/longlisting/dossier.html', context)
 
 
-# ── View 3: Decision (single application) ─────────────────────────────────
+# ── View 3: Decision ───────────────────────────────────────────────────────
 
 @login_required
 @require_POST
@@ -4183,64 +4169,63 @@ def hr_longlist_decision(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
     app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
 
-    decision = request.POST.get('decision', '').strip()
-    notes    = request.POST.get('notes', '').strip()
-    redirect_to = request.POST.get('redirect_to', 'dossier')
+    decision     = request.POST.get('decision', '').strip()
+    notes        = request.POST.get('notes', '').strip()
     filter_query = request.POST.get('filter_query', '')
 
-    if decision not in ['shortlisted', 'rejected', 'hold']:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse({'error': 'Invalid decision.'}, status=400)
-        messages.error(request, 'Invalid decision.')
-        return redirect('hr_longlist_dashboard', vacancy_id=vacancy_id)
+    if decision not in ['accepted', 'rejected']:
+        return JsonResponse({'error': 'Invalid decision.'}, status=400)
 
     if decision == 'rejected' and not notes:
-        if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-            return JsonResponse(
-                {'error': 'A reason is required when rejecting an application.'},
-                status=400)
-        messages.error(request,
-                       'A reason is required when rejecting an application.')
-        return redirect('hr_longlist_dossier',
-                        vacancy_id=vacancy_id, app_id=app_id)
+        return JsonResponse(
+            {'error': 'A reason is required when rejecting.'}, status=400)
 
     previous_decision = app.longlist_decision
     action = 'decision_changed' if previous_decision else decision
 
-    app.longlist_decision    = decision
-    app.longlist_decision_by = request.user
-    app.longlist_decision_at = timezone.now()
-    app.longlist_notes       = notes
-    app.save(update_fields=[
-        'longlist_decision', 'longlist_decision_by',
-        'longlist_decision_at', 'longlist_notes',
-    ])
+    with transaction.atomic():
+        app.longlist_decision    = decision
+        app.longlist_decision_by = request.user
+        app.longlist_decision_at = timezone.now()
+        app.longlist_notes       = notes
 
-    LonglistReviewLog.objects.create(
-        vacancy     = vacancy,
-        application = app,
-        officer     = request.user,
-        action      = action,
-        notes       = notes,
-        metadata    = {
-            'decision':          decision,
-            'previous_decision': previous_decision,
-            'screening_passed':  app.screening_passed,
-        },
-    )
+        if decision == 'rejected':
+            # Immediately move to not_selected
+            not_selected_st      = _status('not_selected')
+            previous_status      = app.status
+            app.status           = not_selected_st
+            app.save(update_fields=[
+                'longlist_decision', 'longlist_decision_by',
+                'longlist_decision_at', 'longlist_notes', 'status',
+            ])
+            JobApplicationStatusLog.objects.create(
+                application = app,
+                from_status = previous_status,
+                to_status   = not_selected_st,
+                changed_by  = request.user,
+                notes       = f"Rejected during manual longlisting. Reason: {notes}",
+            )
+        else:
+            app.save(update_fields=[
+                'longlist_decision', 'longlist_decision_by',
+                'longlist_decision_at', 'longlist_notes',
+            ])
 
-    if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-        return JsonResponse({
-            'success':  True,
-            'decision': decision,
-            'app_id':   app_id,
-        })
+        LonglistReviewLog.objects.create(
+            vacancy=vacancy, application=app,
+            officer=request.user, action=action, notes=notes,
+            metadata={
+                'decision':          decision,
+                'previous_decision': previous_decision,
+                'screening_passed':  app.screening_passed,
+            },
+        )
 
-    qs = f"?{filter_query}" if filter_query else ''
-    if redirect_to == 'dashboard':
-        return redirect(f"{vacancy.id}/longlist/{qs}")
-    return redirect(
-        f'/recruitment/hr/vacancy/{vacancy_id}/longlist/{app_id}/{qs}')
+    # Send regret email immediately on rejection (outside transaction)
+    if decision == 'rejected':
+        _send_regret_email(app, vacancy)
+
+    return JsonResponse({'success': True, 'decision': decision, 'app_id': app_id})
 
 
 # ── View 4: Bulk Action ────────────────────────────────────────────────────
@@ -4250,55 +4235,64 @@ def hr_longlist_decision(request, vacancy_id, app_id):
 def hr_longlist_bulk(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
-    action   = request.POST.get('action', '').strip()
-    app_ids  = request.POST.getlist('app_ids')
-    notes    = request.POST.get('notes', '').strip()
+    action  = request.POST.get('action', '').strip()
+    app_ids = request.POST.getlist('app_ids')
+    notes   = request.POST.get('notes', '').strip()
 
-    if action not in ['shortlisted', 'rejected', 'hold']:
+    if action not in ['accepted', 'rejected']:
         return JsonResponse({'error': 'Invalid action.'}, status=400)
-
     if not app_ids:
         return JsonResponse({'error': 'No applications selected.'}, status=400)
-
     if action == 'rejected' and not notes:
         return JsonResponse(
-            {'error': 'A reason is required for bulk rejection.'},
-            status=400)
+            {'error': 'A reason is required for bulk rejection.'}, status=400)
 
-    apps = JobApplication.objects.filter(
-        id__in=app_ids, vacancy=vacancy)
-
+    apps = JobApplication.objects.filter(id__in=app_ids, vacancy=vacancy)
     updated_ids = list(apps.values_list('id', flat=True))
     count = len(updated_ids)
 
-    apps.update(
-        longlist_decision    = action,
-        longlist_decision_by = request.user,
-        longlist_decision_at = timezone.now(),
-        longlist_notes       = notes,
-    )
+    with transaction.atomic():
+        if action == 'rejected':
+            not_selected_st = _status('not_selected')
+            for app in apps:
+                previous_status          = app.status
+                app.longlist_decision    = 'rejected'
+                app.longlist_decision_by = request.user
+                app.longlist_decision_at = timezone.now()
+                app.longlist_notes       = notes
+                app.status               = not_selected_st
+                app.save(update_fields=[
+                    'longlist_decision', 'longlist_decision_by',
+                    'longlist_decision_at', 'longlist_notes', 'status',
+                ])
+                JobApplicationStatusLog.objects.create(
+                    application=app, from_status=previous_status,
+                    to_status=not_selected_st, changed_by=request.user,
+                    notes=f"Bulk rejected during manual longlisting. Reason: {notes}",
+                )
+        else:
+            apps.update(
+                longlist_decision    = 'accepted',
+                longlist_decision_by = request.user,
+                longlist_decision_at = timezone.now(),
+                longlist_notes       = notes,
+            )
 
-    LonglistReviewLog.objects.create(
-        vacancy     = vacancy,
-        application = None,
-        officer     = request.user,
-        action      = f'bulk_{action}',
-        notes       = notes,
-        metadata    = {
-            'count':           count,
-            'application_ids': updated_ids,
-            'decision':        action,
-        },
-    )
+        LonglistReviewLog.objects.create(
+            vacancy=vacancy, application=None,
+            officer=request.user, action=f'bulk_{action}', notes=notes,
+            metadata={'count': count, 'application_ids': updated_ids, 'decision': action},
+        )
 
-    return JsonResponse({
-        'success': True,
-        'count':   count,
-        'action':  action,
-    })
+    # Send regret emails after transaction
+    if action == 'rejected':
+        for app in JobApplication.objects.filter(id__in=updated_ids):
+            _send_regret_email(app, vacancy)
+
+    return JsonResponse({'success': True, 'count': count, 'action': action})
 
 
-# ── View 5: Recall (un-reject) ─────────────────────────────────────────────
+# ── View 5: Recall ─────────────────────────────────────────────────────────
 
 @login_required
 @require_POST
@@ -4309,48 +4303,109 @@ def hr_longlist_recall(request, vacancy_id, app_id):
     notes = request.POST.get('notes', '').strip()
     if not notes:
         return JsonResponse(
-            {'error': 'A reason for reconsideration is required.'},
-            status=400)
+            {'error': 'A reason for reconsideration is required.'}, status=400)
 
-    longlisted_status = get_object_or_404(
-        JobApplicationStatus, code='longlisted')
-
+    longlisted_st   = _status('longlisted')
     previous_status = app.status
 
-    # Move back to longlisted, clear decision
-    app.status               = longlisted_status
-    app.longlist_decision    = None
-    app.longlist_decision_by = None
-    app.longlist_decision_at = None
-    app.longlist_notes       = ''
-    app.save(update_fields=[
-        'status', 'longlist_decision', 'longlist_decision_by',
-        'longlist_decision_at', 'longlist_notes',
-    ])
+    with transaction.atomic():
+        app.status               = longlisted_st
+        app.longlist_decision    = None
+        app.longlist_decision_by = None
+        app.longlist_decision_at = None
+        app.longlist_notes       = ''
+        app.save(update_fields=[
+            'status', 'longlist_decision', 'longlist_decision_by',
+            'longlist_decision_at', 'longlist_notes',
+        ])
+        JobApplicationStatusLog.objects.create(
+            application=app, from_status=previous_status,
+            to_status=longlisted_st, changed_by=request.user,
+            notes=f"Recalled for reconsideration by HR. Reason: {notes}",
+        )
+        LonglistReviewLog.objects.create(
+            vacancy=vacancy, application=app,
+            officer=request.user, action='override', notes=notes,
+            metadata={
+                'previous_status':    previous_status.code if previous_status else None,
+                'original_screening': app.screening_reasons,
+            },
+        )
 
-    # Log to both audit models
-    JobApplicationStatusLog.objects.create(
-        application = app,
-        from_status = previous_status,
-        to_status   = longlisted_status,
-        changed_by  = request.user,
-        notes       = f"Application recalled by committee. Reason: {notes}",
-    )
-
-    LonglistReviewLog.objects.create(
-        vacancy     = vacancy,
-        application = app,
-        officer     = request.user,
-        action      = 'override',
-        notes       = notes,
-        metadata    = {
-            'previous_status':    previous_status.code if previous_status else None,
-            'original_screening': app.screening_reasons,
-            'recalled_by':        request.user.get_full_name() or request.user.email,
-        },
-    )
-
-    # Send reconsideration email
     _send_recall_email(app, vacancy)
-
     return JsonResponse({'success': True, 'app_id': app_id})
+
+
+# ── View 6: Finalise Longlist ──────────────────────────────────────────────
+
+@login_required
+@require_POST
+def hr_longlist_finalise(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
+
+    longlisted_st      = _status('longlisted')
+    final_longlisted_st = _status('final_longlisted')
+    not_selected_st    = _status('not_selected')
+
+    if not final_longlisted_st:
+        return JsonResponse(
+            {'error': 'final_longlisted status not found. Run migrations.'}, status=500)
+
+    # Guard: block if any applications are still unreviewed
+    unreviewed_count = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status=longlisted_st,
+        longlist_decision__isnull=True,
+    ).count()
+
+    if unreviewed_count > 0:
+        return JsonResponse({
+            'error': (f'{unreviewed_count} application(s) still unreviewed. '
+                      f'Please accept or reject all applications before finalising.'),
+            'unreviewed_count': unreviewed_count,
+        }, status=400)
+
+    accepted_apps = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status=longlisted_st,
+        longlist_decision='accepted',
+    )
+    accepted_count = accepted_apps.count()
+
+    if accepted_count == 0:
+        return JsonResponse({
+            'error': 'No applications have been accepted into the final longlist.',
+        }, status=400)
+
+    with transaction.atomic():
+        # Move accepted → final_longlisted
+        for app in accepted_apps:
+            previous_status = app.status
+            app.status      = final_longlisted_st
+            app.save(update_fields=['status'])
+            JobApplicationStatusLog.objects.create(
+                application=app, from_status=previous_status,
+                to_status=final_longlisted_st, changed_by=request.user,
+                notes="Accepted into final longlist by HR. Proceeding to shortlisting committee.",
+            )
+
+        # Move vacancy to committee_stage
+        vacancy.status = 'committee_stage'
+        vacancy.save(update_fields=['status'])
+
+        LonglistReviewLog.objects.create(
+            vacancy=vacancy, application=None,
+            officer=request.user, action='finalised',
+            notes=f"Longlist finalised. {accepted_count} application(s) accepted.",
+            metadata={
+                'accepted_count': accepted_count,
+                'finalised_by':   request.user.get_full_name() or request.user.email,
+                'finalised_at':   timezone.now().isoformat(),
+            },
+        )
+
+    return JsonResponse({
+        'success':       True,
+        'accepted_count': accepted_count,
+        'redirect_url':  '/recruitment/hr/vacancy/list/',
+    })

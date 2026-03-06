@@ -183,8 +183,7 @@
     font-size:0.8rem; font-weight:700;
 }
 .cd-unreviewed { background:#f0f2f8; color:#8392ab; }
-.cd-shortlisted{ background:#d4f5e2; color:var(--green); }
-.cd-hold       { background:#fef3e2; color:var(--amber); }
+.cd-accepted   { background:#d4f5e2; color:var(--green); }
 .cd-rejected   { background:#fde8e8; color:var(--red); }
 
 .dec-btn {
@@ -603,10 +602,8 @@
 
                     <!-- Current decision indicator -->
                     <div class="current-dec cd-{{ app.longlist_decision|default:'unreviewed' }}">
-                        {% if app.longlist_decision == 'shortlisted' %}
-                            <i class="fas fa-check-circle me-1"></i> Shortlisted
-                        {% elif app.longlist_decision == 'hold' %}
-                            <i class="fas fa-pause-circle me-1"></i> On Hold
+                        {% if app.longlist_decision == 'accepted' %}
+                            <i class="fas fa-check-circle me-1"></i> Accepted — Final Longlist
                         {% elif app.longlist_decision == 'rejected' %}
                             <i class="fas fa-times-circle me-1"></i> Rejected
                         {% else %}
@@ -623,25 +620,21 @@
                     </div>
                     {% endif %}
 
-                    <!-- Active shortlist/hold actions -->
                     {% if app.status.code == 'longlisted' %}
-                        <button class="dec-btn db-short" onclick="makeDecision('shortlisted')">
-                            <i class="fas fa-check"></i> Shortlist
-                        </button>
-                        <button class="dec-btn db-hold" onclick="makeDecision('hold')">
-                            <i class="fas fa-pause"></i> Hold
+                        <button class="dec-btn db-short" onclick="makeDecision('accepted')">
+                            <i class="fas fa-check"></i> Accept to Final Longlist
                         </button>
 
-                        <div class="dec-divider">reject</div>
+                        <div class="dec-divider">or</div>
 
                         <button class="dec-btn db-reject" onclick="makeDecision('rejected')">
                             <i class="fas fa-times"></i> Reject
                         </button>
-
+                        <p style="font-size:0.68rem;color:#8392ab;text-align:center;margin-top:0.4rem;margin-bottom:0;">
+                            Rejection sends regret email immediately.
+                        </p>
                     {% else %}
-                        <!-- System rejected — recall only -->
-                        <div style="font-size:0.74rem;color:#8392ab;text-align:center;
-                                    margin-bottom:0.85rem;">
+                        <div style="font-size:0.74rem;color:#8392ab;text-align:center;margin-bottom:0.85rem;">
                             System-rejected application
                         </div>
                         <button class="dec-btn db-recall" onclick="recallApp()">
@@ -723,16 +716,14 @@ const CSRF       = '{{ csrf_token }}';
 const FILTER_Q   = '{{ filter_query|escapejs }}';
 
 function makeDecision(decision) {
-    const needsNote = decision === 'rejected';
+    const needsNote = (decision === 'rejected');
     const colors = {
-        shortlisted: '#1a7a45',
-        hold:        '#b7770d',
-        rejected:    '#c0392b',
+        accepted: '#1a7a45',
+        rejected: '#c0392b',
     };
     const labels = {
-        shortlisted: 'Shortlist',
-        hold:        'Put on Hold',
-        rejected:    'Reject',
+        accepted: 'Accept to Final Longlist',
+        rejected: 'Reject',
     };
 
     Swal.fire({
