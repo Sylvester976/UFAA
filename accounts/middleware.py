@@ -13,7 +13,7 @@ class LoginRequiredMiddleware:
         'verify_email',
         'send_verification_email',
         'vacancy_detail',
-        'login_view',
+        'login',
         'hr_dashboard',
         'panelist_dashboard',
         'shortlisting_dashboard',
