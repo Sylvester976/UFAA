@@ -11,7 +11,7 @@ urlpatterns = [
     path('logout/', views.logout, name='logout'),
     path('verify/<uuid:token>/', views.verify_email, name='verify_email'),
     
-    path("super/login/", views.login_view, name="login"),
+    path("staff/", views.login_view, name="login"),
     
     path("users/", UserListView.as_view(), name="user_list"),
     path("users/create/", UserCreateView.as_view(), name="user_create"),
@@ -22,4 +22,9 @@ urlpatterns = [
     path("users/<uuid:user_id>/assign-role/", assign_role, name="assign_role"),
     
     path("test/", views.test_dashbord, name="test_dashbord"),
+    
+    path("dashboard/",
+        views.redirect_dashboard,
+        name="redirect_dashboard"
+    ),
 ]
