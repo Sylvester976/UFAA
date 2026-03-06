@@ -4,83 +4,69 @@ recruitment/screening.py
 Screening engine for UFAA recruitment portal.
 Pure Python — no Django ORM calls. Fully testable in isolation.
 
-Usage:
-    from recruitment.screening import run_screening
-
-    result = run_screening(
-        snapshot        = app.snapshot_basic | app.snapshot_additional | ...,
-        criteria        = vacancy.screening_criteria,
-        submitted_at    = app.submitted_at,
-        vacancy_end_date= vacancy.end_date,
-    )
-    app.screening_passed  = result['passed']
-    app.screening_reasons = result['reasons']   # hard fails — internal only
-    app.screening_flags   = result['flags']     # soft warnings — committee sees
-    app.screening_ran_at  = timezone.now()
-    app.save()
+Confirmed snapshot field names (from DB inspection):
+  snapshot_additional: cv_filename, cover_letter_filename, availability,
+                       expected_salary, linkedin_url, portfolio_url, languages
+  snapshot_academic:   education_level (string), institution, year_completed, grade
+  snapshot_work:       job_title, company, start_display, end_display,
+                       duties, is_current, employment_type, country, exit_reason
 """
 
 from datetime import date, datetime
-from dateutil.relativedelta import relativedelta
 
 
-# ── Education level hierarchy ──────────────────────────────────────────────
-# Mirrors EducationLevel.level values from migration 0026.
-# Level integers are NOT unique — equivalent qualifications share the same level.
-# e.g. KCSE, O-Levels, IGCSE, GED all = level 2.
-# Screening uses >= comparison — ties are fine.
-EDUCATION_LEVELS = {
-    1:  "KCPE",
-    2:  "KCSE / O-Levels / IGCSE / GED",
-    3:  "A-Levels / IB",
-    4:  "Certificate",
-    5:  "Diploma",
-    6:  "Higher National Diploma (HND)",
-    7:  "Bachelor's Degree",
-    9:  "Master's Degree",
-    10: "PhD / Doctorate",
-    11: "Other Foreign Qualification",  # soft flag — committee verifies equivalence
+# ── Education level string → rank integer ──────────────────────────────────
+# snapshot_academic stores education_level as a plain string e.g. "Bachelor's Degree"
+# We map that string to a rank integer for comparison.
+EDUCATION_LEVEL_RANKS = {
+    'kenya certificate of primary education (kcpe)': 1,
+    'kcpe': 1,
+    'kenya certificate of secondary education (kcse)': 2,
+    'kcse': 2,
+    'o-levels': 2, 'o levels': 2, 'igcse': 2, 'ged': 2,
+    'a-levels': 3, 'a levels': 3, 'international baccalaureate': 3, 'ib': 3,
+    'certificate': 4,
+    'diploma': 5,
+    'higher national diploma': 6, 'hnd': 6,
+    "bachelor's degree": 7, 'bachelors degree': 7, 'bachelor degree': 7, 'degree': 7,
+    'postgraduate diploma': 8,
+    "master's degree": 9, 'masters degree': 9, 'msc': 9, 'mba': 9,
+    'phd': 10, 'doctorate': 10, 'phd / doctorate': 10,
+    'other foreign qualification': 11,
+}
+
+EDUCATION_LEVEL_LABELS = {
+    1: 'KCPE', 2: 'KCSE / O-Levels', 3: 'A-Levels / IB',
+    4: 'Certificate', 5: 'Diploma', 6: 'Higher National Diploma (HND)',
+    7: "Bachelor's Degree", 8: 'Postgraduate Diploma',
+    9: "Master's Degree", 10: 'PhD / Doctorate', 11: 'Other Foreign Qualification',
 }
 
 FOREIGN_QUAL_LEVEL = 11
 
-# Availability choices → days mapping
 AVAILABILITY_DAYS = {
-    'Immediately':    0,
-    '1 Week Notice':  7,
-    '2 Weeks Notice': 14,
-    '3 Weeks Notice': 21,
-    '1 Month Notice': 30,
-    '2 Months Notice':60,
-    '3 Months Notice':90,
-    'Not Available':  999,
+    'Immediately': 0, '1 Week Notice': 7, '2 Weeks Notice': 14,
+    '3 Weeks Notice': 21, '1 Month Notice': 30,
+    '2 Months Notice': 60, '3 Months Notice': 90, 'Not Available': 999,
 }
 
 
 def run_screening(snapshot: dict, criteria: dict,
                   submitted_at, vacancy_end_date) -> dict:
     """
-    Run all screening checks for one application.
-
-    Args:
-        snapshot        : merged dict of all applicant snapshot fields
-                          expects keys from: snapshot_basic, snapshot_additional,
-                          snapshot_academic, snapshot_professional, snapshot_work
-        criteria        : vacancy.screening_criteria JSON dict
-        submitted_at    : application.submitted_at (datetime)
-        vacancy_end_date: vacancy.end_date (date)
-
-    Returns:
-        {
-            'passed' : bool   — False if any hard check fails
-            'reasons': list   — hard fail reasons (internal/audit only)
-            'flags'  : list   — soft warnings (committee sees on dossier)
-        }
+    snapshot is built by _build_snapshot() in context_processor.
+    It must contain keys: 'additional', 'academic', 'professional', 'work'
+    pointing to the respective snapshot dicts/lists.
     """
-    reasons = []   # hard fails
-    flags   = []   # soft warnings
+    reasons = []
+    flags   = []
 
-    # ── Check 0: Late submission (always runs, no criteria needed) ─────────
+    additional   = snapshot.get('additional',   {}) or {}
+    academic     = snapshot.get('academic',     []) or []
+    professional = snapshot.get('professional', []) or []
+    work         = snapshot.get('work',         []) or []
+
+    # ── Check 0: Late submission ───────────────────────────────────────────
     sub_date = submitted_at.date() if hasattr(submitted_at, 'date') else submitted_at
     if sub_date > vacancy_end_date:
         reasons.append(
@@ -88,105 +74,78 @@ def run_screening(snapshot: dict, criteria: dict,
             f"({sub_date.strftime('%d %b %Y')} — "
             f"vacancy closed {vacancy_end_date.strftime('%d %b %Y')})"
         )
-        # No point running further checks — immediately disqualified
         return {'passed': False, 'reasons': reasons, 'flags': flags}
 
     # ── Check 1: CV ────────────────────────────────────────────────────────
     if criteria.get('require_cv', True):
-        cv = snapshot.get('cv') or snapshot.get('additional', {}).get('cv')
-        if not cv:
+        # cv_filename is set when applicant uploads a CV
+        if not additional.get('cv_filename'):
             reasons.append("CV not uploaded.")
 
     # ── Check 2: Cover letter ──────────────────────────────────────────────
     if criteria.get('require_cover_letter', True):
-        cl = (snapshot.get('cover_letter') or
-              snapshot.get('additional', {}).get('cover_letter'))
-        if not cl:
+        if not additional.get('cover_letter_filename'):
             reasons.append("Cover letter not uploaded.")
 
     # ── Check 3: Education level ───────────────────────────────────────────
     min_edu_level = criteria.get('minimum_education_level', 0)
     if min_edu_level > 0:
-        academic = snapshot.get('academic', [])
-        applicant_level = _highest_education_level(academic)
+        applicant_level = _highest_education_rank(academic)
 
         if applicant_level is None:
-            reasons.append(
-                "No academic qualifications found in profile."
-            )
+            reasons.append("No academic qualifications found in profile.")
         elif applicant_level == FOREIGN_QUAL_LEVEL:
-            # Foreign qual — soft flag, committee verifies equivalence
             flags.append(
-                "Applicant holds a foreign qualification — "
-                "committee must verify equivalence to minimum requirement "
-                f"({EDUCATION_LEVELS.get(min_edu_level, str(min_edu_level))})."
+                "Applicant holds a foreign qualification — committee must verify "
+                f"equivalence to minimum requirement "
+                f"({EDUCATION_LEVEL_LABELS.get(min_edu_level, str(min_edu_level))})."
             )
         elif applicant_level < min_edu_level:
-            applicant_label = EDUCATION_LEVELS.get(applicant_level, f"Level {applicant_level}")
-            minimum_label   = EDUCATION_LEVELS.get(min_edu_level,   f"Level {min_edu_level}")
             reasons.append(
                 f"Education level below minimum — "
-                f"applicant: {applicant_label}, "
-                f"required: {minimum_label}."
+                f"applicant: {EDUCATION_LEVEL_LABELS.get(applicant_level, f'Level {applicant_level}')}, "
+                f"required: {EDUCATION_LEVEL_LABELS.get(min_edu_level, f'Level {min_edu_level}')}."
             )
-
-        # Check 3b: academic cert uploaded for claimed highest qualification
-        if criteria.get('require_academic_cert', True) and academic:
-            highest = _highest_qualification_entry(academic)
-            if highest and not highest.get('certificate_uploaded'):
-                reasons.append(
-                    f"Academic certificate not uploaded for claimed "
-                    f"qualification: {highest.get('qualification_name', 'highest qualification')}."
-                )
+        # NOTE: snapshot_academic has no certificate_uploaded field.
+        # Academic cert check is SKIPPED — committee verifies documents manually.
 
     # ── Check 4: Professional qualification ───────────────────────────────
     if criteria.get('require_professional_qualification', False):
-        professional = snapshot.get('professional', [])
         if not professional:
             flags.append(
-                "No professional qualification found — "
-                "committee should verify if applicable qualification "
-                "is embedded in CV."
+                "No professional qualification found — committee should verify "
+                "if applicable qualification is embedded in CV."
             )
 
     # ── Check 5: Work experience ───────────────────────────────────────────
     min_exp_years = criteria.get('minimum_experience_years', 0)
     if min_exp_years > 0:
-        work_history = snapshot.get('work', [])
-        total_months = _calculate_experience_months(work_history)
-        total_years  = total_months / 12
-
-        if total_years < min_exp_years:
+        total_months = _calculate_experience_months(work)
+        if total_months / 12 < min_exp_years:
             reasons.append(
                 f"Insufficient work experience — "
                 f"required: {min_exp_years} year(s), "
-                f"submitted: {total_months // 12} year(s) "
-                f"{total_months % 12} month(s)."
+                f"submitted: {total_months // 12} year(s) {total_months % 12} month(s)."
             )
 
     # ── Check 6: Salary affordability ─────────────────────────────────────
     if criteria.get('check_salary', False):
-        salary_max     = criteria.get('salary_max', 0)
-        expected       = snapshot.get('additional', {}).get('expected_salary') or \
-                         snapshot.get('expected_salary')
+        salary_max = criteria.get('salary_max', 0)
+        expected   = additional.get('expected_salary')
         if salary_max > 0 and expected:
             try:
-                expected_int = int(expected)
-                if expected_int > salary_max:
+                if int(expected) > salary_max:
                     flags.append(
-                        f"Expected salary KES {expected_int:,} exceeds "
-                        f"vacancy maximum KES {salary_max:,} — "
-                        f"committee review recommended."
+                        f"Expected salary KES {int(expected):,} exceeds "
+                        f"vacancy maximum KES {salary_max:,} — committee review recommended."
                     )
             except (ValueError, TypeError):
                 pass
 
-    # ── Check 7: Availability / notice period ─────────────────────────────
+    # ── Check 7: Availability ──────────────────────────────────────────────
     if criteria.get('check_availability', False):
         max_notice_days = criteria.get('maximum_notice_days', 30)
-        availability    = (snapshot.get('additional', {}).get('availability') or
-                           snapshot.get('availability', ''))
-
+        availability    = additional.get('availability', '')
         if availability == 'Not Available':
             reasons.append("Applicant marked as 'Not Available'.")
         elif availability:
@@ -194,80 +153,78 @@ def run_screening(snapshot: dict, criteria: dict,
             if notice_days > max_notice_days:
                 flags.append(
                     f"Notice period '{availability}' ({notice_days} days) "
-                    f"exceeds vacancy maximum of {max_notice_days} days — "
-                    f"committee review recommended."
+                    f"exceeds vacancy maximum of {max_notice_days} days."
                 )
 
-    passed = len(reasons) == 0
-    return {'passed': passed, 'reasons': reasons, 'flags': flags}
+    return {'passed': len(reasons) == 0, 'reasons': reasons, 'flags': flags}
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _highest_education_level(academic: list) -> int | None:
-    """
-    Return the highest EducationLevel.level integer from snapshot_academic.
-    Returns None if list is empty.
-
-    snapshot_academic entry expected shape:
-    {
-        'education_level_id': 7,      # EducationLevel.pk
-        'education_level_name': '...',
-        'education_level_value': 7,   # EducationLevel.rank  ← use this
-        'institution': '...',
-        'qualification_name': '...',
-        'certificate_uploaded': True,
-    }
-    """
+def _highest_education_rank(academic: list) -> int | None:
+    """Convert education_level strings to ranks and return the highest."""
     if not academic:
         return None
-    levels = []
+    ranks = []
     for entry in academic:
-        lvl = entry.get('education_level_value') or entry.get('rank')
-        if lvl is not None:
-            levels.append(int(lvl))
-    return max(levels) if levels else None
+        rank = _edu_string_to_rank(entry.get('education_level', ''))
+        if rank is not None:
+            ranks.append(rank)
+    return max(ranks) if ranks else None
 
 
-def _highest_qualification_entry(academic: list) -> dict | None:
-    """Return the academic entry with the highest education level."""
-    if not academic:
+def _edu_string_to_rank(level_str: str) -> int | None:
+    """Map education level string to rank integer via EDUCATION_LEVEL_RANKS."""
+    if not level_str:
         return None
-    return max(
-        academic,
-        key=lambda e: int(e.get('education_level_value') or e.get('level') or 0),
-        default=None
-    )
+    normalised = level_str.strip().lower()
+    if normalised in EDUCATION_LEVEL_RANKS:
+        return EDUCATION_LEVEL_RANKS[normalised]
+    # Partial match for variations like "Bachelor's Degree (Hons)"
+    for key, rank in EDUCATION_LEVEL_RANKS.items():
+        if key in normalised:
+            return rank
+    return None
 
 
 def _calculate_experience_months(work: list) -> int:
     """
-    Sum total work experience in months from snapshot_work entries.
-    Uses start_date and end_date strings (YYYY-MM-DD).
-    If end_date is blank/null, uses today (still employed).
-    Overlapping roles are NOT deduplicated — gross total.
+    Sum total months from snapshot_work.
+    Uses start_display / end_display (e.g. 'March 2008', 'Present').
     """
     today = date.today()
     total = 0
     for job in work:
         try:
-            start_str = job.get('start_date') or ''
-            end_str   = job.get('end_date')   or ''
+            start_str = job.get('start_display') or job.get('start_date') or ''
+            end_str   = job.get('end_display')   or job.get('end_date')   or ''
 
             if not start_str:
                 continue
 
-            start = datetime.strptime(start_str[:10], '%Y-%m-%d').date()
-            end   = datetime.strptime(end_str[:10],   '%Y-%m-%d').date() \
-                    if end_str else today
-
-            if end < start:
+            start = _parse_date(start_str)
+            if start is None:
                 continue
 
-            diff   = relativedelta(end, start)
-            months = diff.years * 12 + diff.months
-            total += months
+            if end_str and end_str.lower() not in ('present', '—', ''):
+                end = _parse_date(end_str) or today
+            else:
+                end = today
+
+            if end >= start:
+                total += max((end.year - start.year) * 12 + (end.month - start.month), 0)
         except (ValueError, TypeError):
             continue
-
     return total
+
+
+def _parse_date(s: str) -> date | None:
+    """Parse ISO or human-readable date string."""
+    if not s:
+        return None
+    for fmt in ('%Y-%m-%d', '%Y-%m', '%B %Y', '%b %Y', '%Y'):
+        try:
+            return datetime.strptime(s.strip(), fmt).date()
+        except ValueError:
+            continue
+    return None
