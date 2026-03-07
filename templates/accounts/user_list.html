@@ -14,16 +14,17 @@
 
         <li class="list-group-item d-flex justify-content-between align-items-center">
             <!-- Display email and comma-separated list of roles -->
-            <div>
-                {{ user.email }} - 
-                {% if user.role.exists %}
-                    {% for r in user.role.all %}
-                        {% comment %} {{ r.name }}{% if not forloop.last %}, {% endif %} {% endcomment %}
-                    {% endfor %}
-                {% else %}
-                    No roles
-                {% endif %}
-            </div>
+        <div>
+            {{ user.email }} -
+
+            {% if user.role.all %}
+                {% for r in user.role.all %}
+                    {{ r.name }}{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            {% else %}
+                No roles
+            {% endif %}
+        </div>
 
             <!-- Action buttons -->
             <div class="ms-2">

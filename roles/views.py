@@ -45,9 +45,11 @@ def create_role(request):
         role.permissions.set(permission_ids)
         return redirect("role_list")
 
-    return render(request, "role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "permissions": permissions
-    })
+    }
+    return render(request, "role_form.html", context)
     
     
 @superadmin_required
@@ -63,10 +65,12 @@ def assign_role(request, user_id):
 
         return redirect("user_list")
 
-    return render(request, "assign_role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "user": user,
         "roles": roles
-    })
+    }
+    return render(request, "assign_role_form.html", context)
     
 
 
@@ -76,9 +80,12 @@ def assign_role(request, user_id):
 
 def permission_list(request):
     permissions = Permission.objects.all()
-    return render(request, "roles/permission_list.html", {
+    
+    context = {
+        "page": "Admin Dashboard",
         "permissions": permissions
-    })
+    }
+    return render(request, "roles/permission_list.html", context)
     
 @superadmin_required
 def permission_create(request):
@@ -90,7 +97,10 @@ def permission_create(request):
         )
         return redirect("permission_list")
 
-    return render(request, "roles/permission_form.html")
+    context = {
+        "page": "Admin Dashboard",
+    }
+    return render(request, "roles/permission_form.html", context)
 
 @superadmin_required
 def permission_update(request, pk):
@@ -103,9 +113,11 @@ def permission_update(request, pk):
         permission.save()
         return redirect("permission_list")
 
-    return render(request, "roles/permission_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "permission": permission
-    })
+    }
+    return render(request, "roles/permission_form.html", context)
     
 @superadmin_required  
 def permission_delete(request, pk):
@@ -114,17 +126,23 @@ def permission_delete(request, pk):
     if request.method == "POST":
         permission.delete()
         return redirect("permission_list")
-
-    return render(request, "roles/permission_confirm_delete.html", {
+        
+    context = {
+        "page": "Admin Dashboard",
         "permission": permission
-    })
+    }
+    return render(request, "roles/permission_confirm_delete.html", context)
 
 @superadmin_required  
 def role_list(request):
     roles = Role.objects.prefetch_related("permissions").all()
-    return render(request, "roles/role_list.html", {
+    
+    
+    context = {
+        "page": "Admin Dashboard",
         "roles": roles
-    })
+    }
+    return render(request, "roles/role_list.html", context)
     
 @superadmin_required   
 def role_create(request):
@@ -141,9 +159,11 @@ def role_create(request):
 
         return redirect("role_list")
 
-    return render(request, "roles/role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "permissions": permissions
-    })
+    }
+    return render(request, "roles/role_form.html", context)
 
 @superadmin_required
 def role_update(request, pk):
@@ -160,10 +180,12 @@ def role_update(request, pk):
 
         return redirect("role_list")
 
-    return render(request, "roles/role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "role": role,
         "permissions": permissions
-    })
+    }
+    return render(request, "roles/role_form.html", context)
 
 @superadmin_required  
 def role_delete(request, pk):
@@ -173,7 +195,10 @@ def role_delete(request, pk):
         role.delete()
         return redirect("role_list")
 
-    return render(request, "roles/role_confirm_delete.html", {
+
+    context = {
+        "page": "Admin Dashboard",
         "role": role
-    })
+    }
+    return render(request, "roles/role_confirm_delete.html", context)
     

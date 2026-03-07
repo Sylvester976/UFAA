@@ -25,22 +25,22 @@ logger = logging.getLogger(__name__)
 
 def landing(request):
     today = timezone.now().date()
-
+    
     # Close vacancies whose end date is today
     Vacancy.objects.filter(
         status='open',
         end_date=today
     ).update(status='closed')
-
+        
     # Only show vacancies that start today or later
     vacancies = Vacancy.objects.filter(
         status='open',
         start_date__gte=today
     ).order_by('start_date')  # earliest starting first
-
+        
     # Retrieve all vacancies for rendering
     # vacancies = Vacancy.objects.all()
-
+                
     # # External users should NOT see internal vacancies
     # # To be moved to the jobseeker dashboard
     # if request.user.role == 'applicant':
@@ -169,6 +169,7 @@ def save_user_account(request):
     password         = request.POST.get('password', '')
     confirm_password = request.POST.get('confirm_password', '')
 
+    # Basic validations
     if not all([name, email, idno, password, confirm_password]):
         return JsonResponse({'status': 'error', 'message': 'All fields are required.'})
 
@@ -238,7 +239,7 @@ def signin(request):
 
     if not user.is_active:
         return JsonResponse({'status': 'error',
-                             'message': 'Your account has been deactivated/Not activated. Please contact UFAA or check your inbox for the verification link to activate if still valid.'})
+                             'message': 'Your account has been deactivated. Please contact HR.'})
 
     if not user.check_password(password):
         return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
@@ -263,11 +264,15 @@ def logout_view(request):
     if user_id:
         try:
             user = JobseekerAccount.objects.get(id=user_id)
+            # Clear session key in DB
             user.session_key = None
-            user.save(update_fields=['session_key'])
+            user.save()
         except JobseekerAccount.DoesNotExist:
             pass
-    request.session.flush()
+
+    # Delete session completely
+    request.session.flush()  # clears all session data
+
     return redirect('/login/')
 
 
@@ -503,7 +508,8 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def redirect_dashboard(request):
-    priority = ["admin", "hod_hr", "committee", "panelist", "ceo"]
+
+    priority = ["admin", "hod_hr",  "committee", "panelist", "ceo"]
 
     roles = request.user.role.values_list("name", flat=True)
 
@@ -522,7 +528,7 @@ def redirect_dashboard(request):
 
             if role == "panelist":
                 return redirect("panelist_dashboard")
-
+            
             if role == "admin":
                 return redirect("admin_dashboard")
 
@@ -536,7 +542,6 @@ from django.views import View
 from django.contrib import messages
 from accounts.models import User
 from core.mixins import SuperAdminRequiredMixin
-
 
 class UserCreateView(SuperAdminRequiredMixin, View):
     template_name = "accounts/user_form.html"
@@ -592,16 +597,21 @@ class UserCreateView(SuperAdminRequiredMixin, View):
             #     designation=designation,
             #     date_of_appointment=date_of_appointment
             # )
-
+            
             messages.success(request, "Internal user created successfully")
             return redirect("user_list")
 
         except Exception as e:
             messages.error(request, f"Error creating user: {e}")
             return render(request, self.template_name)
+        
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page"] = "Admin Dashboard"
+        return context
 
 
-class UserListView(SuperAdminRequiredMixin, ListView):
+class UserListView(ListView):
     model = User
     template_name = "accounts/user_list.html"
     context_object_name = "users"
@@ -609,6 +619,11 @@ class UserListView(SuperAdminRequiredMixin, ListView):
     def get_queryset(self):
         # Only internal users (user_type=2)
         return User.objects.filter(user_type=2)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page"] = "Admin Dashboard"
+        return context
 
 
 def assign_role(request, user_id):
@@ -623,11 +638,13 @@ def assign_role(request, user_id):
 
     assigned_role_ids = user.role.values_list("id", flat=True)
 
-    return render(request, "roles/assign_role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "user": user,
         "roles": roles,
         "assigned_role_ids": assigned_role_ids
-    })
+    }
+    return render(request, "roles/assign_role_form.html", context)
 
 
 class UserUpdateView(SuperAdminRequiredMixin, View):
@@ -635,7 +652,13 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
 
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        return render(request, self.template_name, {"user_obj": user})
+
+        context = {
+            "user_obj": user,
+            "page": "Admin Dashboard",
+        }
+
+        return render(request, self.template_name, context)
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -653,24 +676,32 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
 
         messages.success(request, "User updated successfully")
         return redirect("user_list")
-
+    
 
 class UserDeleteView(SuperAdminRequiredMixin, View):
+
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        return render(request, "accounts/confirm_delete.html", {"user": user})
+
+        context = {
+            "user": user,
+            "page": "Admin Dashboard",
+        }
+
+        return render(request, "accounts/confirm_delete.html", context)
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         user.delete()
+
         messages.success(request, "User deleted successfully")
         return redirect("user_list")
-
 
 # Sample permissions view for reference
 @permission_required("view_dashboard")
 def protected_dashboard(request):
     return HttpResponse("Welcome to protected dashboard")
+
 
 
 @permission_required("view_dashboard")
