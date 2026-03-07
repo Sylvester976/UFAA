@@ -11,7 +11,6 @@ from config import settings
 from .models import JobseekerAccount
 from django.contrib.auth import authenticate, login
 
-
 from django.views import View
 from django.contrib import messages
 from django.shortcuts import get_object_or_404
@@ -339,6 +338,11 @@ class UserCreateView(SuperAdminRequiredMixin, View):
             messages.error(request, f"Error creating user: {e}")
             return render(request, self.template_name)
         
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page"] = "Admin Dashboard"
+        return context
+        
         
 class UserListView(SuperAdminRequiredMixin, ListView):
     model = User
@@ -348,6 +352,11 @@ class UserListView(SuperAdminRequiredMixin, ListView):
     def get_queryset(self):
         # Only internal users (user_type=2)
         return User.objects.filter(user_type=2)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["page"] = "Admin Dashboard"
+        return context
 
 
 def assign_role(request, user_id):
@@ -362,18 +371,26 @@ def assign_role(request, user_id):
 
     assigned_role_ids = user.role.values_list("id", flat=True)
 
-    return render(request, "roles/assign_role_form.html", {
+    context = {
+        "page": "Admin Dashboard",
         "user": user,
         "roles": roles,
         "assigned_role_ids": assigned_role_ids
-    })
+    }
+    return render(request, "roles/assign_role_form.html", context)
 
 class UserUpdateView(SuperAdminRequiredMixin, View):
     template_name = "accounts/user_form.html"
 
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        return render(request, self.template_name, {"user_obj": user})
+
+        context = {
+            "user_obj": user,
+            "page": "Admin Dashboard",
+        }
+
+        return render(request, self.template_name, context)
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
@@ -391,16 +408,23 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
 
         messages.success(request, "User updated successfully")
         return redirect("user_list")
-    
 
 class UserDeleteView(SuperAdminRequiredMixin, View):
+
     def get(self, request, pk):
         user = get_object_or_404(User, pk=pk)
-        return render(request, "accounts/confirm_delete.html", {"user": user})
+
+        context = {
+            "user": user,
+            "page": "Admin Dashboard",
+        }
+
+        return render(request, "accounts/confirm_delete.html", context)
 
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
         user.delete()
+
         messages.success(request, "User deleted successfully")
         return redirect("user_list")
 
