@@ -634,73 +634,72 @@
                 </h6>
             </li> 
                 
-                        <!-- Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
-                            href="{% url 'hr_dashboard' %}">
-                                <i class="fas fa-chart-pie me-2"></i>
-                                Dashboard
-                            </a>
-                        </li>
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
+                    href="{% url 'hr_dashboard' %}">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <!-- Published Vacancies -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
+                    href="{% url 'vacancy_list' %}">
+                        <i class="fas fa-bullhorn me-2"></i>
+                        Published Vacancies
+                    </a>
+                </li>
 
 
-                        <!-- Published Vacancies -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
-                            href="{% url 'vacancy_list' %}">
-                                <i class="fas fa-bullhorn me-2"></i>
-                                Published Vacancies
-                            </a>
-                        </li>
+                <!-- Longlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
+                    href="{% url 'vacancy_longlisting' %}">
+                        <i class="fas fa-list-ul me-2"></i>
+                        Longlists
+                    </a>
+                </li>
 
 
-                        <!-- Longlists -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
-                            href="{% url 'vacancy_longlisting' %}">
-                                <i class="fas fa-list-ul me-2"></i>
-                                Longlists
-                            </a>
-                        </li>
+                <!-- Shortlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
+                    href="{% url 'vacancy_shortlisting' %}">
+                        <i class="fas fa-user-check me-2"></i>
+                        <span class="nav-link-text ms-1">Shortlists</span>
+                    </a>
+                </li>
 
 
-                        <!-- Shortlists -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
-                            href="{% url 'vacancy_shortlisting' %}">
-                                <i class="fas fa-user-check me-2"></i>
-                                <span class="nav-link-text ms-1">Shortlists</span>
-                            </a>
-                        </li>
+                <!-- Interviews -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
+                    href="{% url 'vacancy_interviews' %}">
+                        <i class="fas fa-comments me-2"></i>
+                        <span class="nav-link-text ms-1">Interviews</span>
+                    </a>
+                </li>
 
 
-                        <!-- Interviews -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
-                            href="{% url 'vacancy_interviews' %}">
-                                <i class="fas fa-comments me-2"></i>
-                                <span class="nav-link-text ms-1">Interviews</span>
-                            </a>
-                        </li>
+                <!-- Appointments -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                    href="{% url 'vacancy_appointments' %}">
+                        <i class="fas fa-user-tie me-2"></i>
+                        <span class="nav-link-text ms-1">Appointments</span>
+                    </a>
+                </li>
 
-
-                        <!-- Appointments -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
-                            href="{% url 'vacancy_appointments' %}">
-                                <i class="fas fa-user-tie me-2"></i>
-                                <span class="nav-link-text ms-1">Appointments</span>
-                            </a>
-                        </li>
-
-                        <!-- Interview Templates -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
-                            href="{% url 'template_list' %}">
-                                <i class="fas fa-file-alt me-1"></i>
-                                <span class="nav-link-text ms-1">Interview Templates</span>
-                            </a>
-                        </li>
+                <!-- Interview Templates -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
+                    href="{% url 'template_list' %}">
+                        <i class="fas fa-file-alt me-1"></i>
+                        <span class="nav-link-text ms-1">Interview Templates</span>
+                    </a>
+                </li>
 
                         
                 <!-- Manage Users -->
@@ -748,7 +747,7 @@
                 <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
                 href="{% url 'panelist_dashboard' %}">
                     <i class="fas fa-comments me-1"></i>
-                    <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
+                    <span class="nav-link-text ms-1">Panelist Dashboard</span>
                 </a>
             </li>
 
