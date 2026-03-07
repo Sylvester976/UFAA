@@ -15,7 +15,7 @@ from pathlib import Path
 from dotenv import load_dotenv
 from str2bool import str2bool
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -25,7 +25,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = 'django-insecure-l__2kx=tze&vg=t58=g#t=n)n-_%!8(a0(h98738n5o1-5z$xj'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -171,6 +171,7 @@ LOGGING = {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'django_requests.log',
+            # 'filename': '/var/www/html/UFAA/logs/django_requests.log',
         },
         'console': {
             'class': 'logging.StreamHandler',
