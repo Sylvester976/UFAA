@@ -7,6 +7,6 @@ class SuperAdminRequiredMixin:
             return HttpResponseForbidden("Authentication required")
 
         if not request.user.is_superadmin:
-            return HttpResponseForbidden("SuperAdmin access required")
+            return HttpResponseForbidden("System administrator access required")
 
         return super().dispatch(request, *args, **kwargs)
