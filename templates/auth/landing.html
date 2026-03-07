@@ -209,6 +209,13 @@
 
 <!-- Bootstrap JS -->
 <script src="{% static 'assets/npm/js/bootstrap.bundle.min.js' %}"></script>
-
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 </body>
 </html>

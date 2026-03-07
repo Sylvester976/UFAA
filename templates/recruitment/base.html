@@ -969,6 +969,14 @@
 
 <!-- Autologout -->
 <script src="{% static 'assets/js/autologout.js' %}"></script>
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 
 <script>
     window.appConfig = {
