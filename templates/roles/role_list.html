@@ -1,52 +1,78 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Roles{% endblock %}
+
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid py-2">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Roles</h4>
-        <a href="{% url 'role_create' %}" class="btn btn-primary">
-            + Create Role
-        </a>
-    </div>
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
+Roles
+</h4>
+<p>Manage system roles</p>
+</div>
 
-    <ul class="list-group border-0">
+<div class="gold-divider"></div>
 
-        {% for role in roles %}
-        <li class="list-group-item mb-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+<div class="card dash-card brand-card">
 
-            <div>
-                <strong>{{ role.name }}</strong>
-            </div>
+<div class="card-header d-flex justify-content-between align-items-center">
 
-            <div class="d-flex align-items-center gap-3">
+<h6 class="mb-0">Role List</h6>
 
-                <a href="{% url 'role_update' role.pk %}"
-                   class="btn btn-sm btn-outline-secondary">
-                    Edit
-                </a>
+<a href="{% url 'role_create' %}" class="btn btn-brand btn-sm">
+<i class="fas fa-plus me-1"></i>
+Create Role
+</a>
 
-                <form action="{% url 'role_delete' role.pk %}"
-                      method="POST"
-                      class="m-0">
-                    {% csrf_token %}
-                    <button type="submit"
-                            class="btn btn-sm btn-link text-danger p-0"
-                            onclick="return confirm('Are you sure you want to delete this role?');">
-                        Delete
-                    </button>
-                </form>
+</div>
 
-            </div>
+<div class="card-body">
 
-        </li>
-        {% empty %}
-        <li class="list-group-item text-muted">
-            No roles found.
-        </li>
-        {% endfor %}
+<ul class="list-group">
 
-    </ul>
+{% for role in roles %}
+
+<li class="list-group-item d-flex justify-content-between align-items-center">
+
+<strong>{{ role.name }}</strong>
+
+<div class="table-actions">
+
+<a href="{% url 'role_update' role.pk %}"
+class="btn btn-sm btn-outline-brand">
+Edit
+</a>
+
+<form action="{% url 'role_delete' role.pk %}"
+method="POST">
+{% csrf_token %}
+
+<button class="btn btn-sm btn-danger"
+onclick="return confirm('Delete this role?');">
+Delete
+</button>
+
+</form>
+
+</div>
+
+</li>
+
+{% empty %}
+
+<li class="list-group-item text-muted">
+No roles found.
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+
+</div>
 
 </div>
 

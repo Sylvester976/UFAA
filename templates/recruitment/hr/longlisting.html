@@ -1,37 +1,103 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends 'recruitment/base.html' %}
 {% block title %}Longlisting{% endblock %}
 
 {% block content %}
-<h3 class="mb-4">Vacancies – Longlisting Stage</h3>
 
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>Title</th>
-            <th>Reference</th>
-            <th>Type</th>
-            <th>Closing Date</th>
-            <th>Status</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for vacancy in vacancies %}
-        <tr>
-            <td>{{ vacancy.title }}</td>
-            <td>{{ vacancy.reference_number }}</td>
-            <td>{{ vacancy.get_vacancy_type_display }}</td>
-            <td>{{ vacancy.end_date }}</td>
-            <td>
-                <span class="badge bg-warning">
-                    {{ vacancy.get_status_display }}
-                </span>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">No vacancies in longlisting stage.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+<div class="container-fluid py-2">
+
+    <!-- HEADER BANNER -->
+    <div class="dash-header-banner mb-2">
+        <div>
+            <h4>
+                <i class="fas fa-list me-2" style="color:var(--gold-dark);"></i>
+                Longlisting Stage
+            </h4>
+            <p>Vacancies currently undergoing candidate longlisting</p>
+        </div>
+    </div>
+
+    <div class="gold-divider"></div>
+
+    <!-- VACANCIES TABLE -->
+    <div class="card dash-card brand-card">
+
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-clipboard-list me-2" style="opacity:0.5;"></i>
+                Vacancies – Longlisting Stage
+            </h6>
+            <p>Applications are being reviewed for longlisting</p>
+        </div>
+
+        <div class="vacancy-table-container card p-0">
+
+            <table class="table brand-table mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Vacancy</th>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Closing Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for vacancy in vacancies %}
+
+                <tr>
+
+                    <td class="vacancy-title-cell">
+                        <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
+                        {{ vacancy.title }}
+                    </td>
+
+                    <td class="vacancy-ref-cell">
+                        {{ vacancy.reference_number }}
+                    </td>
+
+                    <td>
+                        {{ vacancy.get_vacancy_type_display }}
+                    </td>
+
+                    <td style="font-size:0.82rem;color:#67748e;">
+                        <i class="fas fa-calendar-times me-1" style="color:#dc3545;font-size:.7rem;"></i>
+                        {{ vacancy.end_date|date:"d M Y" }}
+                    </td>
+
+                    <td>
+                        <span class="vacancy-status vacancy-status-longlisting">
+                            {{ vacancy.get_status_display }}
+                        </span>
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="5">
+
+                        <div class="empty-state">
+                            <i class="fas fa-list"></i>
+                            <p>No vacancies currently in the longlisting stage.</p>
+                        </div>
+
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}
