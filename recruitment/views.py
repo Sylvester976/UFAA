@@ -1408,6 +1408,20 @@ def panelist_dashboard(request):
 
 
 @login_required
+@role_required(['admin'])
+def admin_dashboard(request):
+
+    context = {
+        "page": "Admin Dashboard"
+    }
+
+    return render(
+        request,
+        "recruitment/admin/dashboard.html",
+        context
+    )
+
+@login_required
 @role_required(['officer'])
 def officer_dashboard(request):
     context = {

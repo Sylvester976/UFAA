@@ -172,6 +172,23 @@ def logout(request):
     return redirect('/login/')
 
 
+def dashboard_logout(request):
+    if request.user.is_authenticated:
+        user = request.user
+
+        # Clear stored session key
+        user.session_key = None
+        user.save(update_fields=["session_key"])
+
+    # Clear Django auth session
+    logout(request)
+
+    # Completely flush session data
+    request.session.flush()
+
+    return redirect('/staff/')
+
+
 def verify_email(request, token):
     try:
         user = JobseekerAccount.objects.get(verification_token=token)
@@ -226,7 +243,7 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def redirect_dashboard(request):
 
-    priority = ["hod_hr",  "committee", "panelist", "ceo"]
+    priority = ["admin", "hod_hr",  "committee", "panelist", "ceo"]
 
     roles = request.user.role.values_list("name", flat=True)
 
@@ -245,9 +262,12 @@ def redirect_dashboard(request):
 
             if role == "panelist":
                 return redirect("panelist_dashboard")
+            
+            if role == "admin":
+                return redirect("admin_dashboard")
 
     # fallback if user has no role
-    return redirect("hr_dashboard")
+    return redirect("login")
     # return HttpResponse("User has no role")
 
 
