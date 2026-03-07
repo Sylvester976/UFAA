@@ -39,7 +39,7 @@ def role_required(allowed_roles):
 
 
             # Superuser bypass
-            if user.is_superuser:
+            if user.is_superadmin:
                 return view_func(request, *args, **kwargs)
             
             # No roles assigned
