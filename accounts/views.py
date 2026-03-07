@@ -1,8 +1,10 @@
 import uuid
 import logging
+import requests
 from datetime import timedelta, date
 
 from django.contrib.auth import authenticate, login, logout
+from django.core.cache import cache
 from django.contrib.auth.hashers import make_password
 from django.contrib.sessions.models import Session
 from django.core.mail import EmailMultiAlternatives
@@ -23,6 +25,7 @@ from .models import JobseekerAccount
 
 from django.utils.decorators import method_decorator
 from core.decorators import role_required
+
 
 logger = logging.getLogger(__name__)
 
@@ -59,17 +62,16 @@ def index(request):
 # ── Email helpers ──────────────────────────────────────────────────────────
 
 def _send_branded_email(to_email, subject, message_html):
-    """Send using the UFAA email_base.html template."""
     try:
         html_body = render_to_string('emails/email_base.html', {
             'subject':         subject,
             'message_content': message_html,
-            'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+            'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
             'year':            date.today().year,
         })
         msg = EmailMultiAlternatives(
             subject    = subject,
-            body       = subject,   # plain-text fallback
+            body       = subject,
             from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
             to         = [to_email],
         )
@@ -82,31 +84,24 @@ def _send_branded_email(to_email, subject, message_html):
 
 
 def _send_verification_email(user, request):
-    verify_url = request.build_absolute_uri(
-        f'/verify-email/{user.verification_token}/'
-    )
+    verify_url = request.build_absolute_uri(f'/verify-email/{user.verification_token}/')
     subject = "Verify Your UFAA Job Portal Account"
     html = f"""
     <p>Dear <strong>{user.name}</strong>,</p>
     <p>Thank you for registering on the <strong>UFAA Job Portal</strong>.
     Please verify your email address to activate your account.</p>
-
     <div style="text-align:center; margin:2rem 0;">
-        <a href="{verify_url}"
-           style="display:inline-block; background:#C39545; color:#1D255B;
+        <a href="{verify_url}" style="display:inline-block; background:#C39545; color:#1D255B;
                   padding:0.75rem 2.25rem; border-radius:0.5rem; font-weight:700;
                   font-size:0.95rem; text-decoration:none; letter-spacing:0.03em;">
             ✔&nbsp; Verify Email Address
         </a>
     </div>
-
     <p style="font-size:0.82rem; color:#6b7280;">
         If the button does not work, copy and paste this link into your browser:<br>
         <a href="{verify_url}" style="color:#1D255B; word-break:break-all;">{verify_url}</a>
     </p>
-    <p style="font-size:0.82rem; color:#6b7280;">
-        If you did not create this account, please ignore this email.
-    </p>
+    <p style="font-size:0.82rem; color:#6b7280;">If you did not create this account, please ignore this email.</p>
     <p style="margin-top:24px; color:#6b7280; font-size:13px;">
         Yours sincerely,<br>
         <strong style="color:#1D255B;">Human Resources &amp; Administration</strong><br>
@@ -117,31 +112,24 @@ def _send_verification_email(user, request):
 
 
 def _send_password_reset_email(user, request):
-    reset_url = request.build_absolute_uri(
-        f'/reset-password/{user.password_reset_token}/'
-    )
+    reset_url = request.build_absolute_uri(f'/reset-password/{user.password_reset_token}/')
     subject = "Reset Your UFAA Job Portal Password"
     html = f"""
     <p>Dear <strong>{user.name}</strong>,</p>
     <p>We received a request to reset the password for your UFAA Job Portal account.</p>
-
     <div style="text-align:center; margin:2rem 0;">
-        <a href="{reset_url}"
-           style="display:inline-block; background:#1D255B; color:#F9E6A1;
+        <a href="{reset_url}" style="display:inline-block; background:#1D255B; color:#F9E6A1;
                   padding:0.75rem 2.25rem; border-radius:0.5rem; font-weight:700;
                   font-size:0.95rem; text-decoration:none; letter-spacing:0.03em;">
             🔒&nbsp; Reset My Password
         </a>
     </div>
-
     <p style="font-size:0.82rem; color:#6b7280;">
-        This link expires in <strong>30 minutes</strong>. If the button does not work,
-        copy and paste this link into your browser:<br>
+        This link expires in <strong>30 minutes</strong>.<br>
         <a href="{reset_url}" style="color:#1D255B; word-break:break-all;">{reset_url}</a>
     </p>
     <p style="font-size:0.82rem; color:#6b7280;">
         If you did not request a password reset, please ignore this email.
-        Your password will not be changed.
     </p>
     <p style="margin-top:24px; color:#6b7280; font-size:13px;">
         Yours sincerely,<br>
@@ -150,6 +138,42 @@ def _send_password_reset_email(user, request):
     </p>
     """
     return _send_branded_email(user.email, subject, html)
+
+
+def _send_lockout_email(user, request):
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', request.META.get('REMOTE_ADDR', 'unknown'))
+    subject = "UFAA Job Portal — Account Temporarily Locked"
+    html = f"""
+    <p>Dear <strong>{user.name}</strong>,</p>
+    <p>We detected <strong>multiple failed login attempts</strong> on your UFAA Job Portal
+    account and have <strong>temporarily locked it for 15 minutes</strong> as a security precaution.</p>
+    <table style="width:100%;border-collapse:collapse;margin:1rem 0;font-size:0.85rem;">
+        <tr style="border-bottom:1px solid #f0f2f8;">
+            <td style="padding:0.5rem;color:#8392ab;font-weight:600;">Time</td>
+            <td style="padding:0.5rem;color:#344767;">{timezone.now().strftime('%d %b %Y, %H:%M UTC')}</td>
+        </tr>
+        <tr>
+            <td style="padding:0.5rem;color:#8392ab;font-weight:600;">IP Address</td>
+            <td style="padding:0.5rem;color:#344767;">{ip}</td>
+        </tr>
+    </table>
+    <p>If this was <strong>you</strong>, please wait 15 minutes and try again.<br>
+    If this was <strong>not you</strong>, reset your password immediately.</p>
+    <div style="text-align:center; margin:1.5rem 0;">
+        <a href="{request.build_absolute_uri('/forgot-password/')}"
+           style="display:inline-block; background:#C39545; color:#1D255B;
+                  padding:0.65rem 1.75rem; border-radius:0.5rem; font-weight:700;
+                  font-size:0.88rem; text-decoration:none;">
+            Reset My Password
+        </a>
+    </div>
+    <p style="margin-top:24px; color:#6b7280; font-size:13px;">
+        Yours sincerely,<br>
+        <strong style="color:#1D255B;">Human Resources &amp; Administration</strong><br>
+        Unclaimed Financial Assets Authority (UFAA)
+    </p>
+    """
+    _send_branded_email(user.email, subject, html)
 
 
 # ── Auth Views ─────────────────────────────────────────────────────────────
@@ -172,7 +196,6 @@ def save_user_account(request):
     password         = request.POST.get('password', '')
     confirm_password = request.POST.get('confirm_password', '')
 
-    # Basic validations
     if not all([name, email, idno, password, confirm_password]):
         return JsonResponse({'status': 'error', 'message': 'All fields are required.'})
 
@@ -186,7 +209,7 @@ def save_user_account(request):
             id_no        = idno,
             password     = make_password(password),
             account_type = 1,
-            is_active    = False,   # activated only after email verification
+            is_active    = False,
             is_verified  = False,
         )
 
@@ -215,48 +238,114 @@ def save_user_account(request):
         return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
 
 
+# ── Rate limiting + reCAPTCHA ──────────────────────────────────────────────
+MAX_ATTEMPTS = getattr(settings, 'LOGIN_MAX_ATTEMPTS', 5)
+LOCKOUT_SECS = getattr(settings, 'LOGIN_LOCKOUT_SECS', 900)   # 15 minutes
+
+
+def _attempts_key(idno):
+    return f'login_attempts_{idno}'
+
+def _locked_key(idno):
+    return f'login_locked_{idno}'
+
+def is_locked_out(idno):
+    return bool(cache.get(_locked_key(idno)))
+
+def get_lockout_remaining(idno):
+    val = cache.get(f'login_locked_ttl_{idno}')
+    return val if val else LOCKOUT_SECS
+
+def record_failed_attempt(idno):
+    key      = _attempts_key(idno)
+    attempts = cache.get(key, 0) + 1
+    if attempts >= MAX_ATTEMPTS:
+        cache.set(_locked_key(idno), True, timeout=LOCKOUT_SECS)
+        cache.set(f'login_locked_ttl_{idno}', LOCKOUT_SECS, timeout=LOCKOUT_SECS)
+        cache.delete(key)
+        return {'locked': True, 'attempts': attempts}
+    else:
+        cache.set(key, attempts, timeout=LOCKOUT_SECS * 2)
+        return {'locked': False, 'attempts': attempts}
+
+def reset_attempts(idno):
+    cache.delete(_attempts_key(idno))
+    cache.delete(_locked_key(idno))
+    cache.delete(f'login_locked_ttl_{idno}')
+
+
+
+# ── signin view ────────────────────────────────────────────────────────────
+
 def signin(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-    idno     = request.POST.get('idno', '').strip()
-    password = request.POST.get('password', '')
+    idno            = request.POST.get('idno', '').strip()
+    password        = request.POST.get('password', '')
 
     if not idno or not password:
         return JsonResponse({'status': 'error',
                              'message': 'ID number and password are required.'})
 
+    # ── Rate limit: lockout check ──────────────────────────────────────────
+    if is_locked_out(idno):
+        remaining = get_lockout_remaining(idno)
+        mins = remaining // 60
+        return JsonResponse({
+            'status':  'locked',
+            'message': (f'Account temporarily locked due to too many failed attempts. '
+                        f'Try again in {mins} minute(s) or reset your password.'),
+        })
+
+    # ── 3. Fetch user ─────────────────────────────────────────────────────
     try:
         user = JobseekerAccount.objects.get(id_no=idno)
     except JobseekerAccount.DoesNotExist:
+        record_failed_attempt(idno)
         return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
 
-    # Unverified — offer resend
+    # ── 4. Unverified ─────────────────────────────────────────────────────
     if not user.is_verified:
         return JsonResponse({
             'status':  'unverified',
-            'message': ('Your email address has not been verified. '
-                        'Please check your inbox for the verification link.'),
+            'message': 'Your email address has not been verified. Please check your inbox.',
             'email':   user.email,
         })
 
+    # ── 5. Inactive ───────────────────────────────────────────────────────
     if not user.is_active:
         return JsonResponse({'status': 'error',
                              'message': 'Your account has been deactivated. Please contact HR.'})
 
+    # ── 6. Password ───────────────────────────────────────────────────────
     if not user.check_password(password):
-        return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
+        result = record_failed_attempt(idno)
+        if result['locked']:
+            _send_lockout_email(user, request)
+            return JsonResponse({
+                'status':  'locked',
+                'message': ('Too many failed attempts. Account locked for 15 minutes. '
+                            'A notification has been sent to your registered email.'),
+            })
+        remaining = MAX_ATTEMPTS - result['attempts']
+        return JsonResponse({
+            'status':  'error',
+            'message': f'Invalid credentials. {remaining} attempt(s) remaining before lockout.',
+        })
 
-    # Single-session enforcement
+    # ── 7. Success ────────────────────────────────────────────────────────
+    reset_attempts(idno)
+
     if user.session_key:
         try:
             Session.objects.get(session_key=user.session_key).delete()
         except Session.DoesNotExist:
             pass
 
-    request.session['user_id']      = user.id
-    user.last_login                  = timezone.now()
-    user.session_key                 = request.session.session_key
+    request.session['user_id'] = user.id
+    user.last_login             = timezone.now()
+    user.session_key            = request.session.session_key
     user.save(update_fields=['last_login', 'session_key'])
 
     return JsonResponse({'status': 'success', 'message': 'Login successful.'})
@@ -267,15 +356,11 @@ def logout_view(request):
     if user_id:
         try:
             user = JobseekerAccount.objects.get(id=user_id)
-            # Clear session key in DB
             user.session_key = None
-            user.save()
+            user.save(update_fields=['session_key'])
         except JobseekerAccount.DoesNotExist:
             pass
-
-    # Delete session completely
-    request.session.flush()  # clears all session data
-
+    request.session.flush()
     return redirect('/login/')
 
 
@@ -292,19 +377,17 @@ def verify_email(request, token):
 
     if user.is_verified and user.is_active:
         return render(request, 'auth/verification_result.html', {
-            'success': True,
-            'already': True,
+            'success': True, 'already': True,
             'message': 'Your account is already verified. Please log in.',
         })
 
     user.is_active          = True
     user.is_verified        = True
-    user.verification_token = uuid.uuid4()   # rotate so link can't be reused
+    user.verification_token = uuid.uuid4()
     user.save(update_fields=['is_active', 'is_verified', 'verification_token'])
 
     return render(request, 'auth/verification_result.html', {
-        'success': True,
-        'already': False,
+        'success': True, 'already': False,
         'message': 'Your email has been verified. Your account is now active.',
     })
 
@@ -318,13 +401,11 @@ def resend_verification(request):
         return JsonResponse({'status': 'error', 'message': 'Email or ID number is required.'})
 
     try:
-        # Accept email or ID number
         if '@' in identifier:
             user = JobseekerAccount.objects.get(email=identifier)
         else:
             user = JobseekerAccount.objects.get(id_no=identifier)
     except JobseekerAccount.DoesNotExist:
-        # Don't reveal whether account exists
         return JsonResponse({'status': 'success',
                              'message': 'If an account exists, a verification link has been sent.'})
 
@@ -336,8 +417,7 @@ def resend_verification(request):
     return JsonResponse({
         'status':  'success' if sent else 'error',
         'message': ('Verification email sent. Please check your inbox.'
-                    if sent else
-                    'Failed to send email. Please try again later.'),
+                    if sent else 'Failed to send email. Please try again later.'),
     })
 
 
@@ -348,7 +428,6 @@ def forgot_password(request):
 
 
 def send_reset_link(request):
-    """POST: { identifier } — email or ID number."""
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
@@ -371,7 +450,6 @@ def send_reset_link(request):
                              'message': ('Your account is not yet verified. '
                                          'Please verify your email before resetting your password.')})
 
-    # Generate fresh reset token + expiry
     user.password_reset_token      = uuid.uuid4()
     user.password_reset_expires_at = timezone.now() + timedelta(minutes=30)
     user.save(update_fields=['password_reset_token', 'password_reset_expires_at'])
@@ -380,31 +458,29 @@ def send_reset_link(request):
     return JsonResponse({
         'status':  'success' if sent else 'error',
         'message': ('Password reset link sent. Please check your inbox.'
-                    if sent else
-                    'Failed to send email. Please try again.'),
+                    if sent else 'Failed to send email. Please try again.'),
     })
 
 
 def reset_password(request, token):
-    """GET: show reset form if token is valid."""
     try:
         user = JobseekerAccount.objects.get(password_reset_token=token)
     except JobseekerAccount.DoesNotExist:
-        return render(request, 'auth/reset_password.html',
-                      {'valid': False,
-                       'error': 'This reset link is invalid or has already been used.'})
+        return render(request, 'auth/reset_password.html', {
+            'valid': False,
+            'error': 'This reset link is invalid or has already been used.',
+        })
 
     if timezone.now() > user.password_reset_expires_at:
-        return render(request, 'auth/reset_password.html',
-                      {'valid': False,
-                       'error': 'This reset link has expired. Please request a new one.'})
+        return render(request, 'auth/reset_password.html', {
+            'valid': False,
+            'error': 'This reset link has expired. Please request a new one.',
+        })
 
-    return render(request, 'auth/reset_password.html',
-                  {'valid': True, 'token': str(token)})
+    return render(request, 'auth/reset_password.html', {'valid': True, 'token': str(token)})
 
 
 def do_reset_password(request):
-    """POST: { token, password, confirm_password }"""
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
@@ -432,12 +508,13 @@ def do_reset_password(request):
                              'message': 'This reset link has expired. Please request a new one.'})
 
     user.password                  = make_password(password)
-    user.password_reset_token      = uuid.uuid4()   # invalidate immediately
-    user.password_reset_expires_at = timezone.now() # expire immediately
+    user.password_reset_token      = uuid.uuid4()
+    user.password_reset_expires_at = timezone.now()
     user.save(update_fields=['password', 'password_reset_token', 'password_reset_expires_at'])
 
     return JsonResponse({'status': 'success',
                          'message': 'Password reset successfully. You can now log in.'})
+
 
 
 def dashboard_logout(request):
@@ -455,17 +532,6 @@ def dashboard_logout(request):
     request.session.flush()
 
     return redirect('/staff/')
-
-
-def verify_email(request, token):
-    try:
-        user = JobseekerAccount.objects.get(verification_token=token)
-        user.is_verified = True
-        user.is_active = True
-        user.save()
-        return HttpResponse("Email verified successfully. You can now login.")
-    except JobseekerAccount.DoesNotExist:
-        return HttpResponse("Invalid or expired verification link.")
 
 
 def send_verification_email(request, user):
