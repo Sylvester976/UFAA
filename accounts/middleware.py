@@ -94,6 +94,15 @@ class LoginRequiredMiddleware:
         'hr_longlist_bulk',
         'hr_longlist_recall',
         'hr_longlist_finalise',
+        'vacancy_shortlisting',
+        'hr_appoint_committee',
+        'hr_committee_progress',
+        'hr_committee_staff_search',
+        'hr_committee_notify',
+        'hr_committee_remove',
+        'hr_committee_add',
+
+
 
 
         # interview templates
