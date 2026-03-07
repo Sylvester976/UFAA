@@ -1,42 +1,13 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends "recruitment/base.html" %}
 
 {% block sidebar %}
 
-<li class="nav-item mt-3">
-    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-        Administration
-    </h6>
-</li>
 
 <li class="nav-item">
     <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
        href="{% url 'admin_dashboard' %}">
         <i class="fas fa-cogs me-2"></i>
         Admin Dashboard
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}"
-       href="{% url 'user_list' %}">
-        <i class="fas fa-users-cog me-2"></i>
-        Manage Users
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link {% if request.resolver_match.url_name == 'role_list' %}active{% endif %}"
-       href="{% url 'role_list' %}">
-        <i class="fas fa-user-shield me-2"></i>
-        Manage Roles
-    </a>
-</li>
-
-<li class="nav-item">
-    <a class="nav-link {% if request.resolver_match.url_name == 'permission_list' %}active{% endif %}"
-       href="{% url 'permission_list' %}">
-        <i class="fas fa-key me-2"></i>
-        Manage Permissions
     </a>
 </li>
 
