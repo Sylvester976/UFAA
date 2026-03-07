@@ -217,6 +217,15 @@ Logout
 <script src="{% static 'assets/js/core/popper.min.js' %}"></script>
 <script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
 <script src="{% static 'assets/js/soft-ui-dashboard.min.js' %}"></script>
+<!-- SiennaAccessibility-->
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 
 </body>
 </html>
