@@ -1401,10 +1401,14 @@ def panelist_dashboard(request):
         panelist=request.user
     ).select_related('vacancy')
 
-    return render(request, 'recruitment/panelist/dashboard.html', {
+
+    context = {
+        'page':      'Panelist Dashboard',
         'vacancies': vacancies,
         'assignments': assignments
-    })
+    }
+
+    return render(request, 'recruitment/panelist/dashboard.html', context)
 
 
 @login_required
@@ -2223,10 +2227,13 @@ def shortlisting_dashboard(request):
     vacancies = Vacancy.objects.filter(
         shortlisting_committee__members=request.user
     )
-
-    return render(request, 'recruitment/committee/dashboard.html', {
+    
+    context = {
+        'page':      'Committee Dashboard',
         'vacancies': vacancies
-    })
+    }
+
+    return render(request, 'recruitment/committee/dashboard.html', context)
     
     
 @login_required
@@ -2659,6 +2666,7 @@ def ceo_dashboard(request):
     vacancies = Vacancy.objects.filter(status='ceo_review')
 
     context = {
+        'page':      'CEO Dashboard',
         'pending_approval_count': vacancies.count(),
         'vacancies': vacancies
     }
