@@ -714,18 +714,48 @@
 
 
             
-            {% if 'committee' in user_roles %}
+            
+            {% if 'admin' in user_roles %}
 
             <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Committee
+                </h6>
+            </li>   
+            <!-- Committee Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
+                href="{% url 'shortlisting_dashboard' %}">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="nav-link-text ms-1">Committee Dashboard</span>
+                </a>
+            </li>
+            {% endif %}
+
+
+            {% if 'admin' in user_roles %}
+            
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Panelist
+                </h6>
+            </li>   
+                 
+            <!-- Panelist / Interview Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
+                href="{% url 'panelist_dashboard' %}">
+                    <i class="fas fa-comments me-1"></i>
+                    <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
+                </a>
+            </li>
 
             {% endif %}
 
 
-            
-
-
-
-            {% if 'ceo' in user_roles %}
+            {% if 'admin' in user_roles %}
                 
             <!-- System User Dashboards -->
             <li class="nav-item mt-3">
@@ -733,16 +763,26 @@
                     CEO
                 </h6>
             </li>  
-                        <!-- CEO Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
-                            href="{% url 'ceo_dashboard' %}">
-                                <i class="fas fa-chart-line me-1"></i>
-                                <span class="nav-link-text ms-1">CEO Dashboard</span>
-                            </a>
-                        </li>
+            <!-- CEO Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
+                href="{% url 'ceo_dashboard' %}">
+                    <i class="fas fa-chart-line me-1"></i>
+                    <span class="nav-link-text ms-1">CEO Dashboard</span>
+                </a>
+            </li>
             {% endif %}
 
+            
+            {% if 'admin' in user_roles %}
+            <!-- Administration -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    System Admin
+                </h6>
+            </li>
+
+            {% endif %}
             
             {% block sidebar %}
             <!-- Each dashboard will inject its sidebar here -->
