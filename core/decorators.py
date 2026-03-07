@@ -15,7 +15,7 @@ def superadmin_required(view_func):
             return HttpResponseForbidden("Authentication required")
 
         if not getattr(request.user, "is_superadmin", False):
-            return HttpResponseForbidden("SuperAdmin access required")
+            return HttpResponseForbidden("System Administrator access required")
 
         return view_func(request, *args, **kwargs)
 

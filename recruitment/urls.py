@@ -166,12 +166,6 @@ urlpatterns = [
     path('sections/<int:pk>/delete/', views.section_delete, name='section_delete'),
 
     path(
-        "panelist/dashboard/",
-        views.panelist_dashboard,
-        name="panelist_dashboard"
-    ),
-
-    path(
         "panel/respond/<int:assignment_id>/",
         views.respond_panel_assignment,
         name="respond_panel_assignment"

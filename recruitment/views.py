@@ -3689,6 +3689,8 @@ from recruitment.models import InterviewTemplate, InterviewSection
 # LIST TEMPLATES
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def template_list(request):
 
     templates = InterviewTemplate.objects.all()
@@ -3704,6 +3706,8 @@ def template_list(request):
 # CREATE TEMPLATE
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def template_create(request):
 
     if request.method == "POST":
@@ -3732,6 +3736,8 @@ def template_create(request):
 # TEMPLATE DETAIL
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def template_detail(request, pk):
 
     template = get_object_or_404(InterviewTemplate, pk=pk)
@@ -3750,6 +3756,8 @@ def template_detail(request, pk):
 # EDIT TEMPLATE
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def template_edit(request, pk):
 
     template = get_object_or_404(InterviewTemplate, pk=pk)
@@ -3775,6 +3783,8 @@ def template_edit(request, pk):
 # DELETE TEMPLATE
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def template_delete(request, pk):
 
     template = get_object_or_404(InterviewTemplate, pk=pk)
@@ -3790,6 +3800,8 @@ def template_delete(request, pk):
 # CREATE SECTION
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def section_create(request, template_id):
 
     template = get_object_or_404(InterviewTemplate, id=template_id)
@@ -3824,6 +3836,8 @@ def section_create(request, template_id):
 # EDIT SECTION
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def section_edit(request, pk):
 
     section = get_object_or_404(InterviewSection, pk=pk)
@@ -3853,6 +3867,8 @@ def section_edit(request, pk):
 # DELETE SECTION
 # --------------------------------
 
+@login_required
+@role_required(['hod_hr'])
 def section_delete(request, pk):
 
     section = get_object_or_404(InterviewSection, pk=pk)
