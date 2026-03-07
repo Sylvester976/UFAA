@@ -21,6 +21,9 @@ from recruitment.models import Vacancy
 from roles.models import Role
 from .models import JobseekerAccount
 
+from django.utils.decorators import method_decorator
+from core.decorators import role_required
+
 logger = logging.getLogger(__name__)
 
 def landing(request):
@@ -611,6 +614,7 @@ class UserCreateView(SuperAdminRequiredMixin, View):
         return context
 
 
+@method_decorator(role_required(["admin", "hod_hr"]), name="dispatch")
 class UserListView(ListView):
     model = User
     template_name = "accounts/user_list.html"
@@ -663,6 +667,9 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
     def post(self, request, pk):
         user = get_object_or_404(User, pk=pk)
 
+        # Preserve current roles
+        existing_roles = user.role.all()
+
         user.email = request.POST.get("email")
         user.first_name = request.POST.get("first_name")
         user.last_name = request.POST.get("last_name")
@@ -673,6 +680,9 @@ class UserUpdateView(SuperAdminRequiredMixin, View):
             user.set_password(password)
 
         user.save()
+
+        # Re-assign roles to ensure they remain unchanged
+        user.role.set(existing_roles)
 
         messages.success(request, "User updated successfully")
         return redirect("user_list")
