@@ -2,169 +2,165 @@
 {% load static %}
 
 {% block content %}
-    <div class="login-wrapper">
-        <div class="login-card card">
+<div class="login-wrapper">
+    <div class="login-card card">
 
-            <div class="card-header pb-0 bg-transparent text-center">
-                <a href="#" class="logo d-flex justify-content-center align-items-center">
-                    <img alt="Court of Arms"
-                         src="{% static 'assets/img/logos/court_of_arms.png' %}"
-                         style="max-height:80px;">
-                    <div class="logo-divider mx-2"></div>
-                    <img alt="UFAA Logo"
-                         src="{% static 'assets/img/logos/ufaa_logo.png' %}"
-                         style="max-height:80px;">
-                </a>
-                <h3 class="font-weight-bolder" style="color:#003366;">Welcome</h3>
-                <p class="mb-0">Enter your ID Number and Password to sign in</p>
-            </div>
+        <div class="card-header pb-0 bg-transparent text-center">
+            <a href="#" class="logo d-flex justify-content-center align-items-center">
+                <img alt="Court of Arms"
+                     src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                     style="max-height:80px;">
+                <div class="logo-divider mx-2"></div>
+                <img alt="UFAA Logo"
+                     src="{% static 'assets/img/logos/ufaa_logo.png' %}"
+                     style="max-height:80px;">
+            </a>
+            <h3 class="font-weight-bolder" style="color:#003366;">Welcome</h3>
+            <p class="mb-0">Enter your ID Number and Password to sign in</p>
+        </div>
 
-            <div class="card-body">
-                <form role="form" id="loginform" method="post">
-                    {% csrf_token %}
+        <div class="card-body">
+            <form role="form" id="loginform" method="post">
+                {% csrf_token %}
 
-                    <label>Identification Number</label>
-                    <div class="mb-3">
-                        <input aria-label="Identification Number" type="number"
-                               class="form-control" name="idno"
-                               placeholder="Identification Number">
-                    </div>
+                <label for="idnoInput">Identification Number</label>
+                <div class="mb-3">
+                    <input id="idnoInput" type="number" class="form-control"
+                           name="idno" placeholder="Identification Number"
+                           autocomplete="username">
+                </div>
 
-                    <label>Password</label>
-                    <div class="mb-1 input-group">
-                        <input aria-label="Password" class="form-control"
-                               id="passwordInput" placeholder="Password"
-                               type="password" name="password">
-                        <span class="input-group-text" onclick="togglePassword()"
-                              title="Toggle password visibility">
-                        <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
-                             viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+                <label for="passwordInput">Password</label>
+                <div class="mb-1 input-group">
+                    <input class="form-control" id="passwordInput"
+                           placeholder="Password" type="password"
+                           name="password" autocomplete="current-password">
+                    <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
+                        <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2" viewBox="0 0 24 24" width="18">
                             <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
-                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                                  stroke-linecap="round" stroke-linejoin="round"/>
+                            <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
-                        <svg fill="none" height="18" id="eyeOffIcon" stroke="#999" stroke-width="2"
-                             style="display:none;" viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18"
-                                  stroke-linecap="round" stroke-linejoin="round"/>
+                        <svg fill="none" height="18" id="eyeOffIcon" stroke="#999" stroke-width="2" style="display:none;" viewBox="0 0 24 24" width="18">
+                            <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
                     </span>
-                    </div>
+                </div>
 
-                    <!-- Forgot password link -->
-                    <div class="text-end mb-3 mt-1">
-                        <a href="{% url 'forgot_password' %}"
-                           style="font-size:0.78rem; color:#003366; font-weight:600; text-decoration:none;">
-                            Forgot password?
-                        </a>
-                    </div>
+                <div class="text-end mb-3 mt-1">
+                    <a href="{% url 'forgot_password' %}"
+                       style="font-size:0.78rem;color:#003366;font-weight:600;text-decoration:none;">
+                        Forgot password?
+                    </a>
+                </div>
 
-                    <div class="text-center">
-                        <button class="btn w-100 mb-0"
-                                style="background-color:#003366; border-color:#003366; color:white;"
-                                type="submit">
-                            Sign In
-                        </button>
-                    </div>
-                </form>
-            </div>
+                <div class="text-center">
+                    <button class="btn w-100 mb-0"
+                            style="background-color:#003366;border-color:#003366;color:white;"
+                            type="submit">
+                        Sign In
+                    </button>
+                </div>
+            </form>
+        </div>
 
-            <div class="card-footer text-center pt-0 px-lg-2 px-1">
-                <p class="mb-0 text-sm mx-auto">
-                    Don't have an account?
-                    <a class="fw-bold" style="color:#003366;" href="{% url 'signup' %}">Sign up</a>
-                </p>
-            </div>
+        <div class="card-footer text-center pt-0 px-lg-2 px-1">
+            <p class="mb-0 text-sm mx-auto">
+                Don't have an account?
+                <a class="fw-bold" style="color:#003366;" href="{% url 'signup' %}">Sign up</a>
+            </p>
         </div>
     </div>
+</div>
 
-    <script>
-        document.getElementById('loginform').addEventListener('submit', function (e) {
-            e.preventDefault();
+<script>
+document.getElementById('loginform').addEventListener('submit', function (e) {
+    e.preventDefault();
 
+    Swal.fire({
+        title: 'Signing in…', text: 'Please wait.',
+        allowOutsideClick: false, showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+    });
+
+    const form     = e.target;
+    const formData = new FormData(form);
+
+    fetch("{% url 'authlogin' %}", {
+        method: 'POST',
+        headers: { 'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        Swal.close();
+
+        if (data.status === 'success') {
             Swal.fire({
-                title: 'Signing in…', text: 'Please wait.',
-                allowOutsideClick: false, showConfirmButton: false,
-                didOpen: () => Swal.showLoading()
-            });
+                icon: 'success', title: 'Login Successful',
+                text: data.message, showConfirmButton: false, timer: 1200,
+            }).then(() => { window.location.href = "/recruitment/dashboard/"; });
 
-            const form = e.target;
-            const formData = new FormData(form);
-
-            fetch("{% url 'authlogin' %}", {
-                method: 'POST',
-                headers: {'X-CSRFToken': form.querySelector('[name="csrfmiddlewaretoken"]').value},
-                body: formData
-            })
-                .then(r => r.json())
-                .then(data => {
-                    Swal.close();
-
-                    if (data.status === 'success') {
-                        Swal.fire({
-                            icon: 'success', title: 'Login Successful',
-                            text: data.message, showConfirmButton: false,
-                            timer: 1200
-                        }).then(() => {
-                            window.location.href = "/recruitment/dashboard/";
-                        });
-
-                    } else if (data.status === 'unverified') {
-                        // Offer inline resend
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'Email Not Verified',
-                            html: `<p style="font-size:0.85rem;color:#67748e;">${data.message}</p>
+        } else if (data.status === 'unverified') {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Email Not Verified',
+                html: `<p style="font-size:0.85rem;color:#67748e;">${data.message}</p>
                        <div style="margin-top:1rem;text-align:left;">
-                         <label style="font-size:0.75rem;font-weight:600;color:#344767;">
-                           Resend to:
-                         </label>
+                         <label style="font-size:0.75rem;font-weight:600;color:#344767;">Resend to:</label>
                          <input id="swalResendEmail" type="email" value="${data.email || ''}"
                                 style="width:100%;border:1px solid #e0e4ef;border-radius:0.4rem;
                                        padding:0.4rem 0.75rem;font-size:0.82rem;margin-top:0.3rem;">
                        </div>`,
-                            showCancelButton: true,
-                            confirmButtonColor: '#003366',
-                            cancelButtonColor: '#adb5bd',
-                            confirmButtonText: 'Resend Verification Email',
-                            cancelButtonText: 'Dismiss',
-                            showLoaderOnConfirm: true,
-                            preConfirm: () => {
-                                const email = document.getElementById('swalResendEmail').value.trim();
-                                if (!email) {
-                                    Swal.showValidationMessage('Please enter your email.');
-                                    return false;
-                                }
-                                const fd = new FormData();
-                                fd.append('identifier', email);
-                                fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
-                                return fetch("{% url 'resend_verification' %}", {method: 'POST', body: fd})
-                                    .then(r => r.json());
-                            },
-                            allowOutsideClick: () => !Swal.isLoading(),
-                        }).then(result => {
-                            if (result.isConfirmed && result.value) {
-                                const d = result.value;
-                                Swal.fire({
-                                    icon: d.status === 'success' ? 'success' : 'error',
-                                    title: d.status === 'success' ? 'Email Sent' : 'Error',
-                                    text: d.message, confirmButtonColor: '#003366',
-                                });
-                            }
-                        });
+                showCancelButton: true,
+                confirmButtonColor: '#003366', cancelButtonColor: '#adb5bd',
+                confirmButtonText: 'Resend Verification Email',
+                cancelButtonText: 'Dismiss',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const email = document.getElementById('swalResendEmail').value.trim();
+                    if (!email) { Swal.showValidationMessage('Please enter your email.'); return false; }
+                    const fd = new FormData();
+                    fd.append('identifier', email);
+                    fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                    return fetch("{% url 'resend_verification' %}", { method:'POST', body:fd })
+                           .then(r => r.json());
+                },
+                allowOutsideClick: () => !Swal.isLoading(),
+            }).then(result => {
+                if (result.isConfirmed && result.value) {
+                    const d = result.value;
+                    Swal.fire({
+                        icon: d.status === 'success' ? 'success' : 'error',
+                        title: d.status === 'success' ? 'Email Sent' : 'Error',
+                        text: d.message, confirmButtonColor: '#003366',
+                    });
+                }
+            });
 
-                    } else {
-                        Swal.fire({
-                            icon: 'error', title: 'Login Failed',
-                            text: data.message || 'Authentication failed. Please try again.',
-                            confirmButtonColor: '#003366',
-                        });
-                    }
-                })
-                .catch(() => {
-                    Swal.close();
-                    Swal.fire({icon: 'error', title: 'Error', text: 'A system error occurred. Please try again.'});
-                });
-        });
-    </script>
+        } else if (data.status === 'locked') {
+            Swal.fire({
+                icon: 'error', title: 'Account Locked',
+                html: `<p style="font-size:0.85rem;color:#67748e;">${data.message}</p>`,
+                confirmButtonColor: '#003366',
+                confirmButtonText: 'Reset Password',
+            }).then(r => {
+                if (r.isConfirmed) window.location.href = "{% url 'forgot_password' %}";
+            });
+
+        } else {
+            Swal.fire({
+                icon: 'error', title: 'Login Failed',
+                text: data.message || 'Authentication failed. Please try again.',
+                confirmButtonColor: '#003366',
+            });
+        }
+    })
+    .catch(() => {
+        Swal.close();
+        Swal.fire({ icon:'error', title:'Error',
+                    text:'A system error occurred. Please try again.',
+                    confirmButtonColor:'#003366' });
+    });
+});
+</script>
 {% endblock %}
