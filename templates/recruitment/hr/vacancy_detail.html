@@ -89,7 +89,13 @@
                                 Applications are currently open.
                             </div>
 
-                            <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+                            {% comment %} <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+                               class="btn btn-primary"
+                               style="background-color: #003366; border-color: #003366;">
+                                <i class="bi bi-send"></i> Apply Now
+                            </a> {% endcomment %}
+                            
+                            <a href="{% url 'login_page' vacancy.id %}"
                                class="btn btn-primary"
                                style="background-color: #003366; border-color: #003366;">
                                 <i class="bi bi-send"></i> Apply Now
