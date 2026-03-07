@@ -13,7 +13,11 @@ class LoginRequiredMiddleware:
         'send_verification_email',
         'vacancy_detail',
         'login',
+        'forgot_password',
         'dashboard_logout',
+        'send_reset_link',
+        'reset_password',
+        'do_reset_password',
 
         # dashboards
         'hr_dashboard',

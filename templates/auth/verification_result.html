@@ -1,0 +1,80 @@
+{% extends 'layout/auth_layout.html' %}
+{% load static %}
+
+{% block content %}
+    <div class="login-wrapper">
+        <div class="login-card card" style="text-align:center; padding:2.5rem 2rem;">
+
+            <div class="mb-3">
+                <a href="#" class="logo d-flex justify-content-center align-items-center mb-3">
+                    <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                         style="max-height:70px;">
+                    <div class="logo-divider mx-2"></div>
+                    <img alt="UFAA Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height:70px;">
+                </a>
+            </div>
+
+            {% if success %}
+                <div style="width:64px;height:64px;border-radius:50%;background:#d4f5e2;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#1a7a45" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"/>
+                    </svg>
+                </div>
+                <h5 style="color:#1D255B;font-weight:700;margin-bottom:0.5rem;">{% if already %}Already
+                    Verified{% else %}Email Verified!{% endif %}</h5>
+                <p style="color:#6b7280;font-size:0.88rem;margin-bottom:1.75rem;">{{ message }}</p>
+                <a href="{% url 'index' %}"
+                   style="display:inline-block;background:#1D255B;color:#F9E6A1;padding:0.6rem 2rem;border-radius:0.5rem;font-weight:700;font-size:0.88rem;text-decoration:none;">Go
+                    to Login</a>
+
+            {% else %}
+                <div style="width:64px;height:64px;border-radius:50%;background:#fde8e8;display:flex;align-items:center;justify-content:center;margin:0 auto 1.25rem;">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5"
+                         stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"/>
+                        <line x1="6" y1="6" x2="18" y2="18"/>
+                    </svg>
+                </div>
+                <h5 style="color:#1D255B;font-weight:700;margin-bottom:0.5rem;">Verification Failed</h5>
+                <p style="color:#6b7280;font-size:0.88rem;margin-bottom:1.5rem;">{{ message }}</p>
+                <p style="font-size:0.8rem;color:#8392ab;margin-bottom:0.5rem;">Need a new verification link? Enter your
+                    email or ID number.</p>
+                <div style="display:flex;gap:0.5rem;justify-content:center;max-width:320px;margin:0 auto;">
+                    <input type="text" id="resendId" placeholder="Email or ID number"
+                           style="flex:1;border:1px solid #e0e4ef;border-radius:0.4rem;padding:0.4rem 0.75rem;font-size:0.8rem;outline:none;">
+                    <button onclick="resendLink()"
+                            style="background:#C39545;color:#1D255B;border:none;border-radius:0.4rem;padding:0.4rem 1rem;font-weight:700;font-size:0.8rem;cursor:pointer;white-space:nowrap;">
+                        Resend
+                    </button>
+                </div>
+                <div id="resendMsg" style="font-size:0.76rem;margin-top:0.5rem;min-height:1rem;"></div>
+                <div style="margin-top:1.5rem;"><a href="{% url 'index' %}" style="font-size:0.8rem;color:#8392ab;">Back
+                    to Login</a></div>
+            {% endif %}
+        </div>
+    </div>
+    {% if not success %}
+        <script>
+            function resendLink() {
+                const identifier = document.getElementById('resendId').value.trim();
+                const msg = document.getElementById('resendMsg');
+                if (!identifier) {
+                    msg.style.color = '#c0392b';
+                    msg.textContent = 'Please enter your email or ID number.';
+                    return;
+                }
+                msg.style.color = '#8392ab';
+                msg.textContent = 'Sending…';
+                const fd = new FormData();
+                fd.append('identifier', identifier);
+                fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                fetch("{% url 'resend_verification' %}", {method: 'POST', body: fd})
+                    .then(r => r.json()).then(data => {
+                    msg.style.color = data.status === 'success' ? '#1a7a45' : '#c0392b';
+                    msg.textContent = data.message;
+                });
+            }
+        </script>
+    {% endif %}
+{% endblock %}
