@@ -1,33 +1,96 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Finalize Appointment{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-    <h3>Finalize Appointment</h3>
-
-    <div class="card p-3">
-        <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
-        <p><strong>Approved Candidate:</strong> 
-            {{ selected_application.applicant.name }} |
-            {{ selected_application.applicant.id_no }} |           
-            {{ selected_application.applicant.email }} 
-        </p>
+    <!-- HEADER BANNER -->
+    <div class="dash-header-banner mb-2">
+        <div>
+            <h4>
+                <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
+                Finalize Appointment
+            </h4>
+            <p>Confirm appointment of the selected candidate</p>
+        </div>
     </div>
 
-    <div class="alert alert-danger mt-3">
-        This action is FINAL.
-        All other candidates will be marked as rejected.
-    </div>
+    <div class="gold-divider"></div>
 
-    <form method="POST">
-        {% csrf_token %}
-        <button type="submit" class="btn btn-success">
-            Appoint Candidate
-        </button>
-        <a href="{% url 'hr_dashboard' %}" class="btn btn-secondary">
-            Cancel
-        </a>
-    </form>
+    <!-- CONFIRMATION CARD -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="card dash-card brand-card">
+
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-trophy me-2" style="opacity:.5;"></i>
+                        Appointment Confirmation
+                    </h6>
+                    <p>The top-ranked candidate will be appointed</p>
+                </div>
+
+                <div class="card-body">
+
+                    <p>
+                        <strong>Vacancy:</strong>
+                        <span class="vacancy-title-cell">
+                            {{ vacancy.title }}
+                        </span>
+                    </p>
+
+                    <hr>
+
+                    <p class="mb-1">
+                        <strong>Approved Candidate</strong>
+                    </p>
+
+                    <div class="border rounded p-3 mb-3">
+
+                        <h6 class="mb-1">
+                            <i class="fas fa-user me-2" style="opacity:.3;"></i>
+                            {{ selected_application.applicant.name }}
+                        </h6>
+
+                        <small class="text-muted">
+                            {{ selected_application.applicant.id_no }} |
+                            {{ selected_application.applicant.email }}
+                        </small>
+
+                    </div>
+
+                    <!-- WARNING -->
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Warning:</strong>
+                        This action is <strong>FINAL</strong>.  
+                        All other candidates will automatically be marked as rejected.
+                    </div>
+
+                    <!-- ACTION BUTTONS -->
+                    <form method="POST">
+                        {% csrf_token %}
+
+                        <button type="submit" class="btn btn-brand me-2">
+                            <i class="fas fa-check-circle me-1"></i>
+                            Appoint Candidate
+                        </button>
+
+                        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-brand">
+                            <i class="fas fa-times me-1"></i>
+                            Cancel
+                        </a>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
 
 </div>
 

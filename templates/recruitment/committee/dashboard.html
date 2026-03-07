@@ -1,45 +1,107 @@
 {% extends 'recruitment/committee/base_committee.html' %}
+{% block title %}Committee Dashboard{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-<h3>Shortlisting Committee Dashboard</h3>
+    <!-- Header -->
+    <div class="dash-header-banner mb-2">
+        <h4>
+            <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+            Shortlisting Committee Dashboard
+        </h4>
+        <p>Vacancies assigned for committee review</p>
+    </div>
 
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>Vacancy</th>
-            <th>Reference</th>
-            <th>Status</th>
-            <th>Action</th>
-        </tr>
-    </thead>
+    <div class="gold-divider"></div>
 
-    <tbody>
+    <div class="card dash-card brand-card">
 
-        {% for vacancy in vacancies %}
-        <tr>
-            <td>{{ vacancy.title }}</td>
-            <td>{{ vacancy.reference_number }}</td>
-            <td>{{ vacancy.status }}</td>
-            <td>
-                <a class="btn btn-primary btn-sm"
-                   href="{% url 'shortlist_candidates' vacancy.id %}">
-                   Start Shortlisting
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4" class="text-center">
-                No vacancies assigned for shortlisting.
-            </td>
-        </tr>
-        {% endfor %}
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-briefcase me-2" style="opacity:.5;"></i>
+                Assigned Vacancies
+            </h6>
+            <p>Vacancies requiring committee shortlisting</p>
+        </div>
 
-    </tbody>
-</table>
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table brand-table mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Vacancy</th>
+                            <th>Reference</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for vacancy in vacancies %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ vacancy.title }}</strong>
+                            </td>
+
+                            <td class="vacancy-ref">
+                                {{ vacancy.reference_number }}
+                            </td>
+
+                            <td>
+                                <span class="status-badge">
+                                    {{ vacancy.status|title }}
+                                </span>
+                            </td>
+
+                            <td class="text-center">
+
+                                <a class="btn btn-sm btn-brand"
+                                   href="{% url 'shortlist_candidates' vacancy.id %}">
+
+                                    <i class="fas fa-list-check me-1"></i>
+                                    Start Shortlisting
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+                            <td colspan="4">
+
+                                <div class="empty-state">
+
+                                    <i class="fas fa-folder-open"></i>
+
+                                    <p>No vacancies assigned for shortlisting.</p>
+
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 

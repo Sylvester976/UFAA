@@ -24,7 +24,7 @@
             <div class="card-body">
                 <form id="signupform" method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    <label>Name</label>
+                    <label>Full Name</label>
                     <div class="mb-3">
                         <input aria-label="Name" type="text" class="form-control" placeholder="Name" name="name"
                                aria-describedby="email-addon">
@@ -41,7 +41,7 @@
                         <small id="emailText" style="font-size: 0.78rem; font-weight: 600;"></small>
                     </div>
 
-                    <label>Identification Number</label>
+                    <label>National ID Number</label>
                     <div class="mb-3">
                         <input aria-label="Identification Number" type="number" class="form-control" name="idno"
                                placeholder="Identification Number">

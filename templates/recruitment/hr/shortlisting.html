@@ -1,37 +1,113 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Shortlisting{% endblock %}
+
 {% block content %}
 
-<h3 class="mb-4">Vacancies – Shortlisting Stage</h3>
+<div class="container-fluid py-2">
 
-<table class="table table-bordered table-hover">
-    <thead class="table-light">
-        <tr>
-            <th>Title</th>
-            <th>Reference</th>
-            <th>Type</th>
-            <th>Closing Date</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for vacancy in vacancies %}
-        <tr>
-            <td>{{ vacancy.title }}</td>
-            <td>{{ vacancy.reference_number }}</td>
-            <td>{{ vacancy.get_vacancy_type_display }}</td>
-            <td>{{ vacancy.end_date }}</td>
-            <td>
-                <a href="{% url 'appoint_panelists' vacancy.id %}" 
-                   class="btn btn-sm btn-primary">
-                    Appoint Panel
-                </a>
-            </td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="5" class="text-center">No vacancies in shortlisting stage.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+    <!-- HEADER BANNER -->
+    <div class="dash-header-banner mb-2">
+        <div>
+            <h4>
+                <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
+                Shortlisting Stage
+            </h4>
+            <p>Vacancies ready for shortlisting and panel appointment</p>
+        </div>
+    </div>
+
+    <div class="gold-divider"></div>
+
+    <!-- VACANCY TABLE -->
+    <div class="card dash-card brand-card">
+
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-list-ul me-2" style="opacity:0.5;"></i>
+                Vacancies – Shortlisting Stage
+            </h6>
+            <p>Appoint interview panelists for these vacancies</p>
+        </div>
+
+        <div class="vacancy-table-container card p-0">
+
+            <table class="table brand-table mb-0">
+
+                <thead>
+                    <tr>
+                        <th>Vacancy</th>
+                        <th>Reference</th>
+                        <th>Type</th>
+                        <th>Closing Date</th>
+                        <th class="text-end pe-3">Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+
+                {% for vacancy in vacancies %}
+
+                <tr>
+
+                    <td class="vacancy-title-cell">
+                        <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
+                        {{ vacancy.title }}
+                    </td>
+
+                    <td class="vacancy-ref-cell">
+                        {{ vacancy.reference_number }}
+                    </td>
+
+                    <td>
+                        {{ vacancy.get_vacancy_type_display }}
+                    </td>
+
+                    <td style="font-size:0.82rem;color:#67748e;">
+                        <i class="fas fa-calendar-times me-1" style="color:#dc3545;font-size:.7rem;"></i>
+                        {{ vacancy.end_date|date:"d M Y" }}
+                    </td>
+
+                    <td class="text-end pe-3">
+
+                        <div class="vacancy-actions">
+
+                            <a href="{% url 'appoint_panelists' vacancy.id %}"
+                               class="btn-shortlisting">
+
+                                <i class="fas fa-users-cog me-1"></i>
+                                Appoint Panel
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="5">
+
+                        <div class="empty-state">
+                            <i class="fas fa-user-check"></i>
+                            <p>No vacancies currently in the shortlisting stage.</p>
+                        </div>
+
+                    </td>
+                </tr>
+
+                {% endfor %}
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
 {% endblock %}

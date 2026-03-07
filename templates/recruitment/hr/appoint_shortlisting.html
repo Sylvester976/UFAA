@@ -1,83 +1,118 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Shortlisting Committee{% endblock %}
+
 {% block content %}
 
+<div class="container-fluid py-2">
 
-<div class="container mt-4">
-    <h4>Appoint Shortlisting Committee</h4>
-    <p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
+    <!-- HEADER -->
+    <div class="dash-header-banner mb-2">
 
-    <form method="POST">
-        {% csrf_token %}
-
-    {% for panelist in panelists %}
         <div>
-            <input type="checkbox"
-                   name="panelists"
-                   value="{{ panelist.id }}"
-                   class="panelist-checkbox"
-                   {% if panelist in assigned_panelists %}checked{% endif %}>
-            {{ panelist.first_name }} {{ panelist.last_name }}
-        </div>
-    {% endfor %}
+            <h4>
+                <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+                Appoint Shortlisting Committee
+            </h4>
 
-        <div class="card p-3">
-            {% for panelist in panelists %}
-                <div class="form-check">
-                    <input class="form-check-input"
-                           type="checkbox"
-                           name="panelists"
-                           value="{{ panelist.id }}">
-                    <label class="form-check-label">
-                        {{ panelist.first_name }} {{ panelist.last_name }} ({{ panelist.email }})
-                    </label>
+            <p>
+                Vacancy: <strong>{{ vacancy.title }}</strong>
+            </p>
+        </div>
+
+    </div>
+
+    <div class="gold-divider"></div>
+
+    <!-- FORM CARD -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="card dash-card brand-card">
+
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
+                        Select Committee Members
+                    </h6>
+                    <p>Choose one or more members for the shortlisting committee</p>
                 </div>
-            {% empty %}
-                <p>No panelists available.</p>
-            {% endfor %}
+
+                <div class="card-body">
+
+                    <form method="POST" id="committeeForm">
+                        {% csrf_token %}
+
+                        <div class="list-group mb-3">
+
+                            {% for panelist in panelists %}
+
+                            <label class="list-group-item d-flex align-items-center">
+
+                                <input class="form-check-input me-2 panelist-checkbox"
+                                       type="checkbox"
+                                       name="panelists"
+                                       value="{{ panelist.id }}"
+                                       {% if panelist in assigned_panelists %}checked{% endif %}>
+
+                                <span>
+                                    <i class="fas fa-user me-2" style="opacity:.3;"></i>
+                                    {{ panelist.first_name }} {{ panelist.last_name }}
+
+                                    <small class="text-muted">
+                                        ({{ panelist.email }})
+                                    </small>
+                                </span>
+
+                            </label>
+
+                            {% empty %}
+
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>No panelists available.</p>
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <button type="submit"
+                                id="submitBtn"
+                                class="btn btn-brand"
+                                disabled>
+
+                            <i class="fas fa-user-plus me-1"></i>
+                            Appoint Committee
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
         </div>
+    </div>
 
-        {% comment %} <button type="submit" class="btn btn-primary mt-3">
-            Appoint Committee
-        </button> {% endcomment %}
-        
-        <button type="submit" id="submitBtn" disabled>Appoint Committee</button>
-    </form>
-
-    <form method="POST">
-    {% csrf_token %}
-    <h4>Appoint Shortlisting Committee</h4>
-
-    {% for member in members %}
-        <div>
-            <input type="checkbox"
-                   name="members"
-                   value="{{ member.id }}">
-            {{ member.first_name }} {{ member.last_name }}
-        </div>
-    {% endfor %}
-
-    <button type="submit" class="btn btn-primary">
-        Save Committee
-    </button>
-</form>
 </div>
 
-
 <script>
-    const checkboxes = document.querySelectorAll('.panelist-checkbox');
-    const submitBtn = document.getElementById('submitBtn');
 
-    function toggleSubmit() {
-        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
-        submitBtn.disabled = !atLeastOneChecked;
-    }
+const checkboxes = document.querySelectorAll('.panelist-checkbox');
+const submitBtn = document.getElementById('submitBtn');
 
-    // Run on page load (in case some are pre-checked)
-    toggleSubmit();
+function toggleSubmit() {
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+    submitBtn.disabled = !atLeastOneChecked;
+}
 
-    // Listen for changes
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', toggleSubmit);
-    });
+toggleSubmit();
+
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', toggleSubmit);
+});
+
 </script>
+
 {% endblock %}

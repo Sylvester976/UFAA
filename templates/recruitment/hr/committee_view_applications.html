@@ -1,135 +1,160 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Applications{% endblock %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-    <h3>Applications for {{ vacancy.title }}</h3>
+    <!-- HEADER BANNER -->
+    <div class="dash-header-banner mb-2">
 
-    <p>
-        <strong>Reference:</strong> {{ vacancy.reference_number }} <br>
-        <strong>Status:</strong> {{ vacancy.status }}
-    </p>
+        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-    <hr>
+            <div>
+                <h4>
+                    <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+                    Vacancy Applications
+                </h4>
+                <p>
+                    {{ vacancy.title }} — {{ vacancy.reference_number }}
+                </p>
+            </div>
 
+            <div>
+                <span class="vacancy-status vacancy-status-open">
+                    {{ vacancy.status|title }}
+                </span>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="gold-divider"></div>
+
+
+    <!-- ACTIONS -->
     {% if vacancy.status == "closed" %}
-        <a href="{% url 'start_longlisting' vacancy.id %}"
-           class="btn btn-warning mb-3">
-            Start Longlisting
-        </a>
+        <div class="mb-3">
+            <a href="{% url 'start_longlisting' vacancy.id %}"
+               class="btn btn-brand">
+                <i class="fas fa-list me-1"></i>
+                Start Longlisting
+            </a>
+        </div>
     {% endif %}
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Applicant</th>
-                <th>Email</th>
-                <th>Applied At</th>
-                <th>Status</th>
-                <th>Profile</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for app in applications %}
-                <tr>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.get_full_name }}</td>
-                    <td>{{ app.applicant.email }}</td>
-                    <td>{{ app.applied_at }}</td>
-                    <td>{{ app.status }}</td>
-                    <td>
-                        <a href="{% url 'application_detail' app.id %}"
-                        class="btn btn-sm btn-outline-primary">
-                            View Profile
-                        </a>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="6">No applications received.</td>
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
 
-    {% if vacancy.status == "shortlisting" %}
-        <a href="{% url 'shortlist_candidates' vacancy.id %}"
-           class="btn btn-primary">
-            Proceed to Shortlisting
-        </a>
-    {% endif %}
+    <!-- APPLICATIONS TABLE -->
+    <div class="card dash-card brand-card">
 
-</div>
-{% endblock %}
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-user-tie me-2" style="opacity:.5;"></i>
+                Submitted Applications
+            </h6>
+            <p>Applicants who applied for this vacancy</p>
+        </div>
 
-{% comment %} 
-{% extends "recruitment/hr/base_hr.html" %}
-{% block content %}
+        <div class="vacancy-table-container card p-0">
 
-<div class="container mt-4">
+            <table class="table brand-table mb-0">
 
-    <h3>Shortlist Candidates</h3>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Applicant</th>
+                        <th>Email</th>
+                        <th>Applied</th>
+                        <th>Status</th>
+                        <th class="text-end pe-3">Profile</th>
+                    </tr>
+                </thead>
 
-    <p>
-        <strong>Vacancy:</strong> {{ vacancy.title }} <br>
-        <strong>Stage:</strong> {{ vacancy.status }}
-    </p>
+                <tbody>
 
-    <hr>
-
-    <form method="POST">
-        {% csrf_token %}
-
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Applied At</th>
-                    <th>Current Status</th>
-                    <th>CV</th>
-                </tr>
-            </thead>
-            <tbody>
                 {% for app in applications %}
+
                 <tr>
-                    <td>
-                        <input type="checkbox"
-                               name="selected_applications"
-                               value="{{ app.id }}">
-                    </td>
+
                     <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.name }}</td>
-                    <td>{{ app.applicant.email }}</td>
-                    <td>{{ app.applied_at }}</td>
-                    <td>{{ app.status }}</td>
-                    <td>                        
-                        <a href="{% url 'application_detail' app.id %}"
-                        class="btn btn-sm btn-outline-primary">
-                            View Profile
-                        </a>
+
+                    <td class="vacancy-title-cell">
+                        <i class="fas fa-user me-2" style="opacity:.25;font-size:.7rem;"></i>
+                        {{ app.applicant.get_full_name }}
+                    </td>
+
+                    <td style="font-size:0.82rem;color:#67748e;">
+                        {{ app.applicant.email }}
+                    </td>
+
+                    <td style="font-size:0.82rem;">
+                        {{ app.applied_at|date:"d M Y H:i" }}
+                    </td>
+
+                    <td>
+                        <span class="vacancy-status vacancy-status-longlisting">
+                            {{ app.status }}
+                        </span>
+                    </td>
+
+                    <td class="text-end pe-3">
+
+                        <div class="vacancy-actions">
+
+                            <a href="{% url 'application_detail' app.id %}"
+                               class="btn-open">
+
+                                <i class="fas fa-eye me-1"></i>
+                                View Profile
+
+                            </a>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% empty %}
+
+                <tr>
+                    <td colspan="6">
+
+                        <div class="empty-state">
+                            <i class="fas fa-users"></i>
+                            <p>No applications received yet.</p>
+                        </div>
+
                     </td>
                 </tr>
-                {% empty %}
-                <tr>
-                    <td colspan="7">No applications found.</td>
-                </tr>
+
                 {% endfor %}
-            </tbody>
-        </table>
 
-        <button type="submit" class="btn btn-success">
-            Confirm Shortlist
-        </button>
+                </tbody>
 
-        <a href="{% url 'hr_dashboard' %}" class="btn btn-secondary">
-            Cancel
-        </a>
-    </form>
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <!-- SHORTLIST ACTION -->
+    {% if vacancy.status == "shortlisting" %}
+        <div class="mt-3">
+
+            <a href="{% url 'shortlist_candidates' vacancy.id %}"
+               class="btn btn-brand">
+
+                <i class="fas fa-check me-1"></i>
+                Proceed to Shortlisting
+
+            </a>
+
+        </div>
+    {% endif %}
 
 </div>
 
-{% endblock %} {% endcomment %}
+{% endblock %}

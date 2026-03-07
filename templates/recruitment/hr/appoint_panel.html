@@ -1,38 +1,111 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Appoint Panelists{% endblock %}
+
 {% block content %}
 
-<form method="POST" id="panelForm">
-    {% csrf_token %}
+<div class="container-fluid py-2">
 
-    {% for panelist in panelists %}
+    <!-- HEADER -->
+    <div class="dash-header-banner mb-2">
+
         <div>
-            <input type="checkbox"
-                   name="panelists"
-                   value="{{ panelist.id }}"
-                   class="panelist-checkbox"
-                   {% if panelist in assigned_panelists %}checked{% endif %}>
-            {{ panelist.first_name }} {{ panelist.last_name }}
+            <h4>
+                <i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
+                Appoint Interview Panel
+            </h4>
+            <p>Select panelists responsible for conducting interviews</p>
         </div>
-    {% endfor %}
 
-    <button type="submit" id="submitBtn" disabled>Appoint Panel</button>
-</form>
+    </div>
+
+    <div class="gold-divider"></div>
+
+    <!-- PANEL FORM -->
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <div class="card dash-card brand-card">
+
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-user-check me-2" style="opacity:0.5;"></i>
+                        Select Panelists
+                    </h6>
+                    <p>Choose one or more panelists to appoint</p>
+                </div>
+
+                <div class="card-body">
+
+                    <form method="POST" id="panelForm">
+                        {% csrf_token %}
+
+                        <div class="list-group mb-3">
+
+                            {% for panelist in panelists %}
+
+                            <label class="list-group-item d-flex align-items-center gap-2">
+
+                                <input type="checkbox"
+                                       name="panelists"
+                                       value="{{ panelist.id }}"
+                                       class="panelist-checkbox form-check-input me-2"
+                                       {% if panelist in assigned_panelists %}checked{% endif %}>
+
+                                <span>
+                                    <i class="fas fa-user me-2" style="opacity:0.3;"></i>
+                                    {{ panelist.first_name }} {{ panelist.last_name }}
+                                </span>
+
+                            </label>
+
+                            {% empty %}
+
+                            <div class="empty-state">
+                                <i class="fas fa-users"></i>
+                                <p>No available panelists found.</p>
+                            </div>
+
+                            {% endfor %}
+
+                        </div>
+
+                        <button type="submit"
+                                id="submitBtn"
+                                class="btn btn-brand"
+                                disabled>
+
+                            <i class="fas fa-user-plus me-1"></i>
+                            Appoint Panel
+
+                        </button>
+
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+</div>
 
 <script>
-    const checkboxes = document.querySelectorAll('.panelist-checkbox');
-    const submitBtn = document.getElementById('submitBtn');
+const checkboxes = document.querySelectorAll('.panelist-checkbox');
+const submitBtn = document.getElementById('submitBtn');
 
-    function toggleSubmit() {
-        const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
-        submitBtn.disabled = !atLeastOneChecked;
-    }
+function toggleSubmit() {
+    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+    submitBtn.disabled = !atLeastOneChecked;
+}
 
-    // Run on page load (in case some are pre-checked)
-    toggleSubmit();
+// Run on load
+toggleSubmit();
 
-    // Listen for changes
-    checkboxes.forEach(cb => {
-        cb.addEventListener('change', toggleSubmit);
-    });
+// Listen for changes
+checkboxes.forEach(cb => {
+    cb.addEventListener('change', toggleSubmit);
+});
 </script>
+
 {% endblock %}

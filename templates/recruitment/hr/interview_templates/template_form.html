@@ -1,41 +1,65 @@
-{% extends "recruitment/hr/base_hr.html" %}
+{% extends 'recruitment/base.html' %}
+
+{% block title %}Interview Template{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-<h3>Interview Template</h3>
+<div class="dash-header-banner mb-2">
+
+<div>
+<h4>
+<i class="fas fa-file-signature me-2" style="color:var(--gold-dark);"></i>
+Interview Template
+</h4>
+<p>Create or edit an interview scoring template</p>
+</div>
+
+</div>
+
+<div class="gold-divider"></div>
+
+<div class="row justify-content-center">
+<div class="col-lg-6">
+
+<div class="card dash-card brand-card">
+
+<div class="card-header">
+<h6 class="mb-0">Template Information</h6>
+<p>Used to structure interview scoring</p>
+</div>
+
+<div class="card-body">
 
 <form method="POST">
-
 {% csrf_token %}
 
 <div class="mb-3">
-
 <label class="form-label">Template Name</label>
-
 <input type="text" name="name" class="form-control"
 value="{{ template.name|default:'' }}" required>
-
 </div>
 
 <div class="mb-3">
-
 <label class="form-label">Description</label>
-
 <textarea name="description" class="form-control">
-
 {{ template.description|default:'' }}
-
 </textarea>
-
 </div>
 
-<button class="btn btn-success">
+<button class="btn btn-brand">
+<i class="fas fa-save me-1"></i>
 Save Template
 </button>
 
 </form>
+
+</div>
+</div>
+
+</div>
+</div>
 
 </div>
 
