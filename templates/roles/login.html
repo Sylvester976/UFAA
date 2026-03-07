@@ -3,37 +3,37 @@
 
 {% block content %}
 
-
-    {% if messages %}
-    <div class="messages">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            <span class="alert-text">{{ message }}</span>
-            <button class="close-btn"
-                    onclick="this.parentElement.style.display='none';">
-                &times;
-            </button>
-        </div>
-        {% endfor %}
+{% if messages %}
+<div class="messages">
+    {% for message in messages %}
+    <div class="alert alert-{{ message.tags }}">
+        <span class="alert-text">{{ message }}</span>
+        <button class="close-btn"
+                onclick="this.parentElement.style.display='none';">
+            &times;
+        </button>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
 
 <div class="login-wrapper">
     <div class="login-card card">
-    
+
         <div class="card-header pb-0 bg-transparent text-center">
             <a href="#" class="logo d-flex justify-content-center align-items-center">
                 <img alt="Court of Arms"
-                    src="{% static 'assets/img/logos/court_of_arms.png' %}"
-                    style="max-height: 80px;">
+                     src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                     style="max-height: 80px;">
 
                 <div class="logo-divider mx-2"></div>
 
                 <img alt="ufaa Logo"
-                    src="{% static 'assets/img/logos/ufaa_logo.png' %}"
-                    style="max-height: 80px;">
+                     src="{% static 'assets/img/logos/ufaa_logo.png' %}"
+                     style="max-height: 80px;">
             </a>
-            
-            
-            <h3 class="font-weight-bolder " style="color:#003366;">Staff login</h3>
+
+            <h3 class="font-weight-bolder" style="color:#003366;">Staff login</h3>
             <p class="mb-0">Enter your Email and Password to sign in</p>
         </div>
 
@@ -43,35 +43,36 @@
 
                 <label>Email Address</label>
                 <div class="mb-3">
-                    <input 
-                        type="email" 
-                        name="email" 
-                        class="form-control" 
+                    <input
+                        type="email"
+                        name="email"
+                        class="form-control"
                         placeholder="Email Address"
                         required>
                 </div>
 
                 <label>Password</label>
                 <div class="mb-3 input-group">
-                    <input 
-                        type="password" 
-                        name="password" 
+                    <input
+                        type="password"
+                        name="password"
                         id="passwordInput"
-                        class="form-control" 
+                        class="form-control"
                         placeholder="Password"
                         required>
 
                     <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
                         <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
-                            viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
+                             viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                                  stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
                                   stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
 
                         <svg fill="none" height="18" id="eyeOffIcon" stroke="#999" stroke-width="2"
-                            style="display:none;" viewBox="0 0 24 24" width="18"
-                            xmlns="http://www.w3.org/2000/svg">
+                             style="display:none;" viewBox="0 0 24 24" width="18"
+                             xmlns="http://www.w3.org/2000/svg">
                             <path d="M13.875 18.825A10.05 10.05 0 0112 19c-4.477 0-8.268-2.943-9.542-7a9.97 9.97 0 012.516-4.034M9.9 4.24A9.969 9.969 0 0112 5c4.477 0 8.268 2.943 9.542 7a10.025 10.025 0 01-4.132 5.411M3 3l18 18"
                                   stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
@@ -79,12 +80,13 @@
                 </div>
 
                 <div class="text-center">
-                    <button class="btn w-100 mt-4 mb-0" 
+                    <button class="btn w-100 mt-4 mb-0"
                             style="background-color:#003366; border-color:#003366; color:white;"
                             type="submit">
                         Sign in
                     </button>
                 </div>
+
             </form>
         </div>
 
@@ -96,4 +98,5 @@
 
     </div>
 </div>
+
 {% endblock %}
