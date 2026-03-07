@@ -1527,9 +1527,11 @@ def panelist_reports(request):
         panelist=request.user
     ).select_related("vacancy")
 
-    return render(request, "recruitment/panelist/reports.html", {
-        "reports": reports
-    })
+    context = {
+        'page':      'Panelist Dashboard',
+        'reports': reports
+    }
+    return render(request, "recruitment/panelist/reports.html", context)
     
 
 @login_required
