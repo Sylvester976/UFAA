@@ -22,6 +22,7 @@ urlpatterns = [
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
     
+    path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path(
         "panel/assignment/<int:assignment_id>/respond/",
         views.respond_panel_assignment,
@@ -194,5 +195,4 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/longlist/bulk/', views.hr_longlist_bulk, name='hr_longlist_bulk'),
     path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/recall/', views.hr_longlist_recall,
          name='hr_longlist_recall'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/finalise/', views.hr_longlist_finalise, name='hr_longlist_finalise'),
 ]

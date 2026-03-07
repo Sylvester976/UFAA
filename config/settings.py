@@ -75,6 +75,7 @@ TEMPLATES = [
                 "accounts.context_processors.logged_in_user",
                 "accounts.context_processors.notifications",
                 "accounts.context_processors.auto_close_vacancies",
+                "core.context_processors.user_roles",
             ],
         },
     },

@@ -13,6 +13,7 @@ class LoginRequiredMiddleware:
         'send_verification_email',
         'vacancy_detail',
         'login',
+        'dashboard_logout',
 
         # dashboards
         'hr_dashboard',
@@ -21,6 +22,7 @@ class LoginRequiredMiddleware:
         'ceo_dashboard',
         'test_dashbord',
         'redirect_dashboard',
+        'admin_dashboard',
 
         # users
         'user_list',
