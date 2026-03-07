@@ -44,11 +44,11 @@ def view_jobs(request):
         start_date__gte=today
     ).order_by('start_date')  # earliest starting first
 
-    return render(request, 'jobseekers/jobs.html', {'vacancies': vacancies})
+    return render(request, 'Jobseekers/jobs.html', {'vacancies': vacancies})
 
 
 def instrutions_view(request):
-    return render(request, 'jobseekers/instructions.html')
+    return render(request, 'Jobseekers/instructions.html')
 
 
 # ── In recruitment/views.py ───────────────────────────────────
@@ -137,7 +137,7 @@ def dashboard(request):
         'page': 'Dashboard',
         'applications': applications
     }
-    return render(request, 'jobseekers/dashboard.html', context)
+    return render(request, 'Jobseekers/dashboard.html', context)
 
 
 def _basic_score(profile):
@@ -299,7 +299,7 @@ def profile_view(request):
         'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
-    return render(request, 'jobseekers/profile.html', context)
+    return render(request, 'Jobseekers/profile.html', context)
 
 
 # ── Academic Qualifications ──────────────────────────────────
@@ -514,7 +514,7 @@ def academic_qualifications_view(request):
         'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
-    return render(request, 'jobseekers/academic.html', context)
+    return render(request, 'Jobseekers/academic.html', context)
 
 
 # ── Progress Calculation ─────────────────────────────────────
@@ -769,7 +769,7 @@ def professional_qualifications_view(request):
         'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
-    return render(request, 'jobseekers/professional.html', context)
+    return render(request, 'Jobseekers/professional.html', context)
 
 
 def work_history_view(request):
@@ -933,7 +933,7 @@ def work_history_view(request):
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
         'has_additional': hasattr(user, 'additional_detail'),
     }
-    return render(request, 'jobseekers/work_history.html', context)
+    return render(request, 'Jobseekers/work_history.html', context)
 
 
 def _job_to_dict(job):
@@ -1098,7 +1098,7 @@ def memberships_view(request):
         'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
-    return render(request, 'jobseekers/membership.html', context)
+    return render(request, 'Jobseekers/membership.html', context)
 
 
 def _mem_to_dict(mem):
@@ -1198,7 +1198,7 @@ def referee_view(request):
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
         'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
     }
-    return render(request, 'jobseekers/referee.html', context)
+    return render(request, 'Jobseekers/referee.html', context)
 
 
 def _referee_to_dict(ref):
@@ -1360,7 +1360,7 @@ def additional_details_view(request):
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
         'has_additional': detail is not None,
     }
-    return render(request, 'jobseekers/additional.html', context)
+    return render(request, 'Jobseekers/additional.html', context)
 
 
 from django.db.models import Count
@@ -3494,7 +3494,7 @@ def apply_jobs_view(request):
         'has_additional': detail is not None,
         'page': 'Apply for Jobs',
     }
-    return render(request, 'jobseekers/apply_jobs.html', context)
+    return render(request, 'Jobseekers/apply_jobs.html', context)
 
 
 def job_status_view(request):
@@ -3531,7 +3531,7 @@ def job_status_view(request):
         'has_additional': detail is not None,
         'page': 'Job Status',
     }
-    return render(request, 'jobseekers/job_status.html', context)
+    return render(request, 'Jobseekers/job_status.html', context)
 
 
 def mark_notification_read_view(request):
