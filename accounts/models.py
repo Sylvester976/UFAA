@@ -84,23 +84,27 @@ class User(AbstractBaseUser):
 
 # this is a model for jobseeker to create their account
 class JobseekerAccount(models.Model):
-    email = models.EmailField(unique=True)
-    id_no = models.CharField(max_length=50, unique=True, db_index=True)
-    name = models.CharField(max_length=255)
-
+    email    = models.EmailField(unique=True)
+    id_no    = models.CharField(max_length=50, unique=True, db_index=True)
+    name     = models.CharField(max_length=255)
     password = models.CharField(max_length=255)
 
-    account_type = models.IntegerField(default=1)  # 1 = External, 2 = Internal
-    session_key = models.CharField(max_length=40, blank=True, null=True)
+    account_type = models.IntegerField(default=1)   # 1 = External, 2 = Internal
+    session_key  = models.CharField(max_length=40, blank=True, null=True)
+
     verification_token = models.UUIDField(default=uuid.uuid4, editable=False)
 
-    is_employee = models.BooleanField(default=False)
+    # ── NEW: password reset ────────────────────────────────────────────────
+    password_reset_token      = models.UUIDField(default=uuid.uuid4, editable=False)
+    password_reset_expires_at = models.DateTimeField(default=timezone.now)
+    # ──────────────────────────────────────────────────────────────────────
 
-    is_active = models.BooleanField(default=True)
+    is_employee = models.BooleanField(default=False)
+    is_active   = models.BooleanField(default=False)   # False until email verified
     is_verified = models.BooleanField(default=False)
 
     date_joined = models.DateTimeField(default=timezone.now)
-    last_login = models.DateTimeField(null=True, blank=True)
+    last_login  = models.DateTimeField(null=True, blank=True)
 
     def set_password(self, raw_password):
         self.password = make_password(raw_password)
