@@ -1,24 +1,38 @@
 import json
+import logging
 import os
 import re
 from datetime import datetime
+from datetime import timedelta
 
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
-from django.http import FileResponse, Http404, HttpResponse
-from django.http import JsonResponse
-from django.utils import timezone
+from django.core.mail import EmailMultiAlternatives
+from django.http import FileResponse, Http404
+from django.template.loader import render_to_string
 
 from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
 from roles.models import Role
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, PanelistReport, \
-    ProfessionalQualification, ShortlistVote, ShortlistingCommittee, ShortlistingDecision, WorkHistory, AdditionalDetail, ProfessionalBodyMembership, Referee, \
-    JobApplication, JobApplicationNotification, JobApplicationStatus, JobApplicationStatusLog, VacancyApplicationCounter
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
+    PanelistReport, \
+    ProfessionalQualification, ShortlistVote, ShortlistingDecision, WorkHistory, \
+    AdditionalDetail, ProfessionalBodyMembership, Referee, \
+    JobApplicationNotification, VacancyApplicationCounter
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
+from .models import (
+    ShortlistingCommittee,
+    CommitteeScore,
+    ShortlistConsent,
+    ShortlistLog,
+)
 from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
+
+User = get_user_model()
+logger = logging.getLogger(__name__)
 
 
 # ── Helper ───────────────────────────────────────────────────
@@ -1363,11 +1377,8 @@ def additional_details_view(request):
     return render(request, 'Jobseekers/additional.html', context)
 
 
-from django.db.models import Count
-
 @login_required
 def hr_dashboard(request):
-
     user_roles = request.user.role.values_list('name', flat=True)
 
     vacancies = Vacancy.objects.annotate(
@@ -1401,9 +1412,8 @@ def panelist_dashboard(request):
         panelist=request.user
     ).select_related('vacancy')
 
-
     context = {
-        'page':      'Panelist Dashboard',
+        'page': 'Panelist Dashboard',
         'vacancies': vacancies,
         'assignments': assignments
     }
@@ -1414,7 +1424,6 @@ def panelist_dashboard(request):
 @login_required
 @role_required(['admin'])
 def admin_dashboard(request):
-
     context = {
         "page": "Admin Dashboard"
     }
@@ -1424,6 +1433,7 @@ def admin_dashboard(request):
         "recruitment/admin/dashboard.html",
         context
     )
+
 
 @login_required
 @role_required(['officer'])
@@ -1438,7 +1448,6 @@ def officer_dashboard(request):
 @login_required
 @role_required(['panelist'])
 def respond_panel_assignment(request, assignment_id):
-
     assignment = get_object_or_404(
         PanelAssignment,
         id=assignment_id,
@@ -1475,10 +1484,10 @@ def respond_panel_assignment(request, assignment_id):
 
         return redirect("panelist_dashboard")
 
+
 @login_required
 @role_required(['panelist'])
 def panelist_submit_report(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     assignment = PanelAssignment.objects.get(
@@ -1492,7 +1501,6 @@ def panelist_submit_report(request, vacancy_id):
     ).count()
 
     if request.method == "POST":
-
         summary = request.POST.get("summary")
         recommendations = request.POST.get("recommendations")
 
@@ -1511,28 +1519,27 @@ def panelist_submit_report(request, vacancy_id):
         return redirect("panelist_dashboard")
 
     return render(request,
-        "recruitment/panelist/submit_report.html",
-        {
-            "vacancy": vacancy,
-            "interviews_done": interviews_done
-        }
-    )
-    
- 
+                  "recruitment/panelist/submit_report.html",
+                  {
+                      "vacancy": vacancy,
+                      "interviews_done": interviews_done
+                  }
+                  )
+
+
 @login_required
 @role_required(['panelist'])
 def panelist_reports(request):
-
     reports = PanelistReport.objects.filter(
         panelist=request.user
     ).select_related("vacancy")
 
     context = {
-        'page':      'Panelist Dashboard',
+        'page': 'Panelist Dashboard',
         'reports': reports
     }
     return render(request, "recruitment/panelist/reports.html", context)
-    
+
 
 @login_required
 @role_required(['panelist'])
@@ -1604,14 +1611,14 @@ def create_vacancy(request):
     if request.method == 'POST':
 
         # ── Step 1: Position ───────────────────────────────
-        title            = request.POST.get('title', '').strip()
+        title = request.POST.get('title', '').strip()
         reference_number = request.POST.get('reference_number', '').strip()
-        description      = request.POST.get('description', '').strip()
-        vacancy_type     = request.POST.get('vacancy_type', 'external').strip()
-        grade_category   = request.POST.get('grade_category', '4-1').strip()
-        start_date       = request.POST.get('start_date', '').strip()
-        end_date         = request.POST.get('end_date', '').strip()
-        advert_pdf       = request.FILES.get('advert_pdf')
+        description = request.POST.get('description', '').strip()
+        vacancy_type = request.POST.get('vacancy_type', 'external').strip()
+        grade_category = request.POST.get('grade_category', '4-1').strip()
+        start_date = request.POST.get('start_date', '').strip()
+        end_date = request.POST.get('end_date', '').strip()
+        advert_pdf = request.FILES.get('advert_pdf')
 
         # ── Step 2: Screening criteria ─────────────────────
         screening_criteria = {
@@ -1658,7 +1665,7 @@ def create_vacancy(request):
         parsed_start = parsed_end = None
         try:
             parsed_start = datetime.strptime(start_date, "%Y-%m-%d").date()
-            parsed_end   = datetime.strptime(end_date,   "%Y-%m-%d").date()
+            parsed_end = datetime.strptime(end_date, "%Y-%m-%d").date()
         except ValueError:
             errors.append("Invalid date format.")
 
@@ -1683,30 +1690,30 @@ def create_vacancy(request):
             for error in errors:
                 messages.error(request, error)
             return render(request, 'recruitment/hr/create_vacancy.html', {
-                'page':             'Create Vacancy',
-                'posted':           request.POST,
+                'page': 'Create Vacancy',
+                'posted': request.POST,
                 'education_levels': education_levels,
             })
 
         Vacancy.objects.create(
-            title              = title,
-            reference_number   = reference_number,
-            description        = description,
-            vacancy_type       = vacancy_type,
-            grade_category     = grade_category,
-            advert_pdf         = advert_pdf,
-            start_date         = parsed_start,
-            end_date           = parsed_end,
-            screening_criteria = screening_criteria,
-            created_by         = request.user,
-            status             = 'draft',
+            title=title,
+            reference_number=reference_number,
+            description=description,
+            vacancy_type=vacancy_type,
+            grade_category=grade_category,
+            advert_pdf=advert_pdf,
+            start_date=parsed_start,
+            end_date=parsed_end,
+            screening_criteria=screening_criteria,
+            created_by=request.user,
+            status='draft',
         )
 
         messages.success(request, f"Vacancy '{title}' created as Draft.")
         return redirect('hr_dashboard')
 
     return render(request, 'recruitment/hr/create_vacancy.html', {
-        'page':             'Create Vacancy',
+        'page': 'Create Vacancy',
         'education_levels': education_levels,
     })
 
@@ -1728,14 +1735,14 @@ def update_vacancy(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if request.method == 'POST':
-        title            = request.POST.get('title', '').strip()
+        title = request.POST.get('title', '').strip()
         reference_number = request.POST.get('reference_number', '').strip()
-        description      = request.POST.get('description', '').strip()
-        vacancy_type     = request.POST.get('vacancy_type', vacancy.vacancy_type).strip()
-        grade_category   = request.POST.get('grade_category', vacancy.grade_category).strip()
-        start_date_str   = request.POST.get('start_date', '').strip()
-        end_date_str     = request.POST.get('end_date', '').strip()
-        advert_pdf       = request.FILES.get('advert_pdf')
+        description = request.POST.get('description', '').strip()
+        vacancy_type = request.POST.get('vacancy_type', vacancy.vacancy_type).strip()
+        grade_category = request.POST.get('grade_category', vacancy.grade_category).strip()
+        start_date_str = request.POST.get('start_date', '').strip()
+        end_date_str = request.POST.get('end_date', '').strip()
+        advert_pdf = request.FILES.get('advert_pdf')
 
         errors = []
 
@@ -1751,7 +1758,7 @@ def update_vacancy(request, vacancy_id):
         parsed_start = parsed_end = None
         try:
             parsed_start = datetime.strptime(start_date_str, "%Y-%m-%d").date()
-            parsed_end   = datetime.strptime(end_date_str,   "%Y-%m-%d").date()
+            parsed_end = datetime.strptime(end_date_str, "%Y-%m-%d").date()
         except ValueError:
             errors.append("Invalid date format.")
 
@@ -1761,7 +1768,7 @@ def update_vacancy(request, vacancy_id):
 
         # Check duplicate ref — exclude current vacancy
         if Vacancy.objects.filter(
-            reference_number=reference_number
+                reference_number=reference_number
         ).exclude(id=vacancy.id).exists():
             errors.append(f"Reference number '{reference_number}' is already used by another vacancy.")
 
@@ -1775,17 +1782,17 @@ def update_vacancy(request, vacancy_id):
             for error in errors:
                 messages.error(request, error)
             return render(request, 'recruitment/hr/update_vacancy.html', {
-                'page':    'Edit Vacancy',
+                'page': 'Edit Vacancy',
                 'vacancy': vacancy,
             })
 
-        vacancy.title            = title
+        vacancy.title = title
         vacancy.reference_number = reference_number
-        vacancy.description      = description
-        vacancy.vacancy_type     = vacancy_type
-        vacancy.grade_category   = grade_category
-        vacancy.start_date       = parsed_start
-        vacancy.end_date         = parsed_end
+        vacancy.description = description
+        vacancy.vacancy_type = vacancy_type
+        vacancy.grade_category = grade_category
+        vacancy.start_date = parsed_start
+        vacancy.end_date = parsed_end
         if advert_pdf:
             vacancy.advert_pdf = advert_pdf
         vacancy.save()
@@ -1794,10 +1801,9 @@ def update_vacancy(request, vacancy_id):
         return redirect('hr_dashboard')
 
     return render(request, 'recruitment/hr/update_vacancy.html', {
-        'page':    'Edit Vacancy',
+        'page': 'Edit Vacancy',
         'vacancy': vacancy,
     })
-
 
 
 @login_required
@@ -1817,7 +1823,7 @@ def delete_vacancy(request, vacancy_id):
 
     # GET — fallback confirm page (keep for safety)
     return render(request, 'recruitment/hr/confirm_delete.html', {
-        'page':    'Delete Vacancy',
+        'page': 'Delete Vacancy',
         'vacancy': vacancy,
     })
 
@@ -1886,6 +1892,7 @@ def apply_for_vacancy(request, vacancy_id):
 
     return render(request, 'recruitment/applicant/apply.html', {'vacancy': vacancy})
 
+
 @login_required
 @role_required(['hod_hr'])
 # ── Move to Longlisting (closed → longlisting) ────────────────────────────
@@ -1901,8 +1908,9 @@ def move_to_longlisting(request, vacancy_id):
     messages.success(request, f"'{vacancy.title}' moved to Longlisting stage.")
     return redirect('hr_dashboard')
 
+
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 def hr_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
@@ -1918,15 +1926,16 @@ def hr_view_applications(request, vacancy_id):
     total = JobApplication.objects.filter(vacancy=vacancy).count()
 
     context = {
-        'page':          f'Applications — {vacancy.title}',
-        'vacancy':       vacancy,
-        'total':         total,
+        'page': f'Applications — {vacancy.title}',
+        'vacancy': vacancy,
+        'total': total,
         'status_counts': status_counts,
     }
     return render(request, 'recruitment/hr/view_applications.html', context)
 
+
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 def hr_view_applications_json(request, vacancy_id):
     """
     Server-side DataTables JSON endpoint.
@@ -1935,8 +1944,8 @@ def hr_view_applications_json(request, vacancy_id):
     """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    draw   = int(request.GET.get('draw', 1))
-    start  = int(request.GET.get('start', 0))
+    draw = int(request.GET.get('draw', 1))
+    start = int(request.GET.get('start', 0))
     length = int(request.GET.get('length', 25))
     search = request.GET.get('search[value]', '').strip()
 
@@ -1946,8 +1955,8 @@ def hr_view_applications_json(request, vacancy_id):
         '6': 'submitted_at',
         '7': 'status__order',
     }
-    order_col   = request.GET.get('order[0][column]', '6')
-    order_dir   = request.GET.get('order[0][dir]', 'desc')
+    order_col = request.GET.get('order[0][column]', '6')
+    order_dir = request.GET.get('order[0][dir]', 'desc')
     order_field = col_map.get(order_col, 'submitted_at')
     if order_dir == 'desc':
         order_field = '-' + order_field
@@ -1963,7 +1972,7 @@ def hr_view_applications_json(request, vacancy_id):
     if search:
         qs = qs.filter(
             Q(application_number__icontains=search) |
-            Q(user__email__icontains=search)        |
+            Q(user__email__icontains=search) |
             Q(snapshot_basic__id_no__icontains=search)
         )
 
@@ -1972,7 +1981,7 @@ def hr_view_applications_json(request, vacancy_id):
 
     rows = []
     for i, app in enumerate(qs, start=start + 1):
-        basic     = app.snapshot_basic or {}
+        basic = app.snapshot_basic or {}
         full_name = ' '.join(filter(None, [
             basic.get('first_name', ''),
             basic.get('second_name', ''),
@@ -1980,25 +1989,24 @@ def hr_view_applications_json(request, vacancy_id):
         ])) or app.user.email
 
         rows.append({
-            'row_num':            i,
+            'row_num': i,
             'application_number': app.application_number or '—',
-            'full_name':          full_name,
-            'id_no':              basic.get('id_no', '—'),
-            'email':              app.user.email,
-            'phone':              basic.get('phone_number', '—'),
-            'submitted_at':       app.submitted_at.strftime('%d %b %Y'),
-            'status_code':        app.status.code,
-            'status_name':        app.status.name,
-            'detail_url':         f'/recruitment/hr/application/{app.id}/',
+            'full_name': full_name,
+            'id_no': basic.get('id_no', '—'),
+            'email': app.user.email,
+            'phone': basic.get('phone_number', '—'),
+            'submitted_at': app.submitted_at.strftime('%d %b %Y'),
+            'status_code': app.status.code,
+            'status_name': app.status.name,
+            'detail_url': f'/recruitment/hr/application/{app.id}/',
         })
 
     return JsonResponse({
-        'draw':            draw,
-        'recordsTotal':    total_records,
+        'draw': draw,
+        'recordsTotal': total_records,
         'recordsFiltered': filtered_records,
-        'data':            rows,
+        'data': rows,
     })
-
 
 
 @login_required
@@ -2022,8 +2030,6 @@ def committee_view_applications(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
-
-
 
 
 # HR View to Move Vacancy to Longlisting
@@ -2150,7 +2156,7 @@ def appoint_committee(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     vacancy.status = 'shortlisting'
-    
+
     if vacancy.status != 'shortlisting':
         messages.error(request, "Complete shortlisting first.")
         return redirect('hr_dashboard')
@@ -2191,6 +2197,7 @@ def appoint_committee(request, vacancy_id):
         'assigned_panelists': assigned_panelists
     })
 
+
 @login_required
 @role_required(['hr'])
 def appoint_shortlisting_committee(request, vacancy_id):
@@ -2221,27 +2228,26 @@ def appoint_shortlisting_committee(request, vacancy_id):
         'vacancy': vacancy,
         'members': members
     })
-         
+
+
 @login_required
 @role_required(['committee'])
 def shortlisting_dashboard(request):
-
     vacancies = Vacancy.objects.filter(
         shortlisting_committee__members=request.user
     )
-    
+
     context = {
-        'page':      'Committee Dashboard',
+        'page': 'Committee Dashboard',
         'vacancies': vacancies
     }
 
     return render(request, 'recruitment/committee/dashboard.html', context)
-    
-    
+
+
 @login_required
 @role_required(['hr_committee'])
 def review_application(request, application_id):
-
     application = get_object_or_404(Application, id=application_id)
 
     committee = application.vacancy.shortlisting_committee
@@ -2251,7 +2257,6 @@ def review_application(request, application_id):
         return redirect('shortlisting_dashboard')
 
     if request.method == 'POST':
-
         decision = request.POST.get('decision')
         comment = request.POST.get('comment')
 
@@ -2273,7 +2278,6 @@ def review_application(request, application_id):
 
 
 def evaluate_shortlisting(application):
-
     committee = application.vacancy.shortlisting_committee
     total_members = committee.members.count()
 
@@ -2478,7 +2482,6 @@ def close_vacancy(request, vacancy_id):
 @login_required
 @role_required(['panelist'])
 def panelist_interview_list(request, vacancy_id):
-
     vacancy = get_object_or_404(
         Vacancy,
         id=vacancy_id,
@@ -2512,12 +2515,10 @@ def panelist_interview_list(request, vacancy_id):
         'applications': applications
     })
 
-from recruitment.models import InterviewSection
 
 @login_required
 @role_required(['panelist'])
 def panelist_score_candidate(request, application_id):
-
     application = get_object_or_404(Application, id=application_id)
     vacancy = application.vacancy
 
@@ -2550,7 +2551,6 @@ def panelist_score_candidate(request, application_id):
         total_score = 0
 
         for section in sections:
-
             value = request.POST.get(f"section_{section.id}", 0)
             value = float(value)
 
@@ -2585,15 +2585,12 @@ def panelist_score_candidate(request, application_id):
     })
 
 
-from django.db.models import Count, Q
+from django.db.models import Q
 
-
-from django.db.models import Avg, Count
 
 @login_required
 @role_required(['hod_hr'])
 def hr_ranking_view(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'interviews':
@@ -2659,16 +2656,13 @@ def select_top_three(request, vacancy_id):
         return redirect('hr_dashboard')
 
 
-from django.db.models import Avg
-
-
 @login_required
 @role_required(['ceo'])
 def ceo_dashboard(request):
     vacancies = Vacancy.objects.filter(status='ceo_review')
 
     context = {
-        'page':      'CEO Dashboard',
+        'page': 'CEO Dashboard',
         'pending_approval_count': vacancies.count(),
         'vacancies': vacancies
     }
@@ -2704,12 +2698,13 @@ def ceo_approve(request, vacancy_id):
 
     return redirect('ceo_dashboard')
 
+
 from django.db.models import Avg, Count
+
 
 @login_required
 @role_required(['ceo'])
 def ceo_review_view(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'ceo_review':
@@ -2729,6 +2724,7 @@ def ceo_review_view(request, vacancy_id):
         'vacancy': vacancy,
         'applications': applications
     })
+
 
 @login_required
 @role_required(['ceo'])
@@ -2811,10 +2807,8 @@ def application_detail(request, application_id):
     })
 
 
-from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib import messages
-from .models import Vacancy, PanelAssignment
+from .models import PanelAssignment
 from core.decorators import role_required
 
 
@@ -2828,13 +2822,13 @@ def vacancy_longlisting(request):
 
     vacancy_data = []
     for v in vacancies_qs:
-        apps       = JobApplication.objects.filter(vacancy=v, status__code='longlisted')
-        total      = apps.count()
-        accepted   = apps.filter(longlist_decision='accepted').count()
-        rejected   = apps.filter(longlist_decision='rejected').count()
-        reviewed   = accepted + rejected
+        apps = JobApplication.objects.filter(vacancy=v, status__code='longlisted')
+        total = apps.count()
+        accepted = apps.filter(longlist_decision='accepted').count()
+        rejected = apps.filter(longlist_decision='rejected').count()
+        reviewed = accepted + rejected
         unreviewed = total - reviewed
-        pct        = int((reviewed / total * 100) if total else 0)
+        pct = int((reviewed / total * 100) if total else 0)
 
         vacancy_data.append({
             'vacancy': v, 'total': total, 'accepted': accepted,
@@ -2940,20 +2934,20 @@ def vacancy_shortlisting(request):
         days_remaining = (deadline - timezone.now().date()).days
 
         vacancy_data.append({
-            'vacancy':         v,
-            'app_count':       app_count,
+            'vacancy': v,
+            'app_count': app_count,
             'committee_count': committee_count,
-            'scored_count':    scored_count,
-            'all_scored':      all_scored,
+            'scored_count': scored_count,
+            'all_scored': all_scored,
             'consented_count': consented_count,
-            'threshold':       threshold,
-            'threshold_met':   threshold_met,
-            'deadline':        deadline,
-            'days_remaining':  days_remaining,
+            'threshold': threshold,
+            'threshold_met': threshold_met,
+            'deadline': deadline,
+            'days_remaining': days_remaining,
         })
 
     return render(request, 'recruitment/hr/shortlisting/vacancy_picker.html', {
-        'page':      'Shortlisting',
+        'page': 'Shortlisting',
         'vacancies': vacancy_data,
     })
 
@@ -2965,9 +2959,9 @@ def vacancy_shortlisting(request):
 @role_required(['hod_hr'])
 def vacancy_interviews(request):
     vacancies = Vacancy.objects.filter(status='interviews')
-    
+
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         'vacancies': vacancies
     }
     return render(request, 'recruitment/hr/vacancy_interviews.html', context)
@@ -2980,9 +2974,9 @@ def vacancy_interviews(request):
 @role_required(['hod_hr'])
 def vacancy_appointments(request):
     vacancies = Vacancy.objects.filter(status='appointed').prefetch_related('panelassignment_set__panelist')
-    
+
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         'vacancies': vacancies
     }
     return render(request, 'recruitment/hr/vacancy_appointments.html', context)
@@ -3033,12 +3027,10 @@ def vacancy_list(request):
         .order_by('-created_at')
     )
     context = {
-        'page':      'Published Vacancies',
+        'page': 'Published Vacancies',
         'vacancies': vacancies,
     }
     return render(request, 'recruitment/hr/vacancy_list.html', context)
-
-
 
 
 # ── Add to recruitment/views.py ────────────────────────────────
@@ -3084,12 +3076,11 @@ def _application_ready(user):
 #         'vacancy': vacancy,
 #         'applications': applications
 #     })
-    
+
 
 @login_required
 @role_required(['hr', 'ceo'])  # CEO can view but not appoint
 def hr_finalize_appointment(request, vacancy_id):
-
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'ceo_approved':
@@ -3135,7 +3126,7 @@ def hr_finalize_appointment(request, vacancy_id):
         'vacancy': vacancy,
         'selected_application': selected_application
     })
-    
+
 
 def _build_snapshots(user):
     profile = JobSeekerProfile.objects.filter(user=user).first()
@@ -3338,6 +3329,7 @@ def _notify_submission(user, application):
     except Exception as e:
         import logging
         logging.getLogger(__name__).error(f'Email send failed for {user.email}: {e}')
+
 
 def _notify_appointment(user, application):
     vacancy = application.vacancy
@@ -3680,8 +3672,6 @@ def notification_poll_view(request):
     return JsonResponse({'unread_count': unread, 'notifications': notifs})
 
 
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib import messages
 from recruitment.models import InterviewTemplate, InterviewSection
 
 
@@ -3692,11 +3682,10 @@ from recruitment.models import InterviewTemplate, InterviewSection
 @login_required
 @role_required(['hod_hr'])
 def template_list(request):
-
     templates = InterviewTemplate.objects.all()
 
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         "templates": templates
     }
     return render(request, "recruitment/hr/interview_templates/template_list.html", context)
@@ -3709,9 +3698,7 @@ def template_list(request):
 @login_required
 @role_required(['hod_hr'])
 def template_create(request):
-
     if request.method == "POST":
-
         name = request.POST.get("name")
         description = request.POST.get("description")
 
@@ -3724,13 +3711,12 @@ def template_create(request):
         messages.success(request, "Template created successfully")
 
         return redirect("template_list")
-    
-    
+
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
     }
     return render(request, "recruitment/hr/interview_templates/template_form.html", context)
-    
+
 
 # --------------------------------
 # TEMPLATE DETAIL
@@ -3739,13 +3725,12 @@ def template_create(request):
 @login_required
 @role_required(['hod_hr'])
 def template_detail(request, pk):
-
     template = get_object_or_404(InterviewTemplate, pk=pk)
 
     sections = template.sections.all().order_by("order")
-    
+
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         "template": template,
         "sections": sections
     }
@@ -3759,11 +3744,9 @@ def template_detail(request, pk):
 @login_required
 @role_required(['hod_hr'])
 def template_edit(request, pk):
-
     template = get_object_or_404(InterviewTemplate, pk=pk)
 
     if request.method == "POST":
-
         template.name = request.POST.get("name")
         template.description = request.POST.get("description")
         template.save()
@@ -3773,7 +3756,7 @@ def template_edit(request, pk):
         return redirect("template_detail", pk=pk)
 
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         "template": template
     }
     return render(request, "recruitment/hr/interview_templates/template_form.html", context)
@@ -3786,7 +3769,6 @@ def template_edit(request, pk):
 @login_required
 @role_required(['hod_hr'])
 def template_delete(request, pk):
-
     template = get_object_or_404(InterviewTemplate, pk=pk)
 
     template.delete()
@@ -3803,11 +3785,9 @@ def template_delete(request, pk):
 @login_required
 @role_required(['hod_hr'])
 def section_create(request, template_id):
-
     template = get_object_or_404(InterviewTemplate, id=template_id)
 
     if request.method == "POST":
-
         name = request.POST.get("name")
         max_score = request.POST.get("max_score")
         weight = request.POST.get("weight")
@@ -3826,7 +3806,7 @@ def section_create(request, template_id):
         return redirect("template_detail", pk=template.id)
 
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         "template": template
     }
     return render(request, "recruitment/hr/interview_templates/section_form.html", context)
@@ -3839,11 +3819,9 @@ def section_create(request, template_id):
 @login_required
 @role_required(['hod_hr'])
 def section_edit(request, pk):
-
     section = get_object_or_404(InterviewSection, pk=pk)
 
     if request.method == "POST":
-
         section.name = request.POST.get("name")
         section.max_score = request.POST.get("max_score")
         section.weight = request.POST.get("weight")
@@ -3854,9 +3832,9 @@ def section_edit(request, pk):
         messages.success(request, "Section updated")
 
         return redirect("template_detail", pk=section.template.id)
-        
+
     context = {
-        'page':      'Human Resource Dashboard',
+        'page': 'Human Resource Dashboard',
         "section": section,
         "template": section.template
     }
@@ -3870,7 +3848,6 @@ def section_edit(request, pk):
 @login_required
 @role_required(['hod_hr'])
 def section_delete(request, pk):
-
     section = get_object_or_404(InterviewSection, pk=pk)
 
     template_id = section.template.id
@@ -3994,21 +3971,21 @@ def _build_filter_params(params):
 def _extract_basic(app):
     b = app.snapshot_basic or {}
     return {
-        'full_name':    ' '.join(filter(None, [
-                            b.get('first_name', ''),
-                            b.get('second_name', ''),
-                            b.get('surname', ''),
-                        ])) or app.user.email,
-        'id_no':        b.get('id_no', '—'),
-        'dob':          b.get('date_of_birth', '—'),
-        'gender':       b.get('gender', '—'),
-        'phone':        b.get('phone_number', '—'),
-        'county':       b.get('home_county', '—'),
-        'subcounty':    b.get('sub_county', '—'),
+        'full_name': ' '.join(filter(None, [
+            b.get('first_name', ''),
+            b.get('second_name', ''),
+            b.get('surname', ''),
+        ])) or app.user.email,
+        'id_no': b.get('id_no', '—'),
+        'dob': b.get('date_of_birth', '—'),
+        'gender': b.get('gender', '—'),
+        'phone': b.get('phone_number', '—'),
+        'county': b.get('home_county', '—'),
+        'subcounty': b.get('sub_county', '—'),
         'constituency': b.get('constituency', '—'),
-        'ward':         b.get('ward', '—'),
-        'disability':   b.get('disability_status') not in (None, '', 'None', 'No', 'no', False),
-        'ethnicity':    b.get('ethnic_group', '—'),
+        'ward': b.get('ward', '—'),
+        'disability': b.get('disability_status') not in (None, '', 'None', 'No', 'no', False),
+        'ethnicity': b.get('ethnic_group', '—'),
     }
 
 
@@ -4032,14 +4009,14 @@ def _calculate_experience(work_list):
     for job in work_list:
         try:
             start_str = job.get('start_display') or job.get('start_date') or ''
-            end_str   = job.get('end_display')   or job.get('end_date')   or ''
+            end_str = job.get('end_display') or job.get('end_date') or ''
             if not start_str:
                 continue
             start = _parse_date(start_str)
             if not start:
                 continue
             end = today if (not end_str or end_str.lower() in ('present', '—')) \
-                  else (_parse_date(end_str) or today)
+                else (_parse_date(end_str) or today)
             if end >= start:
                 total += max((end.year - start.year) * 12 + (end.month - start.month), 0)
         except (ValueError, TypeError):
@@ -4066,13 +4043,13 @@ def _highest_edu(academic):
         'phd': 10, 'doctorate': 10,
         'other foreign qualification': 11,
     }
-    best_rank  = -1
+    best_rank = -1
     best_label = '—'
     for entry in academic:
         label = entry.get('education_level', '')
-        rank  = RANKS.get(label.strip().lower(), 0)
+        rank = RANKS.get(label.strip().lower(), 0)
         if rank > best_rank:
-            best_rank  = rank
+            best_rank = rank
             best_label = label
     return best_label or '—'
 
@@ -4084,8 +4061,8 @@ def _send_regret_email(app, vacancy):
         from django.core.mail import EmailMultiAlternatives
         from django.conf import settings
 
-        b    = app.snapshot_basic or {}
-        name = ' '.join(filter(None, [b.get('first_name',''), b.get('surname','')])) \
+        b = app.snapshot_basic or {}
+        name = ' '.join(filter(None, [b.get('first_name', ''), b.get('surname', '')])) \
                or app.user.email
 
         subject = (f"Application Outcome — {vacancy.title} "
@@ -4115,16 +4092,16 @@ def _send_regret_email(app, vacancy):
         """
 
         html_body = render_to_string('emails/email_base.html', {
-            'subject':         subject,
+            'subject': subject,
             'message_content': message_html,
-            'year':            date.today().year,
+            'year': date.today().year,
         })
 
         msg = EmailMultiAlternatives(
-            subject    = subject,
-            body       = 'Please view this email in an HTML-capable client.',
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
-            to         = [app.user.email],
+            subject=subject,
+            body='Please view this email in an HTML-capable client.',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to=[app.user.email],
         )
         msg.attach_alternative(html_body, 'text/html')
         msg.send(fail_silently=True)
@@ -4141,8 +4118,8 @@ def _send_recall_email(app, vacancy):
         from django.core.mail import EmailMultiAlternatives
         from django.conf import settings
 
-        b    = app.snapshot_basic or {}
-        name = ' '.join(filter(None, [b.get('first_name',''), b.get('surname','')])) \
+        b = app.snapshot_basic or {}
+        name = ' '.join(filter(None, [b.get('first_name', ''), b.get('surname', '')])) \
                or app.user.email
 
         subject = (f"Application Update — {vacancy.title} "
@@ -4168,16 +4145,16 @@ def _send_recall_email(app, vacancy):
         """
 
         html_body = render_to_string('emails/email_base.html', {
-            'subject':         subject,
+            'subject': subject,
             'message_content': message_html,
-            'year':            date.today().year,
+            'year': date.today().year,
         })
 
         msg = EmailMultiAlternatives(
-            subject    = subject,
-            body       = 'Please view this email in an HTML-capable client.',
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
-            to         = [app.user.email],
+            subject=subject,
+            body='Please view this email in an HTML-capable client.',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to=[app.user.email],
         )
         msg.attach_alternative(html_body, 'text/html')
         msg.send(fail_silently=True)
@@ -4190,19 +4167,19 @@ def _send_recall_email(app, vacancy):
 # ── View 1: Dashboard ──────────────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 def hr_longlist_dashboard(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
-    longlisted_st    = _status('longlisted')
-    not_selected_st  = _status('not_selected')
+    longlisted_st = _status('longlisted')
+    not_selected_st = _status('not_selected')
 
     total_longlisted = JobApplication.objects.filter(
         vacancy=vacancy, status=longlisted_st).count()
-    total_accepted   = JobApplication.objects.filter(
+    total_accepted = JobApplication.objects.filter(
         vacancy=vacancy, status=longlisted_st,
         longlist_decision='accepted').count()
-    total_rejected   = JobApplication.objects.filter(
+    total_rejected = JobApplication.objects.filter(
         vacancy=vacancy, status=longlisted_st,
         longlist_decision='rejected').count()
     total_unreviewed = JobApplication.objects.filter(
@@ -4217,31 +4194,31 @@ def hr_longlist_dashboard(request, vacancy_id):
     for app in qs:
         yrs, mo = _calculate_experience(app.snapshot_work or [])
         applications.append({
-            'app':         app,
-            'basic':       _extract_basic(app),
-            'exp_years':   yrs,
-            'exp_months':  mo,
+            'app': app,
+            'basic': _extract_basic(app),
+            'exp_years': yrs,
+            'exp_months': mo,
             'highest_edu': _highest_edu(app.snapshot_academic or []),
         })
 
     filter_params = _build_filter_params(request.GET)
-    filter_query  = '&'.join(f"{k}={v}" for k, v in filter_params.items())
+    filter_query = '&'.join(f"{k}={v}" for k, v in filter_params.items())
 
     context = {
-        'vacancy':           vacancy,
-        'applications':      applications,
-        'filter_query':      filter_query,
-        'filter_params':     filter_params,
-        'active_tab':        request.GET.get('tab', 'active'),
-        'total_longlisted':  total_longlisted,
-        'total_accepted':    total_accepted,
-        'total_rejected':    total_rejected,
-        'total_unreviewed':  total_unreviewed,
-        'total_sys_rejected':total_sys_rejected,
-        'gender_choices':    [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
-        'decision_choices':  [('unreviewed', 'Unreviewed'),
-                              ('accepted', 'Accepted'),
-                              ('rejected', 'Rejected')],
+        'vacancy': vacancy,
+        'applications': applications,
+        'filter_query': filter_query,
+        'filter_params': filter_params,
+        'active_tab': request.GET.get('tab', 'active'),
+        'total_longlisted': total_longlisted,
+        'total_accepted': total_accepted,
+        'total_rejected': total_rejected,
+        'total_unreviewed': total_unreviewed,
+        'total_sys_rejected': total_sys_rejected,
+        'gender_choices': [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
+        'decision_choices': [('unreviewed', 'Unreviewed'),
+                             ('accepted', 'Accepted'),
+                             ('rejected', 'Rejected')],
     }
     return render(request, 'recruitment/hr/longlisting/dashboard.html', context)
 
@@ -4249,24 +4226,24 @@ def hr_longlist_dashboard(request, vacancy_id):
 # ── View 2: Dossier ────────────────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 def hr_longlist_dossier(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
-    app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
+    app = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
 
-    qs         = _get_filter_queryset(vacancy, request.GET)
-    app_ids    = list(qs.values_list('id', flat=True))
+    qs = _get_filter_queryset(vacancy, request.GET)
+    app_ids = list(qs.values_list('id', flat=True))
     filter_params = _build_filter_params(request.GET)
-    filter_query  = '&'.join(f"{k}={v}" for k, v in filter_params.items())
+    filter_query = '&'.join(f"{k}={v}" for k, v in filter_params.items())
 
     try:
         current_idx = app_ids.index(app_id)
     except ValueError:
         current_idx = None
 
-    prev_id  = app_ids[current_idx - 1] if current_idx not in (None, 0) else None
-    next_id  = app_ids[current_idx + 1] if (
-        current_idx is not None and current_idx < len(app_ids) - 1) else None
+    prev_id = app_ids[current_idx - 1] if current_idx not in (None, 0) else None
+    next_id = app_ids[current_idx + 1] if (
+            current_idx is not None and current_idx < len(app_ids) - 1) else None
     position = (current_idx + 1) if current_idx is not None else None
 
     LonglistReviewLog.objects.create(
@@ -4278,24 +4255,24 @@ def hr_longlist_dossier(request, vacancy_id, app_id):
     yrs, mo = _calculate_experience(app.snapshot_work or [])
 
     context = {
-        'vacancy':       vacancy,
-        'app':           app,
-        'basic':         _extract_basic(app),
-        'academic':      app.snapshot_academic     or [],
-        'professional':  app.snapshot_professional or [],
-        'work':          app.snapshot_work         or [],
-        'referees':      app.snapshot_referees     or [],
-        'additional':    app.snapshot_additional   or {},
-        'memberships':   app.snapshot_memberships  or [],
-        'exp_years':     yrs,
-        'exp_months':    mo,
-        'prev_id':       prev_id,
-        'next_id':       next_id,
-        'position':      position,
-        'total':         len(app_ids),
-        'filter_query':  filter_query,
+        'vacancy': vacancy,
+        'app': app,
+        'basic': _extract_basic(app),
+        'academic': app.snapshot_academic or [],
+        'professional': app.snapshot_professional or [],
+        'work': app.snapshot_work or [],
+        'referees': app.snapshot_referees or [],
+        'additional': app.snapshot_additional or {},
+        'memberships': app.snapshot_memberships or [],
+        'exp_years': yrs,
+        'exp_months': mo,
+        'prev_id': prev_id,
+        'next_id': next_id,
+        'position': position,
+        'total': len(app_ids),
+        'filter_query': filter_query,
         'filter_params': filter_params,
-        'active_tab':    request.GET.get('tab', 'active'),
+        'active_tab': request.GET.get('tab', 'active'),
         'gender_choices': [('Male', 'Male'), ('Female', 'Female'), ('Other', 'Other')],
         'decision_choices': [('unreviewed', 'Unreviewed'),
                              ('accepted', 'Accepted'),
@@ -4307,14 +4284,14 @@ def hr_longlist_dossier(request, vacancy_id, app_id):
 # ── View 3: Decision ───────────────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 @require_POST
 def hr_longlist_decision(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
-    app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
+    app = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
 
-    decision     = request.POST.get('decision', '').strip()
-    notes        = request.POST.get('notes', '').strip()
+    decision = request.POST.get('decision', '').strip()
+    notes = request.POST.get('notes', '').strip()
     filter_query = request.POST.get('filter_query', '')
 
     if decision not in ['accepted', 'rejected']:
@@ -4328,26 +4305,26 @@ def hr_longlist_decision(request, vacancy_id, app_id):
     action = 'decision_changed' if previous_decision else decision
 
     with transaction.atomic():
-        app.longlist_decision    = decision
+        app.longlist_decision = decision
         app.longlist_decision_by = request.user
         app.longlist_decision_at = timezone.now()
-        app.longlist_notes       = notes
+        app.longlist_notes = notes
 
         if decision == 'rejected':
             # Immediately move to not_selected
-            not_selected_st      = _status('not_selected')
-            previous_status      = app.status
-            app.status           = not_selected_st
+            not_selected_st = _status('not_selected')
+            previous_status = app.status
+            app.status = not_selected_st
             app.save(update_fields=[
                 'longlist_decision', 'longlist_decision_by',
                 'longlist_decision_at', 'longlist_notes', 'status',
             ])
             JobApplicationStatusLog.objects.create(
-                application = app,
-                from_status = previous_status,
-                to_status   = not_selected_st,
-                changed_by  = request.user,
-                notes       = f"Rejected during manual longlisting. Reason: {notes}",
+                application=app,
+                from_status=previous_status,
+                to_status=not_selected_st,
+                changed_by=request.user,
+                notes=f"Rejected during manual longlisting. Reason: {notes}",
             )
         else:
             app.save(update_fields=[
@@ -4359,9 +4336,9 @@ def hr_longlist_decision(request, vacancy_id, app_id):
             vacancy=vacancy, application=app,
             officer=request.user, action=action, notes=notes,
             metadata={
-                'decision':          decision,
+                'decision': decision,
                 'previous_decision': previous_decision,
-                'screening_passed':  app.screening_passed,
+                'screening_passed': app.screening_passed,
             },
         )
 
@@ -4375,14 +4352,14 @@ def hr_longlist_decision(request, vacancy_id, app_id):
 # ── View 4: Bulk Action ────────────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 @require_POST
 def hr_longlist_bulk(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
-    action  = request.POST.get('action', '').strip()
+    action = request.POST.get('action', '').strip()
     app_ids = request.POST.getlist('app_ids')
-    notes   = request.POST.get('notes', '').strip()
+    notes = request.POST.get('notes', '').strip()
 
     if action not in ['accepted', 'rejected']:
         return JsonResponse({'error': 'Invalid action.'}, status=400)
@@ -4400,12 +4377,12 @@ def hr_longlist_bulk(request, vacancy_id):
         if action == 'rejected':
             not_selected_st = _status('not_selected')
             for app in apps:
-                previous_status          = app.status
-                app.longlist_decision    = 'rejected'
+                previous_status = app.status
+                app.longlist_decision = 'rejected'
                 app.longlist_decision_by = request.user
                 app.longlist_decision_at = timezone.now()
-                app.longlist_notes       = notes
-                app.status               = not_selected_st
+                app.longlist_notes = notes
+                app.status = not_selected_st
                 app.save(update_fields=[
                     'longlist_decision', 'longlist_decision_by',
                     'longlist_decision_at', 'longlist_notes', 'status',
@@ -4417,10 +4394,10 @@ def hr_longlist_bulk(request, vacancy_id):
                 )
         else:
             apps.update(
-                longlist_decision    = 'accepted',
-                longlist_decision_by = request.user,
-                longlist_decision_at = timezone.now(),
-                longlist_notes       = notes,
+                longlist_decision='accepted',
+                longlist_decision_by=request.user,
+                longlist_decision_at=timezone.now(),
+                longlist_notes=notes,
             )
 
         LonglistReviewLog.objects.create(
@@ -4440,26 +4417,26 @@ def hr_longlist_bulk(request, vacancy_id):
 # ── View 5: Recall ─────────────────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 @require_POST
 def hr_longlist_recall(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
-    app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
+    app = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
 
     notes = request.POST.get('notes', '').strip()
     if not notes:
         return JsonResponse(
             {'error': 'A reason for reconsideration is required.'}, status=400)
 
-    longlisted_st   = _status('longlisted')
+    longlisted_st = _status('longlisted')
     previous_status = app.status
 
     with transaction.atomic():
-        app.status               = longlisted_st
-        app.longlist_decision    = None
+        app.status = longlisted_st
+        app.longlist_decision = None
         app.longlist_decision_by = None
         app.longlist_decision_at = None
-        app.longlist_notes       = ''
+        app.longlist_notes = ''
         app.save(update_fields=[
             'status', 'longlist_decision', 'longlist_decision_by',
             'longlist_decision_at', 'longlist_notes',
@@ -4473,7 +4450,7 @@ def hr_longlist_recall(request, vacancy_id, app_id):
             vacancy=vacancy, application=app,
             officer=request.user, action='override', notes=notes,
             metadata={
-                'previous_status':    previous_status.code if previous_status else None,
+                'previous_status': previous_status.code if previous_status else None,
                 'original_screening': app.screening_reasons,
             },
         )
@@ -4485,14 +4462,14 @@ def hr_longlist_recall(request, vacancy_id, app_id):
 # ── View 6: Finalise Longlist ──────────────────────────────────────────────
 
 @login_required
-@role_required(['hod_hr','panelist'])
+@role_required(['hod_hr', 'panelist'])
 @require_POST
 def hr_longlist_finalise(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
-    longlisted_st      = _status('longlisted')
+    longlisted_st = _status('longlisted')
     final_longlisted_st = _status('final_longlisted')
-    not_selected_st    = _status('not_selected')
+    not_selected_st = _status('not_selected')
 
     if not final_longlisted_st:
         return JsonResponse(
@@ -4528,7 +4505,7 @@ def hr_longlist_finalise(request, vacancy_id):
         # Move accepted → final_longlisted
         for app in accepted_apps:
             previous_status = app.status
-            app.status      = final_longlisted_st
+            app.status = final_longlisted_st
             app.save(update_fields=['status'])
             JobApplicationStatusLog.objects.create(
                 application=app, from_status=previous_status,
@@ -4547,12 +4524,433 @@ def hr_longlist_finalise(request, vacancy_id):
             metadata={
                 'accepted_count': accepted_count,
                 'finalised_by': request.user.full_name or request.user.email,
-                'finalised_at':   timezone.now().isoformat(),
+                'finalised_at': timezone.now().isoformat(),
             },
         )
 
     return JsonResponse({
-        'success':       True,
+        'success': True,
         'accepted_count': accepted_count,
-        'redirect_url':  '/recruitment/hr/vacancy/list/',
+        'redirect_url': '/recruitment/hr/vacancy/list/',
     })
+
+
+# ── Helpers ────────────────────────────────────────────────────────────────
+
+def _threshold(n):
+    """Return 50%+1 threshold for committee of size n."""
+    return (n // 2) + 1 if n > 0 else 0
+
+
+def _display_name(user):
+    """Best available display name for a user.
+    Works with custom AbstractBaseUser that has first_name / last_name fields
+    but does NOT inherit AbstractUser's get_full_name() method.
+    """
+    full = f"{getattr(user, 'first_name', '') or ''} {getattr(user, 'last_name', '') or ''}".strip()
+    return full or getattr(user, 'full_name', None) or user.email
+
+
+def _send_appointment_email(member, vacancy, request):
+    """Email a committee member their appointment notice."""
+    try:
+        name = _display_name(member)
+        deadline = vacancy.end_date + timedelta(days=21)
+        portal_url = request.build_absolute_uri('/hr/dashboard/')
+
+        message_html = f"""
+        <p>Dear <strong>{name}</strong>,</p>
+        <p>
+            You have been appointed to the <strong>Shortlisting Committee</strong>
+            for the following vacancy:
+        </p>
+        <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;width:35%;">Position</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {vacancy.title}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;">Reference</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;
+                           font-family:monospace;">
+                    {vacancy.reference_number}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;">Deadline</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {deadline.strftime('%d %B %Y')}
+                </td>
+            </tr>
+        </table>
+        <p>
+            Your task is to <strong>score each shortlisted candidate</strong>
+            (1–100 scale) and then provide your <strong>shortlist picks</strong>
+            (include / exclude with reason).  All scoring must be completed by
+            the deadline above.
+        </p>
+        <p>
+            Please log in to the recruitment portal to access your committee
+            dashboard and begin scoring.
+        </p>
+        <p style="margin-top:1.5rem;">
+            <a href="{portal_url}"
+               style="background:#1D255B;color:#F9E6A1;padding:0.65rem 1.5rem;
+                      border-radius:0.4rem;text-decoration:none;font-weight:600;">
+                Go to Portal
+            </a>
+        </p>
+        <p style="margin-top:1.5rem;color:#67748e;font-size:0.85rem;">
+            If you believe this appointment was made in error, please contact
+            the HR office immediately.
+        </p>
+        """
+
+        html_body = render_to_string('emails/email_base.html', {
+            'subject':         f'Committee Appointment — {vacancy.title}',
+            'message_content': message_html,
+            'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+            'year':            timezone.now().year,
+        })
+        msg = EmailMultiAlternatives(
+            subject    = f'Committee Appointment — {vacancy.title} ({vacancy.reference_number})',
+            body       = f'You have been appointed to the shortlisting committee for {vacancy.title}.',
+            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to         = [member.email],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=False)
+        return True
+    except Exception as e:
+        logger.error(f"Appointment email failed to {member.email}: {e}", exc_info=True)
+        return False
+
+
+# ── View 1: Appoint Committee Dashboard ───────────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+def hr_appoint_committee(request, vacancy_id):
+    """
+    HR dashboard for appointing / managing the shortlisting committee
+    for a specific vacancy.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+
+    # Final longlisted applications
+    app_count = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code='final_longlisted',
+    ).count()
+
+    # Current committee
+    committee_qs = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy,
+        is_active=True,
+    ).select_related('member', 'appointed_by').order_by('appointed_at')
+
+    committee_data = []
+    for entry in committee_qs:
+        scores_done = CommitteeScore.objects.filter(
+            vacancy=vacancy,
+            member=entry.member,
+            submitted=True,
+        ).count()
+        can_remove = (scores_done == 0 and not entry.scores_submitted)
+        committee_data.append({
+            'entry':       entry,
+            'name':        _display_name(entry.member),
+            'email':       entry.member.email,
+            'scores_done': scores_done,
+            'can_remove':  can_remove,
+        })
+
+    committee_count = len(committee_data)
+    threshold       = _threshold(committee_count)
+    deadline        = vacancy.end_date + timedelta(days=21)
+    days_remaining  = (deadline - timezone.now().date()).days
+
+    # Consent summary (useful to show even on appoint screen)
+    consented_count = ShortlistConsent.objects.filter(
+        vacancy=vacancy, response='consented').count()
+
+    # All internal staff, excluding applicants for this vacancy
+    on_committee_ids = set(
+        str(mid) for mid in ShortlistingCommittee.objects.filter(
+            vacancy=vacancy, is_active=True
+        ).values_list('member_id', flat=True)
+    )
+    # JobApplication.user is JobseekerAccount (external). Internal User model
+    # is completely separate — no overlap is possible, skip the applicant check.
+    all_staff = []
+    for u in User.objects.filter(user_type=2, is_active=True).order_by('first_name', 'last_name', 'email'):
+        uid = str(u.pk)
+        all_staff.append({
+            'id':           uid,
+            'name':         _display_name(u),
+            'email':        u.email,
+            'on_committee': uid in on_committee_ids,
+        })
+
+    return render(request, 'recruitment/hr/shortlisting/appoint_committee.html', {
+        'page':             'Shortlisting',
+        'vacancy':          vacancy,
+        'app_count':        app_count,
+        'committee':        committee_data,
+        'committee_count':  committee_count,
+        'threshold':        threshold,
+        'deadline':         deadline,
+        'all_staff':        all_staff,
+        'days_remaining':   days_remaining,
+        'consented_count':  consented_count,
+        'deadline_amber':   0 < days_remaining <= 5,
+        'deadline_red':     days_remaining <= 0,
+    })
+
+
+# ── View 2: Add Member (POST / AJAX) ──────────────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+@require_POST
+def hr_committee_add(request, vacancy_id):
+    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    member_id = request.POST.get('member_id', '').strip()
+    send_email = request.POST.get('send_email', '1') == '1'
+
+    if not member_id:
+        return JsonResponse({'error': 'No member selected.'}, status=400)
+
+    try:
+        member = User.objects.get(pk=member_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+
+    # Note: JobApplication.user is a JobseekerAccount (external users only).
+    # Internal staff (User model) are a separate model and can never be applicants,
+    # so no applicant-conflict check is needed here.
+
+    try:
+        with transaction.atomic():
+            entry, created = ShortlistingCommittee.objects.get_or_create(
+                vacancy=vacancy,
+                member=member,
+                defaults={
+                    'appointed_by': request.user,
+                    'is_active':    True,
+                },
+            )
+            if not created:
+                if entry.is_active:
+                    return JsonResponse({
+                        'error': f'{_display_name(member)} is already on the committee.'
+                    }, status=400)
+                # Re-activate
+                entry.is_active    = True
+                entry.appointed_by = request.user
+                entry.appointed_at = timezone.now()
+                entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
+
+            ShortlistLog.objects.create(
+                vacancy          = vacancy,
+                application      = None,
+                performed_by     = request.user,
+                action           = 'member_appointed',
+                notes            = f'Appointed {_display_name(member)} to committee.',
+                metadata         = {'member_id': str(member.pk), 'member_email': member.email},
+                performed_by_label = _display_name(request.user),
+            )
+    except Exception as e:
+        logger.error(f"Committee add error: {e}", exc_info=True)
+        return JsonResponse({'error': 'Database error. Please try again.'}, status=500)
+
+    email_sent = False
+    if send_email:
+        email_sent = _send_appointment_email(member, vacancy, request)
+
+    # Recalculate threshold with new count
+    new_count   = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True).count()
+    new_threshold = _threshold(new_count)
+
+    return JsonResponse({
+        'success':       True,
+        'created':       created,
+        'email_sent':    email_sent,
+        'member': {
+            'id':             member.pk,
+            'name':           _display_name(member),
+            'email':          member.email,
+            'appointed_at':   entry.appointed_at.strftime('%d %b %Y %H:%M'),
+        },
+        'committee_count':  new_count,
+        'new_threshold':    new_threshold,
+    })
+
+
+# ── View 3: Remove Member (POST / AJAX) ───────────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+@require_POST
+def hr_committee_remove(request, vacancy_id):
+    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    member_id = request.POST.get('member_id', '').strip()
+    reason    = request.POST.get('reason', '').strip()
+
+    if not member_id:
+        return JsonResponse({'error': 'No member specified.'}, status=400)
+    if not reason:
+        return JsonResponse({'error': 'A reason for removal is required.'}, status=400)
+
+    entry = get_object_or_404(
+        ShortlistingCommittee, vacancy=vacancy, member_id=member_id, is_active=True)
+
+    # Guard: cannot remove if member has already submitted scores
+    if entry.scores_submitted:
+        return JsonResponse({
+            'error': 'Cannot remove a member who has already submitted their scores.'
+        }, status=400)
+
+    scores_count = CommitteeScore.objects.filter(
+        vacancy=vacancy, member_id=member_id, submitted=True).count()
+    if scores_count > 0:
+        return JsonResponse({
+            'error': f'Cannot remove — member has submitted {scores_count} score(s).'
+        }, status=400)
+
+    with transaction.atomic():
+        entry.is_active = False
+        entry.save(update_fields=['is_active'])
+        ShortlistLog.objects.create(
+            vacancy            = vacancy,
+            application        = None,
+            performed_by       = request.user,
+            action             = 'member_removed',
+            notes              = reason,
+            metadata           = {'member_id': str(member_id)},
+            performed_by_label = _display_name(request.user),
+        )
+
+    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_threshold = _threshold(new_count)
+
+    return JsonResponse({
+        'success':         True,
+        'committee_count': new_count,
+        'new_threshold':   new_threshold,
+    })
+
+
+# ── View 4: Notify All Members (POST / AJAX) ──────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+@require_POST
+def hr_committee_notify(request, vacancy_id):
+    """Re-send appointment emails to all active committee members."""
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+
+    members = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    ).select_related('member')
+
+    if not members.exists():
+        return JsonResponse({'error': 'No committee members to notify.'}, status=400)
+
+    sent_count   = 0
+    failed_count = 0
+    for entry in members:
+        ok = _send_appointment_email(entry.member, vacancy, request)
+        if ok:
+            sent_count += 1
+        else:
+            failed_count += 1
+
+    ShortlistLog.objects.create(
+        vacancy            = vacancy,
+        application        = None,
+        performed_by       = request.user,
+        action             = 'emails_sent',
+        notes              = f'Bulk notification sent to {sent_count} committee member(s).',
+        metadata           = {'sent': sent_count, 'failed': failed_count},
+        performed_by_label = _display_name(request.user),
+    )
+
+    return JsonResponse({
+        'success':     True,
+        'sent_count':  sent_count,
+        'failed_count': failed_count,
+    })
+
+
+# ── View 5: Staff Search (GET / AJAX) ─────────────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+def hr_committee_staff_search(request, vacancy_id):
+    """
+    Typeahead search for staff users.
+    Returns JSON list: [{id, name, email, already_on_committee}].
+    Excludes applicants for this vacancy.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    q       = request.GET.get('q', '').strip()
+
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    # Internal staff only (user_type=2)
+    from django.db.models import Q
+    qs = User.objects.filter(
+        user_type=2,
+        is_active=True,
+    ).filter(
+        Q(email__icontains=q) |
+        Q(first_name__icontains=q) |
+        Q(last_name__icontains=q) |
+        Q(full_name__icontains=q)
+    ).exclude(
+        # Exclude applicants for this vacancy
+        # (no applicant exclusion needed — internal User != JobseekerAccount)
+    )[:20]
+
+    # Which are already on the committee? (str because PK is UUID)
+    on_committee = set(
+        str(mid) for mid in ShortlistingCommittee.objects.filter(
+            vacancy=vacancy, is_active=True
+        ).values_list('member_id', flat=True)
+    )
+
+    results = []
+    for u in qs:
+        name = _display_name(u)
+        results.append({
+            'id':                   str(u.pk),  # UUID -> string for JSON
+            'name':                 name,
+            'email':                u.email,
+            'already_on_committee': str(u.pk) in on_committee,
+        })
+
+    return JsonResponse({'results': results})
+
+
+# ── View 6: Committee Progress (HR Monitor) ───────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+def hr_committee_progress(request, vacancy_id):
+    """
+    HR view to monitor committee scoring/consent progress and
+    trigger finalisation when threshold is met.
+    Will be built in the next step.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    # Placeholder — full implementation in hr_committee_progress_view.py
+    from django.shortcuts import redirect
+    return redirect('hr_appoint_committee', vacancy_id=vacancy_id)

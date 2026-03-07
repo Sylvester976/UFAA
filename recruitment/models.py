@@ -967,3 +967,180 @@ class InterviewSectionScore(models.Model):
 
     class Meta:
         unique_together = ("interview_score", "section")
+
+class ShortlistingCommittee(models.Model):
+    """
+    Tracks which staff members have been appointed to the shortlisting
+    committee for a given vacancy.
+    """
+    vacancy         = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='shortlisting_committee'
+    )
+    member          = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='committee_assignments'
+    )
+    appointed_by    = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='committee_appointments_made'
+    )
+    appointed_at        = models.DateTimeField(default=timezone.now)
+    is_active           = models.BooleanField(default=True)
+    scores_submitted    = models.BooleanField(default=False)
+    scores_submitted_at = models.DateTimeField(null=True, blank=True)
+    picks_submitted     = models.BooleanField(default=False)
+    picks_submitted_at  = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [('vacancy', 'member')]
+
+    def __str__(self):
+        return f"{self.member} on committee for {self.vacancy}"
+
+
+class CommitteeScore(models.Model):
+    """
+    One member's score (1–100) for one application on one vacancy.
+    Saved as draft until the member explicitly submits all their scores.
+    """
+    vacancy     = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='committee_scores'
+    )
+    application = models.ForeignKey(
+        'JobApplication', on_delete=models.CASCADE,
+        related_name='committee_scores'
+    )
+    member      = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='committee_scores_given'
+    )
+    score        = models.PositiveSmallIntegerField()   # 1–100
+    comment      = models.TextField()
+    is_draft     = models.BooleanField(default=True)
+    submitted    = models.BooleanField(default=False)
+    created_at   = models.DateTimeField(default=timezone.now)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+    updated_at   = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [('vacancy', 'application', 'member')]
+
+    def __str__(self):
+        return f"{self.member} scored {self.application} → {self.score}"
+
+
+class CommitteeScoreAmendment(models.Model):
+    """
+    Audit trail when a score is changed after submission (requires HR override).
+    """
+    score       = models.ForeignKey(
+        'CommitteeScore', on_delete=models.CASCADE,
+        related_name='amendments'
+    )
+    old_score   = models.PositiveSmallIntegerField()
+    new_score   = models.PositiveSmallIntegerField()
+    old_comment = models.TextField()
+    new_comment = models.TextField()
+    reason      = models.TextField()
+    amended_by  = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='score_amendments'
+    )
+    amended_at  = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Amendment on score #{self.score_id}: {self.old_score} → {self.new_score}"
+
+
+class ShortlistPick(models.Model):
+    """
+    Each committee member's include/exclude decision for each application,
+    submitted after reviewing the ranked scores.
+    """
+    vacancy     = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='shortlist_picks'
+    )
+    application = models.ForeignKey(
+        'JobApplication', on_delete=models.CASCADE,
+        related_name='shortlist_picks'
+    )
+    member      = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='shortlist_picks'
+    )
+    include    = models.BooleanField()   # True = include, False = exclude
+    reason     = models.TextField()
+    decided_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = [('vacancy', 'application', 'member')]
+
+    def __str__(self):
+        verb = "included" if self.include else "excluded"
+        return f"{self.member} {verb} {self.application}"
+
+
+class ShortlistConsent(models.Model):
+    """
+    Each committee member's consent/dissent on the final shortlist,
+    submitted after all picks are done.
+    50%+1 consents → HR can finalise.
+    """
+    RESPONSE_CHOICES = [
+        ('consented',   'Consented'),
+        ('dissented',   'Dissented'),
+        ('no_response', 'No Response'),
+    ]
+
+    vacancy        = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='shortlist_consents'
+    )
+    member         = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='shortlist_consents'
+    )
+    response       = models.CharField(
+        max_length=20, choices=RESPONSE_CHOICES, default='no_response'
+    )
+    dissent_reason = models.TextField(blank=True)
+    responded_at   = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [('vacancy', 'member')]
+
+    def __str__(self):
+        return f"{self.member} → {self.response} on {self.vacancy}"
+
+
+class ShortlistLog(models.Model):
+    """
+    Full audit trail for every action taken during the shortlisting stage.
+    application may be null for vacancy-level actions (e.g. member appointed).
+    """
+    vacancy            = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='shortlist_logs'
+    )
+    application        = models.ForeignKey(
+        'JobApplication', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='shortlist_logs'
+    )
+    performed_by       = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='shortlist_actions'
+    )
+    action             = models.CharField(max_length=50)
+    notes              = models.TextField(blank=True)
+    metadata           = models.JSONField(default=dict, blank=True)
+    timestamp          = models.DateTimeField(default=timezone.now)
+    performed_by_label = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.action} on {self.vacancy} at {self.timestamp:%Y-%m-%d %H:%M}"

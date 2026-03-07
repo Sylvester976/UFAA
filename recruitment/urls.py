@@ -21,7 +21,7 @@ urlpatterns = [
     # HR DASHBOARD
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
-    
+
     path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path(
         "panel/assignment/<int:assignment_id>/respond/",
@@ -131,7 +131,6 @@ urlpatterns = [
     ),
 
     path('vacancies/longlisting/', views.vacancy_longlisting, name='vacancy_longlisting'),
-    path('vacancies/shortlisting/', views.vacancy_shortlisting, name='vacancy_shortlisting'),
     path('vacancies/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
     path('vacancies/list/', views.vacancy_list, name='vacancy_list'),
     path('hr/vacancy/<int:vacancy_id>/longlisting/', views.move_to_longlisting, name='move_to_longlisting'),
@@ -194,4 +193,31 @@ urlpatterns = [
          views.hr_longlist_recall, name='hr_longlist_recall'),
     path('hr/vacancy/<int:vacancy_id>/longlist/finalise/',
          views.hr_longlist_finalise, name='hr_longlist_finalise'),
+    path('vacancies/shortlisting/',
+         views.vacancy_shortlisting,
+         name='vacancy_shortlisting'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/',
+         views.hr_appoint_committee,
+         name='hr_appoint_committee'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/add/',
+         views.hr_committee_add,
+         name='hr_committee_add'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/remove/',
+         views.hr_committee_remove,
+         name='hr_committee_remove'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/notify/',
+         views.hr_committee_notify,
+         name='hr_committee_notify'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/staff-search/',
+         views.hr_committee_staff_search,
+         name='hr_committee_staff_search'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/progress/',
+         views.hr_committee_progress,
+         name='hr_committee_progress'),
 ]
