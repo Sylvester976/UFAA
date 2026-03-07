@@ -1,109 +1,228 @@
 {% extends 'recruitment/panelist/base_panelist.html' %}
+{% block title %}Panelist Dashboard{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-    <h3>Panelist Dashboard</h3>
+    <!-- Header -->
+    <div class="dash-header-banner mb-2">
+        <h4>
+            <i class="fas fa-user-tie me-2" style="color:var(--gold-dark);"></i>
+            Panelist Dashboard
+        </h4>
+        <p>Your assigned interview panels</p>
+    </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>Vacancy</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
+    <div class="gold-divider"></div>
+
+
+    <!-- PANEL ASSIGNMENTS -->
+    <div class="card dash-card brand-card mb-3">
+
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
+                Panel Assignments
+            </h6>
+            <p>Respond to panel invitations</p>
+        </div>
+
+        <div class="card-body">
+
             {% for assignment in assignments %}
+
             <div class="card mb-3 p-3">
-                <h5>{{ assignment.vacancy.title }}</h5>
-                <p>Status: {{ assignment.status }}</p>
+
+                <div class="d-flex justify-content-between align-items-center">
+
+                    <div>
+                        <h6 class="mb-1">{{ assignment.vacancy.title }}</h6>
+
+                        <small class="text-muted">
+                            Status:
+                            <span class="status-badge">
+                                {{ assignment.status|title }}
+                            </span>
+                        </small>
+                    </div>
+
+                </div>
 
                 {% if assignment.status == "pending" %}
-                {% comment %} <form method="POST" action="{% url 'respond_panel_assignment' assignment.id %}">
+
+                <form method="POST"
+                      action="{% url 'respond_panel_assignment' assignment.id %}"
+                      enctype="multipart/form-data"
+                      class="mt-3">
+
                     {% csrf_token %}
 
-                    <button name="action" value="accept" class="btn btn-success">
+                    <button name="action"
+                            value="accept"
+                            class="btn btn-brand btn-sm me-2">
+
+                        <i class="fas fa-check me-1"></i>
                         Accept
+
                     </button>
 
-                    <button type="button" class="btn btn-danger" data-bs-toggle="collapse"
+                    <button type="button"
+                            class="btn btn-danger btn-sm"
+                            data-bs-toggle="collapse"
                             data-bs-target="#decline{{ assignment.id }}">
+
+                        <i class="fas fa-times me-1"></i>
                         Decline
+
                     </button>
 
-                    <div id="decline{{ assignment.id }}" class="collapse mt-2">
-                        <textarea name="reason" class="form-control"
-                                placeholder="Reason for conflict of interest"></textarea>
-                        <button name="action" value="decline"
-                                class="btn btn-danger mt-2">
+                    <div id="decline{{ assignment.id }}"
+                         class="collapse mt-3">
+
+                        <textarea name="reason"
+                                  class="form-control mb-2"
+                                  placeholder="Reason for conflict of interest"></textarea>
+
+                        <div class="mb-2">
+
+                            <label class="form-label">
+                                Upload Signed Declaration
+                            </label>
+
+                            <input type="file"
+                                   name="decline_document"
+                                   class="form-control">
+
+                        </div>
+
+                        <button name="action"
+                                value="decline"
+                                class="btn btn-danger btn-sm">
+
                             Confirm Decline
+
                         </button>
+
                     </div>
-                </form> {% endcomment %}
-                <form method="POST"
-                    action="{% url 'respond_panel_assignment' assignment.id %}"
-                    enctype="multipart/form-data">
-
-                {% csrf_token %}
-
-                <button name="action" value="accept" class="btn btn-success">
-                Accept
-                </button>
-
-                <button type="button"
-                        class="btn btn-danger"
-                        data-bs-toggle="collapse"
-                        data-bs-target="#decline{{ assignment.id }}">
-                Decline
-                </button>
-
-                <div id="decline{{ assignment.id }}" class="collapse mt-3">
-
-                <textarea name="reason"
-                        class="form-control"
-                        placeholder="Reason for conflict of interest"></textarea>
-
-                <div class="mt-2">
-                <label>Upload Signed Declaration</label>
-                <input type="file"
-                    name="decline_document"
-                    class="form-control">
-                </div>
-
-                <button name="action"
-                        value="decline"
-                        class="btn btn-danger mt-2">
-                Confirm Decline
-                </button>
-
-                </div>
 
                 </form>
+
                 {% endif %}
+
             </div>
-            {% endfor %}
-            
-            {% for vacancy in vacancies %}
-            <tr>
-                <td>{{ vacancy.title }}</td>
-                <td>{{ vacancy.reference_number }}</td>
-                <td>{{ vacancy.status }}</td>
-                <td>
-                    <a href="{% url 'panelist_interview_list' vacancy.id %}">
-                        Shortlist 
-                    </a>
-                </td>
-            </tr>
+
             {% empty %}
-            <tr>
-                <td colspan="4">No active shortlisting assignments.</td>
-            </tr>
+
+            <div class="empty-state text-center">
+
+                <i class="fas fa-user-slash"></i>
+
+                <p>No pending panel assignments.</p>
+
+            </div>
+
             {% endfor %}
-        </tbody>
-    </table>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- ACTIVE INTERVIEW TASKS -->
+    <div class="card dash-card brand-card">
+
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-clipboard-list me-2" style="opacity:.5;"></i>
+                Active Interview Tasks
+            </h6>
+            <p>Vacancies requiring your evaluation</p>
+        </div>
+
+        <div class="card-body">
+
+            <div class="table-responsive">
+
+                <table class="table brand-table mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Vacancy</th>
+                            <th>Reference</th>
+                            <th>Status</th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        {% for vacancy in vacancies %}
+
+                        <tr>
+
+                            <td>
+                                <strong>{{ vacancy.title }}</strong>
+                            </td>
+
+                            <td>
+                                {{ vacancy.reference_number }}
+                            </td>
+
+                            <td>
+
+                                <span class="status-badge">
+
+                                    {{ vacancy.status|title }}
+
+                                </span>
+
+                            </td>
+
+                            <td class="text-center">
+
+                                <a href="{% url 'panelist_interview_list' vacancy.id %}"
+                                   class="btn btn-sm btn-brand">
+
+                                    <i class="fas fa-list-check me-1"></i>
+                                    Score Candidates
+
+                                </a>
+
+                            </td>
+
+                        </tr>
+
+                        {% empty %}
+
+                        <tr>
+
+                            <td colspan="4">
+
+                                <div class="empty-state">
+
+                                    <i class="fas fa-folder-open"></i>
+
+                                    <p>No active interview assignments.</p>
+
+                                </div>
+
+                            </td>
+
+                        </tr>
+
+                        {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </div>
 
 </div>
 
