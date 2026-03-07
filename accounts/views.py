@@ -344,7 +344,7 @@ class UserCreateView(SuperAdminRequiredMixin, View):
         return context
         
         
-class UserListView(SuperAdminRequiredMixin, ListView):
+class UserListView(ListView):
     model = User
     template_name = "accounts/user_list.html"
     context_object_name = "users"
