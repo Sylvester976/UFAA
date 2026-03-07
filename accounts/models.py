@@ -99,6 +99,9 @@ class JobseekerAccount(models.Model):
     password_reset_expires_at = models.DateTimeField(default=timezone.now)
     # ──────────────────────────────────────────────────────────────────────
 
+    failed_login_attempts = models.IntegerField(default=0)
+    lockout_until = models.DateTimeField(null=True, blank=True)
+
     is_employee = models.BooleanField(default=False)
     is_active   = models.BooleanField(default=False)   # False until email verified
     is_verified = models.BooleanField(default=False)

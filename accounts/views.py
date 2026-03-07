@@ -235,41 +235,58 @@ def save_user_account(request):
         return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
 
 
-# ── Rate limiting + reCAPTCHA ──────────────────────────────────────────────
+
+# ── Rate limiting constants ────────────────────────────────────────────────
 MAX_ATTEMPTS = getattr(settings, 'LOGIN_MAX_ATTEMPTS', 5)
-LOCKOUT_SECS = getattr(settings, 'LOGIN_LOCKOUT_SECS', 900)   # 15 minutes
+LOCKOUT_MINS = getattr(settings, 'LOGIN_LOCKOUT_MINS', 15)
 
 
-def _attempts_key(idno):
-    return f'login_attempts_{idno}'
+# ── Rate limiting — stored on the model, not cache ────────────────────────
 
-def _locked_key(idno):
-    return f'login_locked_{idno}'
+def is_locked_out(user):
+    """Check if user is currently locked out."""
+    if user.lockout_until and timezone.now() < user.lockout_until:
+        return True
+    # Auto-clear expired lockout
+    if user.lockout_until and timezone.now() >= user.lockout_until:
+        user.lockout_until         = None
+        user.failed_login_attempts = 0
+        user.save(update_fields=['lockout_until', 'failed_login_attempts'])
+    return False
 
-def is_locked_out(idno):
-    return bool(cache.get(_locked_key(idno)))
 
-def get_lockout_remaining(idno):
-    val = cache.get(f'login_locked_ttl_{idno}')
-    return val if val else LOCKOUT_SECS
+def get_lockout_remaining(user):
+    """Return remaining lockout seconds."""
+    if user.lockout_until:
+        delta = user.lockout_until - timezone.now()
+        return max(int(delta.total_seconds()), 0)
+    return 0
 
-def record_failed_attempt(idno):
-    key      = _attempts_key(idno)
-    attempts = cache.get(key, 0) + 1
+
+def record_failed_attempt(user):
+    """
+    Increment failed attempt counter on the user record.
+    Returns { locked, attempts, remaining }
+    """
+    user.failed_login_attempts = (user.failed_login_attempts or 0) + 1
+    attempts  = user.failed_login_attempts
+    remaining = MAX_ATTEMPTS - attempts
+
     if attempts >= MAX_ATTEMPTS:
-        cache.set(_locked_key(idno), True, timeout=LOCKOUT_SECS)
-        cache.set(f'login_locked_ttl_{idno}', LOCKOUT_SECS, timeout=LOCKOUT_SECS)
-        cache.delete(key)
-        return {'locked': True, 'attempts': attempts}
-    else:
-        cache.set(key, attempts, timeout=LOCKOUT_SECS * 2)
-        return {'locked': False, 'attempts': attempts}
+        user.lockout_until         = timezone.now() + timedelta(minutes=LOCKOUT_MINS)
+        user.failed_login_attempts = 0   # reset for next lockout cycle
+        user.save(update_fields=['failed_login_attempts', 'lockout_until'])
+        return {'locked': True, 'attempts': attempts, 'remaining': 0}
 
-def reset_attempts(idno):
-    cache.delete(_attempts_key(idno))
-    cache.delete(_locked_key(idno))
-    cache.delete(f'login_locked_ttl_{idno}')
+    user.save(update_fields=['failed_login_attempts'])
+    return {'locked': False, 'attempts': attempts, 'remaining': remaining}
 
+
+def reset_attempts(user):
+    """Clear counter on successful login."""
+    user.failed_login_attempts = 0
+    user.lockout_until         = None
+    user.save(update_fields=['failed_login_attempts', 'lockout_until'])
 
 
 # ── signin view ────────────────────────────────────────────────────────────
@@ -278,31 +295,32 @@ def signin(request):
     if request.method != 'POST':
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'})
 
-    idno            = request.POST.get('idno', '').strip()
-    password        = request.POST.get('password', '')
+    idno     = request.POST.get('idno', '').strip()
+    password = request.POST.get('password', '')
 
     if not idno or not password:
         return JsonResponse({'status': 'error',
                              'message': 'ID number and password are required.'})
 
-    # ── Rate limit: lockout check ──────────────────────────────────────────
-    if is_locked_out(idno):
-        remaining = get_lockout_remaining(idno)
-        mins = remaining // 60
-        return JsonResponse({
-            'status':  'locked',
-            'message': (f'Account temporarily locked due to too many failed attempts. '
-                        f'Try again in {mins} minute(s) or reset your password.'),
-        })
-
-    # ── 3. Fetch user ─────────────────────────────────────────────────────
+    # ── Fetch user first (lockout is per-user, stored on model) ───────────
     try:
         user = JobseekerAccount.objects.get(id_no=idno)
     except JobseekerAccount.DoesNotExist:
-        record_failed_attempt(idno)
         return JsonResponse({'status': 'error', 'message': 'Invalid credentials.'})
 
-    # ── 4. Unverified ─────────────────────────────────────────────────────
+    # ── Lockout check ─────────────────────────────────────────────────────
+    if is_locked_out(user):
+        remaining = get_lockout_remaining(user)
+        mins = remaining // 60
+        secs = remaining % 60
+        time_str = f"{mins}m {secs}s" if secs else f"{mins} minute(s)"
+        return JsonResponse({
+            'status':  'locked',
+            'message': (f'Account temporarily locked due to too many failed attempts. '
+                        f'Try again in {time_str}, or reset your password.'),
+        })
+
+    # ── Unverified ────────────────────────────────────────────────────────
     if not user.is_verified:
         return JsonResponse({
             'status':  'unverified',
@@ -310,29 +328,32 @@ def signin(request):
             'email':   user.email,
         })
 
-    # ── 5. Inactive ───────────────────────────────────────────────────────
+    # ── Inactive ──────────────────────────────────────────────────────────
     if not user.is_active:
         return JsonResponse({'status': 'error',
                              'message': 'Your account has been deactivated. Please contact HR.'})
 
-    # ── 6. Password ───────────────────────────────────────────────────────
+    # ── Password check ────────────────────────────────────────────────────
     if not user.check_password(password):
-        result = record_failed_attempt(idno)
+        result = record_failed_attempt(user)
+
         if result['locked']:
             _send_lockout_email(user, request)
             return JsonResponse({
                 'status':  'locked',
-                'message': ('Too many failed attempts. Account locked for 15 minutes. '
-                            'A notification has been sent to your registered email.'),
+                'message': (f'Too many failed attempts. Account locked for {LOCKOUT_MINS} minutes. '
+                            f'A notification has been sent to your registered email.'),
             })
-        remaining = MAX_ATTEMPTS - result['attempts']
+
+        remaining = result['remaining']
+        warn = " ⚠️ Last attempt before lockout!" if remaining == 1 else ""
         return JsonResponse({
             'status':  'error',
-            'message': f'Invalid credentials. {remaining} attempt(s) remaining before lockout.',
+            'message': f'Invalid credentials. {remaining} attempt(s) remaining.{warn}',
         })
 
-    # ── 7. Success ────────────────────────────────────────────────────────
-    reset_attempts(idno)
+    # ── Success ───────────────────────────────────────────────────────────
+    reset_attempts(user)
 
     if user.session_key:
         try:
