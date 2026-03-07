@@ -2825,9 +2825,12 @@ from core.decorators import role_required
 @role_required(['hod_hr'])
 def vacancy_longlisting(request):
     vacancies = Vacancy.objects.filter(status='longlisting')
-    return render(request, 'recruitment/hr/longlisting.html', {
+    
+    context = {
+        'page':      'Human Resource Dashboard',
         'vacancies': vacancies
-    })
+    }
+    return render(request, 'recruitment/hr/longlisting.html', context)
 
 
 # @login_required
@@ -2872,9 +2875,12 @@ def vacancy_longlisting(request):
 @role_required(['hod_hr'])
 def vacancy_shortlisting(request):
     vacancies = Vacancy.objects.filter(status='shortlisting')
-    return render(request, 'recruitment/hr/shortlisting.html', {
+    
+    context = {
+        'page':      'Human Resource Dashboard',
         'vacancies': vacancies
-    })
+    }
+    return render(request, 'recruitment/hr/shortlisting.html', context)
 
 
 # ----------------------
@@ -2884,9 +2890,12 @@ def vacancy_shortlisting(request):
 @role_required(['hod_hr'])
 def vacancy_interviews(request):
     vacancies = Vacancy.objects.filter(status='interviews')
-    return render(request, 'recruitment/hr/vacancy_interviews.html', {
+    
+    context = {
+        'page':      'Human Resource Dashboard',
         'vacancies': vacancies
-    })
+    }
+    return render(request, 'recruitment/hr/vacancy_interviews.html', context)
 
 
 # ----------------------
@@ -2896,9 +2905,12 @@ def vacancy_interviews(request):
 @role_required(['hod_hr'])
 def vacancy_appointments(request):
     vacancies = Vacancy.objects.filter(status='appointed').prefetch_related('panelassignment_set__panelist')
-    return render(request, 'recruitment/hr/vacancy_appointments.html', {
+    
+    context = {
+        'page':      'Human Resource Dashboard',
         'vacancies': vacancies
-    })
+    }
+    return render(request, 'recruitment/hr/vacancy_appointments.html', context)
 
 
 # ----------------------
@@ -3606,9 +3618,11 @@ def template_list(request):
 
     templates = InterviewTemplate.objects.all()
 
-    return render(request, "recruitment/hr/interview_templates/template_list.html", {
+    context = {
+        'page':      'Human Resource Dashboard',
         "templates": templates
-    })
+    }
+    return render(request, "recruitment/hr/interview_templates/template_list.html", context)
 
 
 # --------------------------------
@@ -3631,8 +3645,12 @@ def template_create(request):
         messages.success(request, "Template created successfully")
 
         return redirect("template_list")
-
-    return render(request, "recruitment/hr/interview_templates/template_form.html")
+    
+    
+    context = {
+        'page':      'Human Resource Dashboard',
+    }
+    return render(request, "recruitment/hr/interview_templates/template_form.html", context)
     
 
 # --------------------------------
@@ -3644,11 +3662,13 @@ def template_detail(request, pk):
     template = get_object_or_404(InterviewTemplate, pk=pk)
 
     sections = template.sections.all().order_by("order")
-
-    return render(request, "recruitment/hr/interview_templates/template_detail.html", {
+    
+    context = {
+        'page':      'Human Resource Dashboard',
         "template": template,
         "sections": sections
-    })
+    }
+    return render(request, "recruitment/hr/interview_templates/template_detail.html", context)
 
 
 # --------------------------------
@@ -3669,9 +3689,11 @@ def template_edit(request, pk):
 
         return redirect("template_detail", pk=pk)
 
-    return render(request, "recruitment/hr/interview_templates/template_form.html", {
+    context = {
+        'page':      'Human Resource Dashboard',
         "template": template
-    })
+    }
+    return render(request, "recruitment/hr/interview_templates/template_form.html", context)
 
 
 # --------------------------------
@@ -3716,9 +3738,11 @@ def section_create(request, template_id):
 
         return redirect("template_detail", pk=template.id)
 
-    return render(request, "recruitment/hr/interview_templates/section_form.html", {
+    context = {
+        'page':      'Human Resource Dashboard',
         "template": template
-    })
+    }
+    return render(request, "recruitment/hr/interview_templates/section_form.html", context)
 
 
 # --------------------------------
@@ -3741,11 +3765,13 @@ def section_edit(request, pk):
         messages.success(request, "Section updated")
 
         return redirect("template_detail", pk=section.template.id)
-
-    return render(request, "recruitment/hr/interview_templates/section_form.html", {
+        
+    context = {
+        'page':      'Human Resource Dashboard',
         "section": section,
         "template": section.template
-    })
+    }
+    return render(request, "recruitment/hr/interview_templates/section_form.html", context)
 
 
 # --------------------------------

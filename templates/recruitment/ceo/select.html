@@ -1,42 +1,112 @@
 {% extends "recruitment/ceo/base_ceo.html" %}
+{% block title %}Confirm Selection{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-    <h4>Confirm Selection</h4>
+    <!-- Header -->
+    <div class="dash-header-banner mb-2">
+        <h4>
+            <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
+            Confirm Candidate Selection
+        </h4>
+        <p>{{ vacancy.title }}</p>
+    </div>
 
-    {% if application %}
-        <p><strong>Candidate:</strong> {{ application.applicant.name }}</p>
+    <div class="gold-divider"></div>
 
-        {% if is_override %}
-            <div class="alert alert-warning">
-                This candidate is NOT in the Top Three.
-                An override reason is required.
-            </div>
-        {% endif %}
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
 
-        <form method="POST">
-            {% csrf_token %}
+            <div class="card dash-card brand-card">
 
-            {% if is_override %}
-                <div class="mb-3">
-                    <label class="form-label">Override Reason</label>
-                    <textarea name="override_reason"
-                              class="form-control"
-                              required>{{ application.ceo_override_reason }}</textarea>
+                <div class="card-body">
+
+                    {% if application %}
+
+                        <h6 class="mb-3">
+                            Candidate:
+                            <strong>{{ application.applicant.name }}</strong>
+                        </h6>
+
+                        {% if is_override %}
+
+                        <div class="alert alert-warning">
+
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+
+                            This candidate is NOT in the Top Three.
+                            An override reason is required.
+
+                        </div>
+
+                        {% endif %}
+
+                        <form method="POST">
+
+                            {% csrf_token %}
+
+                            {% if is_override %}
+
+                            <div class="mb-3">
+
+                                <label class="form-label">
+                                    Override Reason
+                                </label>
+
+                                <textarea
+                                    name="override_reason"
+                                    class="form-control"
+                                    rows="4"
+                                    required>
+
+                                    {{ application.ceo_override_reason }}
+
+                                </textarea>
+
+                            </div>
+
+                            {% endif %}
+
+                            <div class="d-flex gap-2">
+
+                                <button type="submit" class="btn btn-brand">
+
+                                    <i class="fas fa-check me-1"></i>
+                                    Confirm Selection
+
+                                </button>
+
+                                <a href="{% url 'ceo_dashboard' %}"
+                                   class="btn btn-outline-brand">
+
+                                    Cancel
+
+                                </a>
+
+                            </div>
+
+                        </form>
+
+                    {% else %}
+
+                    <div class="empty-state">
+
+                        <i class="fas fa-user-times"></i>
+
+                        <p>No candidate available for selection.</p>
+
+                    </div>
+
+                    {% endif %}
+
                 </div>
-            {% endif %}
 
-            <button type="submit" class="btn btn-success">
-                Confirm Selection
-            </button>
-        </form>
-    {% else %}
-        <div class="alert alert-info">
-            No candidate available for selection.
+            </div>
+
         </div>
-    {% endif %}
+    </div>
 
 </div>
 

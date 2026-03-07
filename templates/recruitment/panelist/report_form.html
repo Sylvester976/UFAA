@@ -2,37 +2,57 @@
 
 {% block content %}
 
-<h3>Interview Report - {{ vacancy.title }}</h3>
+<div class="container-fluid py-2">
+
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
+Interview Report
+</h4>
+<p>{{ vacancy.title }}</p>
+</div>
+
+<div class="gold-divider"></div>
+
+<div class="card dash-card brand-card">
+
+<div class="card-body">
 
 <form method="POST">
-
 {% csrf_token %}
 
 <div class="mb-3">
 <label>Candidates Interviewed</label>
 <input type="number"
-       name="candidates_interviewed"
-       class="form-control">
+name="candidates_interviewed"
+class="form-control">
 </div>
 
 <div class="mb-3">
 <label>Interview Summary</label>
 <textarea name="summary"
-          class="form-control"
-          rows="5"></textarea>
+class="form-control"
+rows="5"></textarea>
 </div>
 
 <div class="mb-3">
 <label>Recommendations</label>
 <textarea name="recommendations"
-          class="form-control"
-          rows="5"></textarea>
+class="form-control"
+rows="5"></textarea>
 </div>
 
-<button class="btn btn-success">
+<button class="btn btn-brand">
+<i class="fas fa-paper-plane me-1"></i>
 Submit Report
 </button>
 
 </form>
+
+</div>
+
+</div>
+
+</div>
 
 {% endblock %}

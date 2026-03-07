@@ -1,49 +1,100 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+
 {% block content %}
 
-<div class="container mt-4">
-    <h4>Shortlisting - {{ vacancy.title }}</h4>
+<div class="container-fluid py-2">
 
-    <form method="POST">
-        {% csrf_token %}
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-list me-2" style="color:var(--gold-dark);"></i>
+Shortlisting
+</h4>
+<p>{{ vacancy.title }}</p>
+</div>
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>Applicant</th>
-                    <th>Details</th>
-                    <th>Applied At</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>
-                        <input type="checkbox"
-                               name="selected_applications"
-                               value="{{ app.id }}">
-                    </td>
-                    <td>{{ app.applicant.email }}</td>
-                    <td>
-                        <a href="{{ app.cv.url }}" target="_blank">
-                            View CV
-                        </a>
-                    </td>
-                    <td>{{ app.applied_at }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+<div class="gold-divider"></div>
 
-        <button type="submit" class="btn btn-success">
-            Submit My Shortlist
-        </button>
-        <a href="{% url 'panelist_submit_report' vacancy.id %}"
-            class="btn btn-primary mt-3">
-            Submit Interview Report
-        </a>
-    </form>
+<div class="card dash-card brand-card">
+
+<form method="POST">
+
+{% csrf_token %}
+
+<div class="vacancy-table-container card p-0">
+
+<table class="table brand-table mb-0">
+
+<thead>
+<tr>
+<th>Select</th>
+<th>Applicant</th>
+<th>Details</th>
+<th>Applied</th>
+</tr>
+</thead>
+
+<tbody>
+
+{% for app in applications %}
+
+<tr>
+
+<td>
+<input type="checkbox"
+name="selected_applications"
+value="{{ app.id }}">
+</td>
+
+<td class="vacancy-title-cell">
+{{ app.applicant.email }}
+</td>
+
+<td>
+
+<a href="{{ app.cv.url }}"
+target="_blank"
+class="btn-open">
+
+<i class="fas fa-file-pdf me-1"></i>
+CV
+
+</a>
+
+</td>
+
+<td>
+{{ app.applied_at }}
+</td>
+
+</tr>
+
+{% endfor %}
+
+</tbody>
+
+</table>
+
+</div>
+
+<div class="p-3">
+
+<button type="submit" class="btn btn-brand">
+Submit My Shortlist
+</button>
+
+<a href="{% url 'panelist_submit_report' vacancy.id %}"
+class="btn btn-outline-brand">
+
+Submit Interview Report
+
+</a>
+
+</div>
+
+</form>
+
+</div>
+
 </div>
 
 {% endblock %}
