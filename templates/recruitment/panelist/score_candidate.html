@@ -1,19 +1,28 @@
 {% extends 'recruitment/panelist/base_panelist.html' %}
 {% load custom_tags %}
+
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-<h3>Score Candidate</h3>
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-star me-2" style="color:var(--gold-dark);"></i>
+Score Candidate
+</h4>
+<p>{{ application.applicant.get_full_name }}</p>
+</div>
 
-<p><strong>Name:</strong> {{ application.applicant.get_full_name }}</p>
-<p><strong>Vacancy:</strong> {{ application.vacancy.title }}</p>
+<div class="gold-divider"></div>
+
+<div class="card dash-card brand-card">
+
+<div class="card-body">
 
 <form method="POST">
-
 {% csrf_token %}
 
-<table class="table table-bordered">
+<table class="table brand-table">
 
 <thead>
 <tr>
@@ -30,15 +39,16 @@
 <tr>
 
 <td>{{ section.name }}</td>
+
 <td>{{ section.max_score }}</td>
 
 <td>
 <input type="number"
-       name="section_{{ section.id }}"
-       class="form-control"
-       max="{{ section.max_score }}"
-       step="0.01"
-       value="{{ existing_scores|get_item:section.id }}">
+name="section_{{ section.id }}"
+class="form-control"
+max="{{ section.max_score }}"
+step="0.01"
+value="{{ existing_scores|get_item:section.id }}">
 </td>
 
 </tr>
@@ -48,7 +58,6 @@
 </tbody>
 
 </table>
-
 
 <div class="mb-3">
 
@@ -60,17 +69,21 @@
 
 </div>
 
-
-<button class="btn btn-primary">
+<button class="btn btn-brand">
+<i class="fas fa-save me-1"></i>
 Save Score
 </button>
 
 <a href="{% url 'panelist_interview_list' application.vacancy.id %}"
-   class="btn btn-secondary">
+class="btn btn-outline-brand">
 Back
 </a>
 
 </form>
+
+</div>
+
+</div>
 
 </div>
 
