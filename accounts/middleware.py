@@ -88,6 +88,13 @@ class LoginRequiredMiddleware:
         'vacancy_interviews',
         'vacancy_list',
         'vacancy_appointments',
+        'hr_longlist_dashboard',
+        'hr_longlist_dossier',
+        'hr_longlist_decision',
+        'hr_longlist_bulk',
+        'hr_longlist_recall',
+        'hr_longlist_finalise',
+
 
         # interview templates
         'template_list',

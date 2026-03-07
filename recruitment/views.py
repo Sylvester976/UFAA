@@ -2824,13 +2824,28 @@ from core.decorators import role_required
 @login_required
 @role_required(['hod_hr'])
 def vacancy_longlisting(request):
-    vacancies = Vacancy.objects.filter(status='longlisting')
-    
-    context = {
-        'page':      'Human Resource Dashboard',
-        'vacancies': vacancies
-    }
-    return render(request, 'recruitment/hr/longlisting.html', context)
+    vacancies_qs = Vacancy.objects.filter(status='longlisting').order_by('-end_date')
+
+    vacancy_data = []
+    for v in vacancies_qs:
+        apps       = JobApplication.objects.filter(vacancy=v, status__code='longlisted')
+        total      = apps.count()
+        accepted   = apps.filter(longlist_decision='accepted').count()
+        rejected   = apps.filter(longlist_decision='rejected').count()
+        reviewed   = accepted + rejected
+        unreviewed = total - reviewed
+        pct        = int((reviewed / total * 100) if total else 0)
+
+        vacancy_data.append({
+            'vacancy': v, 'total': total, 'accepted': accepted,
+            'rejected': rejected, 'reviewed': reviewed,
+            'unreviewed': unreviewed, 'pct': pct,
+        })
+
+    return render(request, 'recruitment/hr/longlisting/vacancy_picker.html', {
+        'page': 'Longlisting',
+        'vacancies': vacancy_data,
+    })
 
 
 # @login_required
@@ -2871,16 +2886,76 @@ def vacancy_longlisting(request):
 # ----------------------
 # Stage: Shortlisting
 # ----------------------
+
 @login_required
 @role_required(['hod_hr'])
 def vacancy_shortlisting(request):
-    vacancies = Vacancy.objects.filter(status='shortlisting')
-    
-    context = {
-        'page':      'Human Resource Dashboard',
-        'vacancies': vacancies
-    }
-    return render(request, 'recruitment/hr/shortlisting.html', context)
+    """
+    Shortlisting picker — shows vacancies in committee_stage.
+    These are vacancies where longlist has been finalised and
+    committee scoring / consent process is underway.
+    """
+    vacancies_qs = Vacancy.objects.filter(
+        status='committee_stage'
+    ).order_by('end_date')
+
+    vacancy_data = []
+    for v in vacancies_qs:
+        # Final longlisted applications
+        apps = JobApplication.objects.filter(
+            vacancy=v,
+            status__code='final_longlisted',
+        )
+        app_count = apps.count()
+
+        # Committee members appointed
+        committee = ShortlistingCommittee.objects.filter(vacancy=v)
+        committee_count = committee.count()
+
+        # How many members have submitted all their scores
+        scored_count = 0
+        if committee_count > 0:
+            for member_entry in committee:
+                member_score_count = CommitteeScore.objects.filter(
+                    vacancy=v,
+                    member=member_entry.member,
+                    submitted=True,
+                ).count()
+                if member_score_count >= app_count:
+                    scored_count += 1
+
+        all_scored = (scored_count == committee_count and committee_count > 0)
+
+        # Consent counts
+        consented_count = ShortlistConsent.objects.filter(
+            vacancy=v,
+            response='consented',
+        ).count()
+
+        threshold = (committee_count // 2) + 1 if committee_count > 0 else 0
+        threshold_met = consented_count >= threshold and committee_count > 0
+
+        # Deadline = end_date + 21 days
+        deadline = v.end_date + timedelta(days=21)
+        days_remaining = (deadline - timezone.now().date()).days
+
+        vacancy_data.append({
+            'vacancy':         v,
+            'app_count':       app_count,
+            'committee_count': committee_count,
+            'scored_count':    scored_count,
+            'all_scored':      all_scored,
+            'consented_count': consented_count,
+            'threshold':       threshold,
+            'threshold_met':   threshold_met,
+            'deadline':        deadline,
+            'days_remaining':  days_remaining,
+        })
+
+    return render(request, 'recruitment/hr/shortlisting/vacancy_picker.html', {
+        'page':      'Shortlisting',
+        'vacancies': vacancy_data,
+    })
 
 
 # ----------------------
@@ -4099,6 +4174,7 @@ def _send_recall_email(app, vacancy):
 # ── View 1: Dashboard ──────────────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 def hr_longlist_dashboard(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
 
@@ -4157,6 +4233,7 @@ def hr_longlist_dashboard(request, vacancy_id):
 # ── View 2: Dossier ────────────────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 def hr_longlist_dossier(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
     app     = get_object_or_404(JobApplication, id=app_id, vacancy=vacancy)
@@ -4214,6 +4291,7 @@ def hr_longlist_dossier(request, vacancy_id, app_id):
 # ── View 3: Decision ───────────────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 @require_POST
 def hr_longlist_decision(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
@@ -4281,6 +4359,7 @@ def hr_longlist_decision(request, vacancy_id, app_id):
 # ── View 4: Bulk Action ────────────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 @require_POST
 def hr_longlist_bulk(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
@@ -4345,6 +4424,7 @@ def hr_longlist_bulk(request, vacancy_id):
 # ── View 5: Recall ─────────────────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 @require_POST
 def hr_longlist_recall(request, vacancy_id, app_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
@@ -4389,6 +4469,7 @@ def hr_longlist_recall(request, vacancy_id, app_id):
 # ── View 6: Finalise Longlist ──────────────────────────────────────────────
 
 @login_required
+@role_required(['hod_hr','panelist'])
 @require_POST
 def hr_longlist_finalise(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='longlisting')
@@ -4449,7 +4530,7 @@ def hr_longlist_finalise(request, vacancy_id):
             notes=f"Longlist finalised. {accepted_count} application(s) accepted.",
             metadata={
                 'accepted_count': accepted_count,
-                'finalised_by':   request.user.get_full_name() or request.user.email,
+                'finalised_by': request.user.full_name or request.user.email,
                 'finalised_at':   timezone.now().isoformat(),
             },
         )

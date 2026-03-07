@@ -1,90 +1,89 @@
 {% extends "recruitment/hr/base_hr.html" %}
-{% block title %}Longlisting — {{ vacancy.title }}{% endblock %}
+{% block title %}Longlist — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
 <style>
 :root {
     --navy:    #262561;
-    --navy-lt: #2E3A7A;
     --gold:    #F9E6A1;
     --gold-dk: #C39545;
     --green:   #1a7a45;
     --red:     #c0392b;
     --amber:   #b7770d;
 }
-.ll-header {
-    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
-    border-radius: 0.85rem; padding: 1rem 1.5rem; margin-bottom: 1.25rem;
-    box-shadow: 0 6px 20px rgba(38,37,97,0.18); position:relative; overflow:hidden;
-}
-.ll-header::before {
-    content:''; position:absolute; top:-40px; right:-40px;
-    width:160px; height:160px; border-radius:50%;
-    background:rgba(249,230,161,0.06); pointer-events:none;
-}
-.ll-header h5 { color:#fff; font-weight:700; font-size:1.05rem; margin:0; }
-.ll-header p  { color:rgba(249,230,161,0.7); font-size:0.78rem; margin:0; }
 
 /* Stats */
-.stats-strip { display:flex; flex-wrap:wrap; gap:0.65rem; margin-bottom:1.25rem; }
 .stat-pill {
     background:#fff; border-radius:0.75rem; padding:0.65rem 1rem;
-    box-shadow:0 2px 12px rgba(38,37,97,0.07);
-    display:flex; align-items:center; gap:0.65rem; min-width:130px; flex:1;
+    box-shadow:0 2px 10px rgba(38,37,97,0.07);
+    display:flex; align-items:center; gap:0.65rem; flex:1; min-width:120px;
 }
 .sp-icon {
     width:36px; height:36px; border-radius:0.5rem;
     display:flex; align-items:center; justify-content:center;
     font-size:0.85rem; flex-shrink:0;
 }
-.sp-val { font-size:1.3rem; font-weight:800; color:var(--navy); line-height:1; }
-.sp-lbl { font-size:0.65rem; color:#8392ab; font-weight:600; text-transform:uppercase; letter-spacing:0.04em; }
+.sp-val { font-size:1.25rem; font-weight:800; color:var(--navy); line-height:1; }
+.sp-lbl { font-size:0.62rem; color:#8392ab; font-weight:600; text-transform:uppercase; letter-spacing:.04em; }
 .sp-total  .sp-icon { background:#eef0fb; color:var(--navy); }
-.sp-review .sp-icon { background:#e8f4fd; color:#1a6fa8; }
+.sp-review .sp-icon { background:#fff8e1; color:var(--amber); }
 .sp-accept .sp-icon { background:#d4f5e2; color:var(--green); }
 .sp-reject .sp-icon { background:#fde8e8; color:var(--red); }
-.sp-sys    .sp-icon { background:#fef3e2; color:var(--amber); }
+.sp-sys    .sp-icon { background:#f0f2f8; color:#8392ab; }
 
-/* Layout */
-.ll-layout { display:grid; grid-template-columns:220px 1fr; gap:1rem; align-items:start; }
-@media(max-width:768px){ .ll-layout{ grid-template-columns:1fr; } }
+/* No underlines on any links in this view */
+a { text-decoration:none !important; }
+a:hover { text-decoration:none !important; }
 
-/* Filter sidebar */
-.filter-card { background:#fff; border-radius:0.85rem; box-shadow:0 2px 12px rgba(38,37,97,0.07); overflow:hidden; position:sticky; top:1rem; }
-.filter-card-head { background:var(--navy); padding:0.75rem 1rem; color:#fff; font-size:0.78rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; display:flex; align-items:center; gap:0.5rem; }
-.filter-section { padding:0.85rem 1rem; border-bottom:1px solid #f0f2f8; }
-.filter-section:last-child { border-bottom:none; }
-.filter-label { font-size:0.65rem; font-weight:700; color:#8392ab; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:0.5rem; }
-.filter-select { width:100%; font-size:0.75rem; color:#344767; border:1px solid #e0e4ef; border-radius:0.4rem; padding:0.35rem 0.5rem; background:#fafbff; outline:none; }
-.filter-select:focus { border-color:var(--navy); }
-.filter-radio { display:flex; flex-direction:column; gap:0.3rem; }
-.filter-radio label { display:flex; align-items:center; gap:0.45rem; font-size:0.75rem; color:#344767; cursor:pointer; }
-.filter-radio input[type="radio"] { accent-color:var(--navy); }
-.btn-apply-filter { width:100%; background:var(--navy); color:var(--gold); border:none; border-radius:0.4rem; padding:0.5rem; font-size:0.75rem; font-weight:700; cursor:pointer; transition:all 0.15s; }
-.btn-apply-filter:hover { background:var(--navy-lt); }
-.btn-clear-filter { width:100%; background:#f0f2f8; color:#8392ab; border:none; border-radius:0.4rem; padding:0.45rem; font-size:0.72rem; cursor:pointer; margin-top:0.4rem; }
-
-/* Main card */
-.main-card { background:#fff; border-radius:0.85rem; box-shadow:0 2px 12px rgba(38,37,97,0.07); overflow:hidden; }
-.main-card-head { padding:0.85rem 1.25rem; border-bottom:1px solid #f0f2f8; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem; }
-.main-card-head h6 { font-size:0.88rem; font-weight:700; color:var(--navy); margin:0; }
-.main-card-head p  { font-size:0.71rem; color:#8392ab; margin:0; }
+/* Filter bar */
+.filter-bar {
+    background:#fff; border-radius:0.75rem;
+    box-shadow:0 2px 10px rgba(38,37,97,0.06);
+    padding:0.85rem 1.25rem; margin-bottom:1rem;
+    display:none;
+}
+.filter-bar.open { display:block; }
+.filter-label {
+    font-size:0.64rem; font-weight:700; color:#8392ab;
+    text-transform:uppercase; letter-spacing:.05em; margin-bottom:0.3rem;
+}
+.filter-select, .filter-bar select {
+    font-size:0.78rem; color:#344767;
+    border:1px solid #e0e4ef; border-radius:0.4rem;
+    padding:0.35rem 0.5rem; background:#fafbff;
+    width:100%;
+}
 
 /* Tabs */
-.ll-tabs { display:flex; gap:0; border-bottom:2px solid #f0f2f8; padding:0 1.25rem; }
-.ll-tab { padding:0.65rem 1rem; font-size:0.78rem; font-weight:600; color:#8392ab; cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-2px; text-decoration:none; transition:all 0.15s; white-space:nowrap; }
+.ll-tab-bar { border-bottom:2px solid #f0f2f8; margin-bottom:0; display:flex; gap:0; }
+.ll-tab {
+    padding:0.65rem 1.1rem; font-size:0.78rem; font-weight:600;
+    color:#8392ab; cursor:pointer; border-bottom:2px solid transparent;
+    margin-bottom:-2px; text-decoration:none !important; transition:all 0.15s; white-space:nowrap;
+}
 .ll-tab:hover { color:var(--navy); }
 .ll-tab.active { color:var(--navy); border-bottom-color:var(--navy); }
-.tab-badge { display:inline-flex; align-items:center; justify-content:center; min-width:18px; height:18px; border-radius:99px; font-size:0.6rem; font-weight:700; margin-left:0.35rem; padding:0 4px; }
-.tab-badge.blue  { background:#e8f4fd; color:#1a6fa8; }
-.tab-badge.amber { background:#fef3e2; color:var(--amber); }
-.tab-badge.red   { background:#fde8e8; color:var(--red); }
+.tab-ct {
+    display:inline-flex; align-items:center; justify-content:center;
+    min-width:18px; height:18px; border-radius:99px;
+    font-size:0.6rem; font-weight:700; margin-left:0.3rem; padding:0 4px;
+}
+.tc-blue  { background:#e8f4fd; color:#1a6fa8; }
+.tc-amber { background:#fff8e1; color:var(--amber); }
 
 /* Bulk bar */
-.bulk-bar { padding:0.65rem 1.25rem; background:#f8f9ff; border-bottom:1px solid #f0f2f8; display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap; }
-.bulk-bar .selected-count { font-size:0.75rem; font-weight:700; color:var(--navy); min-width:80px; }
-.bulk-btn { display:inline-flex; align-items:center; gap:0.3rem; padding:0.28rem 0.7rem; border-radius:0.35rem; font-size:0.7rem; font-weight:600; cursor:pointer; border:1px solid transparent; transition:all 0.15s; background:none; }
+.bulk-bar {
+    padding:0.6rem 1.25rem; background:#f8f9ff;
+    border-bottom:1px solid #f0f2f8;
+    display:flex; align-items:center; gap:0.65rem; flex-wrap:wrap;
+}
+.bulk-bar .sel-count { font-size:0.75rem; font-weight:700; color:var(--navy); }
+.bulk-btn {
+    display:inline-flex; align-items:center; gap:0.3rem;
+    padding:0.28rem 0.75rem; border-radius:0.35rem; font-size:0.72rem;
+    font-weight:600; cursor:pointer; border:1px solid transparent; background:none;
+}
 .bb-accept { background:#d4f5e2; color:var(--green); border-color:#b2dfca; }
 .bb-accept:hover { background:var(--green); color:#fff; }
 .bb-reject { background:#fde8e8; color:var(--red); border-color:#f5c6c6; }
@@ -92,84 +91,107 @@
 
 /* Table */
 #llTable { font-size:0.8rem; }
-#llTable thead th { background:var(--navy); color:#fff; font-size:0.64rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; padding:0.75rem 1rem; border:none; white-space:nowrap; }
-#llTable tbody td { padding:0.65rem 1rem; vertical-align:middle; border-bottom:1px solid rgba(38,37,97,0.05); color:#344767; }
+#llTable thead th {
+    background:var(--navy); color:#fff;
+    font-size:0.64rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.06em; padding:0.75rem 1rem; border:none; white-space:nowrap;
+}
+#llTable tbody td {
+    padding:0.65rem 1rem; vertical-align:middle;
+    border-bottom:1px solid rgba(38,37,97,0.05); color:#344767;
+}
 #llTable tbody tr:last-child td { border-bottom:none; }
-#llTable tbody tr:hover td { background:#fbf6e0; }
-.cell-name { font-weight:600; color:var(--navy)!important; font-size:0.8rem; }
+#llTable tbody tr:hover td { background:#fbf6e0; cursor:pointer; }
+.cell-name { font-weight:600; color:var(--navy); font-size:0.8rem; }
 .cell-sub  { font-size:0.68rem; color:#8392ab; }
 
-/* Decision badges */
-.dec-badge { display:inline-flex; align-items:center; gap:0.25rem; padding:0.2rem 0.55rem; border-radius:2rem; font-size:0.62rem; font-weight:700; letter-spacing:0.04em; text-transform:uppercase; white-space:nowrap; }
-.dec-badge::before { content:''; width:5px; height:5px; border-radius:50%; background:currentColor; flex-shrink:0; }
+/* Badges */
+.dec-badge {
+    display:inline-flex; align-items:center; gap:0.25rem;
+    padding:0.2rem 0.6rem; border-radius:2rem;
+    font-size:0.62rem; font-weight:700; text-transform:uppercase; white-space:nowrap;
+}
 .dec-unreviewed { background:#f0f2f8; color:#8392ab; }
 .dec-accepted   { background:#d4f5e2; color:var(--green); }
 .dec-rejected   { background:#fde8e8; color:var(--red); }
-.screen-pass { color:var(--green); font-size:0.7rem; }
-.screen-flag { color:var(--amber); font-size:0.7rem; }
+.screen-pass { color:var(--green); font-size:0.72rem; }
+.screen-flag { color:var(--amber); font-size:0.72rem; }
+.screen-fail { color:var(--red);   font-size:0.72rem; }
 
-/* Action buttons */
-.act-btn { display:inline-flex; align-items:center; padding:0.22rem 0.6rem; border-radius:0.35rem; font-size:0.68rem; font-weight:600; text-decoration:none; transition:all 0.15s; border:1px solid transparent; cursor:pointer; background:none; white-space:nowrap; }
-.ab-view   { background:#e8f4fd; color:#1a6fa8; border-color:#b8ddf5; }
-.ab-view:hover   { background:#1a6fa8; color:#fff; }
-
-/* Finalise button */
+/* Finalise btn */
 .btn-finalise {
     background:linear-gradient(135deg, var(--gold-dk), #e0b55a);
     color:var(--navy); border:none; border-radius:0.5rem;
-    font-size:0.8rem; font-weight:700; padding:0.5rem 1.25rem;
-    cursor:pointer; transition:all 0.2s; display:inline-flex;
-    align-items:center; gap:0.4rem;
+    font-size:0.8rem; font-weight:700; padding:0.45rem 1.1rem;
+    cursor:pointer; display:inline-flex; align-items:center; gap:0.4rem;
+    transition:all 0.2s;
 }
-.btn-finalise:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(195,149,69,0.4); }
-.btn-finalise:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+.btn-finalise:hover { box-shadow:0 4px 12px rgba(195,149,69,0.4); transform:translateY(-1px); }
+.btn-finalise:disabled { opacity:0.45; cursor:not-allowed; transform:none; box-shadow:none; }
 
 /* DT overrides */
-#llTable_wrapper .dataTables_filter input { border:1px solid #e0e4ef; border-radius:0.4rem; padding:0.3rem 0.65rem; font-size:0.78rem; color:#344767; outline:none; }
-#llTable_wrapper .dataTables_filter input:focus { border-color:var(--navy); }
-#llTable_wrapper .dataTables_length select { border:1px solid #e0e4ef; border-radius:0.4rem; padding:0.28rem 0.45rem; font-size:0.78rem; }
-#llTable_wrapper .dataTables_info, #llTable_wrapper .dataTables_length label, #llTable_wrapper .dataTables_filter label { font-size:0.73rem; color:#8392ab; }
-#llTable_wrapper .dataTables_paginate .paginate_button { font-size:0.73rem!important; border-radius:0.35rem!important; padding:0.28rem 0.6rem!important; }
-#llTable_wrapper .dataTables_paginate .paginate_button.current { background:var(--navy)!important; border-color:var(--navy)!important; color:#fff!important; }
+#llTable_wrapper .dataTables_filter input {
+    border:1px solid #e0e4ef; border-radius:0.4rem;
+    padding:0.3rem 0.65rem; font-size:0.78rem; color:#344767;
+}
+#llTable_wrapper .dataTables_filter input:focus { border-color:var(--navy); outline:none; }
+#llTable_wrapper .dataTables_length select {
+    border:1px solid #e0e4ef; border-radius:0.4rem; padding:0.28rem 0.4rem; font-size:0.78rem;
+}
+#llTable_wrapper .dataTables_info,
+#llTable_wrapper .dataTables_length label,
+#llTable_wrapper .dataTables_filter label { font-size:0.73rem; color:#8392ab; }
+#llTable_wrapper .dataTables_paginate .paginate_button {
+    font-size:0.73rem !important; border-radius:0.35rem !important; padding:0.28rem 0.6rem !important;
+}
+#llTable_wrapper .dataTables_paginate .paginate_button.current {
+    background:var(--navy) !important; border-color:var(--navy) !important; color:#fff !important;
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <div class="container-fluid py-2">
 
-    <!-- Header -->
-    <div class="ll-header mb-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h5><i class="fas fa-list-check me-2" style="color:var(--gold-dk);"></i>Manual Longlisting</h5>
-                <p>{{ vacancy.title }} &nbsp;·&nbsp; {{ vacancy.reference_number }}</p>
-            </div>
-            <div class="d-flex gap-2 align-items-center flex-wrap">
-                {% if total_unreviewed == 0 and total_accepted > 0 %}
-                <button class="btn-finalise" onclick="confirmFinalise()">
-                    <i class="fas fa-flag-checkered"></i> Finalise Longlist
-                </button>
-                {% else %}
-                <button class="btn-finalise" disabled
-                    title="{% if total_unreviewed > 0 %}{{ total_unreviewed }} application(s) still unreviewed{% else %}No accepted applications{% endif %}">
-                    <i class="fas fa-flag-checkered"></i> Finalise Longlist
-                </button>
-                {% endif %}
-                <a href="{% url 'vacancy_list' %}" class="act-btn ab-view">
-                    <i class="fas fa-arrow-left me-1"></i> Vacancies
+    <!-- Page header -->
+    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+        <div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{% url 'vacancy_longlisting' %}"
+                   style="font-size:0.78rem;color:#8392ab;text-decoration:none;display:inline-flex;align-items:center;">
+                    <i class="fas fa-arrow-left me-1"></i> Longlisting
                 </a>
+                <span style="color:#e0e4ef;">/</span>
+                <span style="font-size:0.78rem;color:#262561;font-weight:600;">{{ vacancy.title }}</span>
             </div>
+            <p class="text-muted mb-0" style="font-size:0.72rem;">
+                {{ vacancy.reference_number }}
+            </p>
         </div>
-        {% if total_unreviewed > 0 %}
-        <div style="margin-top:0.6rem; background:rgba(249,230,161,0.12); border:1px solid rgba(249,230,161,0.25); border-radius:0.4rem; padding:0.4rem 0.75rem; font-size:0.74rem; color:rgba(249,230,161,0.9);">
-            <i class="fas fa-exclamation-triangle me-1"></i>
-            <strong>{{ total_unreviewed }}</strong> application(s) still unreviewed — review all before finalising.
+        <div class="d-flex gap-2 align-items-center flex-wrap" style="flex-shrink:0;">
+            {% if total_unreviewed == 0 and total_accepted > 0 %}
+            <button class="btn-finalise" onclick="confirmFinalise()">
+                <i class="fas fa-flag-checkered"></i> Finalise Longlist
+            </button>
+            {% else %}
+            <button class="btn-finalise" disabled
+                title="{% if total_unreviewed > 0 %}{{ total_unreviewed }} application(s) still unreviewed{% else %}No accepted applications yet{% endif %}">
+                <i class="fas fa-flag-checkered"></i> Finalise Longlist
+            </button>
+            {% endif %}
         </div>
-        {% endif %}
     </div>
 
+    {% if total_unreviewed > 0 %}
+    <div class="alert alert-warning d-flex align-items-center gap-2 mb-3"
+         style="border-radius:0.65rem;font-size:0.78rem;padding:0.65rem 1rem;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span><strong>{{ total_unreviewed }}</strong> application(s) still unreviewed — review all before finalising.</span>
+    </div>
+    {% endif %}
+
     <!-- Stats -->
-    <div class="stats-strip">
+    <div class="d-flex flex-wrap gap-2 mb-3">
         <div class="stat-pill sp-total">
             <div class="sp-icon"><i class="fas fa-users"></i></div>
             <div><div class="sp-val">{{ total_longlisted }}</div><div class="sp-lbl">Longlisted</div></div>
@@ -184,7 +206,7 @@
         </div>
         <div class="stat-pill sp-reject">
             <div class="sp-icon"><i class="fas fa-times-circle"></i></div>
-            <div><div class="sp-val">{{ total_rejected }}</div><div class="sp-lbl">HR Rejected</div></div>
+            <div><div class="sp-val">{{ total_rejected }}</div><div class="sp-lbl">Rejected</div></div>
         </div>
         <div class="stat-pill sp-sys">
             <div class="sp-icon"><i class="fas fa-robot"></i></div>
@@ -192,158 +214,184 @@
         </div>
     </div>
 
-    <!-- Layout -->
-    <div class="ll-layout">
+    <!-- Main card -->
+    <div class="card border-0 shadow-sm" style="border-radius:0.85rem;overflow:hidden;">
 
-        <!-- Filter Sidebar -->
-        <div class="filter-card">
-            <div class="filter-card-head"><i class="fas fa-filter"></i> Filters</div>
+        <!-- Tabs + filter toggle -->
+        <div class="d-flex justify-content-between align-items-center px-3 pt-2 flex-wrap gap-2"
+             style="border-bottom:2px solid #f0f2f8;">
+            <div class="ll-tab-bar" style="border-bottom:none;">
+                <a href="?tab=active" class="ll-tab {% if active_tab != 'rejected' %}active{% endif %}">
+                    Under Review <span class="tab-ct tc-blue">{{ total_longlisted }}</span>
+                </a>
+                <a href="?tab=rejected" class="ll-tab {% if active_tab == 'rejected' %}active{% endif %}">
+                    Sys Rejected <span class="tab-ct tc-amber">{{ total_sys_rejected }}</span>
+                </a>
+            </div>
+            <button onclick="toggleFilter()" id="filterToggle"
+                    class="btn btn-sm mb-1"
+                    style="font-size:0.74rem;border:1px solid #e0e4ef;color:#8392ab;border-radius:0.4rem;">
+                <i class="fas fa-filter me-1"></i> Filters
+            </button>
+        </div>
+
+        <!-- Collapsible filter bar -->
+        <div class="filter-bar px-3 py-3" id="filterBar" style="border-radius:0;border-bottom:1px solid #f0f2f8;">
             <form method="GET" id="filterForm">
                 <input type="hidden" name="tab" value="{{ active_tab }}">
-                <div class="filter-section">
-                    <div class="filter-label">Gender</div>
-                    <select name="gender" class="filter-select">
-                        <option value="">All</option>
-                        {% for val, label in gender_choices %}
-                        <option value="{{ val }}" {% if filter_params.gender == val %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-section">
-                    <div class="filter-label">Disability</div>
-                    <div class="filter-radio">
-                        <label><input type="radio" name="disability" value="" {% if not filter_params.disability %}checked{% endif %}> All</label>
-                        <label><input type="radio" name="disability" value="yes" {% if filter_params.disability == 'yes' %}checked{% endif %}> PWD</label>
-                        <label><input type="radio" name="disability" value="no"  {% if filter_params.disability == 'no'  %}checked{% endif %}> Non-PWD</label>
+                <div class="row g-2 align-items-end">
+                    <div class="col-6 col-md-2">
+                        <div class="filter-label">Gender</div>
+                        <select name="gender" class="filter-select">
+                            <option value="">All</option>
+                            {% for val, label in gender_choices %}
+                            <option value="{{ val }}" {% if filter_params.gender == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                </div>
-                <div class="filter-section">
-                    <div class="filter-label">Screening Result</div>
-                    <div class="filter-radio">
-                        <label><input type="radio" name="screening" value="" {% if not filter_params.screening %}checked{% endif %}> All</label>
-                        <label><input type="radio" name="screening" value="passed"  {% if filter_params.screening == 'passed'  %}checked{% endif %}> Clean pass</label>
-                        <label><input type="radio" name="screening" value="flagged" {% if filter_params.screening == 'flagged' %}checked{% endif %}> Has flags</label>
+                    <div class="col-6 col-md-2">
+                        <div class="filter-label">Disability</div>
+                        <select name="disability" class="filter-select">
+                            <option value="">All</option>
+                            <option value="yes" {% if filter_params.disability == 'yes' %}selected{% endif %}>PWD</option>
+                            <option value="no"  {% if filter_params.disability == 'no'  %}selected{% endif %}>Non-PWD</option>
+                        </select>
                     </div>
-                </div>
-                <div class="filter-section">
-                    <div class="filter-label">Decision Status</div>
-                    <select name="decision" class="filter-select">
-                        <option value="">All</option>
-                        {% for val, label in decision_choices %}
-                        <option value="{{ val }}" {% if filter_params.decision == val %}selected{% endif %}>{{ label }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-                <div class="filter-section">
-                    <button type="submit" class="btn-apply-filter"><i class="fas fa-search me-1"></i> Apply</button>
-                    <a href="?tab={{ active_tab }}" class="btn-clear-filter d-block text-center" style="text-decoration:none;">Clear filters</a>
+                    <div class="col-6 col-md-2">
+                        <div class="filter-label">Screening</div>
+                        <select name="screening" class="filter-select">
+                            <option value="">All</option>
+                            <option value="passed"  {% if filter_params.screening == 'passed'  %}selected{% endif %}>Clean pass</option>
+                            <option value="flagged" {% if filter_params.screening == 'flagged' %}selected{% endif %}>Flagged</option>
+                        </select>
+                    </div>
+                    <div class="col-6 col-md-2">
+                        <div class="filter-label">Decision</div>
+                        <select name="decision" class="filter-select">
+                            <option value="">All</option>
+                            {% for val, label in decision_choices %}
+                            <option value="{{ val }}" {% if filter_params.decision == val %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-4 d-flex gap-2">
+                        <button type="submit" class="btn btn-sm fw-bold"
+                                style="background:#262561;color:#F9E6A1;font-size:0.74rem;border-radius:0.4rem;">
+                            <i class="fas fa-search me-1"></i> Apply
+                        </button>
+                        <a href="?tab={{ active_tab }}" class="btn btn-sm"
+                           style="background:#f0f2f8;color:#8392ab;font-size:0.74rem;border-radius:0.4rem;text-decoration:none;display:inline-flex;align-items:center;">
+                            Clear
+                        </a>
+                    </div>
                 </div>
             </form>
         </div>
 
-        <!-- Main content -->
-        <div class="main-card">
+        <!-- Bulk bar -->
+        <div class="bulk-bar" id="bulkBar" style="display:none;">
+            <span class="sel-count"><span id="selCount">0</span> selected</span>
+            <button class="bulk-btn bb-accept" onclick="bulkAction('accepted')">
+                <i class="fas fa-check me-1"></i> Accept
+            </button>
+            <button class="bulk-btn bb-reject" onclick="bulkAction('rejected')">
+                <i class="fas fa-times me-1"></i> Reject
+            </button>
+        </div>
 
-            <!-- Tabs -->
-            <div class="ll-tabs">
-                <a href="?tab=active" class="ll-tab {% if active_tab != 'rejected' %}active{% endif %}">
-                    Under Review <span class="tab-badge blue">{{ total_longlisted }}</span>
-                </a>
-                <a href="?tab=rejected" class="ll-tab {% if active_tab == 'rejected' %}active{% endif %}">
-                    System Rejected <span class="tab-badge amber">{{ total_sys_rejected }}</span>
-                </a>
-            </div>
-
-            <!-- Bulk bar -->
-            <div class="bulk-bar" id="bulkBar" style="display:none;">
-                <span class="selected-count"><span id="selCount">0</span> selected</span>
-                <button class="bulk-btn bb-accept" onclick="bulkAction('accepted')">
-                    <i class="fas fa-check me-1"></i> Accept to Final Longlist
-                </button>
-                <button class="bulk-btn bb-reject" onclick="bulkAction('rejected')">
-                    <i class="fas fa-times me-1"></i> Reject
-                </button>
-            </div>
-
-            <!-- Card header -->
-            <div class="main-card-head">
-                <div>
-                    <h6>{% if active_tab == 'rejected' %}System-Rejected Applications{% else %}Longlisted Applications{% endif %}</h6>
-                    <p>{{ applications|length }} application{{ applications|length|pluralize }} in current view</p>
-                </div>
-            </div>
-
-            <!-- Table -->
-            <div class="p-3">
-                {% if applications %}
-                <div class="table-responsive">
-                    <table id="llTable" class="table w-100">
-                        <thead>
-                            <tr>
-                                <th style="width:30px;"><input type="checkbox" id="selectAll" style="accent-color:var(--gold);" title="Select all"></th>
-                                <th>#</th>
-                                <th>Applicant</th>
-                                <th>App No.</th>
-                                <th>Gender</th>
-                                <th>County</th>
-                                <th>Education</th>
-                                <th>Experience</th>
-                                <th>Screening</th>
-                                <th>Decision</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for item in applications %}
-                            <tr>
-                                <td><input type="checkbox" class="app-check" value="{{ item.app.id }}" style="accent-color:var(--navy);"></td>
-                                <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
-                                <td>
-                                    <div class="cell-name">{{ item.basic.full_name }}</div>
-                                    <div class="cell-sub">{{ item.basic.id_no }}</div>
-                                </td>
-                                <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">{{ item.app.application_number|default:"—" }}</td>
-                                <td style="font-size:0.76rem;">
-                                    {% if item.basic.gender == 'Male' %}<i class="fas fa-mars" style="color:#1a6fa8;"></i>
-                                    {% elif item.basic.gender == 'Female' %}<i class="fas fa-venus" style="color:#c0392b;"></i>{% endif %}
-                                    {{ item.basic.gender|default:"—" }}
-                                </td>
-                                <td style="font-size:0.76rem;">{{ item.basic.county|default:"—" }}</td>
-                                <td style="font-size:0.74rem;max-width:140px;">{{ item.highest_edu }}</td>
-                                <td style="font-size:0.74rem;white-space:nowrap;">{{ item.exp_years }}y {{ item.exp_months }}m</td>
-                                <td>
-                                    {% if item.app.screening_passed %}
-                                        {% if item.app.screening_flags %}<span class="screen-flag"><i class="fas fa-exclamation-triangle"></i> Flagged</span>
-                                        {% else %}<span class="screen-pass"><i class="fas fa-check-circle"></i> Passed</span>{% endif %}
-                                    {% else %}<span style="color:var(--red);font-size:0.7rem;"><i class="fas fa-times-circle"></i> Failed</span>{% endif %}
-                                </td>
-                                <td>
-                                    {% if item.app.longlist_decision == 'accepted' %}
-                                        <span class="dec-badge dec-accepted">Accepted</span>
-                                    {% elif item.app.longlist_decision == 'rejected' %}
-                                        <span class="dec-badge dec-rejected">Rejected</span>
+        <!-- Table -->
+        <div class="p-3">
+            {% if applications %}
+            <div class="table-responsive">
+                <table id="llTable" class="table w-100">
+                    <thead>
+                        <tr>
+                            <th style="width:30px;">
+                                <input type="checkbox" id="selectAll" style="accent-color:#F9E6A1;">
+                            </th>
+                            <th>#</th>
+                            <th>Applicant</th>
+                            <th>App No.</th>
+                            <th>Gender</th>
+                            <th>Education</th>
+                            <th>Experience</th>
+                            <th>Screening</th>
+                            <th>Decision</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in applications %}
+                        <tr data-href="{% url 'hr_longlist_dossier' vacancy.id item.app.id %}{% if filter_query %}?{{ filter_query }}{% endif %}">
+                            <td onclick="event.stopPropagation();">
+                                <input type="checkbox" class="app-check"
+                                       value="{{ item.app.id }}"
+                                       style="accent-color:#262561;">
+                            </td>
+                            <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
+                            <td>
+                                <div class="cell-name">{{ item.basic.full_name }}</div>
+                                <div class="cell-sub">{{ item.basic.id_no }}</div>
+                            </td>
+                            <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
+                                {{ item.app.application_number|default:"—" }}
+                            </td>
+                            <td style="font-size:0.76rem;">
+                                {% if item.basic.gender == 'Male' %}
+                                    <i class="fas fa-mars" style="color:#1a6fa8;"></i>
+                                {% elif item.basic.gender == 'Female' %}
+                                    <i class="fas fa-venus" style="color:#c0392b;"></i>
+                                {% endif %}
+                                {{ item.basic.gender|default:"—" }}
+                            </td>
+                            <td style="font-size:0.74rem;max-width:160px;white-space:normal;">
+                                {{ item.highest_edu }}
+                            </td>
+                            <td style="font-size:0.74rem;white-space:nowrap;">
+                                {{ item.exp_years }}y {{ item.exp_months }}m
+                            </td>
+                            <td>
+                                {% if item.app.screening_passed %}
+                                    {% if item.app.screening_flags %}
+                                        <span class="screen-flag">
+                                            <i class="fas fa-exclamation-triangle"></i> Flagged
+                                        </span>
                                     {% else %}
-                                        <span class="dec-badge dec-unreviewed">Unreviewed</span>
+                                        <span class="screen-pass">
+                                            <i class="fas fa-check-circle"></i> Passed
+                                        </span>
                                     {% endif %}
-                                </td>
-                                <td>
-                                    <a href="{% url 'hr_longlist_dossier' vacancy.id item.app.id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-                                       class="act-btn ab-view"><i class="fas fa-eye me-1"></i> View</a>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-                {% else %}
-                <div style="text-align:center;padding:3rem 1rem;">
-                    <i class="fas fa-inbox" style="font-size:2rem;opacity:0.12;color:var(--navy);display:block;margin-bottom:0.75rem;"></i>
-                    <p style="color:#adb5bd;font-size:0.82rem;">No applications in this view.{% if filter_query %} Try clearing the filters.{% endif %}</p>
-                </div>
-                {% endif %}
+                                {% else %}
+                                    <span class="screen-fail">
+                                        <i class="fas fa-times-circle"></i> Failed
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.app.longlist_decision == 'accepted' %}
+                                    <span class="dec-badge dec-accepted">Accepted</span>
+                                {% elif item.app.longlist_decision == 'rejected' %}
+                                    <span class="dec-badge dec-rejected">Rejected</span>
+                                {% else %}
+                                    <span class="dec-badge dec-unreviewed">Unreviewed</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-inbox fa-2x mb-3" style="color:#e0e4ef;"></i>
+                <p class="text-muted" style="font-size:0.82rem;">
+                    No applications here.
+                    {% if filter_query %}<a href="?tab={{ active_tab }}">Clear filters</a>{% endif %}
+                </p>
+            </div>
+            {% endif %}
         </div>
     </div>
+
 </div>
 {% endblock %}
 
@@ -352,111 +400,159 @@
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 <script>
 $(document).ready(function () {
-    const dt = $('#llTable').DataTable({
-        pageLength: 25, lengthMenu: [10,25,50,100], order:[[1,'asc']],
-        columnDefs:[{orderable:false,targets:[0,10]},{searchable:false,targets:[0,1,8,9,10]}],
-        language:{
-            search:'', searchPlaceholder:'Search name, ID, app no...',
-            lengthMenu:'Show _MENU_', info:'_START_–_END_ of _TOTAL_',
-            paginate:{previous:'<i class="fas fa-chevron-left"></i>',next:'<i class="fas fa-chevron-right"></i>'},
-        },
-        dom:'<"d-flex justify-content-between align-items-center mb-2 px-1"lf>t<"d-flex justify-content-between align-items-center mt-2 px-1"ip>',
+
+    // Clickable rows → dossier
+    $('#llTable tbody').on('click', 'tr', function () {
+        const href = $(this).data('href');
+        if (href) window.location.href = href;
     });
 
-    // Select all / bulk bar
-    $('#selectAll').on('change', function(){
+    const dt = $('#llTable').DataTable({
+        pageLength: 25,
+        lengthMenu: [10, 25, 50, 100],
+        order: [[1, 'asc']],
+        columnDefs: [
+            { orderable: false, targets: [0, 8] },
+            { searchable: false, targets: [0, 1, 7, 8] },
+        ],
+        language: {
+            search: '', searchPlaceholder: 'Search name, ID, app no…',
+            lengthMenu: 'Show _MENU_',
+            info: '_START_–_END_ of _TOTAL_',
+            paginate: {
+                previous: '<i class="fas fa-chevron-left"></i>',
+                next: '<i class="fas fa-chevron-right"></i>',
+            },
+        },
+        dom: '<"d-flex justify-content-between align-items-center mb-2 px-1"lf>t<"d-flex justify-content-between align-items-center mt-2 px-1"ip>',
+    });
+
+    // Filter toggle
+    window.toggleFilter = function () {
+        const bar = document.getElementById('filterBar');
+        bar.classList.toggle('open');
+        // auto-open if filters active
+    };
+
+    // Auto-open filter bar if any filters applied
+    {% if filter_query %}
+    document.getElementById('filterBar').classList.add('open');
+    {% endif %}
+
+    // Select all
+    $('#selectAll').on('change', function () {
         $('.app-check').prop('checked', this.checked);
         updateBulkBar();
     });
-    $(document).on('change','.app-check', updateBulkBar);
-    function updateBulkBar(){
+    $(document).on('change', '.app-check', updateBulkBar);
+
+    function updateBulkBar() {
         const count = $('.app-check:checked').length;
         $('#selCount').text(count);
         $('#bulkBar').toggle(count > 0);
-        $('#selectAll').prop('indeterminate', count > 0 && count < $('.app-check').length);
+        const total = $('.app-check').length;
+        $('#selectAll').prop('indeterminate', count > 0 && count < total);
+        if (count === total && total > 0) $('#selectAll').prop('checked', true);
+        if (count === 0) $('#selectAll').prop('checked', false);
     }
 
     // Bulk action
-    window.bulkAction = function(action){
-        const ids = $('.app-check:checked').map(function(){ return $(this).val(); }).get();
-        if(!ids.length) return;
+    window.bulkAction = function (action) {
+        const ids = $('.app-check:checked').map(function () { return $(this).val(); }).get();
+        if (!ids.length) return;
         const isReject = action === 'rejected';
-        const label    = isReject ? 'Reject' : 'Accept to Final Longlist';
-        const color    = isReject ? '#c0392b' : '#1a7a45';
+        const label = isReject ? 'Reject' : 'Accept to Final Longlist';
+        const color = isReject ? '#c0392b' : '#1a7a45';
 
         Swal.fire({
             title: label + '?',
-            html: `<p style="font-size:0.85rem;color:#67748e;">${ids.length} application(s) will be <strong>${isReject ? 'rejected' : 'accepted into the final longlist'}</strong>.</p>
+            html: `<p style="font-size:0.85rem;color:#67748e;">
+                       ${ids.length} application(s) will be <strong>${isReject ? 'rejected' : 'accepted'}</strong>.
+                   </p>
                    ${isReject ? `<div style="margin-top:0.75rem;text-align:left;">
-                     <label style="font-size:0.78rem;font-weight:600;color:#344767;">Reason <span style="color:#c0392b;">*</span></label>
-                     <textarea id="bulkNote" rows="3" style="width:100%;border:1px solid #e0e4ef;border-radius:0.4rem;padding:0.5rem;font-size:0.78rem;margin-top:0.3rem;resize:vertical;" placeholder="Reason for rejection..."></textarea>
+                       <label style="font-size:0.78rem;font-weight:600;color:#344767;">
+                           Reason <span style="color:#c0392b;">*</span>
+                       </label>
+                       <textarea id="bulkNote" rows="3"
+                           style="width:100%;border:1px solid #e0e4ef;border-radius:0.4rem;
+                                  padding:0.5rem;font-size:0.78rem;margin-top:0.3rem;resize:vertical;"
+                           placeholder="Reason for rejection..."></textarea>
                    </div>` : ''}`,
             icon: isReject ? 'warning' : 'question',
             showCancelButton: true,
-            confirmButtonColor: color, cancelButtonColor:'#adb5bd',
+            confirmButtonColor: color,
+            cancelButtonColor: '#adb5bd',
             confirmButtonText: label,
             preConfirm: () => {
-                if(isReject){
+                if (isReject) {
                     const note = document.getElementById('bulkNote')?.value.trim();
-                    if(!note){ Swal.showValidationMessage('Rejection reason is required.'); return false; }
+                    if (!note) { Swal.showValidationMessage('Rejection reason is required.'); return false; }
                     return note;
                 }
                 return '';
             },
         }).then(result => {
-            if(!result.isConfirmed) return;
+            if (!result.isConfirmed) return;
             const fd = new FormData();
             fd.append('action', action);
             fd.append('notes', result.value || '');
             ids.forEach(id => fd.append('app_ids', id));
-            fd.append('csrfmiddlewaretoken','{{ csrf_token }}');
-            fetch('{% url "hr_longlist_bulk" vacancy.id %}',{method:'POST',body:fd})
-            .then(r=>r.json()).then(data=>{
-                if(data.success){
-                    Swal.fire({icon:'success',title:'Done',text:`${data.count} application(s) ${isReject ? 'rejected' : 'accepted'}.`,
-                        confirmButtonColor:'#262561',timer:2000,showConfirmButton:false}).then(()=>location.reload());
-                } else { Swal.fire('Error',data.error,'error'); }
-            });
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+            fetch('{% url "hr_longlist_bulk" vacancy.id %}', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success', title: 'Done',
+                            text: `${data.count} application(s) ${isReject ? 'rejected' : 'accepted'}.`,
+                            confirmButtonColor: '#262561', timer: 2000, showConfirmButton: false,
+                        }).then(() => location.reload());
+                    } else {
+                        Swal.fire('Error', data.error, 'error');
+                    }
+                });
         });
     };
 
-    // Finalise longlist
-    window.confirmFinalise = function(){
+    // Finalise
+    window.confirmFinalise = function () {
         Swal.fire({
             title: 'Finalise Longlist?',
             html: `<p style="font-size:0.85rem;color:#67748e;">
-                   <strong style="color:#262561;">{{ total_accepted }}</strong> application(s) will be moved to the
-                   <strong>Final Longlist</strong> and presented to the shortlisting committee.<br><br>
-                   This action <strong>cannot be undone</strong>. The vacancy will move to
-                   <em>Committee Stage</em>.</p>`,
+                       <strong style="color:#262561;">{{ total_accepted }}</strong> application(s) will move to
+                       the <strong>Final Longlist</strong>.<br><br>
+                       The vacancy will move to <em>Committee Stage</em>.
+                       This action <strong>cannot be undone</strong>.
+                   </p>`,
             icon: 'warning',
             showCancelButton: true,
-            confirmButtonColor: '#262561', cancelButtonColor:'#adb5bd',
+            confirmButtonColor: '#262561',
+            cancelButtonColor: '#adb5bd',
             confirmButtonText: '<i class="fas fa-flag-checkered me-1"></i> Yes, Finalise',
         }).then(result => {
-            if(!result.isConfirmed) return;
+            if (!result.isConfirmed) return;
             const fd = new FormData();
-            fd.append('csrfmiddlewaretoken','{{ csrf_token }}');
-            fetch('{% url "hr_longlist_finalise" vacancy.id %}',{method:'POST',body:fd})
-            .then(r=>r.json()).then(data=>{
-                if(data.success){
-                    Swal.fire({
-                        icon:'success', title:'Longlist Finalised',
-                        html:`<p style="font-size:0.85rem;color:#67748e;">
-                              <strong>${data.accepted_count}</strong> application(s) have been moved to the Final Longlist.
-                              The vacancy is now in <strong>Committee Stage</strong>.</p>`,
-                        confirmButtonColor:'#262561',
-                    }).then(()=>{ window.location.href='/recruitment/vacancies/list/'; });
-                } else {
-                    Swal.fire('Cannot Finalise', data.error, 'error');
-                }
-            });
+            fd.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+            fetch('{% url "hr_longlist_finalise" vacancy.id %}', { method: 'POST', body: fd })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            icon: 'success', title: 'Longlist Finalised',
+                            html: `<p style="font-size:0.85rem;color:#67748e;">
+                                       <strong>${data.accepted_count}</strong> applications moved to Final Longlist.
+                                       Vacancy is now in <strong>Committee Stage</strong>.
+                                   </p>`,
+                            confirmButtonColor: '#262561',
+                        }).then(() => { window.location.href = '{% url "vacancy_longlisting" %}'; });
+                    } else {
+                        Swal.fire('Cannot Finalise', data.error, 'error');
+                    }
+                });
         });
     };
 
-    {% if messages %}{% for message in messages %}
-    Swal.fire({icon:'{% if message.tags == "error" %}error{% else %}success{% endif %}',title:'{% if message.tags == "error" %}Error{% else %}Done{% endif %}',text:'{{ message|escapejs }}',confirmButtonColor:'#262561',timer:2500,showConfirmButton:false});
-    {% endfor %}{% endif %}
 });
 </script>
 {% endblock %}

@@ -37,43 +37,6 @@
                            name="password" autocomplete="current-password">
                     <span class="input-group-text" onclick="togglePassword()" title="Toggle password visibility">
                         <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2" viewBox="0 0 24 24" width="18">
-    <div class="login-wrapper">
-        <div class="login-card card">
-
-            <div class="card-header pb-0 bg-transparent text-center">
-                <a href="#" class="logo d-flex justify-content-center align-items-center">
-                    <img alt="Court of Arms"
-                         src="{% static 'assets/img/logos/court_of_arms.png' %}"
-                         style="max-height:80px;">
-                    <div class="logo-divider mx-2"></div>
-                    <img alt="UFAA Logo"
-                         src="{% static 'assets/img/logos/ufaa_logo.png' %}"
-                         style="max-height:80px;">
-                </a>
-                <h3 class="font-weight-bolder" style="color:#003366;">Welcome</h3>
-                <p class="mb-0">Enter your ID Number and Password to sign in</p>
-            </div>
-
-            <div class="card-body">
-                <form role="form" id="loginform" method="post">
-                    {% csrf_token %}
-
-                    <label>National ID Number</label>
-                    <div class="mb-3">
-                        <input aria-label="Identification Number" type="number"
-                               class="form-control" name="idno"
-                               placeholder="Identification Number">
-                    </div>
-
-                    <label>Password</label>
-                    <div class="mb-1 input-group">
-                        <input aria-label="Password" class="form-control"
-                               id="passwordInput" placeholder="Password"
-                               type="password" name="password">
-                        <span class="input-group-text" onclick="togglePassword()"
-                              title="Toggle password visibility">
-                        <svg fill="none" height="18" id="eyeIcon" stroke="#999" stroke-width="2"
-                             viewBox="0 0 24 24" width="18" xmlns="http://www.w3.org/2000/svg">
                             <path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" stroke-linecap="round" stroke-linejoin="round"/>
                             <path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" stroke-linecap="round" stroke-linejoin="round"/>
                         </svg>
