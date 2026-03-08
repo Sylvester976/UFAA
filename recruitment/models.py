@@ -261,8 +261,8 @@ class Vacancy(models.Model):
     )
     screening_criteria = models.JSONField(default=dict, blank=True)
 
-    start_date = models.DateField(null=True, blank=True)
-    end_date   = models.DateField(null=True, blank=True)
+    start_date = models.DateField()
+    end_date   = models.DateField()
 
     created_by       = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at       = models.DateTimeField(auto_now_add=True)
@@ -896,19 +896,19 @@ class VacancyApplicationCounter(models.Model):
     def __str__(self):
         return f"{self.vacancy.reference_number} — {self.last_number} applications"
 
-class ShortlistingCommittee(models.Model):
-    vacancy = models.OneToOneField(
-        Vacancy,
-        on_delete=models.CASCADE,
-        related_name='shortlisting_committee'
-    )
+# class ShortlistingCommittee(models.Model):
+#     vacancy = models.OneToOneField(
+#         Vacancy,
+#         on_delete=models.CASCADE,
+#         related_name='shortlisting_committee'
+#     )
 
-    members = models.ManyToManyField(
-        settings.AUTH_USER_MODEL,
-        related_name='shortlisting_committees'
-    )
+#     members = models.ManyToManyField(
+#         settings.AUTH_USER_MODEL,
+#         related_name='shortlisting_committees'
+#     )
 
-    created_at = models.DateTimeField(auto_now_add=True)
+#     created_at = models.DateTimeField(auto_now_add=True)
     
    
 class ShortlistingDecision(models.Model):

@@ -17,8 +17,6 @@ class Migration(migrations.Migration):
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
-    # State operations tell Django's ORM about the models
-    # Database operations use IF NOT EXISTS so they're safe to run on any env
     operations = [
         migrations.SeparateDatabaseAndState(
             state_operations=[
@@ -113,14 +111,15 @@ class Migration(migrations.Migration):
                 migrations.AddField(model_name='vacancy', name='shortlist_finalised_by', field=models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=django.db.models.deletion.SET_NULL, null=True, blank=True, related_name='shortlists_finalised')),
                 migrations.AddField(model_name='vacancy', name='is_overdue', field=models.BooleanField(default=False)),
             ],
+
             database_operations=[
-                # All CREATE TABLE use IF NOT EXISTS — safe for every environment
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_shortlistingcommittee (
                         id bigserial PRIMARY KEY,
                         vacancy_id bigint NOT NULL REFERENCES recruitment_vacancy(id) ON DELETE CASCADE,
-                        member_id integer NOT NULL REFERENCES accounts_systemaccount(id) ON DELETE CASCADE,
-                        appointed_by_id integer REFERENCES accounts_systemaccount(id) ON DELETE SET NULL,
+                        member_id uuid NOT NULL REFERENCES accounts_user(id) ON DELETE CASCADE,
+                        appointed_by_id uuid REFERENCES accounts_user(id) ON DELETE SET NULL,
                         appointed_at timestamptz NOT NULL DEFAULT NOW(),
                         is_active boolean NOT NULL DEFAULT true,
                         scores_submitted boolean NOT NULL DEFAULT false,
@@ -130,12 +129,13 @@ class Migration(migrations.Migration):
                         UNIQUE (vacancy_id, member_id)
                     );
                 """, migrations.RunSQL.noop),
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_committeescore (
                         id bigserial PRIMARY KEY,
                         vacancy_id bigint NOT NULL REFERENCES recruitment_vacancy(id) ON DELETE CASCADE,
                         application_id bigint NOT NULL REFERENCES recruitment_jobapplication(id) ON DELETE CASCADE,
-                        member_id integer NOT NULL REFERENCES accounts_systemaccount(id) ON DELETE CASCADE,
+                        member_id uuid NOT NULL REFERENCES accounts_user(id) ON DELETE CASCADE,
                         score smallint NOT NULL,
                         comment text NOT NULL,
                         is_draft boolean NOT NULL DEFAULT true,
@@ -146,6 +146,7 @@ class Migration(migrations.Migration):
                         UNIQUE (vacancy_id, application_id, member_id)
                     );
                 """, migrations.RunSQL.noop),
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_committeescoreamendment (
                         id bigserial PRIMARY KEY,
@@ -155,39 +156,42 @@ class Migration(migrations.Migration):
                         old_comment text NOT NULL,
                         new_comment text NOT NULL,
                         reason text NOT NULL,
-                        amended_by_id integer REFERENCES accounts_systemaccount(id) ON DELETE SET NULL,
+                        amended_by_id uuid REFERENCES accounts_user(id) ON DELETE SET NULL,
                         amended_at timestamptz NOT NULL DEFAULT NOW()
                     );
                 """, migrations.RunSQL.noop),
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_shortlistpick (
                         id bigserial PRIMARY KEY,
                         vacancy_id bigint NOT NULL REFERENCES recruitment_vacancy(id) ON DELETE CASCADE,
                         application_id bigint NOT NULL REFERENCES recruitment_jobapplication(id) ON DELETE CASCADE,
-                        member_id integer NOT NULL REFERENCES accounts_systemaccount(id) ON DELETE CASCADE,
+                        member_id uuid NOT NULL REFERENCES accounts_user(id) ON DELETE CASCADE,
                         include boolean NOT NULL,
                         reason text NOT NULL,
                         decided_at timestamptz NOT NULL DEFAULT NOW(),
                         UNIQUE (vacancy_id, application_id, member_id)
                     );
                 """, migrations.RunSQL.noop),
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_shortlistconsent (
                         id bigserial PRIMARY KEY,
                         vacancy_id bigint NOT NULL REFERENCES recruitment_vacancy(id) ON DELETE CASCADE,
-                        member_id integer NOT NULL REFERENCES accounts_systemaccount(id) ON DELETE CASCADE,
+                        member_id uuid NOT NULL REFERENCES accounts_user(id) ON DELETE CASCADE,
                         response varchar(20) NOT NULL DEFAULT 'no_response',
                         dissent_reason text NOT NULL DEFAULT '',
                         responded_at timestamptz,
                         UNIQUE (vacancy_id, member_id)
                     );
                 """, migrations.RunSQL.noop),
+
                 migrations.RunSQL("""
                     CREATE TABLE IF NOT EXISTS recruitment_shortlistlog (
                         id bigserial PRIMARY KEY,
                         vacancy_id bigint NOT NULL REFERENCES recruitment_vacancy(id) ON DELETE CASCADE,
                         application_id bigint REFERENCES recruitment_jobapplication(id) ON DELETE SET NULL,
-                        performed_by_id integer REFERENCES accounts_systemaccount(id) ON DELETE SET NULL,
+                        performed_by_id uuid REFERENCES accounts_user(id) ON DELETE SET NULL,
                         action varchar(50) NOT NULL,
                         notes text NOT NULL DEFAULT '',
                         metadata jsonb NOT NULL DEFAULT '{}',
@@ -195,11 +199,26 @@ class Migration(migrations.Migration):
                         performed_by_label varchar(200) NOT NULL DEFAULT ''
                     );
                 """, migrations.RunSQL.noop),
-                # Vacancy columns — IF NOT EXISTS per column
-                migrations.RunSQL("ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS committee_appointed_at timestamptz;", migrations.RunSQL.noop),
-                migrations.RunSQL("ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS shortlist_finalised_at timestamptz;", migrations.RunSQL.noop),
-                migrations.RunSQL("ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS shortlist_finalised_by_id integer REFERENCES accounts_systemaccount(id) ON DELETE SET NULL;", migrations.RunSQL.noop),
-                migrations.RunSQL("ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS is_overdue boolean NOT NULL DEFAULT false;", migrations.RunSQL.noop),
+
+                migrations.RunSQL(
+                    "ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS committee_appointed_at timestamptz;",
+                    migrations.RunSQL.noop
+                ),
+
+                migrations.RunSQL(
+                    "ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS shortlist_finalised_at timestamptz;",
+                    migrations.RunSQL.noop
+                ),
+
+                migrations.RunSQL(
+                    "ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS shortlist_finalised_by_id uuid REFERENCES accounts_user(id) ON DELETE SET NULL;",
+                    migrations.RunSQL.noop
+                ),
+
+                migrations.RunSQL(
+                    "ALTER TABLE recruitment_vacancy ADD COLUMN IF NOT EXISTS is_overdue boolean NOT NULL DEFAULT false;",
+                    migrations.RunSQL.noop
+                ),
             ],
         ),
     ]
