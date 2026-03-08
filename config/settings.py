@@ -35,7 +35,7 @@ LOGIN_MAX_ATTEMPTS   = 5
 LOGIN_LOCKOUT_SECS   = 900
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = str2bool(os.getenv("DEBUG", "False"))
 
 ALLOWED_HOSTS = ['*']
 # Application definition
