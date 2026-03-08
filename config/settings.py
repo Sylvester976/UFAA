@@ -151,6 +151,9 @@ STATICFILES_DIRS = [
 # Where collectstatic will gather files for production (optional now)
 STATIC_ROOT = BASE_DIR / "static_root"
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 AUTH_USER_MODEL = "accounts.User"
 # 10 years in seconds (practically permanent until logout)
 SESSION_COOKIE_AGE = 10 * 365 * 24 * 60 * 60
