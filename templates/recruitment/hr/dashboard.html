@@ -201,15 +201,42 @@
     .vacancy-table-container::-webkit-scrollbar-thumb { background: rgba(38,37,97,0.18); border-radius: 3px; }
 
     /* Appointment table — fixed height */
-    .appoint-scroll {
-        max-height: 180px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: rgba(38,37,97,0.2) transparent;
-    }
-    .appoint-scroll::-webkit-scrollbar       { width: 5px; }
-    .appoint-scroll::-webkit-scrollbar-thumb { background: rgba(38,37,97,0.18); border-radius: 3px; }
 
+    .appoint-scroll{
+        max-height:180px;
+
+        overflow-y:auto;
+        overflow-x:auto;
+
+        scrollbar-width:thin;
+        scrollbar-color:rgba(38,37,97,0.2) transparent;
+    }
+
+    /* Chrome scrollbar */
+
+    .appoint-scroll::-webkit-scrollbar{
+        width:5px;
+        height:5px;
+    }
+
+    .appoint-scroll::-webkit-scrollbar-thumb{
+        background:rgba(38,37,97,0.18);
+        border-radius:3px;
+    }
+
+    /* Ensure tables don't collapse on mobile */
+
+    .brand-table{
+        min-width:600px;
+    }
+
+    @media (max-width:768px){
+
+        .brand-table{
+            min-width:500px;
+        }
+
+    }
     /* Compact table row heights */
     .vacancy-table thead th { padding: 0.6rem 1rem !important; }
     .vacancy-table tbody tr td { padding: 0.55rem 1rem !important; }
@@ -222,6 +249,58 @@
     /* Tighten KPI row */
     .kpi-value { font-size: 1.7rem !important; }
     .kpi-sub   { font-size: 0.65rem; margin-top: 0.1rem; }
+    /* ===============================
+GLOBAL TABLE WRAPPER
+================================ */
+
+.ufaa-table-wrapper{
+    width:100%;
+    overflow-x:auto;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:thin;
+    padding-bottom:4px;
+}
+
+.ufaa-table-wrapper::-webkit-scrollbar{
+    height:6px;
+}
+
+.ufaa-table-wrapper::-webkit-scrollbar-thumb{
+    background:rgba(0,0,0,.25);
+    border-radius:3px;
+}
+
+
+/* Table mobile behaviour */
+
+.brand-table,
+.vacancy-table{
+    min-width:720px;
+}
+
+@media (max-width:768px){
+
+    .brand-table,
+    .vacancy-table{
+        min-width:650px;
+    }
+
+}
+
+
+/* Table action buttons wrap */
+
+.vacancy-actions{
+    display:flex;
+    flex-wrap:wrap;
+    gap:.35rem;
+}
+
+@media (max-width:768px){
+    .vacancy-actions{
+        justify-content:flex-start;
+    }
+}
 </style>
 {% endblock %}
 
@@ -305,9 +384,6 @@
                         <h6 class="mb-0"><i class="fas fa-list-alt me-2" style="opacity:0.5;"></i>All Vacancies</h6>
                         <p>Manage recruitment lifecycle stages</p>
                     </div>
-                    <a href="{% url 'create_vacancy' %}" class="btn btn-brand btn-sm">
-                        <i class="fas fa-plus me-1"></i> Create Vacancy
-                    </a>
                 </div>
                 <div class="ufaa-table-wrapper">
                     <table class="table vacancy-table mb-0">
@@ -411,7 +487,9 @@
     <!-- ── FINAL APPOINTMENT ───────────────────────────── -->
     <div class="row">
         <div class="col-12">
+
             <div class="card dash-card brand-card">
+
                 <div class="card-header">
                     <h6 class="mb-0 d-flex align-items-center gap-2">
                         <span class="pulse-dot"></span>
@@ -419,38 +497,75 @@
                     </h6>
                     <p>These vacancies have completed the full selection process</p>
                 </div>
+
                 {% if vacancies_ready %}
+
                 <div class="appoint-scroll">
+
                     <table class="table brand-table mb-0">
+
                         <thead>
                             <tr>
                                 <th>Vacancy</th>
                                 <th>Reference No.</th>
-                                <th class="text-end pe-3">Action</th>
+                                <th class="text-md-end">Action</th>
                             </tr>
                         </thead>
+
                         <tbody>
+
                             {% for vacancy in vacancies_ready %}
+
                             <tr>
-                                <td><span class="appoint-title">{{ vacancy.title }}</span></td>
-                                <td><span class="appoint-ref">{{ vacancy.reference_number }}</span></td>
-                                <td class="text-end pe-3">
-                                    <a href="{% url 'hr_finalize_appointment' vacancy.id %}" class="btn btn-brand btn-sm">
-                                        <i class="fas fa-check-double me-1"></i>Finalize Appointment
-                                    </a>
+
+                                <td>
+                                    <span class="appoint-title">
+                                        {{ vacancy.title }}
+                                    </span>
                                 </td>
+
+                                <td>
+                                    <span class="appoint-ref">
+                                        {{ vacancy.reference_number }}
+                                    </span>
+                                </td>
+
+                                <td class="text-md-end">
+
+                                    <a href="{% url 'hr_finalize_appointment' vacancy.id %}"
+                                    class="btn btn-brand btn-sm">
+
+                                        <i class="fas fa-check-double me-1"></i>
+                                        Finalize Appointment
+
+                                    </a>
+
+                                </td>
+
                             </tr>
+
                             {% endfor %}
+
                         </tbody>
+
                     </table>
+
                 </div>
+
                 {% else %}
-                <div class="empty-state" style="padding:1rem;">
+
+                <div class="empty-state">
+
                     <i class="fas fa-clipboard-check"></i>
+
                     <p>No vacancies awaiting final appointment at this time.</p>
+
                 </div>
+
                 {% endif %}
+
             </div>
+
         </div>
     </div>
 
