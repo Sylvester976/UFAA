@@ -16,6 +16,14 @@
 
     <!-- Bootstrap Icons -->
     <link href="{% static 'assets/npm/font/bootstrap-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/font-awesome/css/all.min.css' %}" rel="stylesheet"/>
+
+    <style>
+        .shadow-sm:hover{
+            transform: translateY(-6px);
+            transition: 0.3s ease;
+        }
+    </style>
 
 </head>
 <body>
@@ -71,18 +79,19 @@
 
         <p class="lead mb-4" style="color:#003366;">
             Welcome to the official recruitment portal of the
-            <strong>Unclaimed Financial Assets Authority (UFAA)</strong>.
-            View current vacancies and submit your applications online.
+            <strong>Unclaimed Financial Assets Authority (UFAA)</strong>. <br>
+            The Unclaimed Financial Assets Authority (UFAA) is a state corporation established under the National Treasury pursuant to the Unclaimed Financial Assets Act. No. 40 of 2011. The primary mandate of the Authority is to receive unclaimed financial assets from holders of such assets, safeguard these unclaimed assets, and re-unite the assets with their rightful owners.
         </p>
 
 
     </div>
 </section>
 
+
 <!-- Featured Jobs Section -->
 <section id="jobs" class="bg-light py-5">
     <div class="container">
-        <h2 class="text-center mb-5">Vacancies</h2>
+        <h2 class="text-center mb-5">Available vacancies</h2>
         <div class="alert mt-3" style="background-color: #C39545; color: #fff; border-color: #C39545;">
             Persons abled differently are encouraged to apply. <br>
             <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process.
@@ -164,28 +173,49 @@
 </section>
 
 <!-- Features Section -->
-{% comment %} <section id="features" class="py-5">
+<section class="py-5 bg-white">
     <div class="container text-center">
-        <h2 class="mb-5">Why Choose UFAA?</h2>
-        <div class="row">
-            <div class="col-md-4 mb-4">
-                <i class="bi bi-briefcase feature-icon"></i>
-                <h5 class="mt-3">Thousands of Jobs</h5>
-                <p>Access opportunities from top companies across industries.</p>
+
+        <h2 class="mb-5">Why Work With UFAA</h2>
+
+        <div class="row g-4">
+
+            <div class="col-md-4">
+                <div class="p-4 shadow-sm h-100 rounded">
+                    <i class="fas fa-landmark fa-3x" style="color:#003366;"></i>
+                    <h5 class="mt-3">Public Service Impact</h5>
+                    <p>
+                        Contribute to safeguarding unclaimed financial assets
+                        and reuniting them with their rightful owners.
+                    </p>
+                </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <i class="bi bi-people feature-icon"></i>
-                <h5 class="mt-3">Top Employers</h5>
-                <p>Connect directly with verified and reputable organizations.</p>
+
+            <div class="col-md-4">
+                <div class="p-4 shadow-sm h-100 rounded">
+                    <i class="fas fa-chart-line fa-3x" style="color:#003366;"></i>
+                    <h5 class="mt-3">Career Growth</h5>
+                    <p>
+                        UFAA offers opportunities for professional development,
+                        training, and long-term career progression.
+                    </p>
+                </div>
             </div>
-            <div class="col-md-4 mb-4">
-                <i class="bi bi-lightning-charge feature-icon"></i>
-                <h5 class="mt-3">Quick Apply</h5>
-                <p>Apply to jobs in seconds with your saved profile.</p>
+
+            <div class="col-md-4">
+                <div class="p-4 shadow-sm h-100 rounded">
+                    <i class="fas fa-shield-alt fa-3x" style="color:#003366;"></i>
+                    <h5 class="mt-3">Integrity & Transparency</h5>
+                    <p>
+                        Join an organization committed to transparency,
+                        accountability, and ethical public service.
+                    </p>
+                </div>
             </div>
+
         </div>
     </div>
-</section> {% endcomment %}
+</section>
 
 
 <!-- Footer -->
@@ -196,7 +226,6 @@
             <script>
                 document.write(new Date().getFullYear())
             </script>
-            <i class="fa fa-heart"></i>
             <a target="_blank"> The Unclaimed Financial Assets Authority (UFAA).</a>
             All rights reserved.
         </div>
