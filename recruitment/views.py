@@ -3547,10 +3547,13 @@ def apply_jobs_view(request):
         return result, snippet
 
     today = timezone.now().date()
+    # vacancies_qs = Vacancy.objects.filter(
+    #     status='open',
+    #     start_date__lte=today,
+    #     end_date__gte=today,
+    # ).order_by('end_date')
     vacancies_qs = Vacancy.objects.filter(
-        status='open',
-        start_date__lte=today,
-        end_date__gte=today,
+        status='open'
     ).order_by('end_date')
     if not user.is_employee:
         vacancies_qs = vacancies_qs.filter(vacancy_type='external')
