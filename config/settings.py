@@ -10,15 +10,17 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
-import os, random, string
+import os
+import random
+import string
 from pathlib import Path
 from dotenv import load_dotenv
 from str2bool import str2bool
 
-load_dotenv()  # take environment variables from .env.
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Explicitly load .env file
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -169,7 +171,7 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': 'django_requests.log',
+            'filename': BASE_DIR / 'logs/django_requests.log',
         },
         'console': {
             'class': 'logging.StreamHandler',
