@@ -1,70 +1,88 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Assign Roles{% endblock %}
+
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid py-2">
 
-    <div class="card shadow-sm">
-        <div class="card-header bg-light">
-            <h4 class="mb-0">
-                Assign Roles to {{ user.first_name }} {{ user.last_name }}
-            </h4>
-        </div>
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-user-tag me-2" style="color:var(--gold-dark);"></i>
+Assign Roles
+</h4>
+<p>{{ user.first_name }} {{ user.last_name }}</p>
+</div>
 
-        <div class="card-body">
+<div class="gold-divider"></div>
 
-            <form method="post">
-                {% csrf_token %}
+<div class="row justify-content-center">
+<div class="col-lg-6">
 
-                <div class="mb-4">
-                    <label class="form-label fw-semibold">
-                        Select Roles
-                    </label>
+<div class="card dash-card brand-card">
 
-                    <div class="row">
-                        {% for role in roles %}
-                            <div class="col-md-4 mb-3">
-                                <div class="form-check">
+<div class="card-body">
 
-                                    <input 
-                                        type="checkbox"
-                                        name="role"
-                                        value="{{ role.id }}"
-                                        id="role_{{ role.id }}"
-                                        class="form-check-input"
-                                        {% if role.id in assigned_role_ids %}
-                                            checked
-                                        {% endif %}
-                                    >
+<form method="post">
+{% csrf_token %}
 
-                                    <label for="role_{{ role.id }}"
-                                           class="form-check-label">
-                                        {{ role.name }}
-                                    </label>
+<label class="form-label fw-semibold mb-3">
+Select Roles
+</label>
 
-                                </div>
-                            </div>
-                        {% empty %}
-                            <div class="text-muted">
-                                No roles available.
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
+<div class="row">
 
-                <div class="d-flex gap-2">
-                    <button type="submit" class="btn btn-primary">
-                        Save Roles
-                    </button>
+{% for role in roles %}
 
-                    <a href="{% url 'user_list' %}" class="btn btn-secondary">
-                        Cancel
-                    </a>
-                </div>
+<div class="col-md-6 mb-3">
 
-            </form>
+<label class="list-group-item d-flex align-items-center">
 
-        </div>
-    </div>
+<input
+type="checkbox"
+name="role"
+value="{{ role.id }}"
+class="form-check-input me-2"
+id="role_{{ role.id }}"
+{% if role.id in assigned_role_ids %}checked{% endif %}
+>
+
+<i class="fas fa-user-shield me-2" style="opacity:.3;"></i>
+
+{{ role.name }}
+
+</label>
+
+</div>
+
+{% empty %}
+
+<p class="text-muted">No roles available.</p>
+
+{% endfor %}
+
+</div>
+
+<div class="mt-3">
+
+<button type="submit" class="btn btn-brand">
+<i class="fas fa-save me-1"></i>
+Save Roles
+</button>
+
+<a href="{% url 'user_list' %}" class="btn btn-outline-brand">
+Cancel
+</a>
+
+</div>
+
+</form>
+
+</div>
+
+</div>
+
+</div>
+</div>
 
 </div>
 

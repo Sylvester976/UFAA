@@ -21,7 +21,8 @@ urlpatterns = [
     # HR DASHBOARD
     path('hr/instructions/', views.instrutions_view, name='instrutions_view'),
     path('hr/dashboard/', views.hr_dashboard, name='hr_dashboard'),
-    
+
+    path("admin/dashboard/", views.admin_dashboard, name="admin_dashboard"),
     path(
         "panel/assignment/<int:assignment_id>/respond/",
         views.respond_panel_assignment,
@@ -130,7 +131,6 @@ urlpatterns = [
     ),
 
     path('vacancies/longlisting/', views.vacancy_longlisting, name='vacancy_longlisting'),
-    path('vacancies/shortlisting/', views.vacancy_shortlisting, name='vacancy_shortlisting'),
     path('vacancies/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
     path('vacancies/list/', views.vacancy_list, name='vacancy_list'),
     path('hr/vacancy/<int:vacancy_id>/longlisting/', views.move_to_longlisting, name='move_to_longlisting'),
@@ -165,12 +165,6 @@ urlpatterns = [
     path('sections/<int:pk>/delete/', views.section_delete, name='section_delete'),
 
     path(
-        "panelist/dashboard/",
-        views.panelist_dashboard,
-        name="panelist_dashboard"
-    ),
-
-    path(
         "panel/respond/<int:assignment_id>/",
         views.respond_panel_assignment,
         name="respond_panel_assignment"
@@ -187,12 +181,43 @@ urlpatterns = [
         views.panelist_reports,
         name="panelist_reports"
     ),
-    path('hr/vacancy/<int:vacancy_id>/longlist/', views.hr_longlist_dashboard, name='hr_longlist_dashboard'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/', views.hr_longlist_dossier, name='hr_longlist_dossier'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/decision/', views.hr_longlist_decision,
-         name='hr_longlist_decision'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/bulk/', views.hr_longlist_bulk, name='hr_longlist_bulk'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/recall/', views.hr_longlist_recall,
-         name='hr_longlist_recall'),
-    path('hr/vacancy/<int:vacancy_id>/longlist/finalise/', views.hr_longlist_finalise, name='hr_longlist_finalise'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/',
+         views.hr_longlist_dashboard, name='hr_longlist_dashboard'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/',
+         views.hr_longlist_dossier, name='hr_longlist_dossier'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/decision/',
+         views.hr_longlist_decision, name='hr_longlist_decision'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/bulk/',
+         views.hr_longlist_bulk, name='hr_longlist_bulk'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/<int:app_id>/recall/',
+         views.hr_longlist_recall, name='hr_longlist_recall'),
+    path('hr/vacancy/<int:vacancy_id>/longlist/finalise/',
+         views.hr_longlist_finalise, name='hr_longlist_finalise'),
+    path('vacancies/shortlisting/',
+         views.vacancy_shortlisting,
+         name='vacancy_shortlisting'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/',
+         views.hr_appoint_committee,
+         name='hr_appoint_committee'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/add/',
+         views.hr_committee_add,
+         name='hr_committee_add'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/remove/',
+         views.hr_committee_remove,
+         name='hr_committee_remove'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/appoint/notify/',
+         views.hr_committee_notify,
+         name='hr_committee_notify'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/staff-search/',
+         views.hr_committee_staff_search,
+         name='hr_committee_staff_search'),
+
+    path('hr/vacancy/<int:vacancy_id>/committee/progress/',
+         views.hr_committee_progress,
+         name='hr_committee_progress'),
 ]

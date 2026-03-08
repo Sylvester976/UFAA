@@ -17,6 +17,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from str2bool import str2bool
 
+load_dotenv(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', '.env'))
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 # Explicitly load .env file
@@ -27,7 +30,9 @@ load_dotenv(BASE_DIR / ".env")
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.environ['SECRET_KEY']
+SECRET_KEY = 'django-insecure-l__2kx=tze&vg=t58=g#t=n)n-_%!8(a0(h98738n5o1-5z$xj'
+LOGIN_MAX_ATTEMPTS   = 5
+LOGIN_LOCKOUT_SECS   = 900
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -77,6 +82,7 @@ TEMPLATES = [
                 "accounts.context_processors.logged_in_user",
                 "accounts.context_processors.notifications",
                 "accounts.context_processors.auto_close_vacancies",
+                "core.context_processors.user_roles",
             ],
         },
     },
@@ -171,7 +177,8 @@ LOGGING = {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs/django_requests.log',
+            'filename': 'django_requests.log',
+            # 'filename': '/var/www/html/UFAA/logs/django_requests.log',
         },
         'console': {
             'class': 'logging.StreamHandler',

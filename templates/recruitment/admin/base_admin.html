@@ -1,0 +1,14 @@
+{% extends "recruitment/base.html" %}
+
+{% block sidebar %}
+
+
+<li class="nav-item">
+    <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+       href="{% url 'admin_dashboard' %}">
+        <i class="fas fa-cogs me-2"></i>
+        Admin Dashboard
+    </a>
+</li>
+
+{% endblock %}

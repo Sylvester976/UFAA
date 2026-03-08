@@ -2,11 +2,21 @@
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-<h3>Panelist Interview Report</h3>
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
+Panelist Interview Report
+</h4>
+<p>{{ vacancy.title }}</p>
+</div>
 
-<p><strong>Vacancy:</strong> {{ vacancy.title }}</p>
+<div class="gold-divider"></div>
+
+<div class="card dash-card brand-card">
+
+<div class="card-body">
 
 <p>
 <strong>Candidates Interviewed:</strong>
@@ -18,24 +28,38 @@
 {% csrf_token %}
 
 <div class="mb-3">
+
 <label>Interview Summary</label>
+
 <textarea name="summary"
-          class="form-control"
-          rows="5"></textarea>
+class="form-control"
+rows="5"></textarea>
+
 </div>
 
 <div class="mb-3">
+
 <label>Recommendations</label>
+
 <textarea name="recommendations"
-          class="form-control"
-          rows="4"></textarea>
+class="form-control"
+rows="4"></textarea>
+
 </div>
 
-<button class="btn btn-success">
+<button class="btn btn-brand">
+
+<i class="fas fa-paper-plane me-1"></i>
+
 Submit Report
+
 </button>
 
 </form>
+
+</div>
+
+</div>
 
 </div>
 

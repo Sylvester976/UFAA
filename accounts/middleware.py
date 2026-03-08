@@ -13,6 +13,11 @@ class LoginRequiredMiddleware:
         'send_verification_email',
         'vacancy_detail',
         'login',
+        'forgot_password',
+        'dashboard_logout',
+        'send_reset_link',
+        'reset_password',
+        'do_reset_password',
 
         # dashboards
         'hr_dashboard',
@@ -21,6 +26,7 @@ class LoginRequiredMiddleware:
         'ceo_dashboard',
         'test_dashbord',
         'redirect_dashboard',
+        'admin_dashboard',
 
         # users
         'user_list',
@@ -82,6 +88,22 @@ class LoginRequiredMiddleware:
         'vacancy_interviews',
         'vacancy_list',
         'vacancy_appointments',
+        'hr_longlist_dashboard',
+        'hr_longlist_dossier',
+        'hr_longlist_decision',
+        'hr_longlist_bulk',
+        'hr_longlist_recall',
+        'hr_longlist_finalise',
+        'vacancy_shortlisting',
+        'hr_appoint_committee',
+        'hr_committee_progress',
+        'hr_committee_staff_search',
+        'hr_committee_notify',
+        'hr_committee_remove',
+        'hr_committee_add',
+
+
+
 
         # interview templates
         'template_list',

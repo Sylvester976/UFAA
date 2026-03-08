@@ -1,55 +1,83 @@
-{% extends 'recruitment/hr/base_hr.html' %}
+{% extends 'recruitment/base.html' %}
+{% block title %}Permissions{% endblock %}
+
 {% block content %}
 
-<div class="container-fluid">
+<div class="container-fluid py-2">
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="mb-0">Permissions</h4>
-        <a href="{% url 'permission_create' %}" class="btn btn-primary">
-            + Create Permission
-        </a>
-    </div>
+<div class="dash-header-banner mb-2">
+<h4>
+<i class="fas fa-key me-2" style="color:var(--gold-dark);"></i>
+Permissions
+</h4>
+<p>Manage system permissions</p>
+</div>
 
-    <ul class="list-group border-0">
+<div class="gold-divider"></div>
 
-        {% for permission in permissions %}
-        <li class="list-group-item mb-3 rounded shadow-sm d-flex justify-content-between align-items-center">
+<div class="card dash-card brand-card">
 
-            <div>
-                <strong>{{ permission.name }}</strong>
-                <div class="text-muted small">
-                    Code: {{ permission.code }}
-                </div>
-            </div>
+<div class="card-header d-flex justify-content-between align-items-center">
 
-            <div class="d-flex align-items-center gap-3">
+<h6 class="mb-0">Permission List</h6>
 
-                <a href="{% url 'permission_update' permission.pk %}"
-                   class="btn btn-sm btn-outline-secondary">
-                    Edit
-                </a>
+<a href="{% url 'permission_create' %}" class="btn btn-brand btn-sm">
+<i class="fas fa-plus me-1"></i>
+Create Permission
+</a>
 
-                <form action="{% url 'permission_delete' permission.pk %}"
-                      method="POST"
-                      class="m-0">
-                    {% csrf_token %}
-                    <button type="submit"
-                            class="btn btn-sm btn-link text-danger p-0"
-                            onclick="return confirm('Are you sure you want to delete this permission?');">
-                        Delete
-                    </button>
-                </form>
+</div>
 
-            </div>
+<div class="card-body">
 
-        </li>
-        {% empty %}
-        <li class="list-group-item text-muted">
-            No permissions found.
-        </li>
-        {% endfor %}
+<ul class="list-group">
 
-    </ul>
+{% for permission in permissions %}
+
+<li class="list-group-item d-flex justify-content-between align-items-center">
+
+<div>
+<strong>{{ permission.name }}</strong>
+<div class="text-muted small">
+Code: {{ permission.code }}
+</div>
+</div>
+
+<div class="table-actions">
+
+<a href="{% url 'permission_update' permission.pk %}"
+class="btn btn-sm btn-outline-brand">
+Edit
+</a>
+
+<form action="{% url 'permission_delete' permission.pk %}"
+method="POST">
+{% csrf_token %}
+
+<button class="btn btn-sm btn-danger"
+onclick="return confirm('Delete this permission?');">
+Delete
+</button>
+
+</form>
+
+</div>
+
+</li>
+
+{% empty %}
+
+<li class="list-group-item text-muted">
+No permissions found.
+</li>
+
+{% endfor %}
+
+</ul>
+
+</div>
+
+</div>
 
 </div>
 

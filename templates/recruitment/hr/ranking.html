@@ -1,78 +1,156 @@
-
-
-
-
-
 {% extends 'recruitment/panelist/base_panelist.html' %}
+{% block title %}Interview Ranking{% endblock %}
 
 {% block content %}
 
-<div class="container mt-4">
+<div class="container-fluid py-2">
 
-    <h3>Interview Ranking - {{ vacancy.title }}</h3>
+    <!-- HEADER -->
+    <div class="dash-header-banner mb-2">
+
+        <div>
+            <h4>
+                <i class="fas fa-trophy me-2" style="color:var(--gold-dark);"></i>
+                Interview Ranking
+            </h4>
+            <p>
+                Vacancy: <strong>{{ vacancy.title }}</strong>
+            </p>
+        </div>
+
+    </div>
+
+    <div class="gold-divider"></div>
+
 
     {% if applications %}
-    <form method="POST" action="{% url 'select_top_three' vacancy.id %}">
-        {% csrf_token %}
 
-        <table class="table table-bordered">
-            <thead>
-                <tr>
-                    <th>Select</th>
-                    <th>#</th>
-                    <th>Candidate</th>
-                    <th>Final Average</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for app in applications %}
-                <tr>
-                    <td>
-                        <input type="checkbox"
-                               class="candidate-checkbox"
-                               name="selected_candidates"
-                               value="{{ app.id }}"
-                               {% if total_applications == 1 %}checked{% endif %}>
-                    </td>
-                    <td>{{ forloop.counter }}</td>
-                    <td>{{ app.applicant.name }}</td>
-                    <td>{{ app.avg_score|floatformat:2 }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <!-- RANKING CARD -->
+    <div class="card dash-card brand-card">
 
-        <button type="submit" class="btn btn-success">
-            {% if total_applications > 3 %}
-                Confirm Top Three
-            {% else %}
-                Confirm Selection
-            {% endif %}
-        </button>
-    </form>
-    {% else %}
-        <div class="alert alert-info">
-            No ranked candidates available yet.
+        <div class="card-header">
+            <h6 class="mb-0">
+                <i class="fas fa-chart-line me-2" style="opacity:.5;"></i>
+                Candidate Ranking
+            </h6>
+            <p>Select the top candidates based on interview scores</p>
         </div>
+
+        <form method="POST" action="{% url 'select_top_three' vacancy.id %}">
+            {% csrf_token %}
+
+            <div class="vacancy-table-container card p-0">
+
+                <table class="table brand-table mb-0">
+
+                    <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>#</th>
+                            <th>Candidate</th>
+                            <th>Final Average</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for app in applications %}
+
+                    <tr>
+
+                        <td>
+                            <input type="checkbox"
+                                   class="form-check-input candidate-checkbox"
+                                   name="selected_candidates"
+                                   value="{{ app.id }}"
+                                   {% if total_applications == 1 %}checked{% endif %}>
+                        </td>
+
+                        <td>{{ forloop.counter }}</td>
+
+                        <td class="vacancy-title-cell">
+                            <i class="fas fa-user me-2" style="opacity:.25;font-size:.7rem;"></i>
+                            {{ app.applicant.name }}
+                        </td>
+
+                        <td>
+                            <span class="vacancy-status vacancy-status-interviews">
+                                {{ app.avg_score|floatformat:2 }}
+                            </span>
+                        </td>
+
+                    </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+            <div class="p-3">
+
+                <button type="submit" class="btn btn-brand">
+
+                    <i class="fas fa-check-circle me-1"></i>
+
+                    {% if total_applications > 3 %}
+                        Confirm Top Three
+                    {% else %}
+                        Confirm Selection
+                    {% endif %}
+
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+    {% else %}
+
+    <div class="card dash-card brand-card">
+        <div class="card-body text-center">
+
+            <div class="empty-state">
+                <i class="fas fa-chart-bar"></i>
+                <p>No ranked candidates available yet.</p>
+            </div>
+
+        </div>
+    </div>
+
     {% endif %}
 
 </div>
 
+
 {% if total_applications > 3 %}
 <script>
+
 document.addEventListener('DOMContentLoaded', function () {
+
     const checkboxes = document.querySelectorAll('.candidate-checkbox');
 
     checkboxes.forEach(box => {
+
         box.addEventListener('change', function () {
+
             const checked = document.querySelectorAll('.candidate-checkbox:checked');
+
             if (checked.length > 3) {
                 this.checked = false;
                 alert("You can only select three candidates.");
             }
+
         });
+
     });
+
 });
+
 </script>
 {% endif %}
 

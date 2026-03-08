@@ -1,0 +1,1001 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="apple-touch-icon" sizes="76x76" href="{% static 'assets/img/apple-icon.png' %}">
+    <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
+    <title>UFAA Job Portal</title>
+    <!-- Fonts & Icons -->
+    <link href="{% static 'assets/css/google_font.css?family=Open+Sans:300,400,600,700' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/font-awesome/all.min.css' %}" rel="stylesheet">
+
+    <!-- SweetAlert2 CSS -->
+    <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
+    <link href="{% static 'assets/css/select2.min.css' %}" rel="stylesheet"/>
+
+
+    <!-- Main CSS -->
+    <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
+    <link id="pagestyle" href="{% static 'assets/css/base.css' %}" rel="stylesheet"/>
+
+    <style>
+        /* ══════════════════════════════════════════════════
+        UFAA Job Portal Dashboard
+        Brand: Navy #1D255B · Gold #F9E6A1 / #C7B77F
+        Cleaned + Scrollable Tables Version
+        ══════════════════════════════════════════════════ */
+
+        :root {
+            --ufaa-navy:      #1D255B;
+            --ufaa-navy-deep: #141A45;
+            --ufaa-gold:      #F9E6A1;
+            --ufaa-gold-dark: #C7B77F;
+            --ufaa-gold-mid:  #E0CA7A;
+        }
+
+        /* ───────────────── KPI CARDS ───────────────── */
+
+        .kpi-card {
+            background: #262561;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+
+        .kpi-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #f5f5f5;
+        }
+
+        .kpi-value {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #262561;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        /* ───────────────── DASH CARDS ───────────────── */
+
+        .dash-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(29,37,91,0.06);
+            /* allow scrollable tables inside cards */
+            overflow: visible;
+        }
+
+        .dash-card .card-header {
+            background: transparent;
+            border-bottom: 1px solid #f1f1f1;
+            padding: 1rem 1.25rem 0.8rem;
+        }
+
+        .dash-card .card-body {
+            padding: 1rem 1.25rem;
+        }
+
+        /* Brand accent */
+        .brand-card {
+            border-left: 5px solid #C39545;
+        }
+
+        /* ───────────────── TABLE FIXED + SCROLL ───────────────── */
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(198, 198, 198, 0.5) transparent;
+            padding-bottom: 0.5rem;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(198, 198, 198, 0.5);
+            border-radius: 4px;
+        }
+
+        .brand-table {
+            width: 100%;
+            border-collapse: separate;
+            table-layout: auto;
+            min-width: 900px; /* ensure horizontal scroll if table is wider */
+        }
+
+        .brand-table th,
+        .brand-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Sticky header */
+        .brand-table thead th {
+            position: sticky;
+            top: 0;
+            background: #262561;
+            color: #fff;
+            z-index: 2;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .brand-table tbody tr:hover {
+            background-color: #FBF1A9;
+        }
+
+        /* Keep action buttons aligned */
+        .table-actions,
+        .brand-table td:last-child .d-flex {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: .5rem;
+            justify-content: center;
+        }
+
+        /* ───────────────── BUTTONS ───────────────── */
+
+        .btn-brand {
+            background: #C39545;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-brand:hover {
+            background: #262561;
+            color: #fff;
+        }
+
+        .btn-outline-brand {
+            border: 2px solid #C39545;
+            color: #C39545;
+            background: transparent;
+        }
+
+        .btn-outline-brand:hover {
+            background: #C39545;
+            color: #fff;
+        }
+
+        .btn-outline-blue {
+            border: 2px solid #262561;
+            color: #262561;
+            background: transparent;
+        }
+
+        .btn-outline-blue:hover {
+            background: #262561;
+            color: #fff;
+        }
+
+        /* ───────────────── BADGES ───────────────── */
+
+        .status-badge {
+            background: #262561;
+            color: #fff;
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 20px;
+        }
+
+        /* ───────────────── VACANCY TITLE ───────────────── */
+
+        .vacancy-title {
+            font-weight: 700;
+            color: #262561;
+        }
+
+        .vacancy-ref {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* ───────────────── MOBILE VACANCY CARDS ───────────────── */
+
+        .vacancy-card {
+            border-radius: 10px;
+            border-left: 4px solid #C39545;
+            background: #fff;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        .vacancy-card-title {
+            font-weight: 700;
+            color: #262561;
+        }
+
+        .vacancy-meta {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .vacancy-actions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* Hide table on small screens */
+        @media (max-width: 768px) {
+            .vacancy-table-wrapper {
+                display: none;
+            }
+        }
+
+        /* Hide cards on desktop */
+        @media (min-width: 769px) {
+            .vacancy-card-wrapper {
+                display: none;
+            }
+        }
+
+        /* ───────────────── FINAL APPOINTMENT ───────────────── */
+
+        .final-appointment-card {
+            border-left: 4px solid #262561;
+            border-radius: 10px;
+            padding: 16px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .final-appointment-title {
+            font-weight: 600;
+            color: #262561;
+        }
+
+        @media (max-width:768px){
+            .final-appointment-card{
+                flex-direction: column;
+                align-items: flex-start;
+                gap:10px;
+            }
+        }
+        /* ───────────────── CUSTOM VACANCY TABLE ───────────────── */
+
+        .vacancy-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .vacancy-table {
+            width: 100%;
+            min-width: 900px; /* ensures horizontal scroll if needed */
+            border-collapse: separate;
+            table-layout: auto;
+        }
+
+        .vacancy-table th,
+        .vacancy-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        .vacancy-table thead th {
+            position: sticky;
+            top: 0;
+            background: #262561;
+            color: #fff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            z-index: 2;
+        }
+
+        .vacancy-table tbody tr:hover {
+            background-color: #FBF1A9;
+        }
+
+        /* Status badges */
+        .vacancy-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .vacancy-status-draft      { background: #6c757d; } /* gray */
+        .vacancy-status-open       { background: #0d6efd; } /* blue */
+        .vacancy-status-closed     { background: #343a40; } /* dark */
+        .vacancy-status-longlisting { background: #17a2b8; } /* teal */
+        .vacancy-status-shortlisting { background: #ffc107; color:#212529; } /* gold */
+        .vacancy-status-interviews { background: #6c757d; } /* gray */
+        .vacancy-status-ceo_review { background: #198754; } /* green */
+
+        /* Action buttons in table */
+        .vacancy-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            justify-content: center;
+        }
+
+        .vacancy-actions a {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .vacancy-actions .btn-draft       { background: #6c757d; }
+        .vacancy-actions .btn-open        { background: #0d6efd; }
+        .vacancy-actions .btn-closed      { background: #343a40; }
+        .vacancy-actions .btn-longlisting { background: #17a2b8; }
+        .vacancy-actions .btn-shortlisting { background: #ffc107; color:#212529; }
+        .vacancy-actions .btn-interviews  { background: #6c757d; }
+        .vacancy-actions .btn-ceo_review  { background: #198754; }
+
+        /* Responsive: allow scroll on small screens */
+        @media (max-width: 768px) {
+            .vacancy-table-container {
+                overflow-x: auto;
+            }
+            .vacancy-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        /* ───────────────── APPLICATIONS TABLE ───────────────── */
+
+        .applications-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .applications-table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: separate;
+            table-layout: auto;
+        }
+
+        .applications-table th,
+        .applications-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Sticky header */
+        .applications-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--ufaa-navy);
+            color: #fff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        /* Hover effect for rows */
+        .applications-table tbody tr:hover {
+            background-color: var(--ufaa-gold-mid);
+        }
+
+        /* Status badges aligned with dashboard */
+        .app-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            display: inline-block;
+        }
+
+        .app-status-pending    { background: var(--ufaa-gold); color: #262561; } /* gold */
+        .app-status-reviewed   { background: #262561; } /* navy */
+        .app-status-selected   { background: var(--ufaa-gold-dark); color: #fff; } /* dark gold */
+        .app-status-rejected   { background: #dc3545; color: #fff; } /* red for rejected */
+
+        /* Action buttons styled like dashboard */
+        .app-action-btn {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .app-action-btn-primary {
+            background: var(--ufaa-navy);
+            color: #fff;
+            border: none;
+        }
+
+        .app-action-btn-primary:hover {
+            background: var(--ufaa-gold);
+            color: #262561;
+            transition: 0.3s;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .applications-table-container {
+                overflow-x: auto;
+            }
+            .app-action-btn {
+                margin-bottom: 0.25rem;
+            }
+        }
+        .messages {
+            margin: 20px 0;
+        }
+
+        .alert {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* Text spacing */
+        .alert-text {
+            margin-right: 10px;
+        }
+
+        /* Success */
+        .alert-success {
+            background-color: #e6f9f0;
+            color: #0f5132;
+            border-left: 4px solid #198754;
+        }
+
+        /* Error */
+        .alert-error,
+        .alert-danger {
+            background-color: #fdecea;
+            color: #842029;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Warning */
+        .alert-warning {
+            background-color: #fff4e5;
+            color: #664d03;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Info */
+        .alert-info {
+            background-color: #e7f3fe;
+            color: #055160;
+            border-left: 4px solid #0dcaf0;
+        }
+
+        /* Close button */
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: inherit;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            opacity: 0.6;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+                        
+        .logo {
+        display: flex;
+        align-items: center;        /* Vertical alignment */
+        justify-content: center;    /* Horizontal centering */
+        width: 100%;                /* Full width so centering works */
+        }
+
+        .logo-divider {
+        width: 3px;
+        height: 50px;               /* Match logo height */
+        background: linear-gradient(
+            to bottom,
+            #000000 0%, 
+            #000000 28%,
+            #ffffff 28%, 
+            #ffffff 34%, 
+            #BD272F 34%, 
+            #BD272F 62%, 
+            #ffffff 62%, 
+            #ffffff 68%, 
+            #136B38 68%, 
+            #136B38 100%
+        );
+        margin: 0 12px;
+        }
+
+        .btn-create-user {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            background: linear-gradient(135deg, #C39545, #E0CA7A);
+            color: #262561;
+
+            padding: 0.45rem 1.1rem;
+            border-radius: 0.6rem;
+
+            font-size: 0.78rem;
+            font-weight: 700;
+
+            text-decoration: none;
+            border: none;
+
+            transition: all 0.2s ease;
+        }
+
+        .btn-create-user:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(195,149,69,0.35);
+            color: #1a1a45;
+        }
+
+        .btn-banner {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+
+            background: linear-gradient(135deg, #C39545, #E0CA7A);
+            color: #262561;
+
+            padding: 0.45rem 1.1rem;
+            border-radius: 0.6rem;
+
+            font-size: 0.78rem;
+            font-weight: 700;
+
+            text-decoration: none;
+            border: none;
+
+            transition: all 0.2s ease;
+        }
+
+        .btn-banner:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(195,149,69,0.35);
+            color: #1a1a45;
+        }
+    </style>
+
+    {% block extra_css %}{% endblock %}
+</head>
+
+<body class="g-sidenav-show bg-gray-100">
+<aside class="sidenav navbar navbar-vertical navbar-expand-xs border-0 border-radius-xl my-3 fixed-start ms-3 ps ps--active-y bg-transparent"
+       id="sidenav-main">
+    <div class="sidenav-header m-0">
+        <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
+        aria-hidden="true" id="iconSidenav"></i>
+        
+        <a href="#" class="logo d-flex align-items-center justify-content-center w-100">
+        <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
+        <div class="logo-divider mx-2"></div>
+        <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
+        </a>
+    </div>
+    <hr class="horizontal dark mt-0">
+    <div class="collapse navbar-collapse w-auto max-height-vh-100 h-100 ps" id="sidenav-collapse-main">
+        <ul class="navbar-nav">
+
+
+            {% if 'hod_hr' in user_roles %}
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Human Resource
+                </h6>
+            </li> 
+                
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
+                    href="{% url 'hr_dashboard' %}">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Dashboard
+                    </a>
+                </li>
+
+                <!-- Published Vacancies -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
+                    href="{% url 'vacancy_list' %}">
+                        <i class="fas fa-bullhorn me-2"></i>
+                        Published Vacancies
+                    </a>
+                </li>
+
+
+                <!-- Longlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
+                    href="{% url 'vacancy_longlisting' %}">
+                        <i class="fas fa-list-ul me-2"></i>
+                        Longlists
+                    </a>
+                </li>
+
+
+                <!-- Shortlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
+                    href="{% url 'vacancy_shortlisting' %}">
+                        <i class="fas fa-user-check me-2"></i>
+                        <span class="nav-link-text ms-1">Shortlists</span>
+                    </a>
+                </li>
+
+
+                <!-- Interviews -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
+                    href="{% url 'vacancy_interviews' %}">
+                        <i class="fas fa-comments me-2"></i>
+                        <span class="nav-link-text ms-1">Interviews</span>
+                    </a>
+                </li>
+
+
+                <!-- Appointments -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                    href="{% url 'vacancy_appointments' %}">
+                        <i class="fas fa-user-tie me-2"></i>
+                        <span class="nav-link-text ms-1">Appointments</span>
+                    </a>
+                </li>
+
+                <!-- Interview Templates -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
+                    href="{% url 'template_list' %}">
+                        <i class="fas fa-file-alt me-1"></i>
+                        <span class="nav-link-text ms-1">Interview Templates</span>
+                    </a>
+                </li>
+
+                        
+                <!-- Manage Users -->
+                <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'user_list' %}">
+                        <i class="fas fa-users-cog me-2"></i>
+                        <span class="nav-link-text ms-1">Manage Users</span>
+                    </a>
+                </li>
+            {% endif %}
+
+
+            
+            
+            {% if 'admin' in user_roles %}
+
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Committee
+                </h6>
+            </li>   
+            <!-- Committee Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
+                href="{% url 'shortlisting_dashboard' %}">
+                    <i class="fas fa-users me-1"></i>
+                    <span class="nav-link-text ms-1">Committee Dashboard</span>
+                </a>
+            </li>
+            {% endif %}
+
+
+            {% if 'admin' in user_roles %}
+            
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    Panelist
+                </h6>
+            </li>   
+                 
+            <!-- Panelist / Interview Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
+                href="{% url 'panelist_dashboard' %}">
+                    <i class="fas fa-comments me-1"></i>
+                    <span class="nav-link-text ms-1">Panelist Dashboard</span>
+                </a>
+            </li>
+
+            {% endif %}
+
+
+            {% if 'admin' in user_roles %}
+                
+            <!-- System User Dashboards -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    CEO
+                </h6>
+            </li>  
+            <!-- CEO Dashboard -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
+                href="{% url 'ceo_dashboard' %}">
+                    <i class="fas fa-chart-line me-1"></i>
+                    <span class="nav-link-text ms-1">CEO Dashboard</span>
+                </a>
+            </li>
+            {% endif %}
+
+            
+            {% if 'admin' in user_roles %}
+            <!-- Administration -->
+            <li class="nav-item mt-3">
+                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                    System Admin
+                </h6>
+            </li>
+
+            {% endif %}
+            
+            {% block sidebar %}
+            <!-- Each dashboard will inject its sidebar here -->
+            {% endblock %}
+
+            
+        </ul>
+        <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
+            <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+        </div>
+        <div class="ps__rail-y" style="top: 0px; right: 0px;">
+            <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 0px;"></div>
+        </div>
+    </div>
+
+    <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
+        <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+    </div>
+    <div class="ps__rail-y" style="top: 0px; height: 747px; right: 0px;">
+        <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 510px;"></div>
+    </div>
+</aside>
+<main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ps ps--active-y">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl position-sticky blur shadow-blur mt-4 left-auto top-1 z-index-sticky"
+         id="navbarBlur" navbar-scroll="true">
+        <div class="container-fluid py-1 px-3">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+                    <li class="breadcrumb-item text-sm"><a class="opacity-5 text-dark" href="javascript:">Pages</a>
+                    </li>
+                    <li class="breadcrumb-item text-sm text-dark active" aria-current="page">{{ page }}</li>
+                </ol>
+                <h6 class="font-weight-bolder mb-0">{{ page }}</h6>
+            </nav>
+            <div class="collapse navbar-collapse mt-sm-0 mt-2 me-md-0 me-sm-4" id="navbar">
+                <div class="ms-md-auto pe-md-3 d-flex align-items-center">
+                </div>
+                <ul class="navbar-nav  justify-content-end">
+                    <li class="nav-item dropdown d-flex align-items-center">
+                        <a href="#"
+                           class="nav-link text-body p-0"
+                           id="userDropdown"
+                           role="button"
+                           data-bs-toggle="dropdown"
+                           aria-expanded="false">
+                            <i class="fa fa-user me-1"></i>
+                            Welcome, {{ request.user.first_name }} {{ request.user.last_name }}
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
+                            aria-labelledby="userDropdown">
+                            <li>
+                                <a class="dropdown-item text-danger" href="{% url 'dashboard_logout' %}">
+                                    Logout
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
+                        <a href="javascript:" class="nav-link text-body p-0" id="iconNavbarSidenav">
+                            <div class="sidenav-toggler-inner">
+                                <i class="sidenav-toggler-line"></i>
+                                <i class="sidenav-toggler-line"></i>
+                                <i class="sidenav-toggler-line"></i>
+                            </div>
+                        </a>
+                    </li>
+                    <li class="nav-item px-3 d-flex align-items-center">
+                    </li>
+                    <li class="nav-item dropdown pe-2 d-flex align-items-center">
+                        <a href="javascript:" class="nav-link text-body p-0" id="dropdownMenuButton"
+                           data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fa fa-bell cursor-pointer"></i>
+                            <span class="d-sm-inline d-none">Notifications</span>
+                        </a>
+                        <ul class="dropdown-menu  dropdown-menu-end  px-2 py-3 me-sm-n4"
+                            aria-labelledby="dropdownMenuButton">
+                            <li>
+                                <a class="dropdown-item border-radius-md" href="javascript:">
+                                    <div class="d-flex py-1">
+                                        <div class="avatar avatar-sm bg-gradient-secondary  me-3  my-auto">
+                                            <svg width="12px" height="12px" viewBox="0 0 43 36" version="1.1"
+                                                 xmlns="http://www.w3.org/2000/svg"
+                                            >
+                                                <title>credit-card</title>
+                                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                                    <g transform="translate(-2169.000000, -745.000000)" fill="#FFFFFF"
+                                                       fill-rule="nonzero">
+                                                        <g transform="translate(1716.000000, 291.000000)">
+                                                            <g transform="translate(453.000000, 454.000000)">
+                                                                <path class="color-background"
+                                                                      d="M43,10.7482083 L43,3.58333333 C43,1.60354167 41.3964583,0 39.4166667,0 L3.58333333,0 C1.60354167,0 0,1.60354167 0,3.58333333 L0,10.7482083 L43,10.7482083 Z"
+                                                                      opacity="0.593633743"></path>
+                                                                <path class="color-background"
+                                                                      d="M0,16.125 L0,32.25 C0,34.2297917 1.60354167,35.8333333 3.58333333,35.8333333 L39.4166667,35.8333333 C41.3964583,35.8333333 43,34.2297917 43,32.25 L43,16.125 L0,16.125 Z M19.7083333,26.875 L7.16666667,26.875 L7.16666667,23.2916667 L19.7083333,23.2916667 L19.7083333,26.875 Z M35.8333333,26.875 L28.6666667,26.875 L28.6666667,23.2916667 L35.8333333,23.2916667 L35.8333333,26.875 Z"></path>
+                                                            </g>
+                                                        </g>
+                                                    </g>
+                                                </g>
+                                            </svg>
+                                        </div>
+                                        <div class="d-flex flex-column justify-content-center">
+                                            <h6 class="text-sm font-weight-normal mb-1">
+                                                Payment successfully completed
+                                            </h6>
+                                            <p class="text-xs text-secondary mb-0">
+                                                <i class="fa fa-clock me-1"></i>
+                                                2 days
+                                            </p>
+                                        </div>
+                                    </div>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <!-- End Navbar -->
+    <div class="container-fluid py-4">
+        {% if messages %}
+        <div class="messages">
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }}">
+                <span class="alert-text">{{ message }}</span>
+                <button class="close-btn"
+                        onclick="this.parentElement.style.display='none';">
+                    &times;
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+        <!-- Block content here -->
+        {% block content %}
+
+        {% endblock %}
+        <!-- END Block content -->
+        <footer class="footer pt-3  ">
+            <div class="container-fluid">
+                <div class="row align-items-center justify-content-lg-between">
+                    <div class="col-lg-12 mb-lg-0 mb-4">
+                        <div class="copyright text-center text-sm text-muted text-lg-start">
+                            ©
+                            <script>
+                                document.write(new Date().getFullYear())
+                            </script>
+                            The Unclaimed Financial Assets Authority (UFAA). All rights reserved.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
+        <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
+    </div>
+    <div class="ps__rail-y" style="top: 0px; height: 779px; right: 0px;">
+        <div class="ps__thumb-y" tabindex="0" style="top: 0px; height: 358px;"></div>
+    </div>
+</main>
+<!--   Core JS Files   -->
+
+<!-- jQuery MUST be first -->
+<script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
+
+<!-- Bootstrap — only once -->
+<script src="{% static 'assets/js/core/popper.min.js' %}"></script>
+<script src="{% static 'assets/js/core/bootstrap.min.js' %}"></script>
+
+<!-- Plugins -->
+<script src="{% static 'assets/js/plugins/perfect-scrollbar.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/smooth-scrollbar.min.js' %}"></script>
+<script src="{% static 'assets/js/plugins/chartjs.min.js' %}"></script>
+
+<!-- Select2 -->
+<script src="{% static 'assets/js/select2.min.js' %}"></script>
+
+<!-- SweetAlert2 — only once -->
+<script src="{% static 'assets/js/swal2/swal2.js' %}"></script>
+
+<!-- Soft UI Dashboard -->
+<script src="{% static 'assets/js/soft-ui-dashboard.min.js?v=1.0.3' %}"></script>
+
+<!-- Autologout -->
+<script src="{% static 'assets/js/autologout.js' %}"></script>
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
+
+<script>
+    window.appConfig = {
+        csrfToken: '{{ csrf_token }}',
+        logoutUrl: '{% url "logout" %}',
+        loginUrl: '{% url "index" %}',
+    };
+</script>
+
+<script>
+    var win = navigator.platform.indexOf('Win') > -1;
+    if (win && document.querySelector('#sidenav-scrollbar')) {
+        var options = {damping: '0.5'}
+        Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
+    }
+</script>
+
+{% block extra_js %}{% endblock %}
+
+
+</body>
+</html>

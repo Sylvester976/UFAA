@@ -8,14 +8,14 @@
     <link rel="icon" type="image/png" href="{% static 'assets/img/favicon.ico' %}">
     <title>UFAA | Recruitment Portal</title>
 
-    
-    <link href="{% static 'assets/css/landing.css' %}" rel="stylesheet" />
+
+    <link href="{% static 'assets/css/landing.css' %}" rel="stylesheet"/>
 
     <!-- Bootstrap 5 CSS -->
-    <link href="{% static 'assets/npm/bootstrap/bootstrap.min.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/npm/bootstrap/bootstrap.min.css' %}" rel="stylesheet"/>
 
     <!-- Bootstrap Icons -->
-    <link href="{% static 'assets/npm/font/bootstrap-icons.css' %}" rel="stylesheet" />
+    <link href="{% static 'assets/npm/font/bootstrap-icons.css' %}" rel="stylesheet"/>
 
 </head>
 <body>
@@ -26,18 +26,18 @@
     <div class="container">
 
         <a href="#" class="logo d-flex align-items-center">
-          <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}"  style="max-height: 80px;">
+            <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 80px;">
             <div class="logo-divider mx-2"></div>
-          <img alt="ufaa Logo"  src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 80px;">
+            <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 80px;">
         </a>
 
         <!-- Mobile Toggle Button -->
-        <button class="navbar-toggler" 
-                type="button" 
-                data-bs-toggle="collapse" 
-                data-bs-target="#navbarNav" 
-                aria-controls="navbarNav" 
-                aria-expanded="false" 
+        <button class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#navbarNav"
+                aria-controls="navbarNav"
+                aria-expanded="false"
                 aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -70,8 +70,8 @@
         </h1>
 
         <p class="lead mb-4" style="color:#003366;">
-            Welcome to the official recruitment portal of the 
-            <strong>Unclaimed Financial Assets Authority (UFAA)</strong>. 
+            Welcome to the official recruitment portal of the
+            <strong>Unclaimed Financial Assets Authority (UFAA)</strong>.
             View current vacancies and submit your applications online.
         </p>
 
@@ -85,11 +85,11 @@
         <h2 class="text-center mb-5">Vacancies</h2>
         <div class="alert mt-3" style="background-color: #C39545; color: #fff; border-color: #C39545;">
             Persons abled differently are encouraged to apply. <br>
-            <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process. 
+            <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process.
             Applicants are advised not to pay any person claiming to offer recruitment assistance.
         </div>
 
-        
+
         <div class="row">
             {% for vacancy in vacancies %}
                 <div class="col-md-4 mb-4">
@@ -99,12 +99,12 @@
                             <p class="card-text">• Ref: {{ vacancy.reference_number }}</p>
                             {% if vacancy.advert_pdf %}
                                 <a href="{% url 'download_vacancy_pdf' vacancy.id %}" class="btn btn-primary px-4"
-                                style="background-color:#003366; border-color:#003366;">
+                                   style="background-color:#003366; border-color:#003366;">
                                     Download PDF
                                 </a>
                             {% endif %}
                             <a href="{% url 'vacancy_detail' vacancy.id %}" class="btn btn-primary px-4"
-                            style="background-color:#003366; border-color:#003366;">
+                               style="background-color:#003366; border-color:#003366;">
                                 View Details
                             </a>
                         </div>
@@ -116,7 +116,6 @@
         </div>
     </div>
 </section>
-
 
 
 <!-- UFAA Recruitment Information Section -->
@@ -146,17 +145,17 @@
         <div class="mb-4">
             <h5>3. Apply for Vacancies</h5>
             <p>
-                Once your profile is complete, open the vacancy you are interested in and submit your application. 
+                Once your profile is complete, open the vacancy you are interested in and submit your application.
                 You may apply for more than one vacancy, provided you meet the requirements for each position.
             </p>
             <p>
-                Please review your information carefully before submitting. 
+                Please review your information carefully before submitting.
                 Incomplete or inaccurate information may affect the outcome of your application.
             </p>
         </div>
 
         <div class="alert alert-warning mt-4">
-            <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process. 
+            <strong>Important Notice:</strong> UFAA does not charge any fee at any stage of the recruitment process.
             Do not pay anyone claiming to offer recruitment assistance.
         </div>
 
@@ -192,13 +191,14 @@
 <!-- Footer -->
 <footer class="py-4 text-center">
     <div class="container">
-        <div class="copyright text-center text-sm ">                
-            © <script>
+        <div class="copyright text-center text-sm ">
+            ©
+            <script>
                 document.write(new Date().getFullYear())
             </script>
             <i class="fa fa-heart"></i>
             <a target="_blank"> The Unclaimed Financial Assets Authority (UFAA).</a>
-                All rights reserved.
+            All rights reserved.
         </div>
         <small>
             <a href="#" class="text-decoration-none text-secondary me-3">Privacy Policy</a>
@@ -209,6 +209,13 @@
 
 <!-- Bootstrap JS -->
 <script src="{% static 'assets/npm/js/bootstrap.bundle.min.js' %}"></script>
-
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 </body>
 </html>

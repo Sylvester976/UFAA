@@ -133,6 +133,15 @@
 
 <!-- SweetAlert2 JS -->
 <script src="{% static 'assets/js/swal2/swal2.js' %}"></script>
+<!-- SiennaAccessibility-->
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 <script>
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
@@ -295,7 +304,7 @@
                     Swal.fire({
                         icon: 'success',
                         title: 'Account Registration Successful',
-                        text: data.message
+                        html: data.message
                     }).then(() => {
                          window.location.href = "/login/";
                     });

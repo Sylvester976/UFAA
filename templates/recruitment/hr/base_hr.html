@@ -653,6 +653,15 @@
                                 <span class="nav-link-text ms-1">Interview Templates</span>
                             </a>
                         </li>
+
+                        
+                <!-- Manage Users -->
+                <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'user_list' %}">
+                        <i class="fas fa-users-cog me-2"></i>
+                        <span class="nav-link-text ms-1">Manage Users</span>
+                    </a>
+                </li>
             {% endif %}
 
 
@@ -693,6 +702,7 @@
                                 <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
                             </a>
                         </li>
+
             {% endif %}
 
 
@@ -716,13 +726,13 @@
             {% endif %}
 
             
+            {% if 'admin' in user_roles %}
             <!-- Administration -->
             <li class="nav-item mt-3">
                 <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Administration
+                    System Admin
                 </h6>
             </li>
-            {% if 'hod_hr' in user_roles %}
 
                 <!-- Manage Users -->
                 <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
@@ -790,14 +800,12 @@
                            data-bs-toggle="dropdown"
                            aria-expanded="false">
                             <i class="fa fa-user me-1"></i>
-                            {% if logged_user %}
-                               {{ request.user.first_name }} {{ request.user.last_name }}
-                            {% endif %}
+                            Welcome, {{ request.user.first_name }} {{ request.user.last_name }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end px-2 py-3"
                             aria-labelledby="userDropdown">
                             <li>
-                                <a class="dropdown-item text-danger" href="{% url 'logout' %}">
+                                <a class="dropdown-item text-danger" href="{% url 'dashboard_logout' %}">
                                     Logout
                                 </a>
                             </li>
@@ -932,6 +940,16 @@
 
 <!-- Autologout -->
 <script src="{% static 'assets/js/autologout.js' %}"></script>
+
+<!-- SiennaAccessibility-->
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 
 <script>
     window.appConfig = {

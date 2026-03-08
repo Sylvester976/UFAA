@@ -89,7 +89,13 @@
                                 Applications are currently open.
                             </div>
 
-                            <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+                            {% comment %} <a href="{% url 'apply_for_vacancy' vacancy.id %}"
+                               class="btn btn-primary"
+                               style="background-color: #003366; border-color: #003366;">
+                                <i class="bi bi-send"></i> Apply Now
+                            </a> {% endcomment %}
+                            
+                            <a href="{% url 'login_page' vacancy.id %}"
                                class="btn btn-primary"
                                style="background-color: #003366; border-color: #003366;">
                                 <i class="bi bi-send"></i> Apply Now
@@ -145,6 +151,14 @@
 </footer>
 
 <script src="{% static 'assets/npm/js/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    if (window.SiennaAccessibility) {
+        new SiennaAccessibility();
+    }
+});
+</script>
 
 </body>
 </html>
