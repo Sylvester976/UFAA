@@ -169,7 +169,7 @@ class Document(models.Model):
     profile = models.ForeignKey(JobSeekerProfile, on_delete=models.CASCADE, related_name='documents', null=True,
                                 blank=True)
     document_type = models.ForeignKey(DocumentType, on_delete=models.PROTECT)
-    file = models.FileField(upload_to='documents/%Y/%m/')
+    file = models.FileField(upload_to='media/documents/%Y/%m/')
     unique_ref = models.CharField(max_length=100, unique=True, editable=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
@@ -239,7 +239,7 @@ class Vacancy(models.Model):
 
     # ↓ CHANGED: null=True, blank=True — PDF is optional at creation
     advert_pdf = models.FileField(
-        upload_to='vacancy_adverts/',
+        upload_to='media/vacancy_adverts/',
         null=True,
         blank=True,
     )
@@ -422,7 +422,7 @@ class PanelAssignment(models.Model):
     decline_reason = models.TextField(blank=True, null=True)
 
     signed_decline_document = models.FileField(
-        upload_to="panel_declines/",
+        upload_to="media/panel_declines/",
         null=True,
         blank=True
     )
@@ -629,8 +629,8 @@ class AdditionalDetail(models.Model):
                            JobseekerAccount, on_delete=models.CASCADE,
                            related_name='additional_detail'
                        )
-    cv               = models.FileField(upload_to='cvs/', null=True, blank=True)
-    cover_letter     = models.FileField(upload_to='cover_letters/', null=True, blank=True)  # changed from TextField
+    cv               = models.FileField(upload_to='media/cvs/', null=True, blank=True)
+    cover_letter     = models.FileField(upload_to='media/cover_letters/', null=True, blank=True)  # changed from TextField
     linkedin_url     = models.URLField(max_length=300, blank=True)
     portfolio_url    = models.URLField(max_length=300, blank=True)
     languages        = models.CharField(max_length=500, blank=True)
