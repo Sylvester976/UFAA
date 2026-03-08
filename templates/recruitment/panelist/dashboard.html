@@ -129,7 +129,6 @@
     </div>
 
 
-
     <!-- ACTIVE INTERVIEW TASKS -->
     <div class="card dash-card brand-card">
 
@@ -141,84 +140,78 @@
             <p>Vacancies requiring your evaluation</p>
         </div>
 
-        <div class="card-body">
+        <div class="ufaa-table-wrapper">
 
-            <div class="table-responsive">
+            <table class="table brand-table mb-0">
 
-                <table class="table brand-table mb-0">
+                <thead>
+                    <tr>
+                        <th>Vacancy</th>
+                        <th>Reference</th>
+                        <th>Status</th>
+                        <th class="text-md-center">Action</th>
+                    </tr>
+                </thead>
 
-                    <thead>
-                        <tr>
-                            <th>Vacancy</th>
-                            <th>Reference</th>
-                            <th>Status</th>
-                            <th class="text-center">Action</th>
-                        </tr>
-                    </thead>
+                <tbody>
 
-                    <tbody>
+                    {% for vacancy in vacancies %}
 
-                        {% for vacancy in vacancies %}
+                    <tr>
 
-                        <tr>
+                        <td>
+                            <strong>{{ vacancy.title }}</strong>
+                        </td>
 
-                            <td>
-                                <strong>{{ vacancy.title }}</strong>
-                            </td>
+                        <td>
+                            {{ vacancy.reference_number }}
+                        </td>
 
-                            <td>
-                                {{ vacancy.reference_number }}
-                            </td>
+                        <td>
 
-                            <td>
+                            <span class="status-badge">
+                                {{ vacancy.status|title }}
+                            </span>
 
-                                <span class="status-badge">
+                        </td>
 
-                                    {{ vacancy.status|title }}
+                        <td class="text-md-center">
 
-                                </span>
+                            <a href="{% url 'panelist_interview_list' vacancy.id %}"
+                            class="btn btn-sm btn-brand">
 
-                            </td>
+                                <i class="fas fa-list-check me-1"></i>
+                                Score Candidates
 
-                            <td class="text-center">
+                            </a>
 
-                                <a href="{% url 'panelist_interview_list' vacancy.id %}"
-                                   class="btn btn-sm btn-brand">
+                        </td>
 
-                                    <i class="fas fa-list-check me-1"></i>
-                                    Score Candidates
+                    </tr>
 
-                                </a>
+                    {% empty %}
 
-                            </td>
+                    <tr>
 
-                        </tr>
+                        <td colspan="4">
 
-                        {% empty %}
+                            <div class="empty-state">
 
-                        <tr>
+                                <i class="fas fa-folder-open"></i>
 
-                            <td colspan="4">
+                                <p>No active interview assignments.</p>
 
-                                <div class="empty-state">
+                            </div>
 
-                                    <i class="fas fa-folder-open"></i>
+                        </td>
 
-                                    <p>No active interview assignments.</p>
+                    </tr>
 
-                                </div>
+                    {% endfor %}
 
-                            </td>
+                </tbody>
 
-                        </tr>
-
-                        {% endfor %}
-
-                    </tbody>
-
-                </table>
-
-            </div>
+            </table>
 
         </div>
 
