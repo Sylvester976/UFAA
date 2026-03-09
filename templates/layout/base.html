@@ -112,6 +112,13 @@
         margin: 0 12px;
         }
 
+        main.main-content {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+
     </style>
     {% block extra_css %}{% endblock %}
 </head>
@@ -617,6 +624,14 @@
     // Start polling after 5s delay, then every 30s
     setTimeout(() => { poll(); setInterval(poll, POLL_MS); }, 5000);
 })();
+</script>
+<script>
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    var mainEl = document.querySelector('main.main-content');
+    if (mainEl && mainEl.__scrollbar) {
+      mainEl.__scrollbar.destroy();
+    }
+  }
 </script>
 
 {% block extra_js %}{% endblock %}
