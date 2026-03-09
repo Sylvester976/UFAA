@@ -220,4 +220,5 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/committee/progress/',
          views.hr_committee_progress,
          name='hr_committee_progress'),
+    path('profile/document/<int:doc_id>/delete/', views.delete_document, name='delete_document'),
 ]

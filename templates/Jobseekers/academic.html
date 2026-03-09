@@ -250,7 +250,7 @@
                                     <th class="d-none d-sm-table-cell">Year</th>
                                     <th class="d-none d-md-table-cell">Grade</th>
                                     <th class="d-none d-md-table-cell">Country</th>
-                                    <th>Docs</th>
+                                    <th style="min-width:160px;">Docs</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -258,20 +258,44 @@
                                 {% for q in existing_qualifications %}
                                     <tr id="row_{{ q.id }}">
                                         <td>
-                                        <span class="badge bg-gradient-info"
-                                              style="font-size:0.7rem; white-space:normal;">
-                                            {{ q.education_level.name }}
-                                        </span>
+                                            <span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">
+                                                {{ q.education_level.name }}
+                                            </span>
                                         </td>
                                         <td class="text-sm">{{ q.institution }}</td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.field_of_study|default:'—' }}</td>
                                         <td class="d-none d-sm-table-cell text-sm">{{ q.year_completed }}</td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.grade|default:'—' }}</td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.country }}</td>
-                                        <td>
-                                        <span class="badge bg-gradient-secondary" style="font-size:0.68rem;">
-                                            {{ q.document_count|default:'0' }} file(s)
-                                        </span>
+                                        <td style="min-width:160px;">
+                                            {% with docs=q.documents.all %}
+                                            {% if docs %}
+                                                {% for doc in docs %}
+                                                <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                                                    <a href="{{ doc.file.url }}" target="_blank" rel="noopener"
+                                                       class="text-info d-inline-block text-truncate"
+                                                       style="max-width:120px; font-size:0.71rem;"
+                                                       title="{{ doc.file.name }}">
+                                                        {% if doc.file.name|slice:"-3:" == "pdf" %}
+                                                            <i class="fas fa-file-pdf text-danger me-1"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-file-image text-info me-1"></i>
+                                                        {% endif %}
+                                                        {{ doc.document_type.name }}
+                                                    </a>
+                                                    <button type="button"
+                                                            class="btn btn-link p-0 text-danger"
+                                                            style="font-size:0.65rem; line-height:1;"
+                                                            title="Delete this file"
+                                                            onclick="deleteDocument({{ doc.id }}, '{{ doc.document_type.name|escapejs }}')">
+                                                        <i class="fas fa-times-circle"></i>
+                                                    </button>
+                                                </div>
+                                                {% endfor %}
+                                            {% else %}
+                                                <span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>
+                                            {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
@@ -513,37 +537,51 @@
             return el;
         }
 
+        // ── Build Table Row (JS — after AJAX save/edit) ──────────────
         function buildTableRow(q) {
             const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+
+            let docsHtml = '';
+            if (q.docs && q.docs.length > 0) {
+                q.docs.forEach(doc => {
+                    const isPdf = doc.filename.toLowerCase().endsWith('.pdf');
+                    docsHtml += `
+                        <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                            <a href="${doc.url}" target="_blank" rel="noopener"
+                               class="text-info d-inline-block text-truncate"
+                               style="max-width:120px; font-size:0.71rem;"
+                               title="${doc.filename}">
+                                <i class="fas fa-file-${isPdf ? 'pdf text-danger' : 'image text-info'} me-1"></i>
+                                ${doc.type_name}
+                            </a>
+                            <button type="button" class="btn btn-link p-0 text-danger"
+                                    style="font-size:0.65rem; line-height:1;"
+                                    title="Delete this file"
+                                    onclick="deleteDocument(${doc.id}, '${doc.type_name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>`;
+                });
+            } else {
+                docsHtml = '<span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>';
+            }
+
             return `
-        <td>
-            <span class="badge bg-gradient-info"
-                  style="font-size:0.7rem; white-space:normal;">
-                ${q.level_name}
-            </span>
-        </td>
+        <td><span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">${q.level_name}</span></td>
         <td class="text-sm">${q.institution}</td>
         <td class="d-none d-md-table-cell text-sm">${q.field_of_study || '—'}</td>
         <td class="d-none d-sm-table-cell text-sm">${q.year_completed}</td>
         <td class="d-none d-md-table-cell text-sm">${q.grade || '—'}</td>
         <td class="d-none d-md-table-cell text-sm">${q.country}</td>
-        <td>
-            <span class="badge bg-gradient-secondary" style="font-size:0.68rem;">
-                ${q.doc_count} file(s)
-            </span>
-        </td>
+        <td style="min-width:160px;">${docsHtml}</td>
         <td>
             <div class="d-flex gap-1">
                 <button type="button" class="btn btn-outline-info btn-xs" title="Edit"
                         onclick="editQualification(
-                            ${q.id},
-                            ${q.level_id},
-                            '${esc(q.institution)}',
-                            '${esc(q.field_of_study)}',
-                            '${q.year_completed}',
-                            '${esc(q.grade)}',
-                            '${esc(q.cert_number)}',
-                            '${esc(q.country)}'
+                            ${q.id}, ${q.level_id},
+                            '${esc(q.institution)}', '${esc(q.field_of_study)}',
+                            '${q.year_completed}', '${esc(q.grade)}',
+                            '${esc(q.cert_number)}', '${esc(q.country)}'
                         )">
                     <i class="fas fa-edit"></i>
                 </button>
@@ -589,10 +627,7 @@
         const levelDropZone = document.getElementById('levelDropZone');
         const levelFileInput = document.getElementById('levelFileInput');
 
-        levelDropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            levelDropZone.classList.add('dragover');
-        });
+        levelDropZone.addEventListener('dragover', e => { e.preventDefault(); levelDropZone.classList.add('dragover'); });
         levelDropZone.addEventListener('dragleave', () => levelDropZone.classList.remove('dragover'));
         levelDropZone.addEventListener('drop', function (e) {
             e.preventDefault();
@@ -636,44 +671,24 @@
             const yearComp = document.getElementById('f_year_completed').value;
 
             if (!levelId) {
-                Swal.fire({
-                    icon: 'warning', title: 'Select a Level',
-                    text: 'Please select an education level.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
+                Swal.fire({ icon: 'warning', title: 'Select a Level', text: 'Please select an education level.', position: 'center', scrollbarPadding: false, heightAuto: false });
                 return;
             }
             if (pendingLevels.find(p => p.levelId === levelId)) {
-                Swal.fire({
-                    icon: 'warning', title: 'Already Added',
-                    text: `${levelName} is already in your list. Remove it first to re-add.`,
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
+                Swal.fire({ icon: 'warning', title: 'Already Added', text: `${levelName} is already in your list.`, position: 'center', scrollbarPadding: false, heightAuto: false });
                 return;
             }
             if (!institution) {
-                Swal.fire({
-                    icon: 'error', title: 'Institution Required',
-                    text: 'Please enter the institution name.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
+                Swal.fire({ icon: 'error', title: 'Institution Required', text: 'Please enter the institution name.', position: 'center', scrollbarPadding: false, heightAuto: false });
                 return;
             }
             if (!yearComp) {
-                Swal.fire({
-                    icon: 'error', title: 'Year Required',
-                    text: 'Please select the year completed.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
+                Swal.fire({ icon: 'error', title: 'Year Required', text: 'Please select the year completed.', position: 'center', scrollbarPadding: false, heightAuto: false });
                 return;
             }
             for (const f of levelFiles) {
                 if (!f.docTypeId) {
-                    Swal.fire({
-                        icon: 'warning', title: 'Document Type Required',
-                        text: `Please select a document type for "${f.file.name}".`,
-                        position: 'center', scrollbarPadding: false, heightAuto: false
-                    });
+                    Swal.fire({ icon: 'warning', title: 'Document Type Required', text: `Please select a document type for "${f.file.name}".`, position: 'center', scrollbarPadding: false, heightAuto: false });
                     return;
                 }
             }
@@ -707,10 +722,7 @@
             const list = document.getElementById('pendingList');
             const countEl = document.getElementById('pendingCount');
 
-            if (pendingLevels.length === 0) {
-                container.style.display = 'none';
-                return;
-            }
+            if (pendingLevels.length === 0) { container.style.display = 'none'; return; }
 
             container.style.display = 'block';
             countEl.textContent = `${pendingLevels.length} level(s)`;
@@ -741,9 +753,7 @@
                             ${p.fields.grade ? ' · ' + p.fields.grade : ''}
                         </div>
                     </div>
-                    <button type="button"
-                            class="btn btn-outline-danger btn-xs pending-remove-btn"
-                            onclick="removePending(${idx})">
+                    <button type="button" class="btn btn-outline-danger btn-xs pending-remove-btn" onclick="removePending(${idx})">
                         <i class="fas fa-trash"></i>
                     </button>
                 </div>
@@ -760,20 +770,12 @@
         function saveAllQualifications() {
             if (pendingLevels.length === 0) return;
 
-            Swal.fire({
-                title: 'Saving...', text: 'Please wait.',
-                icon: 'info', allowOutsideClick: false,
-                showConfirmButton: false, position: 'center',
-                scrollbarPadding: false,
-                didOpen: () => Swal.showLoading()
-            });
+            Swal.fire({ title: 'Saving...', text: 'Please wait.', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
 
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', CSRF);
             formData.append('action', 'save');
-            formData.append('qualifications', JSON.stringify(
-                pendingLevels.map(p => ({education_level: p.levelId, ...p.fields}))
-            ));
+            formData.append('qualifications', JSON.stringify(pendingLevels.map(p => ({education_level: p.levelId, ...p.fields}))));
             formData.append('level_count', pendingLevels.length);
 
             pendingLevels.forEach((p, idx) => {
@@ -783,50 +785,35 @@
                 });
             });
 
-            fetch("{% url 'academic_qualifications' %}", {
-                method: 'POST',
-                headers: {'X-CSRFToken': CSRF},
-                body: formData
-            })
+            fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
                 .then(res => res.json())
                 .then(data => {
                     Swal.close();
                     if (data.status === 'success') {
-                        Swal.fire({
-                            icon: 'success', title: 'Saved!',
-                            text: data.message, confirmButtonText: 'OK',
-                            position: 'center', scrollbarPadding: false, heightAuto: false,
-                        }).then(() => {
-                            if (data.saved) {
-                                const tbody = document.getElementById('savedTableBody');
-                                data.saved.forEach(q => {
-                                    const existing = document.getElementById(`row_${q.id}`);
-                                    if (existing) existing.remove();
-                                    const tr = document.createElement('tr');
-                                    tr.id = `row_${q.id}`;
-                                    tr.innerHTML = buildTableRow(q);
-                                    tbody.appendChild(tr);
-                                });
-                                document.getElementById('savedSection').style.display = 'block';
-                            }
-                            pendingLevels = [];
-                            renderPendingList();
-                        });
+                        Swal.fire({ icon: 'success', title: 'Saved!', text: data.message, confirmButtonText: 'OK', position: 'center', scrollbarPadding: false, heightAuto: false })
+                            .then(() => {
+                                if (data.saved) {
+                                    const tbody = document.getElementById('savedTableBody');
+                                    data.saved.forEach(q => {
+                                        const existing = document.getElementById(`row_${q.id}`);
+                                        if (existing) existing.remove();
+                                        const tr = document.createElement('tr');
+                                        tr.id = `row_${q.id}`;
+                                        tr.innerHTML = buildTableRow(q);
+                                        tbody.appendChild(tr);
+                                    });
+                                    document.getElementById('savedSection').style.display = 'block';
+                                }
+                                pendingLevels = [];
+                                renderPendingList();
+                            });
                     } else {
-                        Swal.fire({
-                            icon: 'error', title: 'Save Failed',
-                            text: data.message,
-                            position: 'center', scrollbarPadding: false, heightAuto: false
-                        });
+                        Swal.fire({ icon: 'error', title: 'Save Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
                     }
                 })
                 .catch(() => {
                     Swal.close();
-                    Swal.fire({
-                        icon: 'error', title: 'System Error',
-                        text: 'Something went wrong. Please try again.',
-                        position: 'center', scrollbarPadding: false, heightAuto: false
-                    });
+                    Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong. Please try again.', position: 'center', scrollbarPadding: false, heightAuto: false });
                 });
         }
 
@@ -845,86 +832,39 @@
             new bootstrap.Modal(document.getElementById('editModal')).show();
         }
 
-        // Edit drop zone
         const editDropZone = document.getElementById('editDropZone');
         const editFileInput = document.getElementById('editFileInput');
 
-        editDropZone.addEventListener('dragover', e => {
-            e.preventDefault();
-            editDropZone.classList.add('dragover');
-        });
+        editDropZone.addEventListener('dragover', e => { e.preventDefault(); editDropZone.classList.add('dragover'); });
         editDropZone.addEventListener('dragleave', () => editDropZone.classList.remove('dragover'));
-        editDropZone.addEventListener('drop', function (e) {
-            e.preventDefault();
-            editDropZone.classList.remove('dragover');
-            handleEditFiles(Array.from(e.dataTransfer.files));
-        });
-        editDropZone.addEventListener('click', function (e) {
-            if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') editFileInput.click();
-        });
-        editFileInput.addEventListener('change', function () {
-            handleEditFiles(Array.from(this.files));
-            this.value = '';
-        });
+        editDropZone.addEventListener('drop', function (e) { e.preventDefault(); editDropZone.classList.remove('dragover'); handleEditFiles(Array.from(e.dataTransfer.files)); });
+        editDropZone.addEventListener('click', function (e) { if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') editFileInput.click(); });
+        editFileInput.addEventListener('change', function () { handleEditFiles(Array.from(this.files)); this.value = ''; });
 
         function handleEditFiles(files) {
             files.forEach(file => {
                 if (!validateFile(file, editFiles)) return;
                 const fileId = 'ef_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
                 editFiles.push({file, fileId, docTypeId: ''});
-                document.getElementById('editFileList')
-                    .appendChild(buildFileRow(file, fileId, 'updateEditFileType', 'removeEditFile'));
+                document.getElementById('editFileList').appendChild(buildFileRow(file, fileId, 'updateEditFileType', 'removeEditFile'));
             });
         }
 
-        function updateEditFileType(fileId, value) {
-            const f = editFiles.find(f => f.fileId === fileId);
-            if (f) f.docTypeId = value;
-        }
-
-        function removeEditFile(fileId) {
-            editFiles = editFiles.filter(f => f.fileId !== fileId);
-            document.getElementById(fileId)?.remove();
-        }
+        function updateEditFileType(fileId, value) { const f = editFiles.find(f => f.fileId === fileId); if (f) f.docTypeId = value; }
+        function removeEditFile(fileId) { editFiles = editFiles.filter(f => f.fileId !== fileId); document.getElementById(fileId)?.remove(); }
 
         function submitEdit() {
             const qualId = document.getElementById('edit_qual_id').value;
             const institution = document.getElementById('edit_institution').value.trim();
             const year = document.getElementById('edit_year_completed').value;
 
-            if (!institution) {
-                Swal.fire({
-                    icon: 'error', title: 'Institution Required',
-                    text: 'Please enter the institution name.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
-                return;
-            }
-            if (!year) {
-                Swal.fire({
-                    icon: 'error', title: 'Year Required',
-                    text: 'Please select the year completed.',
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
-                return;
-            }
+            if (!institution) { Swal.fire({ icon: 'error', title: 'Institution Required', text: 'Please enter the institution name.', position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
+            if (!year) { Swal.fire({ icon: 'error', title: 'Year Required', text: 'Please select the year completed.', position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
             for (const f of editFiles) {
-                if (!f.docTypeId) {
-                    Swal.fire({
-                        icon: 'warning', title: 'Document Type Required',
-                        text: `Please select a document type for "${f.file.name}".`,
-                        position: 'center', scrollbarPadding: false, heightAuto: false
-                    });
-                    return;
-                }
+                if (!f.docTypeId) { Swal.fire({ icon: 'warning', title: 'Document Type Required', text: `Please select a document type for "${f.file.name}".`, position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
             }
 
-            Swal.fire({
-                title: 'Updating...', icon: 'info',
-                allowOutsideClick: false, showConfirmButton: false,
-                position: 'center', scrollbarPadding: false,
-                didOpen: () => Swal.showLoading()
-            });
+            Swal.fire({ title: 'Updating...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
 
             const formData = new FormData();
             formData.append('csrfmiddlewaretoken', CSRF);
@@ -937,17 +877,9 @@
             formData.append('grade', document.getElementById('edit_grade').value.trim());
             formData.append('cert_number', document.getElementById('edit_cert_number').value.trim());
             formData.append('country', document.getElementById('edit_country').value.trim() || 'Kenya');
+            editFiles.forEach(f => { formData.append('edit_files', f.file); formData.append('edit_doc_types', f.docTypeId); });
 
-            editFiles.forEach(f => {
-                formData.append('edit_files', f.file);
-                formData.append('edit_doc_types', f.docTypeId);
-            });
-
-            fetch("{% url 'academic_qualifications' %}", {
-                method: 'POST',
-                headers: {'X-CSRFToken': CSRF},
-                body: formData
-            })
+            fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
                 .then(res => res.json())
                 .then(data => {
                     Swal.close();
@@ -955,94 +887,69 @@
                         const row = document.getElementById(`row_${qualId}`);
                         if (row && data.qual) row.innerHTML = buildTableRow(data.qual);
                         bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-                        Swal.fire({
-                            icon: 'success', title: 'Updated!',
-                            text: data.message, timer: 1800,
-                            showConfirmButton: false,
-                            position: 'center', scrollbarPadding: false, heightAuto: false,
-                        });
+                        Swal.fire({ icon: 'success', title: 'Updated!', text: data.message, timer: 1800, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
                     } else {
-                        Swal.fire({
-                            icon: 'error', title: 'Update Failed',
-                            text: data.message,
-                            position: 'center', scrollbarPadding: false, heightAuto: false
-                        });
+                        Swal.fire({ icon: 'error', title: 'Update Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
                     }
                 })
-                .catch(() => {
-                    Swal.close();
-                    Swal.fire({
-                        icon: 'error', title: 'System Error',
-                        text: 'Something went wrong. Please try again.',
-                        position: 'center', scrollbarPadding: false, heightAuto: false
-                    });
-                });
+                .catch(() => { Swal.close(); Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong. Please try again.', position: 'center', scrollbarPadding: false, heightAuto: false }); });
         }
 
         // ── Delete Qualification ─────────────────────────────────────
         function deleteQualification(qualId, levelName) {
             Swal.fire({
-                icon: 'warning',
-                title: 'Delete Qualification',
-                html: `Are you sure you want to delete <strong>${levelName}</strong>?<br>
-                            <small class="text-secondary">This cannot be undone.</small>`,
-                showCancelButton: true,
-                confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
-                cancelButtonText: 'Cancel',
-                confirmButtonColor: '#ef4444',
-                cancelButtonColor: '#8392ab',
-                position: 'center',
-                scrollbarPadding: false,
-                heightAuto: false,
+                icon: 'warning', title: 'Delete Qualification',
+                html: `Are you sure you want to delete <strong>${levelName}</strong>?<br><small class="text-secondary">This cannot be undone.</small>`,
+                showCancelButton: true, confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
+                cancelButtonText: 'Cancel', confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
             }).then(result => {
                 if (!result.isConfirmed) return;
-
-                Swal.fire({
-                    title: 'Deleting...', icon: 'info',
-                    allowOutsideClick: false, showConfirmButton: false,
-                    position: 'center', scrollbarPadding: false,
-                    didOpen: () => Swal.showLoading()
-                });
+                Swal.fire({ title: 'Deleting...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
 
                 const formData = new FormData();
                 formData.append('csrfmiddlewaretoken', CSRF);
                 formData.append('action', 'delete');
                 formData.append('qual_id', qualId);
 
-                fetch("{% url 'academic_qualifications' %}", {
-                    method: 'POST',
-                    headers: {'X-CSRFToken': CSRF},
-                    body: formData
-                })
+                fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
                     .then(res => res.json())
                     .then(data => {
                         Swal.close();
                         if (data.status === 'success') {
                             document.getElementById(`row_${qualId}`)?.remove();
-                            if (document.querySelectorAll('#savedTableBody tr').length === 0) {
-                                document.getElementById('savedSection').style.display = 'none';
-                            }
-                            Swal.fire({
-                                icon: 'success', title: 'Deleted',
-                                text: 'Qualification removed successfully.',
-                                timer: 1500, showConfirmButton: false,
-                                position: 'center', scrollbarPadding: false, heightAuto: false,
-                            });
+                            if (document.querySelectorAll('#savedTableBody tr').length === 0) document.getElementById('savedSection').style.display = 'none';
+                            Swal.fire({ icon: 'success', title: 'Deleted', text: 'Qualification removed successfully.', timer: 1500, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
                         } else {
-                            Swal.fire({
-                                icon: 'error', title: 'Delete Failed',
-                                text: data.message,
-                                position: 'center', scrollbarPadding: false, heightAuto: false
-                            });
+                            Swal.fire({ icon: 'error', title: 'Delete Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
                         }
                     })
-                    .catch(() => {
-                        Swal.close();
-                        Swal.fire({
-                            icon: 'error', title: 'System Error',
-                            text: 'Something went wrong. Please try again.',
-                            position: 'center', scrollbarPadding: false, heightAuto: false
-                        });
+                    .catch(() => { Swal.close(); Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong.', position: 'center', scrollbarPadding: false, heightAuto: false }); });
+            });
+        }
+
+        // ── Delete Individual Document ───────────────────────────────
+        function deleteDocument(docId, typeName) {
+            Swal.fire({
+                icon: 'warning', title: 'Remove File?',
+                html: `Remove <strong>${typeName}</strong>?<br><small class="text-secondary">This file will be permanently deleted.</small>`,
+                showCancelButton: true, confirmButtonText: '<i class="fas fa-trash me-1"></i> Delete',
+                cancelButtonText: 'Cancel', confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', CSRF);
+                fetch(`/profile/document/${docId}/delete/`, { method: 'POST', body: fd })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const btn = document.querySelector(`button[onclick*="deleteDocument(${docId},"]`);
+                            if (btn) btn.closest('div.d-flex').remove();
+                            Swal.fire({ icon: 'success', title: 'Removed', timer: 1200, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
+                        } else {
+                            Swal.fire({ icon: 'error', title: 'Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
+                        }
                     });
             });
         }

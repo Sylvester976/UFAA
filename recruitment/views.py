@@ -15,6 +15,7 @@ from django.template.loader import render_to_string
 from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
+from django.db.models import Prefetch
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
     PanelistReport, \
@@ -41,6 +42,8 @@ def get_logged_in_user(request):
     if not user_id:
         return None
     return JobseekerAccount.objects.filter(id=user_id).first()
+
+
 
 
 def view_jobs(request):
@@ -317,6 +320,16 @@ def profile_view(request):
 
 
 # ── Academic Qualifications ──────────────────────────────────
+
+def _doc_to_dict(doc):
+    """Serialize a Document instance to a JSON-safe dict for the frontend."""
+    return {
+        'id':        doc.id,
+        'url':       doc.file.url,
+        'filename':  doc.file.name.split('/')[-1],
+        'type_name': doc.document_type.name,
+    }
+
 def academic_qualifications_view(request):
     user_id = request.session.get('user_id')
     if not user_id:
@@ -327,7 +340,7 @@ def academic_qualifications_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile = JobSeekerProfile.objects.filter(user=user).first()
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
@@ -338,16 +351,10 @@ def academic_qualifications_view(request):
             try:
                 qual_id = request.POST.get('qual_id')
                 qual = AcademicQualification.objects.filter(id=qual_id, user=user).first()
-
                 if not qual:
                     return JsonResponse({'status': 'error', 'message': 'Qualification not found.'})
-
                 qual.delete()
-                return JsonResponse({
-                    'status': 'success',
-                    'message': 'Qualification deleted successfully.',
-                })
-
+                return JsonResponse({'status': 'success', 'message': 'Qualification deleted successfully.'})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
 
@@ -356,18 +363,16 @@ def academic_qualifications_view(request):
             try:
                 qual_id = request.POST.get('qual_id')
                 qual = AcademicQualification.objects.filter(id=qual_id, user=user).first()
-
                 if not qual:
                     return JsonResponse({'status': 'error', 'message': 'Qualification not found.'})
 
                 level_id = request.POST.get('education_level')
                 education_level = EducationLevel.objects.filter(id=level_id).first()
-
                 if not education_level:
                     return JsonResponse({'status': 'error', 'message': 'Invalid education level.'})
 
                 institution = request.POST.get('institution', '').strip()
-                year = request.POST.get('year_completed', '').strip()
+                year        = request.POST.get('year_completed', '').strip()
 
                 if not institution:
                     return JsonResponse({'status': 'error', 'message': 'Institution is required.'})
@@ -375,48 +380,49 @@ def academic_qualifications_view(request):
                     return JsonResponse({'status': 'error', 'message': 'Year completed is required.'})
 
                 qual.education_level = education_level
-                qual.institution = institution
-                qual.field_of_study = request.POST.get('field_of_study', '').strip()
-                qual.year_completed = year
-                qual.grade = request.POST.get('grade', '').strip()
-                qual.cert_number = request.POST.get('cert_number', '').strip()
-                qual.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                qual.institution     = institution
+                qual.field_of_study  = request.POST.get('field_of_study', '').strip()
+                qual.year_completed  = year
+                qual.grade           = request.POST.get('grade', '').strip()
+                qual.cert_number     = request.POST.get('cert_number', '').strip()
+                qual.country         = request.POST.get('country', 'Kenya').strip() or 'Kenya'
                 qual.save()
 
-                # New documents uploaded during edit
-                files = request.FILES.getlist('edit_files')
+                files     = request.FILES.getlist('edit_files')
                 doc_types = request.POST.getlist('edit_doc_types')
-                doc_count = Document.objects.filter(user=user).count()
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         Document.objects.create(
                             user=user,
                             profile=profile,
                             document_type=doc_type,
                             file=file,
+                            academic_qualification=qual,
                         )
-                        doc_count += 1
 
-                # Re-count docs linked to this qualification (approximate by user for now)
-                total_docs = Document.objects.filter(user=user).count()
+                # Return ALL docs for this qual (existing + newly uploaded)
+                all_docs = list(
+                    qual.documents.select_related('document_type').order_by('-uploaded_at')
+                )
 
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Qualification updated successfully.',
                     'qual': {
-                        'id': qual.id,
-                        'level_id': education_level.id,
-                        'level_name': education_level.name,
-                        'institution': qual.institution,
+                        'id':             qual.id,
+                        'level_id':       education_level.id,
+                        'level_name':     education_level.name,
+                        'institution':    qual.institution,
                         'field_of_study': qual.field_of_study or '',
                         'year_completed': qual.year_completed,
-                        'grade': qual.grade or '',
-                        'cert_number': qual.cert_number or '',
-                        'country': qual.country,
-                        'doc_count': total_docs,
+                        'grade':          qual.grade or '',
+                        'cert_number':    qual.cert_number or '',
+                        'country':        qual.country,
+                        'doc_count':      len(all_docs),
+                        'docs':           [_doc_to_dict(d) for d in all_docs],
                     }
                 })
 
@@ -426,26 +432,19 @@ def academic_qualifications_view(request):
         # ── SAVE NEW ─────────────────────────────────────────
         try:
             qualifications = json.loads(request.POST.get('qualifications', '[]'))
-            level_count = int(request.POST.get('level_count', 0))
 
             if not qualifications:
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Please add at least one qualification.'
-                })
+                return JsonResponse({'status': 'error', 'message': 'Please add at least one qualification.'})
 
             saved = []
 
             for idx, q in enumerate(qualifications):
-                education_level = EducationLevel.objects.filter(
-                    id=q.get('education_level')).first()
-
+                education_level = EducationLevel.objects.filter(id=q.get('education_level')).first()
                 if not education_level:
                     continue
 
                 institution = q.get('institution', '').strip()
-                year = q.get('year_completed', '')
-
+                year        = q.get('year_completed', '')
                 if not institution or not year:
                     continue
 
@@ -460,34 +459,35 @@ def academic_qualifications_view(request):
                     cert_number=q.get('cert_number', '').strip(),
                 )
 
-                # Documents per level
-                files = request.FILES.getlist(f'level_files_{idx}')
+                files     = request.FILES.getlist(f'level_files_{idx}')
                 doc_types = request.POST.getlist(f'level_doc_types_{idx}')
-                doc_count = 0
+                doc_objs  = []
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
-                        Document.objects.create(
+                        doc = Document.objects.create(
                             user=user,
                             profile=profile,
                             document_type=doc_type,
                             file=file,
+                            academic_qualification=qual,
                         )
-                        doc_count += 1
+                        doc_objs.append(doc)
 
                 saved.append({
-                    'id': qual.id,
-                    'level_id': education_level.id,
-                    'level_name': education_level.name,
-                    'institution': qual.institution,
+                    'id':             qual.id,
+                    'level_id':       education_level.id,
+                    'level_name':     education_level.name,
+                    'institution':    qual.institution,
                     'field_of_study': qual.field_of_study or '',
                     'year_completed': qual.year_completed,
-                    'grade': qual.grade or '',
-                    'cert_number': qual.cert_number or '',
-                    'country': qual.country,
-                    'doc_count': doc_count,
+                    'grade':          qual.grade or '',
+                    'cert_number':    qual.cert_number or '',
+                    'country':        qual.country,
+                    'doc_count':      len(doc_objs),
+                    'docs':           [_doc_to_dict(d) for d in doc_objs],
                 })
 
             if not saved:
@@ -506,30 +506,37 @@ def academic_qualifications_view(request):
             return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     # ── GET ───────────────────────────────────────────────────
-    existing_qualifications = AcademicQualification.objects.filter(user=user).select_related(
-        'education_level').order_by('education_level__rank')
-    existing_documents = Document.objects.filter(user=user)
+    existing_qualifications = (
+        AcademicQualification.objects
+        .filter(user=user)
+        .select_related('education_level')
+        .prefetch_related(
+            Prefetch(
+                'documents',
+                queryset=Document.objects.select_related('document_type').order_by('-uploaded_at'),
+            )
+        )
+        .order_by('education_level__rank')
+    )
 
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Academic Qualifications',
-        'education_levels': EducationLevel.objects.all().order_by('rank'),
-        'document_types': DocumentType.objects.all(),
+        'profile':    profile,
+        'user':       user,
+        'page':       'Academic Qualifications',
+        'education_levels':        EducationLevel.objects.all().order_by('rank'),
+        'document_types':          DocumentType.objects.all(),
         'existing_qualifications': existing_qualifications,
-        'existing_documents': existing_documents,
-        'completion': completion,
-        'has_academic': existing_qualifications.exists(),
+        'completion':              completion,
+        'has_academic':     existing_qualifications.exists(),
         'has_professional': user.professional_qualifications.exists()
-        if hasattr(user, 'professional_qualifications') else False,
+            if hasattr(user, 'professional_qualifications') else False,
         'has_work_history': user.work_history.exists()
-        if hasattr(user, 'work_history') else False,
-        'has_additional': hasattr(user, 'additional_detail'),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+            if hasattr(user, 'work_history') else False,
+        'has_additional':   hasattr(user, 'additional_detail'),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/academic.html', context)
-
 
 # ── Progress Calculation ─────────────────────────────────────
 def calculate_profile_completion(user):
@@ -598,7 +605,7 @@ def professional_qualifications_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile = JobSeekerProfile.objects.filter(user=user).first()
+    profile    = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
@@ -608,14 +615,11 @@ def professional_qualifications_view(request):
         if action == 'delete':
             try:
                 qual_id = request.POST.get('qual_id')
-                qual = ProfessionalQualification.objects.filter(
-                    id=qual_id, user=user).first()
+                qual = ProfessionalQualification.objects.filter(id=qual_id, user=user).first()
                 if not qual:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Qualification not found.'})
+                    return JsonResponse({'status': 'error', 'message': 'Qualification not found.'})
                 qual.delete()
-                return JsonResponse({'status': 'success',
-                                     'message': 'Qualification deleted successfully.'})
+                return JsonResponse({'status': 'success', 'message': 'Qualification deleted successfully.'})
             except Exception as e:
                 return JsonResponse({'status': 'error', 'message': str(e)})
 
@@ -623,67 +627,66 @@ def professional_qualifications_view(request):
         if action == 'edit':
             try:
                 qual_id = request.POST.get('qual_id')
-                qual = ProfessionalQualification.objects.filter(
-                    id=qual_id, user=user).first()
+                qual = ProfessionalQualification.objects.filter(id=qual_id, user=user).first()
                 if not qual:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Qualification not found.'})
+                    return JsonResponse({'status': 'error', 'message': 'Qualification not found.'})
 
                 qualification = request.POST.get('qualification', '').strip()
                 awarding_body = request.POST.get('awarding_body', '').strip()
                 year_obtained = request.POST.get('year_obtained', '').strip()
 
                 if not qualification:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Qualification name is required.'})
+                    return JsonResponse({'status': 'error', 'message': 'Qualification name is required.'})
                 if not awarding_body:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Awarding body is required.'})
+                    return JsonResponse({'status': 'error', 'message': 'Awarding body is required.'})
                 if not year_obtained:
-                    return JsonResponse({'status': 'error',
-                                         'message': 'Year obtained is required.'})
+                    return JsonResponse({'status': 'error', 'message': 'Year obtained is required.'})
 
                 expiry_raw = request.POST.get('expiry_year', '').strip()
 
                 qual.qualification = qualification
                 qual.awarding_body = awarding_body
                 qual.year_obtained = year_obtained
-                qual.expiry_year = int(expiry_raw) if expiry_raw else None
-                qual.grade = request.POST.get('grade', '').strip()
-                qual.cert_number = request.POST.get('cert_number', '').strip()
-                qual.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                qual.expiry_year   = int(expiry_raw) if expiry_raw else None
+                qual.grade         = request.POST.get('grade', '').strip()
+                qual.cert_number   = request.POST.get('cert_number', '').strip()
+                qual.country       = request.POST.get('country', 'Kenya').strip() or 'Kenya'
                 qual.save()
 
-                # New documents uploaded during edit
-                files = request.FILES.getlist('edit_files')
+                files     = request.FILES.getlist('edit_files')
                 doc_types = request.POST.getlist('edit_doc_types')
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         Document.objects.create(
                             user=user,
                             profile=profile,
                             document_type=doc_type,
                             file=file,
+                            professional_qualification=qual,
                         )
 
-                doc_count = Document.objects.filter(user=user).count()
+                # Return ALL docs for this qual (existing + newly uploaded)
+                all_docs = list(
+                    qual.documents.select_related('document_type').order_by('-uploaded_at')
+                )
 
                 return JsonResponse({
                     'status': 'success',
                     'message': 'Qualification updated successfully.',
                     'qual': {
-                        'id': qual.id,
+                        'id':            qual.id,
                         'qualification': qual.qualification,
                         'awarding_body': qual.awarding_body,
                         'year_obtained': qual.year_obtained,
-                        'expiry_year': qual.expiry_year or '',
-                        'grade': qual.grade or '',
-                        'cert_number': qual.cert_number or '',
-                        'country': qual.country,
-                        'doc_count': doc_count,
+                        'expiry_year':   qual.expiry_year or '',
+                        'grade':         qual.grade or '',
+                        'cert_number':   qual.cert_number or '',
+                        'country':       qual.country,
+                        'doc_count':     len(all_docs),
+                        'docs':          [_doc_to_dict(d) for d in all_docs],
                     }
                 })
 
@@ -695,8 +698,7 @@ def professional_qualifications_view(request):
             qualifications = json.loads(request.POST.get('qualifications', '[]'))
 
             if not qualifications:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Please add at least one qualification.'})
+                return JsonResponse({'status': 'error', 'message': 'Please add at least one qualification.'})
 
             saved = []
 
@@ -704,7 +706,7 @@ def professional_qualifications_view(request):
                 qualification = q.get('qualification', '').strip()
                 awarding_body = q.get('awarding_body', '').strip()
                 year_obtained = q.get('year_obtained', '')
-                expiry_raw = q.get('expiry_year', '')
+                expiry_raw    = q.get('expiry_year', '')
 
                 if not qualification or not awarding_body or not year_obtained:
                     continue
@@ -720,39 +722,41 @@ def professional_qualifications_view(request):
                     country=q.get('country', 'Kenya').strip() or 'Kenya',
                 )
 
-                # Documents per qualification
-                files = request.FILES.getlist(f'qual_files_{idx}')
+                files     = request.FILES.getlist(f'qual_files_{idx}')
                 doc_types = request.POST.getlist(f'qual_doc_types_{idx}')
-                doc_count = 0
+                doc_objs  = []
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
-                        Document.objects.create(
+                        doc = Document.objects.create(
                             user=user,
                             profile=profile,
                             document_type=doc_type,
                             file=file,
+                            professional_qualification=qual,
                         )
-                        doc_count += 1
+                        doc_objs.append(doc)
 
                 saved.append({
-                    'id': qual.id,
+                    'id':            qual.id,
                     'qualification': qual.qualification,
                     'awarding_body': qual.awarding_body,
                     'year_obtained': qual.year_obtained,
-                    'expiry_year': qual.expiry_year or '',
-                    'grade': qual.grade or '',
-                    'cert_number': qual.cert_number or '',
-                    'country': qual.country,
-                    'doc_count': doc_count,
+                    'expiry_year':   qual.expiry_year or '',
+                    'grade':         qual.grade or '',
+                    'cert_number':   qual.cert_number or '',
+                    'country':       qual.country,
+                    'doc_count':     len(doc_objs),
+                    'docs':          [_doc_to_dict(d) for d in doc_objs],
                 })
 
             if not saved:
-                return JsonResponse({'status': 'error',
-                                     'message': 'No valid qualifications saved. '
-                                                'Check all required fields.'})
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'No valid qualifications saved. Check all required fields.'
+                })
 
             return JsonResponse({
                 'status': 'success',
@@ -761,29 +765,59 @@ def professional_qualifications_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     # ── GET ───────────────────────────────────────────────────
-    existing = ProfessionalQualification.objects.filter(user=user)
+    existing = (
+        ProfessionalQualification.objects
+        .filter(user=user)
+        .prefetch_related(
+            Prefetch(
+                'documents',
+                queryset=Document.objects.select_related('document_type').order_by('-uploaded_at'),
+            )
+        )
+        .order_by('-year_obtained')
+    )
 
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Professional Qualifications',
+        'profile':    profile,
+        'user':       user,
+        'page':       'Professional Qualifications',
         'document_types': DocumentType.objects.all(),
-        'existing': existing,
+        'existing':   existing,
         'completion': completion,
-        'has_academic': user.academic_qualifications.exists()
-        if hasattr(user, 'academic_qualifications') else False,
+        'has_academic':     user.academic_qualifications.exists()
+            if hasattr(user, 'academic_qualifications') else False,
         'has_professional': existing.exists(),
         'has_work_history': user.work_history.exists()
-        if hasattr(user, 'work_history') else False,
-        'has_additional': hasattr(user, 'additional_detail'),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+            if hasattr(user, 'work_history') else False,
+        'has_additional':   hasattr(user, 'additional_detail'),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/professional.html', context)
+
+
+# ── delete_document — standalone AJAX endpoint ────────────────────────────────
+def delete_document(request, doc_id):
+    user_id = request.session.get('user_id')
+    if not user_id:
+        return JsonResponse({'status': 'error', 'message': 'Not authenticated.'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'POST required.'}, status=405)
+
+    doc = Document.objects.filter(id=doc_id, user_id=user_id).first()
+    if not doc:
+        return JsonResponse({'status': 'error', 'message': 'Document not found.'}, status=404)
+
+    try:
+        doc.file.delete(save=False)
+    except Exception:
+        pass
+
+    doc.delete()
+    return JsonResponse({'status': 'success', 'message': 'Document deleted.'})
 
 
 def work_history_view(request):
@@ -2787,17 +2821,14 @@ def ceo_select_candidate(request, vacancy_id, application_id):
 
 
 @login_required
+@role_required(['hod_hr'])
 def application_detail(request, application_id):
     application = get_object_or_404(
-        Application.objects.select_related(
-            "applicant",
-            "applicant__profile",
-            "applicant__additional_detail"
-        ).prefetch_related(
-            "applicant__academic_qualifications",
-            "applicant__work_history",
-            "applicant__professional_qualifications",
-            "applicant__documents"
+        JobApplication.objects.select_related(
+            "user",
+            "user__additional_detail",  # needed for CV/cover letter file URLs
+            "vacancy",
+            "status",
         ),
         id=application_id
     )
@@ -3130,108 +3161,160 @@ def hr_finalize_appointment(request, vacancy_id):
 
 def _build_snapshots(user):
     profile = JobSeekerProfile.objects.filter(user=user).first()
-    detail = AdditionalDetail.objects.filter(user=user).first()
+    detail  = AdditionalDetail.objects.filter(user=user).first()
 
+    # ── Basic ──────────────────────────────────────────────────
     snap_basic = {}
     if profile:
         snap_basic = {
-            'salutation': profile.salutation or '',
-            'surname': profile.surname or '',
-            'first_name': profile.first_name or '',
-            'second_name': profile.second_name or '',
-            'id_no': profile.id_no or '',
-            'phone_number': profile.phone_number or '',
-            'date_of_birth': str(profile.date_of_birth) if profile.date_of_birth else '',
-            'gender': str(profile.gender) if profile.gender else '',
-            'ethnic_group': str(profile.ethnic_group) if profile.ethnic_group else '',
-            'home_county': str(profile.home_county) if profile.home_county else '',
-            'constituency': str(profile.constituency) if profile.constituency else '',
-            'sub_county': str(profile.sub_county) if profile.sub_county else '',
-            'ward': str(profile.ward) if profile.ward else '',
+            'salutation':       profile.salutation or '',
+            'surname':          profile.surname or '',
+            'first_name':       profile.first_name or '',
+            'second_name':      profile.second_name or '',
+            'id_no':            profile.id_no or '',
+            'phone_number':     profile.phone_number or '',
+            'date_of_birth':    str(profile.date_of_birth) if profile.date_of_birth else '',
+            'gender':           str(profile.gender) if profile.gender else '',
+            'ethnic_group':     str(profile.ethnic_group) if profile.ethnic_group else '',
+            'home_county':      str(profile.home_county) if profile.home_county else '',
+            'constituency':     str(profile.constituency) if profile.constituency else '',
+            'sub_county':       str(profile.sub_county) if profile.sub_county else '',
+            'ward':             str(profile.ward) if profile.ward else '',
             'disability_status': profile.disability_status or '',
             'disability_other': profile.disability_other or '',
-            'disability_no': profile.disability_no or '',
-            'employee_number': profile.employee_number or '',
+            'disability_no':    profile.disability_no or '',
+            'employee_number':  profile.employee_number or '',
         }
 
+    # ── Academic ────────────────────────────────────────────────
     snap_academic = [
         {
             'education_level': str(q.education_level) if q.education_level else '',
             'institution': q.institution or '',
+            'field_of_study': q.field_of_study or '',
+            'country': q.country or '',
             'year_completed': q.year_completed,
             'grade': q.grade or '',
+            'cert_number': q.cert_number or '',
+            'documents': [
+                {
+                    'document_type': doc.document_type.name,
+                    'unique_ref': doc.unique_ref,
+                    'filename': doc.filename,  # uses your @property
+                    'file_url': doc.file.url if doc.file else '',
+                    'uploaded_at': str(doc.uploaded_at),
+                }
+                for doc in q.documents.all()
+            ],
         }
         for q in AcademicQualification.objects.filter(user=user)
+        .select_related('education_level')
+        .prefetch_related('documents__document_type')  # ← avoids N+1
     ]
 
+    # ── Professional ────────────────────────────────────────────
     snap_professional = [
         {
             'qualification': q.qualification or '',
             'awarding_body': q.awarding_body or '',
             'year_obtained': q.year_obtained,
+            'expiry_year': q.expiry_year or '',
             'grade': q.grade or '',
             'cert_number': q.cert_number or '',
+            'country': q.country or '',
+            'documents': [
+                {
+                    'document_type': doc.document_type.name,
+                    'unique_ref': doc.unique_ref,
+                    'filename': doc.filename,
+                    'file_url': doc.file.url if doc.file else '',
+                    'uploaded_at': str(doc.uploaded_at),
+                }
+                for doc in q.documents.all()
+            ],
         }
         for q in ProfessionalQualification.objects.filter(user=user)
+        .prefetch_related('documents__document_type')  # ← avoids N+1
     ]
 
+    # ── Work ────────────────────────────────────────────────────
     snap_work = [
         {
-            'job_title': w.job_title or '',
-            'company': w.company or '',
+            'job_title':       w.job_title or '',
+            'company':         w.company or '',
             'employment_type': w.employment_type or '',
-            'start_display': w.start_display,
-            'end_display': w.end_display if not w.is_current else 'Present',
-            'is_current': w.is_current,
-            'duties': w.duties or '',
-            'exit_reason': w.exit_reason or '',
-            'country': w.country or '',
+            'start_display':   w.start_display,
+            'end_display':     w.end_display if not w.is_current else 'Present',
+            'is_current':      w.is_current,
+            'duties':          w.duties or '',
+            'exit_reason':     w.exit_reason or '',
+            'country':         w.country or '',
         }
         for w in WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
     ]
 
+    # ── Memberships ─────────────────────────────────────────────
     snap_memberships = [
         {
-            'body_name': m.body_name or '',
+            'body_name':     m.body_name or '',
             'membership_no': m.membership_no or '',
-            'year_joined': m.year_joined,
-            'expiry_year': m.expiry_year or '',
+            'year_joined':   m.year_joined,
+            'expiry_year':   m.expiry_year or '',
         }
         for m in ProfessionalBodyMembership.objects.filter(user=user)
     ]
 
+    # ── Referees ────────────────────────────────────────────────
     snap_referees = [
         {
-            'referee_no': r.referee_no,
-            'name': r.name or '',
-            'occupation': r.occupation or '',
-            'mobile': r.mobile or '',
-            'email': r.email or '',
+            'referee_no':   r.referee_no,
+            'name':         r.name or '',
+            'occupation':   r.occupation or '',
+            'mobile':       r.mobile or '',
+            'email':        r.email or '',
             'period_known': r.period_known or '',
         }
         for r in Referee.objects.filter(user=user).order_by('referee_no')
     ]
 
+    # ── Supporting Documents ────────────────────────────────────
+    # These are typed attachments (ID copy, cert scans, etc.) from
+    # the Document model — stored separately from CV/cover letter.
+    snap_documents = [
+        {
+            'document_type': doc.document_type.name,
+            'unique_ref':    doc.unique_ref,
+            'file_url':      doc.file.url if doc.file else '',
+            'filename':      doc.file.name.split('/')[-1] if doc.file else '',
+            'uploaded_at':   str(doc.uploaded_at),
+        }
+        for doc in Document.objects.filter(user=user).select_related('document_type')
+    ]
+
+    # ── Additional / Files ──────────────────────────────────────
     snap_additional = {}
     if detail:
         snap_additional = {
-            'cv_filename': detail.cv.name.split('/')[-1] if detail.cv else '',
+            'cv_filename':           detail.cv.name.split('/')[-1] if detail.cv else '',
+            'cv_url':                detail.cv.url if detail.cv else '',          # ← store URL too
             'cover_letter_filename': detail.cover_letter.name.split('/')[-1] if detail.cover_letter else '',
-            'linkedin_url': detail.linkedin_url or '',
-            'portfolio_url': detail.portfolio_url or '',
-            'languages': detail.languages or '',
-            'availability': detail.availability or '',
-            'expected_salary': str(detail.expected_salary) if detail.expected_salary else '',
+            'cover_letter_url':      detail.cover_letter.url if detail.cover_letter else '',  # ← store URL too
+            'linkedin_url':          detail.linkedin_url or '',
+            'portfolio_url':         detail.portfolio_url or '',
+            'languages':             detail.languages or '',
+            'availability':          detail.availability or '',
+            'expected_salary':       str(detail.expected_salary) if detail.expected_salary else '',
         }
 
     return {
-        'basic': snap_basic,
-        'academic': snap_academic,
+        'basic':        snap_basic,
+        'academic':     snap_academic,
         'professional': snap_professional,
-        'work': snap_work,
-        'memberships': snap_memberships,
-        'referees': snap_referees,
-        'additional': snap_additional,
+        'work':         snap_work,
+        'memberships':  snap_memberships,
+        'referees':     snap_referees,
+        'documents':    snap_documents,    # ← new
+        'additional':   snap_additional,
     }
 
 
@@ -4147,6 +4230,7 @@ def _send_recall_email(app, vacancy):
         html_body = render_to_string('emails/email_base.html', {
             'subject': subject,
             'message_content': message_html,
+            'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
             'year': date.today().year,
         })
 

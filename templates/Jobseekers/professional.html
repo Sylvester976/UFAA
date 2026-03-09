@@ -82,7 +82,6 @@
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
-                <!-- Memberships tab — enable when url is ready -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'memberships' %}">
                         <i class="fas fa-users me-1"></i>
@@ -91,7 +90,6 @@
                             <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
-                <!-- Referees tab — enable when url is ready -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'referees' %}">
                         <i class="fas fa-user-tie me-1"></i>
@@ -240,7 +238,7 @@
                                     <th class="d-none d-md-table-cell">Expiry</th>
                                     <th class="d-none d-md-table-cell">Grade</th>
                                     <th class="d-none d-md-table-cell">Country</th>
-                                    <th>Docs</th>
+                                    <th style="min-width:150px;">Docs</th>
                                     <th>Action</th>
                                 </tr>
                                 </thead>
@@ -248,26 +246,48 @@
                                 {% for q in existing %}
                                     <tr id="row_{{ q.id }}">
                                         <td>
-                                        <span class="badge bg-gradient-info"
-                                              style="font-size:0.7rem; white-space:normal;">
-                                            {{ q.qualification }}
-                                        </span>
+                                            <span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">
+                                                {{ q.qualification }}
+                                            </span>
                                         </td>
                                         <td class="text-sm">{{ q.awarding_body }}</td>
                                         <td class="d-none d-sm-table-cell text-sm">{{ q.year_obtained }}</td>
                                         <td class="d-none d-md-table-cell text-sm">
                                             {% if q.expiry_year %}
-                                                <span class="badge bg-gradient-warning"
-                                                      style="font-size:0.65rem;">
-                                                {{ q.expiry_year }}
-                                            </span>
+                                                <span class="badge bg-gradient-warning" style="font-size:0.65rem;">{{ q.expiry_year }}</span>
                                             {% else %}—{% endif %}
                                         </td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.grade|default:'—' }}</td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.country }}</td>
                                         <td>
-                                        <span class="badge bg-gradient-secondary"
-                                              style="font-size:0.68rem;">0 file(s)</span>
+                                            {% with docs=q.documents.all %}
+                                                {% if docs %}
+                                                    {% for doc in docs %}
+                                                        <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                                                            <a href="{{ doc.file.url }}" target="_blank" rel="noopener"
+                                                               class="text-info d-inline-block text-truncate"
+                                                               style="max-width:120px; font-size:0.71rem;"
+                                                               title="{{ doc.file.name }}">
+                                                                {% if doc.file.name|slice:"-3:" == "pdf" %}
+                                                                    <i class="fas fa-file-pdf text-danger me-1"></i>
+                                                                {% else %}
+                                                                    <i class="fas fa-file-image text-info me-1"></i>
+                                                                {% endif %}
+                                                                {{ doc.document_type.name }}
+                                                            </a>
+                                                            <button type="button"
+                                                                    class="btn btn-link p-0 text-danger"
+                                                                    style="font-size:0.65rem; line-height:1;"
+                                                                    title="Delete this file"
+                                                                    onclick="deleteDocument({{ doc.id }}, '{{ doc.document_type.name|escapejs }}')">
+                                                                <i class="fas fa-times-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>
+                                                {% endif %}
+                                            {% endwith %}
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
@@ -413,8 +433,8 @@
         ];
 
         // ── State ────────────────────────────────────────────────────
-        let pendingQuals = [];   // { fields, files: [{file, docTypeId, fileId}] }
-        let qualFiles = [];   // files for current item being built
+        let pendingQuals = [];
+        let qualFiles = [];
         let editFiles = [];
         const ALLOWED_EXT = ['.pdf', '.png', '.jpg', '.jpeg'];
         const MAX_SIZE = 2 * 1024 * 1024;
@@ -490,11 +510,35 @@
             return el;
         }
 
+        // ── buildTableRow — renders doc links with delete buttons ─────
         function buildTableRow(q) {
             const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
             const expiry = q.expiry_year
                 ? `<span class="badge bg-gradient-warning" style="font-size:0.65rem;">${q.expiry_year}</span>`
                 : '—';
+
+            let docsHtml = '';
+            if (q.docs && q.docs.length > 0) {
+                q.docs.forEach(doc => {
+                    const isPdf = doc.filename.toLowerCase().endsWith('.pdf');
+                    docsHtml += `
+                        <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                            <a href="${doc.url}" target="_blank" rel="noopener"
+                               class="text-info d-inline-block text-truncate"
+                               style="max-width:120px; font-size:0.71rem;" title="${doc.filename}">
+                                <i class="fas fa-file-${isPdf ? 'pdf text-danger' : 'image text-info'} me-1"></i>${doc.type_name}
+                            </a>
+                            <button type="button" class="btn btn-link p-0 text-danger"
+                                    style="font-size:0.65rem; line-height:1;"
+                                    onclick="deleteDocument(${doc.id}, '${doc.type_name.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-times-circle"></i>
+                            </button>
+                        </div>`;
+                });
+            } else {
+                docsHtml = '<span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>';
+            }
+
             return `
         <td>
             <span class="badge bg-gradient-info"
@@ -507,11 +551,7 @@
         <td class="d-none d-md-table-cell text-sm">${expiry}</td>
         <td class="d-none d-md-table-cell text-sm">${q.grade || '—'}</td>
         <td class="d-none d-md-table-cell text-sm">${q.country}</td>
-        <td>
-            <span class="badge bg-gradient-secondary" style="font-size:0.68rem;">
-                ${q.doc_count} file(s)
-            </span>
-        </td>
+        <td style="min-width:150px;">${docsHtml}</td>
         <td>
             <div class="d-flex gap-1">
                 <button type="button" class="btn btn-outline-info btn-xs" title="Edit"
@@ -542,7 +582,6 @@
             sel.innerHTML = includeNoExpiry
                 ? '<option value="">No expiry</option>'
                 : '<option value="">Year</option>';
-            // Expiry goes forward 20 years; obtained goes backward
             const end = includeNoExpiry ? cur + 20 : cur;
             const start = includeNoExpiry ? cur : 1960;
             if (includeNoExpiry) {
@@ -656,7 +695,6 @@
                 files: [...qualFiles],
             });
 
-            // Reset form
             document.getElementById('f_qualification').value = '';
             document.getElementById('f_awarding_body').value = '';
             document.getElementById('f_year_obtained').value = '';
@@ -807,10 +845,8 @@
             document.getElementById('edit_grade').value = grade;
             document.getElementById('edit_cert_number').value = certNumber;
             document.getElementById('edit_country').value = country;
-
             populateYears('edit_year_obtained', yearObtained, false);
             populateYears('edit_expiry_year', expiryYear, true);
-
             editFiles = [];
             document.getElementById('editFileList').innerHTML = '';
             new bootstrap.Modal(document.getElementById('editModal')).show();
@@ -1023,6 +1059,43 @@
                             text: 'Something went wrong. Please try again.',
                             position: 'center', scrollbarPadding: false, heightAuto: false
                         });
+                    });
+            });
+        }
+
+        // ── Delete single document file ──────────────────────────────
+        function deleteDocument(docId, typeName) {
+            Swal.fire({
+                icon: 'warning', title: 'Remove File?',
+                html: `Remove <strong>${typeName}</strong>?<br>
+                       <small class="text-secondary">This file will be permanently deleted.</small>`,
+                showCancelButton: true,
+                confirmButtonText: '<i class="fas fa-trash me-1"></i> Delete',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#ef4444',
+                cancelButtonColor: '#8392ab',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', CSRF);
+                fetch(`/profile/document/${docId}/delete/`, {method: 'POST', body: fd})
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            const btn = document.querySelector(`button[onclick*="deleteDocument(${docId},"]`);
+                            if (btn) btn.closest('div.d-flex').remove();
+                            Swal.fire({
+                                icon: 'success', title: 'Removed',
+                                timer: 1200, showConfirmButton: false,
+                                position: 'center', scrollbarPadding: false, heightAuto: false,
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error', title: 'Failed', text: data.message,
+                                position: 'center', scrollbarPadding: false, heightAuto: false
+                            });
+                        }
                     });
             });
         }

@@ -173,6 +173,23 @@ class Document(models.Model):
     unique_ref = models.CharField(max_length=100, unique=True, editable=False)
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
+    # ── Option A: link to the specific qualification this file belongs to ────
+    # Both null=True so existing Document rows are untouched (they get NULL).
+    # SET_NULL means if someone deletes a qualification, the document survives.
+    academic_qualification = models.ForeignKey(
+        'AcademicQualification',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='documents'
+    )
+    professional_qualification = models.ForeignKey(
+        'ProfessionalQualification',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='documents'
+    )
+
+
     class Meta:
         verbose_name = 'Document'
         verbose_name_plural = 'Documents'
@@ -180,12 +197,16 @@ class Document(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.unique_ref:
-            # Format: UFAA-USERID-DOCTYPE-UUID
             self.unique_ref = f'UFAA-{self.user_id}-{self.document_type_id}-{uuid.uuid4().hex[:8].upper()}'
         super().save(*args, **kwargs)
 
     def __str__(self):
         return f'{self.unique_ref} — {self.document_type.name}'
+
+    @property
+    def filename(self):
+        """Returns just the file's base name for display."""
+        return self.file.name.split('/')[-1] if self.file else ''
 
 
 class InterviewTemplate(models.Model):

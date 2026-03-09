@@ -133,6 +133,17 @@
     .as-appointed         { background:#d4f5e2; color:#0d6830; }
     .as-not_selected      { background:#fde8e8; color:#c0392b; }
 
+    /* ── LONGLIST DECISION BADGES ──────────── */
+    .ld-badge {
+        display:inline-flex; align-items:center; gap:0.28rem;
+        padding:0.22rem 0.6rem; border-radius:2rem;
+        font-size:0.63rem; font-weight:700; letter-spacing:0.04em;
+        text-transform:uppercase; white-space:nowrap;
+    }
+    .ld-accepted { background:#d4f5e2; color:#1a7a45; }
+    .ld-rejected { background:#fde8e8; color:#c0392b; }
+    .ld-pending  { background:#f0f2f8; color:#8392ab; }
+
     /* ── ACTION BUTTON ─────────────────────── */
     .act-btn {
         display:inline-flex; align-items:center;
@@ -281,6 +292,7 @@
                             <th>Phone</th>
                             <th>Applied</th>
                             <th>Status</th>
+                            <th>Longlist</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -357,6 +369,16 @@ $(document).ready(function () {
                 orderable: true,
                 render: (d, t, row) =>
                     `<span class="app-status as-${d}">${row.status_name}</span>`
+            },
+            {
+                data: 'longlist_decision',
+                orderable: true,
+                searchable: false,
+                render: (d) => {
+                    if (d === 'accepted') return `<span class="ld-badge ld-accepted"><i class="fas fa-check" style="font-size:0.55rem;"></i> Accepted</span>`;
+                    if (d === 'rejected') return `<span class="ld-badge ld-rejected"><i class="fas fa-times" style="font-size:0.55rem;"></i> Rejected</span>`;
+                    return `<span class="ld-badge ld-pending"><i class="fas fa-clock" style="font-size:0.55rem;"></i> Pending</span>`;
+                }
             },
             {
                 data: 'detail_url',
