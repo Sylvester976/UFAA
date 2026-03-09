@@ -239,7 +239,7 @@ class Vacancy(models.Model):
 
     # ↓ CHANGED: null=True, blank=True — PDF is optional at creation
     advert_pdf = models.FileField(
-        upload_to='<div class="ufaa-table-wrapper">vacancy_adverts/',
+        upload_to='vacancy_adverts/',
         null=True,
         blank=True,
     )
