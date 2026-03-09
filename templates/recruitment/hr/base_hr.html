@@ -749,6 +749,13 @@ UFAA DASHBOARD TABLE SYSTEM
     }
 
 }
+main.main-content {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+}
+        
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -1163,6 +1170,15 @@ document.addEventListener("DOMContentLoaded", function() {
         var options = {damping: '0.5'}
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), options);
     }
+</script>
+
+    <script>
+  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+    var mainEl = document.querySelector('main.main-content');
+    if (mainEl && mainEl.__scrollbar) {
+      mainEl.__scrollbar.destroy();
+    }
+  }
 </script>
 
 {% block extra_js %}{% endblock %}
