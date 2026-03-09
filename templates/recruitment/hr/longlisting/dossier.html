@@ -2,848 +2,1319 @@
 {% block title %}Dossier — {{ basic.full_name }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root {
-    --navy:    #262561;
-    --navy-lt: #2E3A7A;
-    --gold:    #F9E6A1;
-    --gold-dk: #C39545;
-    --green:   #1a7a45;
-    --red:     #c0392b;
-    --amber:   #b7770d;
-}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-/* ── LAYOUT ──────────────────────────────── */
-.dos-layout {
-    display: grid;
-    grid-template-columns: 1fr 280px;
-    gap: 1rem;
-    align-items: start;
-}
-@media (max-width:900px) { .dos-layout { grid-template-columns:1fr; } }
+        a {
+            text-decoration: none !important;
+        }
 
-/* ── NAV BAR ─────────────────────────────── */
-.dos-nav {
-    background: linear-gradient(135deg, var(--navy), var(--navy-lt));
-    border-radius: 0.85rem;
-    padding: 0.85rem 1.25rem;
-    margin-bottom: 1rem;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.65rem;
-    box-shadow: 0 4px 16px rgba(38,37,97,0.16);
-}
-.dos-nav-left  { display:flex; align-items:center; gap:0.75rem; }
-.dos-nav-right { display:flex; align-items:center; gap:0.5rem; }
+        /* ── LAYOUT ─────────────────────────────── */
+        .dos-layout {
+            display: grid;
+            grid-template-columns:1fr 280px;
+            gap: 1rem;
+            align-items: start;
+        }
 
-.nav-btn {
-    display:inline-flex; align-items:center; gap:0.3rem;
-    padding:0.35rem 0.85rem; border-radius:0.45rem;
-    font-size:0.74rem; font-weight:600; text-decoration:none;
-    transition:all 0.15s; border:1px solid transparent;
-    cursor:pointer; background:none; white-space:nowrap;
-}
-.nb-back  { background:rgba(255,255,255,0.12); color:var(--gold); border-color:rgba(249,230,161,0.25); }
-.nb-back:hover { background:rgba(255,255,255,0.2); color:var(--gold); }
-.nb-prev  { background:rgba(255,255,255,0.1); color:rgba(249,230,161,0.8); border-color:rgba(249,230,161,0.2); }
-.nb-prev:hover  { background:rgba(255,255,255,0.18); color:var(--gold); }
-.nb-prev.disabled, .nb-next.disabled { opacity:0.3; pointer-events:none; }
-.nb-next  { background:var(--gold-dk); color:var(--navy); border-color:var(--gold-dk); font-weight:700; }
-.nb-next:hover { background:#e0b55a; color:var(--navy); }
+        @media (max-width: 900px) {
+            .dos-layout {
+                grid-template-columns:1fr;
+            }
+        }
 
-.nav-position {
-    font-size:0.74rem; color:rgba(249,230,161,0.7); white-space:nowrap;
-}
+        /* ── NAV BAR ────────────────────────────── */
+        .dos-nav {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .85rem;
+            padding: .85rem 1.25rem;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .65rem;
+            box-shadow: 0 4px 16px rgba(38, 37, 97, .16);
+        }
 
-/* ── DOSSIER CARD ────────────────────────── */
-.dos-card {
-    background: #fff;
-    border-radius: 0.85rem;
-    box-shadow: 0 2px 16px rgba(38,37,97,0.08);
-    overflow: hidden;
-    margin-bottom: 1rem;
-}
-.dos-card-head {
-    background: var(--navy);
-    padding: 0.75rem 1.25rem;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.5rem;
-}
-.dos-card-head h6 {
-    color: var(--gold); font-size:0.74rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em; margin:0;
-}
-.dos-card-body { padding: 1.25rem; }
+        .dos-nav-left {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+        }
 
-/* ── IDENTITY STRIP ──────────────────────── */
-.identity-strip {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-    gap: 0.85rem;
-}
-.id-field { }
-.id-label { font-size:0.64rem; color:#8392ab; font-weight:700;
-            text-transform:uppercase; letter-spacing:0.05em; }
-.id-value { font-size:0.82rem; color:#344767; font-weight:600; margin-top:0.15rem; }
+        .dos-nav-right {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
 
-/* ── SECTION TITLE ───────────────────────── */
-.sec-title {
-    font-size:0.72rem; font-weight:700; color:var(--navy);
-    text-transform:uppercase; letter-spacing:0.06em;
-    padding-bottom:0.4rem; border-bottom:2px solid var(--gold);
-    margin-bottom:0.85rem; display:flex; align-items:center; gap:0.4rem;
-}
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .35rem .85rem;
+            border-radius: .45rem;
+            font-size: .74rem;
+            font-weight: 600;
+            transition: all .15s;
+            border: 1px solid transparent;
+            cursor: pointer;
+            background: none;
+            white-space: nowrap;
+        }
 
-/* ── EDUCATION ITEMS ─────────────────────── */
-.edu-item {
-    display:flex; align-items:flex-start; gap:0.75rem;
-    padding:0.65rem 0; border-bottom:1px solid #f0f2f8;
-}
-.edu-item:last-child { border-bottom:none; }
-.edu-icon {
-    width:34px; height:34px; border-radius:0.45rem;
-    background:#eef0fb; color:var(--navy);
-    display:flex; align-items:center; justify-content:center;
-    font-size:0.82rem; flex-shrink:0;
-}
-.edu-name  { font-size:0.8rem; font-weight:600; color:#344767; }
-.edu-inst  { font-size:0.72rem; color:#8392ab; }
-.edu-year  { font-size:0.7rem; color:#adb5bd; }
-.cert-badge {
-    display:inline-flex; align-items:center; gap:0.2rem;
-    font-size:0.64rem; font-weight:700; padding:0.15rem 0.45rem;
-    border-radius:2rem;
-}
-.cert-yes { background:#d4f5e2; color:var(--green); }
-.cert-no  { background:#fde8e8; color:var(--red); }
+        .nb-back {
+            background: rgba(255, 255, 255, .12);
+            color: var(--gold);
+            border-color: rgba(249, 230, 161, .25);
+        }
 
-/* ── WORK HISTORY ────────────────────────── */
-.work-item {
-    position:relative; padding:0 0 1rem 1.5rem;
-    border-left:2px solid #e0e4ef;
-}
-.work-item::before {
-    content:''; position:absolute; left:-5px; top:4px;
-    width:8px; height:8px; border-radius:50%;
-    background:var(--navy); border:2px solid #fff;
-    box-shadow:0 0 0 2px var(--navy);
-}
-.work-item:last-child { border-left:2px solid transparent; padding-bottom:0; }
-.work-title    { font-size:0.82rem; font-weight:700; color:#344767; }
-.work-employer { font-size:0.76rem; color:var(--navy); font-weight:600; }
-.work-period   { font-size:0.7rem; color:#8392ab; }
-.work-duration { font-size:0.68rem; color:#adb5bd;
-                 background:#f0f2f8; border-radius:2rem;
-                 padding:0.1rem 0.45rem; display:inline-block; margin-top:0.15rem; }
+        .nb-back:hover {
+            background: rgba(255, 255, 255, .2);
+            color: var(--gold);
+        }
 
-/* ── REFEREES ────────────────────────────── */
-.ref-card {
-    border:1px solid #e8ecf5; border-radius:0.6rem;
-    padding:0.85rem; background:#fafbff;
-}
-.ref-name  { font-size:0.82rem; font-weight:700; color:#344767; }
-.ref-title { font-size:0.72rem; color:var(--navy); }
-.ref-phone { font-size:0.74rem; color:#67748e; }
+        .nb-prev {
+            background: rgba(255, 255, 255, .1);
+            color: rgba(249, 230, 161, .8);
+            border-color: rgba(249, 230, 161, .2);
+        }
 
-/* ── SCREENING CARD ──────────────────────── */
-.screen-card {
-    border-radius:0.6rem; padding:0.85rem 1rem;
-    border:1px solid;
-}
-.screen-pass-card { background:#f0fdf4; border-color:#bbf7d0; }
-.screen-fail-card { background:#fff5f5; border-color:#fecaca; }
-.screen-flag-card { background:#fffbeb; border-color:#fde68a; }
-.screen-item {
-    display:flex; align-items:flex-start; gap:0.5rem;
-    font-size:0.76rem; color:#344767; margin-bottom:0.35rem;
-}
-.screen-item:last-child { margin-bottom:0; }
-.si-icon { flex-shrink:0; margin-top:1px; }
-.si-pass { color:var(--green); }
-.si-fail { color:var(--red); }
-.si-flag { color:var(--amber); }
+        .nb-prev:hover {
+            background: rgba(255, 255, 255, .18);
+            color: var(--gold);
+        }
 
-/* ── DECISION PANEL ──────────────────────── */
-.dec-panel {
-    background:#fff;
-    border-radius:0.85rem;
-    box-shadow:0 2px 16px rgba(38,37,97,0.08);
-    overflow:hidden;
-    position:sticky; top:1rem;
-}
-.dec-panel-head {
-    background:var(--navy); padding:0.75rem 1rem;
-    color:var(--gold); font-size:0.74rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:0.06em;
-}
-.dec-panel-body { padding:1rem; }
+        .nb-prev.disabled, .nb-next.disabled {
+            opacity: .3;
+            pointer-events: none;
+        }
 
-.current-dec {
-    text-align:center; padding:0.65rem;
-    border-radius:0.5rem; margin-bottom:0.85rem;
-    font-size:0.8rem; font-weight:700;
-}
-.cd-unreviewed { background:#f0f2f8; color:#8392ab; }
-.cd-accepted   { background:#d4f5e2; color:var(--green); }
-.cd-rejected   { background:#fde8e8; color:var(--red); }
+        .nb-next {
+            background: var(--gold-dk);
+            color: var(--navy);
+            border-color: var(--gold-dk);
+            font-weight: 700;
+        }
 
-.dec-btn {
-    width:100%; padding:0.55rem; border-radius:0.45rem;
-    font-size:0.78rem; font-weight:700; cursor:pointer;
-    border:2px solid transparent; transition:all 0.15s;
-    display:flex; align-items:center; justify-content:center; gap:0.4rem;
-    margin-bottom:0.5rem;
-}
-.db-short { background:#d4f5e2; color:var(--green); border-color:#b2dfca; }
-.db-short:hover { background:var(--green); color:#fff; border-color:var(--green); }
-.db-hold  { background:#fef3e2; color:var(--amber); border-color:#fdd99a; }
-.db-hold:hover  { background:var(--amber); color:#fff; border-color:var(--amber); }
-.db-reject{ background:#fde8e8; color:var(--red);   border-color:#f5c6c6; }
-.db-reject:hover{ background:var(--red);   color:#fff; border-color:var(--red); }
-.db-recall{ background:#e8f4fd; color:#1a6fa8; border-color:#b8ddf5; }
-.db-recall:hover{ background:#1a6fa8; color:#fff; }
+        .nb-next:hover {
+            background: #e0b55a;
+        }
 
-.dec-divider {
-    font-size:0.65rem; color:#adb5bd; text-transform:uppercase;
-    letter-spacing:0.06em; text-align:center; margin:0.65rem 0;
-    display:flex; align-items:center; gap:0.5rem;
-}
-.dec-divider::before, .dec-divider::after {
-    content:''; flex:1; height:1px; background:#e8ecf5;
-}
+        .nav-position {
+            font-size: .74rem;
+            color: rgba(249, 230, 161, .7);
+            white-space: nowrap;
+        }
 
-/* ── FILTER SIDEBAR (dossier) ────────────── */
-.filter-mini {
-    background:#fff; border-radius:0.85rem;
-    box-shadow:0 2px 12px rgba(38,37,97,0.07);
-    overflow:hidden; margin-top:0.85rem;
-}
-.filter-mini-head {
-    background:#f8f9ff; border-bottom:1px solid #f0f2f8;
-    padding:0.6rem 1rem; font-size:0.7rem; font-weight:700;
-    color:var(--navy); text-transform:uppercase; letter-spacing:0.05em;
-}
-.filter-mini-body { padding:0.85rem 1rem; }
-.fm-label { font-size:0.64rem; color:#8392ab; font-weight:700;
-            text-transform:uppercase; margin-bottom:0.3rem; }
-.fm-select {
-    width:100%; font-size:0.74rem; color:#344767;
-    border:1px solid #e0e4ef; border-radius:0.4rem;
-    padding:0.3rem 0.45rem; margin-bottom:0.65rem;
-    background:#fafbff; outline:none;
-}
-.fm-select:focus { border-color:var(--navy); }
-.btn-apply-fm {
-    width:100%; background:var(--navy); color:var(--gold);
-    border:none; border-radius:0.4rem; padding:0.45rem;
-    font-size:0.73rem; font-weight:700; cursor:pointer;
-}
+        /* ── CARD ───────────────────────────────── */
+        .dos-card {
+            background: #fff;
+            border-radius: .85rem;
+            box-shadow: 0 2px 16px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1rem;
+        }
 
-/* ── DOCS ────────────────────────────────── */
-.doc-btn {
-    display:inline-flex; align-items:center; gap:0.4rem;
-    padding:0.4rem 0.85rem; border-radius:0.45rem;
-    font-size:0.74rem; font-weight:600; text-decoration:none;
-    background:#f0f2f8; color:#344767; border:1px solid #e0e4ef;
-    transition:all 0.15s; margin:0.2rem;
-}
-.doc-btn:hover { background:var(--navy); color:var(--gold); }
-.doc-btn.pdf   { background:#fff5f5; color:var(--red); border-color:#fecaca; }
-.doc-btn.pdf:hover { background:var(--red); color:#fff; }
-</style>
+        .dos-card-head {
+            background: var(--navy);
+            padding: .75rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .dos-card-head h6 {
+            color: var(--gold);
+            font-size: .74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            margin: 0;
+        }
+
+        .dos-card-body {
+            padding: 1.25rem;
+        }
+
+        /* ── IDENTITY GRID ──────────────────────── */
+        .id-grid {
+            display: grid;
+            grid-template-columns:repeat(auto-fill, minmax(155px, 1fr));
+            gap: .85rem;
+        }
+
+        .id-label {
+            font-size: .62rem;
+            color: #8392ab;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .id-value {
+            font-size: .82rem;
+            color: #344767;
+            font-weight: 600;
+            margin-top: .15rem;
+        }
+
+        /* ── ITEM CARDS (edu / prof / membership) ─ */
+        .edu-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .65rem 0;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+        .edu-item:last-child {
+            border-bottom: none;
+        }
+
+        .edu-icon {
+            width: 34px;
+            height: 34px;
+            border-radius: .45rem;
+            flex-shrink: 0;
+            background: #eef0fb;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .82rem;
+        }
+
+        .edu-name {
+            font-size: .8rem;
+            font-weight: 600;
+            color: #344767;
+        }
+
+        .edu-inst {
+            font-size: .72rem;
+            color: #8392ab;
+        }
+
+        .edu-meta {
+            font-size: .7rem;
+            color: #adb5bd;
+            margin-top: .1rem;
+        }
+
+        .count-pill {
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .15rem .5rem;
+            border-radius: 99px;
+            background: rgba(249, 230, 161, .2);
+            color: var(--gold);
+            margin-left: auto;
+        }
+
+        /* ── WORK TIMELINE ──────────────────────── */
+        .work-item {
+            position: relative;
+            padding: 0 0 1rem 1.5rem;
+            border-left: 2px solid #e0e4ef;
+        }
+
+        .work-item::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            top: 4px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--navy);
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px var(--navy);
+        }
+
+        .work-item.is-current::before {
+            background: var(--gold-dk);
+            box-shadow: 0 0 0 2px var(--gold-dk);
+        }
+
+        .work-item:last-child {
+            border-left: 2px solid transparent;
+            padding-bottom: 0;
+        }
+
+        .work-title {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #344767;
+        }
+
+        .work-employer {
+            font-size: .76rem;
+            color: var(--navy);
+            font-weight: 600;
+        }
+
+        .work-period {
+            font-size: .7rem;
+            color: #8392ab;
+            margin-top: .1rem;
+        }
+
+        .current-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            font-size: .66rem;
+            font-weight: 700;
+            padding: .15rem .5rem;
+            border-radius: 99px;
+            background: #d4f5e2;
+            color: var(--green);
+            margin-left: .4rem;
+            vertical-align: middle;
+        }
+
+        .exit-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .7rem;
+            font-weight: 600;
+            padding: .2rem .6rem;
+            border-radius: 99px;
+            background: #fff3cd;
+            color: #7d5500;
+            margin-top: .4rem;
+        }
+
+        /* ── REFEREES ───────────────────────────── */
+        .ref-card {
+            border: 1px solid #e8ecf5;
+            border-radius: .6rem;
+            padding: .85rem;
+            background: #fafbff;
+        }
+
+        .ref-name {
+            font-size: .82rem;
+            font-weight: 700;
+            color: #344767;
+        }
+
+        .ref-title {
+            font-size: .72rem;
+            color: var(--navy);
+        }
+
+        .ref-meta {
+            font-size: .72rem;
+            color: #67748e;
+            margin-top: .15rem;
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        /* ── SCREENING ──────────────────────────── */
+        .screen-card {
+            border-radius: .6rem;
+            padding: .85rem 1rem;
+            border: 1px solid;
+        }
+
+        .screen-pass-card {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .screen-fail-card {
+            background: #fff5f5;
+            border-color: #fecaca;
+        }
+
+        .screen-flag-card {
+            background: #fffbeb;
+            border-color: #fde68a;
+        }
+
+        .screen-item {
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+            font-size: .76rem;
+            color: #344767;
+            margin-bottom: .35rem;
+        }
+
+        .screen-item:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ── DOCS ───────────────────────────────── */
+        .doc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            padding: .4rem .85rem;
+            border-radius: .45rem;
+            font-size: .74rem;
+            font-weight: 600;
+            background: #f0f2f8;
+            color: #344767;
+            border: 1px solid #e0e4ef;
+            transition: all .15s;
+            margin: .2rem;
+        }
+
+        .doc-btn:hover {
+            background: var(--navy);
+            color: var(--gold);
+        }
+
+        .doc-btn.pdf {
+            background: #fff5f5;
+            color: var(--red);
+            border-color: #fecaca;
+        }
+
+        .doc-btn.pdf:hover {
+            background: var(--red);
+            color: #fff;
+        }
+
+        /* ── DECISION PANEL ─────────────────────── */
+        .dec-panel {
+            background: #fff;
+            border-radius: .85rem;
+            box-shadow: 0 2px 16px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            position: sticky;
+            top: 1rem;
+        }
+
+        .dec-panel-head {
+            background: var(--navy);
+            padding: .75rem 1rem;
+            color: var(--gold);
+            font-size: .74rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+        }
+
+        .dec-panel-body {
+            padding: 1rem;
+        }
+
+        /* Decision made — read-only view */
+        .dec-made {
+            border-radius: .6rem;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: .85rem;
+        }
+
+        .dec-made.accepted {
+            background: #d4f5e2;
+            border: 1px solid #86efad;
+        }
+
+        .dec-made.rejected {
+            background: #fde8e8;
+            border: 1px solid #fca5a5;
+        }
+
+        .dec-made-icon {
+            font-size: 1.5rem;
+            margin-bottom: .4rem;
+        }
+
+        .dec-made-label {
+            font-size: .88rem;
+            font-weight: 800;
+        }
+
+        .dec-made.accepted .dec-made-label {
+            color: var(--green);
+        }
+
+        .dec-made.rejected .dec-made-label {
+            color: var(--red);
+        }
+
+        .dec-meta {
+            font-size: .7rem;
+            color: #8392ab;
+            margin-top: .4rem;
+        }
+
+        .dec-note-box {
+            background: #f8f9ff;
+            border: 1px solid #e0e4ef;
+            border-radius: .45rem;
+            padding: .65rem .75rem;
+            font-size: .74rem;
+            color: #344767;
+            margin-top: .75rem;
+        }
+
+        .dec-note-label {
+            font-size: .62rem;
+            color: #8392ab;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .25rem;
+        }
+
+        /* Decision actions */
+        .current-dec {
+            text-align: center;
+            padding: .65rem;
+            border-radius: .5rem;
+            margin-bottom: .85rem;
+            font-size: .8rem;
+            font-weight: 700;
+        }
+
+        .cd-unreviewed {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .dec-btn {
+            width: 100%;
+            padding: .55rem;
+            border-radius: .45rem;
+            font-size: .78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .4rem;
+            margin-bottom: .5rem;
+        }
+
+        .db-short {
+            background: #d4f5e2;
+            color: var(--green);
+            border-color: #b2dfca;
+        }
+
+        .db-short:hover {
+            background: var(--green);
+            color: #fff;
+            border-color: var(--green);
+        }
+
+        .db-reject {
+            background: #fde8e8;
+            color: var(--red);
+            border-color: #f5c6c6;
+        }
+
+        .db-reject:hover {
+            background: var(--red);
+            color: #fff;
+            border-color: var(--red);
+        }
+
+        .db-recall {
+            background: #e8f4fd;
+            color: #1a6fa8;
+            border-color: #b8ddf5;
+        }
+
+        .db-recall:hover {
+            background: #1a6fa8;
+            color: #fff;
+        }
+
+        .dec-divider {
+            font-size: .65rem;
+            color: #adb5bd;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            text-align: center;
+            margin: .65rem 0;
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .dec-divider::before, .dec-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e8ecf5;
+        }
+
+        /* ── FILTER MINI ────────────────────────── */
+        .filter-mini {
+            background: #fff;
+            border-radius: .85rem;
+            box-shadow: 0 2px 12px rgba(38, 37, 97, .07);
+            overflow: hidden;
+            margin-top: .85rem;
+        }
+
+        .filter-mini-head {
+            background: #f8f9ff;
+            border-bottom: 1px solid #f0f2f8;
+            padding: .6rem 1rem;
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--navy);
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        .filter-mini-body {
+            padding: .85rem 1rem;
+        }
+
+        .fm-label {
+            font-size: .64rem;
+            color: #8392ab;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: .3rem;
+        }
+
+        .fm-select {
+            width: 100%;
+            font-size: .74rem;
+            color: #344767;
+            border: 1px solid #e0e4ef;
+            border-radius: .4rem;
+            padding: .3rem .45rem;
+            margin-bottom: .65rem;
+            background: #fafbff;
+            outline: none;
+        }
+
+        .fm-select:focus {
+            border-color: var(--navy);
+        }
+
+        .btn-apply-fm {
+            width: 100%;
+            background: var(--navy);
+            color: var(--gold);
+            border: none;
+            border-radius: .4rem;
+            padding: .45rem;
+            font-size: .73rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- ── NAV BAR ────────────────────────────── -->
-    <div class="dos-nav">
-        <div class="dos-nav-left">
-            <a href="{% url 'hr_longlist_dashboard' vacancy.id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-               class="nav-btn nb-back">
-                <i class="fas fa-arrow-left me-1"></i> Longlist
-            </a>
-            <span style="color:rgba(255,255,255,0.4);">|</span>
-            <span style="font-size:0.78rem;color:rgba(255,255,255,0.7);">
+        <!-- NAV BAR -->
+        <div class="dos-nav">
+            <div class="dos-nav-left">
+                <a href="
+                        {% url 'hr_longlist_dashboard' vacancy.id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
+                   class="nav-btn nb-back">
+                    <i class="fas fa-arrow-left me-1"></i> Longlist
+                </a>
+                <span style="color:rgba(255,255,255,.4);">|</span>
+                <span style="font-size:.78rem;color:rgba(255,255,255,.7);">
                 {{ vacancy.reference_number }} — {{ vacancy.title }}
             </span>
+            </div>
+            <div class="dos-nav-right">
+                {% if position %}
+                    <span class="nav-position">{{ position }} of {{ total }}</span>
+                {% endif %}
+                {% if prev_id %}
+                    <a href="
+
+                            {% url 'hr_longlist_dossier' vacancy.id prev_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
+                       class="nav-btn nb-prev"><i class="fas fa-chevron-left me-1"></i> Prev</a>
+                {% else %}
+                    <span class="nav-btn nb-prev disabled"><i class="fas fa-chevron-left me-1"></i> Prev</span>
+                {% endif %}
+                {% if next_id %}
+                    <a href="
+
+                            {% url 'hr_longlist_dossier' vacancy.id next_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
+                       class="nav-btn nb-next">Next <i class="fas fa-chevron-right ms-1"></i></a>
+                {% else %}
+                    <span class="nav-btn nb-next disabled">Next <i class="fas fa-chevron-right ms-1"></i></span>
+                {% endif %}
+            </div>
         </div>
-        <div class="dos-nav-right">
-            {% if position %}
-            <span class="nav-position">{{ position }} of {{ total }}</span>
-            {% endif %}
-            {% if prev_id %}
-            <a href="{% url 'hr_longlist_dossier' vacancy.id prev_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-               class="nav-btn nb-prev">
-                <i class="fas fa-chevron-left me-1"></i> Prev
-            </a>
-            {% else %}
-            <span class="nav-btn nb-prev disabled">
-                <i class="fas fa-chevron-left me-1"></i> Prev
-            </span>
-            {% endif %}
-            {% if next_id %}
-            <a href="{% url 'hr_longlist_dossier' vacancy.id next_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
-               class="nav-btn nb-next">
-                Next <i class="fas fa-chevron-right ms-1"></i>
-            </a>
-            {% else %}
-            <span class="nav-btn nb-next disabled">
-                Next <i class="fas fa-chevron-right ms-1"></i>
-            </span>
-            {% endif %}
-        </div>
-    </div>
 
-    <!-- ── MAIN LAYOUT ────────────────────────── -->
-    <div class="dos-layout">
+        <div class="dos-layout">
 
-        <!-- ── LEFT: DOSSIER CONTENT ───────────── -->
-        <div>
+            <!-- ── LEFT COLUMN ─────────────────────── -->
+            <div>
 
-            <!-- Personal Details -->
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-user me-2"></i>Personal Details</h6>
-                    <span style="font-size:0.72rem;color:rgba(249,230,161,0.7);">
+                <!-- Personal Details -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-user me-2"></i>Personal Details</h6>
+                        <span style="font-size:.72rem;color:rgba(249,230,161,.7);">
                         App: {{ app.application_number|default:"—" }}
+                        &nbsp;|&nbsp; Applied: {{ app.submitted_at|date:"d M Y" }}
                     </span>
-                </div>
-                <div class="dos-card-body">
-                    <div class="identity-strip">
-                        <div class="id-field">
-                            <div class="id-label">Full Name</div>
-                            <div class="id-value">{{ basic.full_name }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">National ID</div>
-                            <div class="id-value" style="font-family:monospace;">{{ basic.id_no }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Date of Birth</div>
-                            <div class="id-value">{{ basic.dob|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Gender</div>
-                            <div class="id-value">{{ basic.gender|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Phone</div>
-                            <div class="id-value">{{ basic.phone }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Email</div>
-                            <div class="id-value" style="font-size:0.75rem;">{{ app.user.email }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">County</div>
-                            <div class="id-value">{{ basic.county }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Sub-County</div>
-                            <div class="id-value">{{ basic.subcounty|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Constituency</div>
-                            <div class="id-value">{{ basic.constituency|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Ward</div>
-                            <div class="id-value">{{ basic.ward|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Ethnicity</div>
-                            <div class="id-value">{{ basic.ethnicity|default:"—" }}</div>
-                        </div>
-                        <div class="id-field">
-                            <div class="id-label">Disability</div>
-                            <div class="id-value">
-                                {% if basic.disability %}
-                                    <span style="color:var(--amber);font-weight:700;">Yes — PWD</span>
-                                {% else %}
-                                    No
-                                {% endif %}
+                    </div>
+                    <div class="dos-card-body">
+                        <div class="id-grid">
+                            <div>
+                                <div class="id-label">Full Name</div>
+                                <div class="id-value">{{ basic.full_name }}</div>
+                            </div>
+                            <div>
+                                <div class="id-label">Email</div>
+                                <div class="id-value" style="font-size:.75rem;">{{ app.user.email }}</div>
+                            </div>
+                            {% if basic.id_no %}
+                                <div>
+                                    <div class="id-label">National ID</div>
+                                    <div class="id-value" style="font-family:monospace;">{{ basic.id_no }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.dob %}
+                                <div>
+                                    <div class="id-label">Date of Birth</div>
+                                    <div class="id-value">{{ basic.dob }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.gender %}
+                                <div>
+                                    <div class="id-label">Gender</div>
+                                    <div class="id-value">{{ basic.gender }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.phone %}
+                                <div>
+                                    <div class="id-label">Phone</div>
+                                    <div class="id-value">{{ basic.phone }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.ethnicity %}
+                                <div>
+                                    <div class="id-label">Ethnicity</div>
+                                    <div class="id-value">{{ basic.ethnicity }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.county %}
+                                <div>
+                                    <div class="id-label">County</div>
+                                    <div class="id-value">{{ basic.county }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.subcounty %}
+                                <div>
+                                    <div class="id-label">Sub-County</div>
+                                    <div class="id-value">{{ basic.subcounty }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.constituency %}
+                                <div>
+                                    <div class="id-label">Constituency</div>
+                                    <div class="id-value">{{ basic.constituency }}</div>
+                                </div>
+                            {% endif %}
+                            {% if basic.ward %}
+                                <div>
+                                    <div class="id-label">Ward</div>
+                                    <div class="id-value">{{ basic.ward }}</div>
+                                </div>
+                            {% endif %}
+                            <div>
+                                <div class="id-label">Disability</div>
+                                <div class="id-value">
+                                    {% if basic.disability %}
+                                        <span style="color:var(--amber);font-weight:700;">Yes — PWD</span>
+                                    {% else %}
+                                        No
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Screening Summary -->
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-shield-alt me-2"></i>Automated Screening Result</h6>
-                    {% if app.screening_ran_at %}
-                    <span style="font-size:0.68rem;color:rgba(249,230,161,0.6);">
+                <!-- Screening -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-shield-alt me-2"></i>Automated Screening Result</h6>
+                        {% if app.screening_ran_at %}
+                            <span style="font-size:.68rem;color:rgba(249,230,161,.6);">
                         Ran: {{ app.screening_ran_at|date:"d M Y H:i" }}
                     </span>
-                    {% endif %}
-                </div>
-                <div class="dos-card-body">
-                    {% if app.screening_passed is None %}
-                        <p style="color:#adb5bd;font-size:0.8rem;">Screening not yet run.</p>
-                    {% elif app.screening_passed %}
-                        <div class="screen-card {% if app.screening_flags %}screen-flag-card{% else %}screen-pass-card{% endif %}">
-                            <div class="screen-item">
-                                <i class="fas fa-check-circle si-icon si-pass"></i>
-                                <span style="font-weight:600;">
-                                    Passed all hard checks
-                                    {% if app.screening_flags %}— with soft flags{% endif %}
-                                </span>
-                            </div>
-                            {% for flag in app.screening_flags %}
-                            <div class="screen-item">
-                                <i class="fas fa-exclamation-triangle si-icon si-flag"></i>
-                                <span>{{ flag }}</span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        <div class="screen-card screen-fail-card">
-                            <div class="screen-item" style="margin-bottom:0.5rem;">
-                                <i class="fas fa-times-circle si-icon si-fail"></i>
-                                <span style="font-weight:600;">Failed automated screening</span>
-                            </div>
-                            {% for reason in app.screening_reasons %}
-                            <div class="screen-item">
-                                <i class="fas fa-minus si-icon si-fail" style="font-size:0.6rem;margin-top:3px;"></i>
-                                <span>{{ reason }}</span>
-                            </div>
-                            {% endfor %}
-                        </div>
-                        <p style="font-size:0.72rem;color:#8392ab;margin-top:0.5rem;margin-bottom:0;">
-                            <i class="fas fa-info-circle me-1"></i>
-                            This application was system-rejected. Use Recall in the decision panel to reinstate with justification.
-                        </p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Academic Qualifications -->
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-graduation-cap me-2"></i>Academic Qualifications</h6>
-                </div>
-                <div class="dos-card-body">
-                    {% if academic %}
-                        {% for edu in academic %}
-                        <div class="edu-item">
-                            <div class="edu-icon"><i class="fas fa-university"></i></div>
-                            <div style="flex:1;">
-                                <div class="edu-name">{{ edu.education_level|default:"—" }}</div>
-                                <div class="edu-inst">{{ edu.institution|default:"—" }}</div>
-                                <div class="edu-year">
-                                    {{ edu.year_completed|default:"" }}
-                                    {% if edu.grade %}&nbsp;·&nbsp; Grade: {{ edu.grade }}{% endif %}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p style="color:#adb5bd;font-size:0.8rem;">No academic qualifications recorded.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Professional Qualifications -->
-            {% if professional %}
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-certificate me-2"></i>Professional Qualifications</h6>
-                </div>
-                <div class="dos-card-body">
-                    {% for pro in professional %}
-                    <div class="edu-item">
-                        <div class="edu-icon" style="background:#fef3e2;color:var(--amber);">
-                            <i class="fas fa-award"></i>
-                        </div>
-                        <div style="flex:1;">
-                            <div class="edu-name">{{ pro.qualification|default:"—" }}</div>
-                            <div class="edu-inst">{{ pro.awarding_body|default:"—" }}</div>
-                            <div class="edu-year">
-                                {{ pro.year_obtained|default:"" }}
-                                {% if pro.cert_number %}&nbsp;·&nbsp; Cert No: {{ pro.cert_number }}{% endif %}
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Work History -->
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-briefcase me-2"></i>Work History</h6>
-                    <span style="font-size:0.72rem;color:rgba(249,230,161,0.7);">
-                        Total: {{ exp_years }}y {{ exp_months }}m
-                    </span>
-                </div>
-                <div class="dos-card-body">
-                    {% if work %}
-                        {% for job in work %}
-                        <div class="work-item">
-                            <div class="work-title">{{ job.job_title|default:"—" }}</div>
-                            <div class="work-employer">{{ job.company|default:"—" }}</div>
-                            <div class="work-period">
-                                {{ job.start_display|default:"?" }} — {{ job.end_display|default:"Present" }}
-                            </div>
-                            {% if job.duties %}
-                            <div style="font-size:0.73rem;color:#8392ab;margin-top:0.3rem;">
-                                {{ job.duties|truncatechars:200 }}
-                            </div>
-                            {% elif job.responsibilities %}
-                            <div style="font-size:0.73rem;color:#8392ab;margin-top:0.3rem;">
-                                {{ job.responsibilities|truncatechars:200 }}
-                            </div>
-                            {% endif %}
-                        </div>
-                        {% endfor %}
-                    {% else %}
-                        <p style="color:#adb5bd;font-size:0.8rem;">No work history recorded.</p>
-                    {% endif %}
-                </div>
-            </div>
-
-            <!-- Referees -->
-            {% if referees %}
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-user-check me-2"></i>Referees</h6>
-                </div>
-                <div class="dos-card-body">
-                    <div class="row g-3">
-                        {% for ref in referees %}
-                        <div class="col-md-6">
-                            <div class="ref-card">
-                                <div class="ref-name">{{ ref.name|default:"—" }}</div>
-                                <div class="ref-title">{{ ref.occupation|default:"—" }}</div>
-                                <div class="ref-phone">
-                                    <i class="fas fa-phone me-1" style="font-size:0.65rem;"></i>
-                                    {{ ref.mobile|default:"—" }}
-                                </div>
-                                <div class="ref-phone" style="margin-top:0.15rem;">
-                                    <i class="fas fa-envelope me-1" style="font-size:0.65rem;"></i>
-                                    {{ ref.email|default:"—" }}
-                                </div>
-                                <div class="ref-phone" style="margin-top:0.15rem;">
-                                    <i class="fas fa-clock me-1" style="font-size:0.65rem;"></i>
-                                    Known for: {{ ref.period_known|default:"—" }}
-                                </div>
-                            </div>
-                        </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            {% endif %}
-
-            <!-- Documents -->
-            <div class="dos-card">
-                <div class="dos-card-head">
-                    <h6><i class="fas fa-folder-open me-2"></i>Submitted Documents</h6>
-                </div>
-                <div class="dos-card-body">
-                    {% if additional.cv_filename %}
-                    <span class="doc-btn pdf">
-                        <i class="fas fa-file-pdf"></i> {{ additional.cv_filename }}
-                    </span>
-                    {% else %}
-                    <span class="doc-btn" style="opacity:0.4;cursor:default;">
-                        <i class="fas fa-file-pdf"></i> CV not uploaded
-                    </span>
-                    {% endif %}
-
-                    {% if additional.cover_letter_filename %}
-                    <span class="doc-btn pdf">
-                        <i class="fas fa-file-alt"></i> {{ additional.cover_letter_filename }}
-                    </span>
-                    {% else %}
-                    <span class="doc-btn" style="opacity:0.4;cursor:default;">
-                        <i class="fas fa-file-alt"></i> Cover letter not uploaded
-                    </span>
-                    {% endif %}
-
-                    {% if additional.linkedin_url %}
-                    <a href="{{ additional.linkedin_url }}" target="_blank" class="doc-btn">
-                        <i class="fab fa-linkedin"></i> LinkedIn
-                    </a>
-                    {% endif %}
-                    {% if additional.portfolio_url %}
-                    <a href="{{ additional.portfolio_url }}" target="_blank" class="doc-btn">
-                        <i class="fas fa-globe"></i> Portfolio
-                    </a>
-                    {% endif %}
-
-                    {% if additional.expected_salary %}
-                    <div style="margin-top:0.75rem;font-size:0.78rem;color:#344767;">
-                        <strong>Expected Salary:</strong>
-                        KES {{ additional.expected_salary|floatformat:"0" }}
-                    </div>
-                    {% endif %}
-                    {% if additional.availability %}
-                    <div style="margin-top:0.3rem;font-size:0.78rem;color:#344767;">
-                        <strong>Availability:</strong> {{ additional.availability }}
-                    </div>
-                    {% endif %}
-                </div>
-            </div>
-
-        </div><!-- /left column -->
-
-        <!-- ── RIGHT: DECISION + FILTER ───────── -->
-        <div>
-
-            <!-- Decision Panel -->
-            <div class="dec-panel">
-                <div class="dec-panel-head">
-                    <i class="fas fa-gavel me-2"></i>Committee Decision
-                </div>
-                <div class="dec-panel-body">
-
-                    <!-- Current decision indicator -->
-                    <div class="current-dec cd-{{ app.longlist_decision|default:'unreviewed' }}">
-                        {% if app.longlist_decision == 'accepted' %}
-                            <i class="fas fa-check-circle me-1"></i> Accepted — Final Longlist
-                        {% elif app.longlist_decision == 'rejected' %}
-                            <i class="fas fa-times-circle me-1"></i> Rejected
-                        {% else %}
-                            <i class="fas fa-clock me-1"></i> Awaiting Decision
                         {% endif %}
                     </div>
-
-                    {% if app.longlist_notes %}
-                    <div style="background:#f8f9ff;border:1px solid #e0e4ef;border-radius:0.45rem;
-                                padding:0.6rem 0.75rem;font-size:0.74rem;color:#344767;margin-bottom:0.85rem;">
-                        <strong style="font-size:0.64rem;color:#8392ab;text-transform:uppercase;
-                                       letter-spacing:0.05em;">Note:</strong><br>
-                        {{ app.longlist_notes }}
+                    <div class="dos-card-body">
+                        {% if app.screening_passed is None %}
+                            <p style="color:#adb5bd;font-size:.8rem;">Screening not yet run.</p>
+                        {% elif app.screening_passed %}
+                            <div class="screen-card {% if app.screening_flags %}screen-flag-card{% else %}screen-pass-card{% endif %}">
+                                <div class="screen-item">
+                                    <i class="fas fa-check-circle"
+                                       style="color:var(--green);flex-shrink:0;margin-top:1px;"></i>
+                                    <span style="font-weight:600;">Passed all hard checks{% if app.screening_flags %} —
+                                        with soft flags{% endif %}</span>
+                                </div>
+                                {% for flag in app.screening_flags %}
+                                    <div class="screen-item">
+                                        <i class="fas fa-exclamation-triangle"
+                                           style="color:var(--amber);flex-shrink:0;margin-top:1px;"></i>
+                                        <span>{{ flag }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <div class="screen-card screen-fail-card">
+                                <div class="screen-item" style="margin-bottom:.5rem;">
+                                    <i class="fas fa-times-circle"
+                                       style="color:var(--red);flex-shrink:0;margin-top:1px;"></i>
+                                    <span style="font-weight:600;">Failed automated screening</span>
+                                </div>
+                                {% for reason in app.screening_reasons %}
+                                    <div class="screen-item">
+                                        <i class="fas fa-minus"
+                                           style="color:var(--red);flex-shrink:0;font-size:.6rem;margin-top:3px;"></i>
+                                        <span>{{ reason }}</span>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <p style="font-size:.72rem;color:#8392ab;margin-top:.5rem;margin-bottom:0;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                System-rejected. Use Recall in the decision panel to reinstate with justification.
+                            </p>
+                        {% endif %}
                     </div>
-                    {% endif %}
+                </div>
 
-                    {% if app.status.code == 'longlisted' %}
-                        <button class="dec-btn db-short" onclick="makeDecision('accepted')">
-                            <i class="fas fa-check"></i> Accept to Final Longlist
-                        </button>
+                <!-- Academic Qualifications -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-graduation-cap me-2"></i>Academic Qualifications</h6>
+                        {% if academic %}
+                            <span class="count-pill">{{ academic|length }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="dos-card-body">
+                        {% for edu in academic %}
+                            <div class="edu-item">
+                                <div class="edu-icon"><i class="fas fa-university"></i></div>
+                                <div style="flex:1;">
+                                    <div class="edu-name">
+                                        <span style="font-size:.65rem;font-weight:700;color:#adb5bd;margin-right:.4rem;">#{{ forloop.counter }}</span>
+                                        {{ edu.education_level|default:"—" }}
+                                    </div>
+                                    <div class="edu-inst">{{ edu.institution|default:"—" }}{% if edu.field_of_study %} —
+                                        {{ edu.field_of_study }}{% endif %}</div>
+                                    <div class="edu-meta">
+                                        {% if edu.year_completed %}Completed {{ edu.year_completed }}{% endif %}
+                                        {% if edu.grade %}&nbsp;·&nbsp; Grade:
+                                            <strong>{{ edu.grade }}</strong>{% endif %}
+                                        {% if edu.cert_number %}&nbsp;·&nbsp; Cert: {{ edu.cert_number }}{% endif %}
+                                    </div>
+                                    {% if edu.documents %}
+                                        <div style="margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.3rem;">
+                                            {% for doc in edu.documents %}
+                                                <a href="{{ doc.file_url }}" target="_blank" class="doc-btn pdf"
+                                                   style="padding:.2rem .6rem;font-size:.68rem;margin:0;">
+                                                    <i class="fas fa-file-pdf"></i> {{ doc.document_type }}
+                                                    <small style="font-weight:400;opacity:.7;">{{ doc.filename }}</small>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p style="color:#adb5bd;font-size:.8rem;margin:0;">No academic qualifications recorded.</p>
+                        {% endfor %}
+                    </div>
+                </div>
 
-                        <div class="dec-divider">or</div>
+                <!-- Professional Qualifications -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-certificate me-2"></i>Professional Qualifications</h6>
+                        {% if professional %}
+                            <span class="count-pill">{{ professional|length }}</span>
+                        {% endif %}
+                    </div>
+                    <div class="dos-card-body">
+                        {% for pro in professional %}
+                            <div class="edu-item">
+                                <div class="edu-icon" style="background:#fef3e2;color:var(--amber);">
+                                    <i class="fas fa-award"></i>
+                                </div>
+                                <div style="flex:1;">
+                                    <div class="edu-name">
+                                        <span style="font-size:.65rem;font-weight:700;color:#adb5bd;margin-right:.4rem;">#{{ forloop.counter }}</span>
+                                        {{ pro.qualification|default:"—" }}
+                                    </div>
+                                    <div class="edu-inst">{{ pro.awarding_body|default:"—" }}</div>
+                                    <div class="edu-meta">
+                                        {% if pro.year_obtained %}Obtained {{ pro.year_obtained }}{% endif %}
+                                        {% if pro.grade %}&nbsp;·&nbsp; Grade:
+                                            <strong>{{ pro.grade }}</strong>{% endif %}
+                                        {% if pro.expiry_year %}&nbsp;·&nbsp; Expires: {{ pro.expiry_year }}{% endif %}
+                                        {% if pro.cert_number %}&nbsp;·&nbsp; Cert: {{ pro.cert_number }}{% endif %}
+                                    </div>
+                                    {% if pro.documents %}
+                                        <div style="margin-top:.4rem;display:flex;flex-wrap:wrap;gap:.3rem;">
+                                            {% for doc in pro.documents %}
+                                                <a href="{{ doc.file_url }}" target="_blank" class="doc-btn pdf"
+                                                   style="padding:.2rem .6rem;font-size:.68rem;margin:0;">
+                                                    <i class="fas fa-file-pdf"></i> {{ doc.document_type }}
+                                                    <small style="font-weight:400;opacity:.7;">{{ doc.filename }}</small>
+                                                </a>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% empty %}
+                            <p style="color:#adb5bd;font-size:.8rem;margin:0;">No professional qualifications
+                                recorded.</p>
+                        {% endfor %}
+                    </div>
+                </div>
 
-                        <button class="dec-btn db-reject" onclick="makeDecision('rejected')">
-                            <i class="fas fa-times"></i> Reject
-                        </button>
-                        <p style="font-size:0.68rem;color:#8392ab;text-align:center;margin-top:0.4rem;margin-bottom:0;">
-                            Rejection sends regret email immediately.
-                        </p>
-                    {% else %}
-                        <div style="font-size:0.74rem;color:#8392ab;text-align:center;margin-bottom:0.85rem;">
-                            System-rejected application
+                <!-- Professional Body Memberships -->
+                {% if memberships %}
+                    <div class="dos-card">
+                        <div class="dos-card-head">
+                            <h6><i class="fas fa-users me-2"></i>Professional Body Memberships</h6>
+                            <span class="count-pill">{{ memberships|length }}</span>
                         </div>
-                        <button class="dec-btn db-recall" onclick="recallApp()">
-                            <i class="fas fa-undo"></i> Recall to Longlist
-                        </button>
-                    {% endif %}
-
-                    {% if app.longlist_decision_by %}
-                    <div style="margin-top:0.75rem;font-size:0.68rem;color:#adb5bd;text-align:center;">
-                        By {{ app.longlist_decision_by.get_full_name|default:app.longlist_decision_by.email }}<br>
-                        {{ app.longlist_decision_at|date:"d M Y H:i" }}
+                        <div class="dos-card-body">
+                            {% for m in memberships %}
+                                <div class="edu-item">
+                                    <div class="edu-icon" style="background:#f0f9ff;color:#1a6fa8;">
+                                        <i class="fas fa-id-badge"></i>
+                                    </div>
+                                    <div style="flex:1;">
+                                        <div class="edu-name">
+                                            <span style="font-size:.65rem;font-weight:700;color:#adb5bd;margin-right:.4rem;">#{{ forloop.counter }}</span>
+                                            {{ m.body_name|default:"—" }}
+                                        </div>
+                                        <div class="edu-meta">
+                                            {% if m.membership_no %}No: {{ m.membership_no }}{% endif %}
+                                            {% if m.year_joined %}&nbsp;·&nbsp; Joined {{ m.year_joined }}{% endif %}
+                                            {% if m.expiry_year %}&nbsp;·&nbsp; Expires {{ m.expiry_year }}{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
                     </div>
-                    {% endif %}
+                {% endif %}
 
+                <!-- Work History -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-briefcase me-2"></i>Work History</h6>
+                        <span style="font-size:.72rem;color:rgba(249,230,161,.7);">
+                        {{ exp_years }}y {{ exp_months }}m total
+                            {% if work %}&nbsp;·&nbsp; {{ work|length }} position{{ work|length|pluralize }}{% endif %}
+                    </span>
+                    </div>
+                    <div class="dos-card-body">
+                        {% for job in work %}
+                            <div class="work-item {% if job.is_current %}is-current{% endif %}">
+                                <div class="work-title">
+                                    {{ job.job_title|default:"—" }}
+                                    {% if job.is_current %}
+                                        <span class="current-tag"><i class="fas fa-circle" style="font-size:.4rem;"></i> Current</span>
+                                    {% endif %}
+                                </div>
+                                <div class="work-employer">
+                                    {{ job.company|default:"—" }}
+                                    {% if job.country and job.country != 'Kenya' %}&nbsp;·&nbsp;
+                                        {{ job.country }}{% endif %}
+                                </div>
+                                <div class="work-period">
+                                    {{ job.start_display|default:"?" }} → {{ job.end_display|default:"Present" }}
+                                    {% if job.employment_type %}&nbsp;·&nbsp; {{ job.employment_type }}{% endif %}
+                                </div>
+                                {% if not job.is_current and job.exit_reason %}
+                                    <div class="exit-tag">
+                                        <i class="fas fa-sign-out-alt"></i> Left: {{ job.exit_reason }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <p style="color:#adb5bd;font-size:.8rem;margin:0;">No work history recorded.</p>
+                        {% endfor %}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Filter mini (dossier navigation filter) -->
-            <div class="filter-mini">
-                <div class="filter-mini-head">
-                    <i class="fas fa-filter me-1"></i> Nav Filter
+                <!-- Referees -->
+                {% if referees %}
+                    <div class="dos-card">
+                        <div class="dos-card-head">
+                            <h6><i class="fas fa-user-check me-2"></i>Referees</h6>
+                            <span class="count-pill">{{ referees|length }}</span>
+                        </div>
+                        <div class="dos-card-body">
+                            <div class="row g-3">
+                                {% for ref in referees %}
+                                    <div class="col-md-6">
+                                        <div class="ref-card">
+                                            <div class="ref-name">{{ ref.name|default:"—" }}</div>
+                                            <div class="ref-title">{{ ref.occupation|default:"—" }}</div>
+                                            {% if ref.mobile %}
+                                                <div class="ref-meta"><i class="fas fa-phone"
+                                                                         style="font-size:.65rem;color:#adb5bd;"></i> {{ ref.mobile }}
+                                                </div>
+                                            {% endif %}
+                                            {% if ref.email %}
+                                                <div class="ref-meta"><i class="fas fa-envelope"
+                                                                         style="font-size:.65rem;color:#adb5bd;"></i> {{ ref.email }}
+                                                </div>
+                                            {% endif %}
+                                            {% if ref.period_known %}
+                                                <div class="ref-meta"><i class="fas fa-clock"
+                                                                         style="font-size:.65rem;color:#adb5bd;"></i>
+                                                    Known: {{ ref.period_known }}</div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Documents + Additional -->
+                <div class="dos-card">
+                    <div class="dos-card-head">
+                        <h6><i class="fas fa-folder-open me-2"></i>Documents &amp; Additional Info</h6>
+                    </div>
+                    <div class="dos-card-body">
+                        <!-- File links -->
+                        <div class="mb-3">
+                            {% with ud=app.user.additional_detail %}
+                                {% if ud and ud.cv %}
+                                    <a href="{{ ud.cv.url }}" target="_blank" class="doc-btn pdf">
+                                        <i class="fas fa-file-pdf"></i> CV
+                                        {% if additional.cv_filename %}
+                                            <small style="font-weight:400;opacity:.7;">{{ additional.cv_filename }}</small>{% endif %}
+                                    </a>
+                                {% elif additional.cv_filename %}
+                                    <span class="doc-btn pdf" style="opacity:.45;cursor:default;">
+                            <i class="fas fa-file-pdf"></i> {{ additional.cv_filename }} <small>(unavailable)</small>
+                        </span>
+                                {% endif %}
+
+                                {% if ud and ud.cover_letter %}
+                                    <a href="{{ ud.cover_letter.url }}" target="_blank" class="doc-btn">
+                                        <i class="fas fa-file-word" style="color:#2b579a;"></i> Cover Letter
+                                        {% if additional.cover_letter_filename %}
+                                            <small style="font-weight:400;opacity:.7;">{{ additional.cover_letter_filename }}</small>{% endif %}
+                                    </a>
+                                {% elif additional.cover_letter_filename %}
+                                    <span class="doc-btn" style="opacity:.45;cursor:default;">
+                            <i class="fas fa-file-word"></i> {{ additional.cover_letter_filename }} <small>(unavailable)</small>
+                        </span>
+                                {% endif %}
+                            {% endwith %}
+
+                            {% if additional.linkedin_url %}
+                                <a href="{{ additional.linkedin_url }}" target="_blank" class="doc-btn">
+                                    <i class="fab fa-linkedin"></i> LinkedIn
+                                </a>
+                            {% endif %}
+                            {% if additional.portfolio_url %}
+                                <a href="{{ additional.portfolio_url }}" target="_blank" class="doc-btn">
+                                    <i class="fas fa-globe"></i> Portfolio
+                                </a>
+                            {% endif %}
+
+                            {% if not additional.cv_filename and not additional.cover_letter_filename and not additional.linkedin_url and not additional.portfolio_url %}
+                                <p style="color:#adb5bd;font-size:.8rem;margin:0;">No documents uploaded.</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Additional fields -->
+                        {% if additional.expected_salary or additional.availability or additional.languages %}
+                            <div style="border-top:1px solid #f0f2f8;padding-top:.75rem;display:flex;flex-wrap:wrap;gap:1.25rem;">
+                                {% if additional.expected_salary %}
+                                    <div>
+                                        <div class="id-label">Expected Salary</div>
+                                        <div class="id-value">KES {{ additional.expected_salary }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if additional.availability %}
+                                    <div>
+                                        <div class="id-label">Availability</div>
+                                        <div class="id-value">{{ additional.availability }}</div>
+                                    </div>
+                                {% endif %}
+                                {% if additional.languages %}
+                                    <div>
+                                        <div class="id-label">Languages</div>
+                                        <div class="id-value">{{ additional.languages }}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <div class="filter-mini-body">
-                    <form method="GET" id="navFilterForm">
-                        <div class="fm-label">Gender</div>
-                        <select name="gender" class="fm-select">
-                            <option value="">All</option>
-                            {% for val, label in gender_choices %}
-                            <option value="{{ val }}" {% if filter_params.gender == val %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
 
-                        <div class="fm-label">Decision</div>
-                        <select name="decision" class="fm-select">
-                            <option value="">All</option>
-                            {% for val, label in decision_choices %}
-                            <option value="{{ val }}" {% if filter_params.decision == val %}selected{% endif %}>
-                                {{ label }}
-                            </option>
-                            {% endfor %}
-                        </select>
+            </div><!-- /left -->
 
-                        <div class="fm-label">Applicant Type</div>
-                        <select name="applicant_type" class="fm-select">
-                            <option value="">All</option>
-                            <option value="internal" {% if filter_params.applicant_type == 'internal' %}selected{% endif %}>Internal</option>
-                            <option value="external" {% if filter_params.applicant_type == 'external' %}selected{% endif %}>External</option>
-                        </select>
+            <!-- ── RIGHT COLUMN ────────────────────── -->
+            <div>
 
-                        <input type="hidden" name="tab" value="{{ active_tab }}">
+                <!-- Decision Panel -->
+                <div class="dec-panel">
+                    <div class="dec-panel-head">
+                        <i class="fas fa-gavel me-2"></i>Longlist Decision
+                    </div>
+                    <div class="dec-panel-body">
 
-                        <button type="submit" class="btn-apply-fm">
-                            <i class="fas fa-sync-alt me-1"></i> Update Navigation
-                        </button>
-                    </form>
-                    {% if position %}
-                    <p style="font-size:0.68rem;color:#adb5bd;text-align:center;margin-top:0.5rem;margin-bottom:0;">
-                        Showing {{ position }} of {{ total }} in filtered list
-                    </p>
-                    {% endif %}
+                        {% if app.longlist_decision == 'accepted' or app.longlist_decision == 'rejected' %}
+                            <!-- ── DECISION ALREADY MADE — read only ── -->
+                            <div class="dec-made {{ app.longlist_decision }}">
+                                {% if app.longlist_decision == 'accepted' %}
+                                    <div class="dec-made-icon"><i class="fas fa-check-circle"
+                                                                  style="color:var(--green);"></i></div>
+                                    <div class="dec-made-label">Accepted to Final Longlist</div>
+                                {% else %}
+                                    <div class="dec-made-icon"><i class="fas fa-times-circle"
+                                                                  style="color:var(--red);"></i></div>
+                                    <div class="dec-made-label">Rejected</div>
+                                {% endif %}
+                                {% if app.longlist_decision_by %}
+                                    <div class="dec-meta">
+                                        By {{ app.longlist_decision_by.first_name }} {{ app.longlist_decision_by.last_name }}<br>
+                                        {{ app.longlist_decision_at|date:"d M Y, H:i" }}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {% if app.longlist_notes %}
+                                <div class="dec-note-box">
+                                    <div class="dec-note-label">Notes / Reason</div>
+                                    {{ app.longlist_notes }}
+                                </div>
+                            {% endif %}
+
+                        {% else %}
+                            <!-- ── NO DECISION YET — show actions ── -->
+                            <div class="current-dec cd-unreviewed">
+                                <i class="fas fa-clock me-1"></i> Awaiting Decision
+                            </div>
+
+                            {% if app.status.code == 'longlisted' %}
+                                <button class="dec-btn db-short" onclick="makeDecision('accepted')">
+                                    <i class="fas fa-check"></i> Accept to Final Longlist
+                                </button>
+                                <div class="dec-divider">or</div>
+                                <button class="dec-btn db-reject" onclick="makeDecision('rejected')">
+                                    <i class="fas fa-times"></i> Reject
+                                </button>
+                                <p style="font-size:.68rem;color:#8392ab;text-align:center;margin-top:.4rem;margin-bottom:0;">
+                                    Rejection sends regret email immediately.
+                                </p>
+                            {% else %}
+                                <div style="font-size:.74rem;color:#8392ab;text-align:center;margin-bottom:.85rem;">
+                                    System-rejected application
+                                </div>
+                                <button class="dec-btn db-recall" onclick="recallApp()">
+                                    <i class="fas fa-undo"></i> Recall to Longlist
+                                </button>
+                            {% endif %}
+                        {% endif %}
+
+                    </div>
                 </div>
-            </div>
 
-        </div><!-- /right column -->
-    </div><!-- /dos-layout -->
-</div>
+                <!-- Nav Filter -->
+                <div class="filter-mini">
+                    <div class="filter-mini-head"><i class="fas fa-filter me-1"></i> Nav Filter</div>
+                    <div class="filter-mini-body">
+                        <form method="GET" id="navFilterForm">
+                            <div class="fm-label">Gender</div>
+                            <select name="gender" class="fm-select">
+                                <option value="">All</option>
+                                {% for val, label in gender_choices %}
+                                    <option value="{{ val }}"
+                                            {% if filter_params.gender == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
 
-<!-- ── Decision modal (hidden textarea) ──── -->
-<div id="decisionNoteModal" style="display:none;"></div>
+                            <div class="fm-label">Decision</div>
+                            <select name="decision" class="fm-select">
+                                <option value="">All</option>
+                                {% for val, label in decision_choices %}
+                                    <option value="{{ val }}"
+                                            {% if filter_params.decision == val %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+
+                            <div class="fm-label">Applicant Type</div>
+                            <select name="applicant_type" class="fm-select">
+                                <option value="">All</option>
+                                <option value="internal"
+                                        {% if filter_params.applicant_type == 'internal' %}selected{% endif %}>Internal
+                                </option>
+                                <option value="external"
+                                        {% if filter_params.applicant_type == 'external' %}selected{% endif %}>External
+                                </option>
+                            </select>
+
+                            <input type="hidden" name="tab" value="{{ active_tab }}">
+                            <button type="submit" class="btn-apply-fm">
+                                <i class="fas fa-sync-alt me-1"></i> Update Navigation
+                            </button>
+                        </form>
+                        {% if position %}
+                            <p style="font-size:.68rem;color:#adb5bd;text-align:center;margin-top:.5rem;margin-bottom:0;">
+                                {{ position }} of {{ total }} in filtered list
+                            </p>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div><!-- /right -->
+        </div><!-- /dos-layout -->
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const VACANCY_ID = {{ vacancy.id }};
-const APP_ID     = {{ app.id }};
-const CSRF       = '{{ csrf_token }}';
-const FILTER_Q   = '{{ filter_query|escapejs }}';
+    <script>
+        const VACANCY_ID = {{ vacancy.id }};
+        const APP_ID = {{ app.id }};
+        const CSRF = '{{ csrf_token }}';
+        const FILTER_Q = '{{ filter_query|escapejs }}';
 
-function makeDecision(decision) {
-    const needsNote = (decision === 'rejected');
-    const colors = {
-        accepted: '#1a7a45',
-        rejected: '#c0392b',
-    };
-    const labels = {
-        accepted: 'Accept to Final Longlist',
-        rejected: 'Reject',
-    };
+        function makeDecision(decision) {
+            const needsNote = decision === 'rejected';
+            const colors = {accepted: '#1a7a45', rejected: '#c0392b'};
+            const labels = {accepted: 'Accept to Final Longlist', rejected: 'Reject'};
 
-    Swal.fire({
-        title: labels[decision] + '?',
-        html: `
-            ${needsNote ? `
-            <div style="text-align:left;margin-top:0.5rem;">
-                <label style="font-size:0.78rem;font-weight:600;color:#344767;">
+            Swal.fire({
+                title: labels[decision] + '?',
+                html: needsNote ? `
+            <div style="text-align:left;margin-top:.5rem;">
+                <label style="font-size:.78rem;font-weight:600;color:#344767;">
                     Reason <span style="color:#c0392b;">*</span>
                     <small style="font-weight:400;color:#adb5bd;">(internal only)</small>
                 </label>
                 <textarea id="decNote" rows="4"
-                    style="width:100%;border:1px solid #e0e4ef;border-radius:0.4rem;
-                           padding:0.5rem;font-size:0.78rem;margin-top:0.3rem;resize:vertical;"
+                    style="width:100%;border:1px solid #e0e4ef;border-radius:.4rem;
+                           padding:.5rem;font-size:.78rem;margin-top:.3rem;resize:vertical;"
                     placeholder="Reason for rejection..."></textarea>
-            </div>` : `
-            <p style="font-size:0.84rem;color:#67748e;margin:0;">
+            </div>` : `<p style="font-size:.84rem;color:#67748e;margin:0;">
                 Mark this application as <strong>${decision}</strong>?
-            </p>`}
-        `,
-        icon: needsNote ? 'warning' : 'question',
-        showCancelButton: true,
-        confirmButtonColor: colors[decision],
-        cancelButtonColor: '#adb5bd',
-        confirmButtonText: labels[decision],
-        preConfirm: () => {
-            if (needsNote) {
-                const note = document.getElementById('decNote')?.value.trim();
-                if (!note) {
-                    Swal.showValidationMessage('Rejection reason is required.');
-                    return false;
-                }
-                return note;
-            }
-            return '';
-        },
-    }).then(result => {
-        if (!result.isConfirmed) return;
+            </p>`,
+                icon: needsNote ? 'warning' : 'question',
+                showCancelButton: true,
+                confirmButtonColor: colors[decision],
+                cancelButtonColor: '#adb5bd',
+                confirmButtonText: labels[decision],
+                preConfirm: () => {
+                    if (needsNote) {
+                        const note = document.getElementById('decNote')?.value.trim();
+                        if (!note) {
+                            Swal.showValidationMessage('Rejection reason is required.');
+                            return false;
+                        }
+                        return note;
+                    }
+                    return '';
+                },
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const fd = new FormData();
+                fd.append('decision', decision);
+                fd.append('notes', result.value || '');
+                fd.append('redirect_to', 'dossier');
+                fd.append('filter_query', FILTER_Q);
+                fd.append('csrfmiddlewaretoken', CSRF);
+                fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/longlist/${APP_ID}/decision/`, {method: 'POST', body: fd})
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success', title: 'Saved', text: `Marked as ${decision}.`,
+                                confirmButtonColor: '#262561', timer: 1500, showConfirmButton: false,
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.error, 'error');
+                        }
+                    });
+            });
+        }
 
-        const fd = new FormData();
-        fd.append('decision', decision);
-        fd.append('notes', result.value || '');
-        fd.append('redirect_to', 'dossier');
-        fd.append('filter_query', FILTER_Q);
-        fd.append('csrfmiddlewaretoken', CSRF);
-
-        fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/longlist/${APP_ID}/decision/`, {
-            method: 'POST', body: fd,
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success', title: 'Saved',
-                    text: `Marked as ${decision}.`,
-                    confirmButtonColor: '#262561',
-                    timer: 1500, showConfirmButton: false,
-                }).then(() => location.reload());
-            } else {
-                Swal.fire('Error', data.error, 'error');
-            }
-        });
-    });
-}
-
-function recallApp() {
-    Swal.fire({
-        title: 'Recall Application?',
-        html: `
-            <p style="font-size:0.84rem;color:#67748e;">
-                This will reinstate the application to the longlist and notify the applicant.
-            </p>
-            <div style="text-align:left;margin-top:0.75rem;">
-                <label style="font-size:0.78rem;font-weight:600;color:#344767;">
-                    Reason for reconsideration <span style="color:#c0392b;">*</span>
-                </label>
-                <textarea id="recallNote" rows="3"
-                    style="width:100%;border:1px solid #e0e4ef;border-radius:0.4rem;
-                           padding:0.5rem;font-size:0.78rem;margin-top:0.3rem;resize:vertical;"
-                    placeholder="e.g. Certificate verified in CV by committee..."></textarea>
-            </div>
-        `,
-        icon: 'question',
-        showCancelButton: true,
-        confirmButtonColor: '#1a6fa8',
-        cancelButtonColor: '#adb5bd',
-        confirmButtonText: '<i class="fas fa-undo me-1"></i> Recall',
-        preConfirm: () => {
-            const note = document.getElementById('recallNote')?.value.trim();
-            if (!note) {
-                Swal.showValidationMessage('Reason for reconsideration is required.');
-                return false;
-            }
-            return note;
-        },
-    }).then(result => {
-        if (!result.isConfirmed) return;
-
-        const fd = new FormData();
-        fd.append('notes', result.value);
-        fd.append('csrfmiddlewaretoken', CSRF);
-
-        fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/longlist/${APP_ID}/recall/`, {
-            method: 'POST', body: fd,
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                Swal.fire({
-                    icon: 'success',
-                    title: 'Recalled',
-                    text: 'Application reinstated. Applicant will be notified.',
-                    confirmButtonColor: '#262561',
-                    timer: 2000, showConfirmButton: false,
-                }).then(() => location.reload());
-            } else {
-                Swal.fire('Error', data.error, 'error');
-            }
-        });
-    });
-}
-</script>
+        function recallApp() {
+            Swal.fire({
+                title: 'Recall Application?',
+                html: `<p style="font-size:.84rem;color:#67748e;">
+                   This will reinstate the application to the longlist.
+               </p>
+               <div style="text-align:left;margin-top:.75rem;">
+                   <label style="font-size:.78rem;font-weight:600;color:#344767;">
+                       Reason <span style="color:#c0392b;">*</span>
+                   </label>
+                   <textarea id="recallNote" rows="3"
+                       style="width:100%;border:1px solid #e0e4ef;border-radius:.4rem;
+                              padding:.5rem;font-size:.78rem;margin-top:.3rem;resize:vertical;"
+                       placeholder="e.g. Certificate verified by committee..."></textarea>
+               </div>`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#1a6fa8',
+                cancelButtonColor: '#adb5bd',
+                confirmButtonText: '<i class="fas fa-undo me-1"></i> Recall',
+                preConfirm: () => {
+                    const note = document.getElementById('recallNote')?.value.trim();
+                    if (!note) {
+                        Swal.showValidationMessage('Reason is required.');
+                        return false;
+                    }
+                    return note;
+                },
+            }).then(result => {
+                if (!result.isConfirmed) return;
+                const fd = new FormData();
+                fd.append('notes', result.value);
+                fd.append('csrfmiddlewaretoken', CSRF);
+                fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/longlist/${APP_ID}/recall/`, {method: 'POST', body: fd})
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                icon: 'success', title: 'Recalled',
+                                text: 'Application reinstated.',
+                                confirmButtonColor: '#262561', timer: 2000, showConfirmButton: false,
+                            }).then(() => location.reload());
+                        } else {
+                            Swal.fire('Error', data.error, 'error');
+                        }
+                    });
+            });
+        }
+    </script>
 {% endblock %}

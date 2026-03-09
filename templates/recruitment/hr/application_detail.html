@@ -1,338 +1,517 @@
-{% extends 'recruitment/base.html' %}
-{% block title %}Application Details{% endblock %}
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}Application — {{ application.application_number }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy:#262561; --gold:#F9E6A1; --gold-dk:#C39545; --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
+a { text-decoration:none !important; }
+
+.page-banner {
+    background:linear-gradient(135deg,var(--navy),#1a1f5c);
+    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem; margin-bottom:1rem;
+}
+.banner-name { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub  { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+.banner-ref  { font-family:monospace; font-size:.72rem;
+               background:rgba(249,230,161,.15); color:var(--gold);
+               padding:.25rem .65rem; border-radius:.4rem; }
+.back-link   { color:rgba(255,255,255,.65); font-size:.78rem;
+               display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+/* Section card */
+.sec { background:#fff; border-radius:.75rem;
+       box-shadow:0 2px 10px rgba(38,37,97,.06);
+       margin-bottom:1rem; overflow:hidden; }
+.sec-hd {
+    padding:.75rem 1.25rem; border-bottom:1px solid #f0f2f8;
+    display:flex; align-items:center; gap:.5rem;
+    font-size:.82rem; font-weight:700; color:var(--navy);
+}
+.sec-hd i { color:var(--gold-dk); }
+.sec-body { padding:1rem 1.25rem; }
+
+/* Key-value grid */
+.kv-grid { display:grid; grid-template-columns:1fr 1fr; gap:.4rem 1.5rem; }
+@media(max-width:600px){ .kv-grid { grid-template-columns:1fr; } }
+.kv-row   { display:flex; gap:.4rem; font-size:.82rem; }
+.kv-label { color:#8392ab; font-weight:600; white-space:nowrap; min-width:130px; flex-shrink:0; }
+.kv-val   { color:#344767; }
+
+/* Item cards (edu / work / prof) */
+.item-card {
+    border:1px solid #f0f2f8; border-radius:.65rem;
+    padding:.9rem 1rem; margin-bottom:.75rem; background:#fafbff;
+}
+.item-card:last-child { margin-bottom:0; }
+.item-num   { display:inline-flex; align-items:center; justify-content:center;
+              width:22px; height:22px; border-radius:50%;
+              background:var(--navy); color:var(--gold);
+              font-size:.65rem; font-weight:800; flex-shrink:0; margin-right:.4rem; }
+.item-title { font-size:.85rem; font-weight:700; color:var(--navy);
+              margin:0 0 .25rem; display:flex; align-items:center; }
+.item-sub   { font-size:.78rem; color:#67748e; margin:0 0 .2rem; padding-left:1.6rem; }
+.item-meta  { font-size:.72rem; color:#8392ab; padding-left:1.6rem; }
+
+/* Exit reason tag */
+.exit-tag {
+    display:inline-flex; align-items:center; gap:.35rem;
+    font-size:.72rem; font-weight:600; padding:.2rem .6rem;
+    border-radius:99px; background:#fff3cd; color:#7d5500;
+    margin-top:.4rem; margin-left:1.6rem;
+}
+.current-tag {
+    display:inline-flex; align-items:center; gap:.35rem;
+    font-size:.72rem; font-weight:600; padding:.2rem .6rem;
+    border-radius:99px; background:#d4f5e2; color:#1a5c38;
+    margin-left:.5rem;
+}
+
+/* Docs */
+.doc-link {
+    display:inline-flex; align-items:center; gap:.5rem;
+    background:#f8f9ff; border:1px solid #e0e4ef;
+    border-radius:.5rem; padding:.5rem .9rem;
+    font-size:.8rem; font-weight:600; color:var(--navy);
+    transition:all .15s; margin:.25rem .35rem .25rem 0;
+}
+.doc-link:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
+.doc-link:hover .di { color:var(--gold) !important; }
+
+/* Status pill */
+.status-pill {
+    display:inline-flex; align-items:center; gap:.4rem;
+    padding:.3rem .85rem; border-radius:99px;
+    font-size:.72rem; font-weight:700; text-transform:uppercase;
+    letter-spacing:.04em; background:#eef0fb; color:var(--navy);
+}
+
+/* Screening */
+.flag-row { font-size:.78rem; color:#344767; padding:.3rem 0;
+            border-bottom:1px solid #f7f8fc;
+            display:flex; align-items:center; gap:.5rem; }
+.flag-row:last-child { border-bottom:none; }
+
+/* Sidebar */
+.detail-sidebar { position:sticky; top:1.5rem; }
+.sidebar-nav { list-style:none; padding:0; margin:0; }
+.sidebar-nav li a {
+    display:flex; align-items:center; gap:.5rem;
+    padding:.45rem .75rem; border-radius:.4rem;
+    font-size:.78rem; color:#67748e; transition:all .15s;
+}
+.sidebar-nav li a:hover { background:#eef0fb; color:var(--navy); font-weight:600; }
+.sidebar-nav li a i { width:14px; text-align:center; color:var(--gold-dk); }
+
+.empty-sec { color:#b0bac9; font-size:.82rem; font-style:italic; }
+</style>
+{% endblock %}
 
 {% block content %}
-
+{% with b=application.snapshot_basic add=application.snapshot_additional %}
 <div class="container-fluid py-2">
 
-    <!-- HEADER BANNER -->
-    <div class="dash-header-banner mb-2">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-
-            <div>
-                <h4>
-                    <i class="fas fa-user me-2" style="color:var(--gold-dark);"></i>
-                    Candidate Application
-                </h4>
-                <p>
-                    {{ application.applicant.get_full_name|default:application.applicant.email }}
-                </p>
-            </div>
-
-            <div>
-                <span class="vacancy-status vacancy-status-open">
-                    {{ application.status|title }}
-                </span>
-            </div>
-
-        </div>
-    </div>
-
-    <div class="gold-divider"></div>
-
-
-    <!-- APPLICATION SUMMARY -->
-    <div class="card dash-card brand-card mb-3">
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-briefcase me-2" style="opacity:.5;"></i>
-                Application Summary
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            <p>
-                <strong>Vacancy:</strong> {{ application.vacancy.title }}
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <p class="banner-name mb-1">
+                <i class="fas fa-user me-2"></i>
+                {{ b.first_name|default:'' }} {{ b.second_name|default:'' }} {{ b.surname|default:application.user.email }}
             </p>
-
-            <p>
-                <strong>Applied On:</strong>
-                {{ application.applied_at|date:"d M Y H:i" }}
-            </p>
-
-            <a href="{{ application.cv.url }}"
-               class="btn btn-outline-brand btn-sm"
-               target="_blank">
-
-                <i class="fas fa-file-pdf me-1"></i>
-                View Uploaded CV
-
+            <p class="banner-sub mb-0">{{ application.vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ application.application_number }}</span>
+            <span class="status-pill">{{ application.status.code|default:"—" }}</span>
+            <a href="javascript:history.back()" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back
             </a>
-
         </div>
     </div>
 
+    <div class="row g-3">
 
-    <!-- PERSONAL DETAILS -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-id-card me-2" style="opacity:.5;"></i>
-                Personal Information
-            </h6>
+        <!-- Sidebar -->
+        <div class="col-lg-2 d-none d-lg-block">
+            <div class="sec detail-sidebar">
+                <div class="sec-body p-2">
+                    <ul class="sidebar-nav">
+                        <li><a href="#sec-summary"    ><i class="fas fa-clipboard-list"></i>Summary</a></li>
+                        <li><a href="#sec-personal"   ><i class="fas fa-id-card"></i>Personal</a></li>
+                        <li><a href="#sec-academic"   ><i class="fas fa-graduation-cap"></i>Academic</a></li>
+                        <li><a href="#sec-professional"><i class="fas fa-certificate"></i>Professional</a></li>
+                        <li><a href="#sec-memberships"><i class="fas fa-users"></i>Memberships</a></li>
+                        <li><a href="#sec-work"       ><i class="fas fa-briefcase"></i>Work History</a></li>
+                        <li><a href="#sec-referees"   ><i class="fas fa-user-friends"></i>Referees</a></li>
+                        <li><a href="#sec-docs"       ><i class="fas fa-file-alt"></i>Documents</a></li>
+                        <li><a href="#sec-additional" ><i class="fas fa-info-circle"></i>Additional</a></li>
+                        <li><a href="#sec-screening"  ><i class="fas fa-filter"></i>Screening</a></li>
+                    </ul>
+                </div>
+            </div>
         </div>
 
-        <div class="card-body">
+        <!-- Main -->
+        <div class="col-lg-10">
 
-            {% if application.applicant.profile %}
-
-            <div class="row">
-
-                <div class="col-md-6">
-                    <p><strong>Email:</strong> {{ application.applicant.email }}</p>
-                    <p><strong>ID No:</strong> {{ application.applicant.profile.id_no }}</p>
-                    <p><strong>Date of Birth:</strong> {{ application.applicant.profile.date_of_birth }}</p>
-                    <p><strong>Gender:</strong> {{ application.applicant.profile.gender }}</p>
+            <!-- ── Application Summary ──────────────────────────── -->
+            <div class="sec" id="sec-summary">
+                <div class="sec-hd"><i class="fas fa-clipboard-list"></i>Application Summary</div>
+                <div class="sec-body">
+                    <div class="kv-grid">
+                        <div class="kv-row"><span class="kv-label">Vacancy</span><span class="kv-val">{{ application.vacancy.title }}</span></div>
+                        <div class="kv-row"><span class="kv-label">Reference</span><span class="kv-val" style="font-family:monospace;">{{ application.vacancy.reference_number }}</span></div>
+                        <div class="kv-row"><span class="kv-label">Application No.</span><span class="kv-val" style="font-family:monospace;">{{ application.application_number }}</span></div>
+                        <div class="kv-row"><span class="kv-label">Applied On</span><span class="kv-val">{{ application.submitted_at|date:"d M Y, H:i" }}</span></div>
+                        <div class="kv-row"><span class="kv-label">Current Status</span><span class="kv-val">{{ application.status.code|default:"—" }}</span></div>
+                        <div class="kv-row"><span class="kv-label">Screening</span>
+                            <span class="kv-val">
+                                {% if application.screening_passed is None %}—
+                                {% elif application.screening_passed %}
+                                    <span style="color:var(--green);font-weight:600;"><i class="fas fa-check-circle me-1"></i>Passed</span>
+                                {% else %}
+                                    <span style="color:var(--red);font-weight:600;"><i class="fas fa-times-circle me-1"></i>Failed</span>
+                                {% endif %}
+                            </span>
+                        </div>
+                    </div>
                 </div>
-
-                <div class="col-md-6">
-                    <p><strong>County:</strong> {{ application.applicant.profile.home_county }}</p>
-                    <p><strong>Constituency:</strong> {{ application.applicant.profile.constituency }}</p>
-                    <p><strong>Ward:</strong> {{ application.applicant.profile.ward }}</p>
-                    <p><strong>Disability:</strong> {{ application.applicant.profile.disability_status }}</p>
-                </div>
-
             </div>
 
-            {% else %}
-            <p class="text-muted">Profile not completed.</p>
-            {% endif %}
-
-        </div>
-
-    </div>
-
-
-    <!-- ACADEMIC QUALIFICATIONS -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-graduation-cap me-2" style="opacity:.5;"></i>
-                Academic Qualifications
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            {% for edu in application.applicant.academic_qualifications.all %}
-
-            <div class="border rounded p-3 mb-3">
-
-                <h6 class="mb-1">{{ edu.education_level }}</h6>
-
-                <p class="mb-1">{{ edu.institution }}</p>
-
-                <small>
-                    {{ edu.field_of_study }} |
-                    Completed {{ edu.year_completed }} |
-                    Grade {{ edu.grade }}
-                </small>
-
-            </div>
-
-            {% empty %}
-
-            <p class="text-muted">No academic qualifications added.</p>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-
-    <!-- PROFESSIONAL QUALIFICATIONS -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-certificate me-2" style="opacity:.5;"></i>
-                Professional Qualifications
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            {% for prof in application.applicant.professional_qualifications.all %}
-
-            <div class="border rounded p-3 mb-3">
-
-                <h6>{{ prof.qualification }}</h6>
-
-                <p class="mb-1">{{ prof.awarding_body }}</p>
-
-                <small>
-                    Obtained {{ prof.year_obtained }}
-
-                    {% if prof.expiry_year %}
-                    | Expires {{ prof.expiry_year }}
+            <!-- ── Personal Information ─────────────────────────── -->
+            <div class="sec" id="sec-personal">
+                <div class="sec-hd"><i class="fas fa-id-card"></i>Personal Information</div>
+                <div class="sec-body">
+                    {% if b %}
+                    <div class="kv-grid">
+                        {% if b.first_name or b.second_name or b.surname %}
+                        <div class="kv-row"><span class="kv-label">Full Name</span><span class="kv-val">{{ b.first_name|default:'' }} {{ b.second_name|default:'' }} {{ b.surname|default:'' }}</span></div>
+                        {% endif %}
+                        <div class="kv-row"><span class="kv-label">Email</span><span class="kv-val">{{ application.user.email }}</span></div>
+                        {% if b.id_no %}
+                        <div class="kv-row"><span class="kv-label">ID / Passport No.</span><span class="kv-val">{{ b.id_no }}</span></div>
+                        {% endif %}
+                        {% if b.date_of_birth %}
+                        <div class="kv-row"><span class="kv-label">Date of Birth</span><span class="kv-val">{{ b.date_of_birth }}</span></div>
+                        {% endif %}
+                        {% if b.gender %}
+                        <div class="kv-row"><span class="kv-label">Gender</span><span class="kv-val">{{ b.gender }}</span></div>
+                        {% endif %}
+                        {% if b.phone_number %}
+                        <div class="kv-row"><span class="kv-label">Phone</span><span class="kv-val">{{ b.phone_number }}</span></div>
+                        {% endif %}
+                        {% if b.nationality %}
+                        <div class="kv-row"><span class="kv-label">Nationality</span><span class="kv-val">{{ b.nationality }}</span></div>
+                        {% endif %}
+                        {% if b.ethnic_group %}
+                        <div class="kv-row"><span class="kv-label">Ethnic Group</span><span class="kv-val">{{ b.ethnic_group }}</span></div>
+                        {% endif %}
+                        {% if b.disability_status and b.disability_status != 'None' and b.disability_status != 'No' %}
+                        <div class="kv-row"><span class="kv-label">Disability</span><span class="kv-val">{{ b.disability_status }}{% if b.disability_other %} — {{ b.disability_other }}{% endif %}</span></div>
+                        {% endif %}
+                        {% if b.home_county %}
+                        <div class="kv-row"><span class="kv-label">Home County</span><span class="kv-val">{{ b.home_county }}</span></div>
+                        {% endif %}
+                        {% if b.sub_county %}
+                        <div class="kv-row"><span class="kv-label">Sub-County</span><span class="kv-val">{{ b.sub_county }}</span></div>
+                        {% endif %}
+                        {% if b.constituency %}
+                        <div class="kv-row"><span class="kv-label">Constituency</span><span class="kv-val">{{ b.constituency }}</span></div>
+                        {% endif %}
+                        {% if b.ward %}
+                        <div class="kv-row"><span class="kv-label">Ward</span><span class="kv-val">{{ b.ward }}</span></div>
+                        {% endif %}
+                        {% if b.village %}
+                        <div class="kv-row"><span class="kv-label">Village</span><span class="kv-val">{{ b.village }}</span></div>
+                        {% endif %}
+                        {% if b.postal_address %}
+                        <div class="kv-row"><span class="kv-label">Postal Address</span><span class="kv-val">{{ b.postal_address }}{% if b.postal_code %}, {{ b.postal_code }}{% endif %}{% if b.town %}, {{ b.town }}{% endif %}</span></div>
+                        {% endif %}
+                        {% if b.employee_number %}
+                        <div class="kv-row"><span class="kv-label">Employee No.</span><span class="kv-val">{{ b.employee_number }}</span></div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="empty-sec">No personal details in snapshot.</p>
                     {% endif %}
-
-                </small>
-
+                </div>
             </div>
 
-            {% empty %}
-
-            <p class="text-muted">No professional qualifications added.</p>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-
-    <!-- WORK EXPERIENCE -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-briefcase me-2" style="opacity:.5;"></i>
-                Work Experience
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            {% for work in application.applicant.work_history.all %}
-
-            <div class="border rounded p-3 mb-3">
-
-                <h6>{{ work.job_title }} — {{ work.company }}</h6>
-
-                <small>
-                    {{ work.start_display }} - {{ work.end_display }}
-                    | {{ work.employment_type }}
-                </small>
-
-                <p class="mt-2">{{ work.duties }}</p>
-
+            <!-- ── Academic Qualifications ──────────────────────── -->
+            <div class="sec" id="sec-academic">
+                <div class="sec-hd">
+                    <i class="fas fa-graduation-cap"></i>Academic Qualifications
+                    {% if application.snapshot_academic %}
+                    <span style="margin-left:auto;font-size:.72rem;color:#8392ab;font-weight:400;">
+                        {{ application.snapshot_academic|length }} qualification{{ application.snapshot_academic|length|pluralize }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="sec-body">
+                    {% for edu in application.snapshot_academic %}
+                    <div class="item-card">
+                        <p class="item-title">
+                            <span class="item-num">{{ forloop.counter }}</span>
+                            {{ edu.education_level|default:"—" }}
+                        </p>
+                        {% if edu.institution %}
+                        <p class="item-sub">{{ edu.institution }}{% if edu.field_of_study %} — {{ edu.field_of_study }}{% endif %}</p>
+                        {% endif %}
+                        <p class="item-meta">
+                            {% if edu.year_completed %}Completed {{ edu.year_completed }}{% endif %}
+                            {% if edu.grade %}&nbsp;|&nbsp; Grade: <strong>{{ edu.grade }}</strong>{% endif %}
+                            {% if edu.cert_number %}&nbsp;|&nbsp; Cert No: {{ edu.cert_number }}{% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="empty-sec">No academic qualifications in snapshot.</p>
+                    {% endfor %}
+                </div>
             </div>
 
-            {% empty %}
+            <!-- ── Professional Qualifications ─────────────────── -->
+            <div class="sec" id="sec-professional">
+                <div class="sec-hd">
+                    <i class="fas fa-certificate"></i>Professional Qualifications
+                    {% if application.snapshot_professional %}
+                    <span style="margin-left:auto;font-size:.72rem;color:#8392ab;font-weight:400;">
+                        {{ application.snapshot_professional|length }} qualification{{ application.snapshot_professional|length|pluralize }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="sec-body">
+                    {% for prof in application.snapshot_professional %}
+                    <div class="item-card">
+                        <p class="item-title">
+                            <span class="item-num">{{ forloop.counter }}</span>
+                            {{ prof.qualification|default:"—" }}
+                        </p>
+                        {% if prof.awarding_body %}
+                        <p class="item-sub">{{ prof.awarding_body }}</p>
+                        {% endif %}
+                        <p class="item-meta">
+                            {% if prof.year_obtained %}Obtained {{ prof.year_obtained }}{% endif %}
+                            {% if prof.grade %}&nbsp;|&nbsp; Grade: <strong>{{ prof.grade }}</strong>{% endif %}
+                            {% if prof.expiry_year %}&nbsp;|&nbsp; Expires: {{ prof.expiry_year }}{% endif %}
+                            {% if prof.cert_number %}&nbsp;|&nbsp; Cert No: {{ prof.cert_number }}{% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="empty-sec">No professional qualifications in snapshot.</p>
+                    {% endfor %}
+                </div>
+            </div>
 
-            <p class="text-muted">No work history provided.</p>
+            <!-- ── Professional Body Memberships ───────────────── -->
+            <div class="sec" id="sec-memberships">
+                <div class="sec-hd"><i class="fas fa-users"></i>Professional Body Memberships</div>
+                <div class="sec-body">
+                    {% for m in application.snapshot_memberships %}
+                    <div class="item-card">
+                        <p class="item-title">
+                            <span class="item-num">{{ forloop.counter }}</span>
+                            {{ m.body_name|default:"—" }}
+                        </p>
+                        <p class="item-meta">
+                            {% if m.membership_no %}No: {{ m.membership_no }}{% endif %}
+                            {% if m.year_joined %}&nbsp;|&nbsp; Joined {{ m.year_joined }}{% endif %}
+                            {% if m.expiry_year %}&nbsp;|&nbsp; Expires {{ m.expiry_year }}{% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="empty-sec">No memberships in snapshot.</p>
+                    {% endfor %}
+                </div>
+            </div>
 
-            {% endfor %}
+            <!-- ── Work Experience ──────────────────────────────── -->
+            <div class="sec" id="sec-work">
+                <div class="sec-hd">
+                    <i class="fas fa-briefcase"></i>Work Experience
+                    {% if application.snapshot_work %}
+                    <span style="margin-left:auto;font-size:.72rem;color:#8392ab;font-weight:400;">
+                        {{ application.snapshot_work|length }} position{{ application.snapshot_work|length|pluralize }}
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="sec-body">
+                    {% for work in application.snapshot_work %}
+                    <div class="item-card">
+                        <p class="item-title">
+                            <span class="item-num">{{ forloop.counter }}</span>
+                            {{ work.job_title|default:"—" }} — {{ work.company|default:"—" }}
+                            {% if work.is_current %}
+                            <span class="current-tag"><i class="fas fa-circle" style="font-size:.5rem;"></i> Current</span>
+                            {% endif %}
+                        </p>
+                        <p class="item-meta">
+                            {{ work.start_display|default:"—" }} → {{ work.end_display|default:"Present" }}
+                            {% if work.employment_type %}&nbsp;|&nbsp; {{ work.employment_type }}{% endif %}
+                            {% if work.country and work.country != 'Kenya' %}&nbsp;|&nbsp; {{ work.country }}{% endif %}
+                        </p>
+                        {% if not work.is_current and work.exit_reason %}
+                        <div class="exit-tag">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Reason for leaving: {{ work.exit_reason }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% empty %}
+                    <p class="empty-sec">No work history in snapshot.</p>
+                    {% endfor %}
+                </div>
+            </div>
 
-        </div>
+            <!-- ── Referees ─────────────────────────────────────── -->
+            <div class="sec" id="sec-referees">
+                <div class="sec-hd"><i class="fas fa-user-friends"></i>Referees</div>
+                <div class="sec-body">
+                    {% for ref in application.snapshot_referees %}
+                    <div class="item-card">
+                        <p class="item-title">
+                            <span class="item-num">{{ forloop.counter }}</span>
+                            {{ ref.name|default:"—" }}
+                        </p>
+                        {% if ref.occupation %}
+                        <p class="item-sub">{{ ref.occupation }}</p>
+                        {% endif %}
+                        <p class="item-meta">
+                            {% if ref.mobile %}📞 {{ ref.mobile }}{% endif %}
+                            {% if ref.email %}&nbsp;&nbsp;✉ {{ ref.email }}{% endif %}
+                            {% if ref.period_known %}&nbsp;|&nbsp; Known for: {{ ref.period_known }}{% endif %}
+                        </p>
+                    </div>
+                    {% empty %}
+                    <p class="empty-sec">No referees in snapshot.</p>
+                    {% endfor %}
+                </div>
+            </div>
 
-    </div>
+            <!-- ── Documents ────────────────────────────────────── -->
+            <div class="sec" id="sec-docs">
+                <div class="sec-hd"><i class="fas fa-file-alt"></i>Documents</div>
+                <div class="sec-body">
+                    <div class="d-flex flex-wrap align-items-center">
 
+                        {% with ud=application.user.additional_detail %}
+                        {% if ud and ud.cv %}
+                        <a href="{{ ud.cv.url }}" target="_blank" class="doc-link">
+                            <i class="fas fa-file-pdf di" style="color:#c0392b;font-size:1.1rem;"></i>
+                            CV / Resume
+                            {% if add.cv_filename %}
+                            <small style="color:#8392ab;font-weight:400;">{{ add.cv_filename }}</small>
+                            {% endif %}
+                        </a>
+                        {% elif add.cv_filename %}
+                        <span class="doc-link" style="opacity:.5;cursor:default;">
+                            <i class="fas fa-file-pdf di" style="color:#c0392b;font-size:1.1rem;"></i>
+                            CV — {{ add.cv_filename }}
+                            <small style="color:#b0bac9;">(file unavailable)</small>
+                        </span>
+                        {% endif %}
 
-    <!-- ADDITIONAL DETAILS -->
-    <div class="card dash-card brand-card mb-3">
+                        {% if ud and ud.cover_letter %}
+                        <a href="{{ ud.cover_letter.url }}" target="_blank" class="doc-link">
+                            <i class="fas fa-file-word di" style="color:#2b579a;font-size:1.1rem;"></i>
+                            Cover Letter
+                            {% if add.cover_letter_filename %}
+                            <small style="color:#8392ab;font-weight:400;">{{ add.cover_letter_filename }}</small>
+                            {% endif %}
+                        </a>
+                        {% elif add.cover_letter_filename %}
+                        <span class="doc-link" style="opacity:.5;cursor:default;">
+                            <i class="fas fa-file-word di" style="color:#2b579a;font-size:1.1rem;"></i>
+                            Cover Letter — {{ add.cover_letter_filename }}
+                            <small style="color:#b0bac9;">(file unavailable)</small>
+                        </span>
+                        {% endif %}
 
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-info-circle me-2" style="opacity:.5;"></i>
-                Additional Details
-            </h6>
-        </div>
+                        {% if not ud or not ud.cv and not ud.cover_letter and not add.cv_filename and not add.cover_letter_filename %}
+                        <p class="empty-sec mb-0">No documents on record.</p>
+                        {% endif %}
+                        {% endwith %}
 
-        <div class="card-body">
+                    </div>
+                    {% if add.cv_filename or add.cover_letter_filename %}
+                    <p style="font-size:.7rem;color:#b0bac9;margin-top:.65rem;margin-bottom:0;">
+                        <i class="fas fa-lock me-1"></i>Filenames recorded at submission:
+                        {% if add.cv_filename %}CV: <em>{{ add.cv_filename }}</em>{% endif %}
+                        {% if add.cover_letter_filename %}&nbsp;|&nbsp;Cover Letter: <em>{{ add.cover_letter_filename }}</em>{% endif %}
+                    </p>
+                    {% endif %}
+                </div>
+            </div>
 
-            {% if application.applicant.additional_detail %}
+            <!-- ── Additional Details ───────────────────────────── -->
+            <div class="sec" id="sec-additional">
+                <div class="sec-hd"><i class="fas fa-info-circle"></i>Additional Details</div>
+                <div class="sec-body">
+                    {% if add %}
+                    <div class="kv-grid">
+                        {% if add.linkedin_url %}
+                        <div class="kv-row"><span class="kv-label">LinkedIn</span><span class="kv-val"><a href="{{ add.linkedin_url }}" target="_blank">{{ add.linkedin_url }}</a></span></div>
+                        {% endif %}
+                        {% if add.portfolio_url %}
+                        <div class="kv-row"><span class="kv-label">Portfolio</span><span class="kv-val"><a href="{{ add.portfolio_url }}" target="_blank">{{ add.portfolio_url }}</a></span></div>
+                        {% endif %}
+                        {% if add.expected_salary %}
+                        <div class="kv-row"><span class="kv-label">Expected Salary</span><span class="kv-val">KES {{ add.expected_salary }}</span></div>
+                        {% endif %}
+                        {% if add.availability %}
+                        <div class="kv-row"><span class="kv-label">Availability</span><span class="kv-val">{{ add.availability }}</span></div>
+                        {% endif %}
+                        {% if add.languages %}
+                        <div class="kv-row"><span class="kv-label">Languages</span><span class="kv-val">{{ add.languages }}</span></div>
+                        {% endif %}
+                    </div>
+                    {% else %}
+                    <p class="empty-sec">No additional details in snapshot.</p>
+                    {% endif %}
+                </div>
+            </div>
 
-            <p>
-                <strong>LinkedIn:</strong>
-                <a href="{{ application.applicant.additional_detail.linkedin_url }}" target="_blank">
-                    {{ application.applicant.additional_detail.linkedin_url }}
-                </a>
-            </p>
+            <!-- ── Screening Result ─────────────────────────────── -->
+            <div class="sec" id="sec-screening">
+                <div class="sec-hd"><i class="fas fa-filter"></i>Screening Result</div>
+                <div class="sec-body">
+                    {% if application.screening_passed is None %}
+                    <p class="empty-sec">Screening not yet run.</p>
+                    {% else %}
+                    <p class="mb-3">
+                        <strong>Result:</strong>&nbsp;
+                        {% if application.screening_passed %}
+                            <span style="color:var(--green);font-weight:700;"><i class="fas fa-check-circle me-1"></i>Passed</span>
+                        {% else %}
+                            <span style="color:var(--red);font-weight:700;"><i class="fas fa-times-circle me-1"></i>Failed</span>
+                        {% endif %}
+                    </p>
+                    {% if application.screening_flags %}
+                    <div style="font-size:.72rem;font-weight:700;color:#8392ab;text-transform:uppercase;letter-spacing:.04em;margin-bottom:.4rem;">Flags</div>
+                    {% for flag in application.screening_flags %}
+                    <div class="flag-row">
+                        {% if 'fail' in flag|lower or 'missing' in flag|lower or 'below' in flag|lower or 'not' in flag|lower %}
+                            <i class="fas fa-times-circle" style="color:var(--red);flex-shrink:0;"></i>
+                        {% else %}
+                            <i class="fas fa-check-circle" style="color:var(--green);flex-shrink:0;"></i>
+                        {% endif %}
+                        {{ flag }}
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+                    {% if application.screening_reasons %}
+                    <div style="font-size:.72rem;font-weight:700;color:#8392ab;text-transform:uppercase;letter-spacing:.04em;margin:1rem 0 .4rem;">Reasons</div>
+                    {% for reason in application.screening_reasons %}
+                    <div class="flag-row"><i class="fas fa-info-circle" style="color:var(--amber);flex-shrink:0;"></i>{{ reason }}</div>
+                    {% endfor %}
+                    {% endif %}
+                    {% endif %}
+                </div>
+            </div>
 
-            <p>
-                <strong>Portfolio:</strong>
-                <a href="{{ application.applicant.additional_detail.portfolio_url }}" target="_blank">
-                    {{ application.applicant.additional_detail.portfolio_url }}
-                </a>
-            </p>
-
-            <p>
-                <strong>Expected Salary:</strong>
-                {{ application.applicant.additional_detail.expected_salary }}
-            </p>
-
-            <p>
-                <strong>Availability:</strong>
-                {{ application.applicant.additional_detail.availability }}
-            </p>
-
-            {% else %}
-            <p class="text-muted">No additional details provided.</p>
-            {% endif %}
-
-        </div>
-
-    </div>
-
-
-    <!-- DOCUMENTS -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-file-alt me-2" style="opacity:.5;"></i>
-                Supporting Documents
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            {% for doc in application.applicant.documents.all %}
-
-            <p>
-                <a href="{{ doc.file.url }}" target="_blank">
-                    <i class="fas fa-paperclip me-1"></i>
-                    {{ doc.document_type }}
-                </a>
-            </p>
-
-            {% empty %}
-
-            <p class="text-muted">No documents uploaded.</p>
-
-            {% endfor %}
-
-        </div>
-
-    </div>
-
-
-    <!-- HR ACTIONS -->
-    <div class="card dash-card brand-card mb-5">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-user-cog me-2" style="opacity:.5;"></i>
-                HR Actions
-            </h6>
-        </div>
-
-        <div class="card-body">
-
-            <!-- Uncomment if actions exist -->
-
-            {% comment %}
-            <a href="{% url 'shortlist_candidate' application.id %}"
-               class="btn btn-brand btn-sm me-2">
-                <i class="fas fa-check me-1"></i>Shortlist
-            </a>
-
-            <a href="{% url 'reject_candidate' application.id %}"
-               class="btn btn-danger btn-sm">
-                <i class="fas fa-times me-1"></i>Reject
-            </a>
-            {% endcomment %}
-
-        </div>
-
-    </div>
-
+        </div><!-- /col-lg-10 -->
+    </div><!-- /row -->
 </div>
-
+{% endwith %}
 {% endblock %}
