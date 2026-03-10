@@ -176,7 +176,45 @@
         background:var(--navy) !important; border-color:var(--navy) !important; color:#fff !important;
     }
 
-    /* Processing overlay */
+    /* ── DOC ICON BUTTONS ──────────────────── */
+    .doc-icon-btn {
+        display:inline-flex; align-items:center; justify-content:center;
+        width:24px; height:24px; border-radius:0.35rem;
+        font-size:0.65rem; font-weight:700; text-decoration:none;
+        transition:all 0.15s; border:1px solid transparent;
+        vertical-align:middle;
+    }
+    .dib-cv   { background:#fff5f5; color:#c0392b; border-color:#fecaca; }
+    .dib-cv:hover { background:#c0392b; color:#fff; }
+    .dib-cl   { background:#eef2ff; color:#2b579a; border-color:#c7d2fe; }
+    .dib-cl:hover { background:#2b579a; color:#fff; }
+    .dib-docs { background:#f0f2f8; color:#67748e; border-color:#dde0ee; }
+    .dib-docs:hover { background:#262561; color:#F9E6A1; }
+    .doc-none { font-size:0.68rem; color:#d1d5db; }
+
+    /* ── QUAL DOC LINKS (matches dossier) ──── */
+    .qual-doc-btn {
+        display:inline-flex; align-items:center; gap:0.3rem;
+        padding:0.18rem 0.5rem; border-radius:0.35rem;
+        font-size:0.65rem; font-weight:600;
+        background:#fff5f5; color:#c0392b;
+        border:1px solid #fecaca; transition:all .15s;
+        text-decoration:none !important; white-space:nowrap;
+        margin:0.15rem 0.15rem 0 0;
+    }
+    .qual-doc-btn:hover { background:#c0392b; color:#fff; border-color:#c0392b; }
+    .qual-doc-btn.acad  { background:#f0fdf4; color:#1a7a45; border-color:#bbf7d0; }
+    .qual-doc-btn.acad:hover { background:#1a7a45; color:#fff; border-color:#1a7a45; }
+    .qual-doc-btn.prof  { background:#fef3e2; color:#b7770d; border-color:#fde68a; }
+    .qual-doc-btn.prof:hover { background:#b7770d; color:#fff; border-color:#b7770d; }
+    .doc-section-label {
+        font-size:0.6rem; font-weight:700; text-transform:uppercase;
+        letter-spacing:0.05em; color:#adb5bd; display:block;
+        margin-top:0.35rem; margin-bottom:0.1rem;
+    }
+    .doc-section-label:first-child { margin-top:0; }
+
+
     #appsTable_wrapper .dataTables_processing {
         background:rgba(255,255,255,0.9);
         border:1px solid rgba(38,37,97,0.1);
@@ -293,6 +331,7 @@
                             <th>Applied</th>
                             <th>Status</th>
                             <th>Longlist</th>
+                            <th>Docs</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -378,6 +417,52 @@ $(document).ready(function () {
                     if (d === 'accepted') return `<span class="ld-badge ld-accepted"><i class="fas fa-check" style="font-size:0.55rem;"></i> Accepted</span>`;
                     if (d === 'rejected') return `<span class="ld-badge ld-rejected"><i class="fas fa-times" style="font-size:0.55rem;"></i> Rejected</span>`;
                     return `<span class="ld-badge ld-pending"><i class="fas fa-clock" style="font-size:0.55rem;"></i> Pending</span>`;
+                }
+            },
+            {
+                data: 'docs',
+                orderable: false,
+                searchable: false,
+                render: (d) => {
+                    if (!d) return `<span class="doc-none">—</span>`;
+                    let html = '';
+
+                    // CV + Cover Letter
+                    if (d.cv_url || d.cover_letter_url) {
+                        html += `<span class="doc-section-label">General</span>`;
+                        if (d.cv_url) {
+                            html += `<a href="${d.cv_url}" target="_blank" class="qual-doc-btn"><i class="fas fa-file-pdf"></i> CV</a>`;
+                        }
+                        if (d.cover_letter_url) {
+                            html += `<a href="${d.cover_letter_url}" target="_blank" class="qual-doc-btn"><i class="fas fa-file-word"></i> Cover Letter</a>`;
+                        }
+                    }
+
+                    // Academic qual attachments
+                    if (d.academic_docs && d.academic_docs.length > 0) {
+                        html += `<span class="doc-section-label"><i class="fas fa-graduation-cap me-1"></i>Academic Certs</span>`;
+                        d.academic_docs.forEach(doc => {
+                            html += `<a href="${doc.url}" target="_blank" class="qual-doc-btn acad"><i class="fas fa-file-pdf"></i> ${doc.type}<small style="opacity:.7;margin-left:.25rem;">${doc.filename}</small></a>`;
+                        });
+                    }
+
+                    // Professional qual attachments
+                    if (d.professional_docs && d.professional_docs.length > 0) {
+                        html += `<span class="doc-section-label"><i class="fas fa-award me-1"></i>Professional Certs</span>`;
+                        d.professional_docs.forEach(doc => {
+                            html += `<a href="${doc.url}" target="_blank" class="qual-doc-btn prof"><i class="fas fa-file-pdf"></i> ${doc.type}<small style="opacity:.7;margin-left:.25rem;">${doc.filename}</small></a>`;
+                        });
+                    }
+
+                    // General supporting docs
+                    if (d.supporting_docs && d.supporting_docs.length > 0) {
+                        html += `<span class="doc-section-label"><i class="fas fa-paperclip me-1"></i>Supporting</span>`;
+                        d.supporting_docs.forEach(doc => {
+                            html += `<a href="${doc.url}" target="_blank" class="qual-doc-btn"><i class="fas fa-file-alt"></i> ${doc.type}<small style="opacity:.7;margin-left:.25rem;">${doc.filename}</small></a>`;
+                        });
+                    }
+
+                    return html || `<span class="doc-none">—</span>`;
                 }
             },
             {

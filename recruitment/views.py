@@ -1988,6 +1988,7 @@ def hr_view_applications_json(request, vacancy_id):
         '1': 'application_number',
         '6': 'submitted_at',
         '7': 'status__order',
+        '8': 'longlist_decision',   # ← added
     }
     order_col = request.GET.get('order[0][column]', '6')
     order_dir = request.GET.get('order[0][dir]', 'desc')
@@ -2016,11 +2017,31 @@ def hr_view_applications_json(request, vacancy_id):
     rows = []
     for i, app in enumerate(qs, start=start + 1):
         basic = app.snapshot_basic or {}
+        # ↓ added: read docs from snapshot — zero extra DB queries
+        academic     = app.snapshot_academic     or []
+        professional = app.snapshot_professional or []
+        additional   = app.snapshot_additional   or {}
+
         full_name = ' '.join(filter(None, [
             basic.get('first_name', ''),
             basic.get('second_name', ''),
             basic.get('surname', ''),
         ])) or app.user.email
+
+        # ↓ added: flatten all attached docs from each qual's documents list
+        academic_docs = [
+            {'url': doc['file_url'], 'filename': doc.get('filename', ''), 'type': doc.get('document_type', '')}
+            for qual in academic
+            for doc in qual.get('documents', [])
+            if doc.get('file_url')
+        ]
+
+        professional_docs = [
+            {'url': doc['file_url'], 'filename': doc.get('filename', ''), 'type': doc.get('document_type', '')}
+            for qual in professional
+            for doc in qual.get('documents', [])
+            if doc.get('file_url')
+        ]
 
         rows.append({
             'row_num': i,
@@ -2032,6 +2053,13 @@ def hr_view_applications_json(request, vacancy_id):
             'submitted_at': app.submitted_at.strftime('%d %b %Y'),
             'status_code': app.status.code,
             'status_name': app.status.name,
+            'longlist_decision': app.longlist_decision or '',   # ← added
+            'docs': {                                            # ← added
+                'cv_url':            additional.get('cv_url', ''),
+                'cover_letter_url':  additional.get('cover_letter_url', ''),
+                'academic_docs':     academic_docs,
+                'professional_docs': professional_docs,
+            },
             'detail_url': f'/recruitment/hr/application/{app.id}/',
         })
 
