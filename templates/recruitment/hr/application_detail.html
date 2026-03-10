@@ -80,6 +80,19 @@ a { text-decoration:none !important; }
 .doc-link:hover { background:var(--navy); color:#fff; border-color:var(--navy); }
 .doc-link:hover .di { color:var(--gold) !important; }
 
+/* ── Qual attachment buttons (same style as dossier) ── */
+.qual-docs { display:flex; flex-wrap:wrap; gap:.3rem; margin-top:.55rem; padding-left:1.6rem; }
+.qual-doc-btn {
+    display:inline-flex; align-items:center; gap:.35rem;
+    padding:.2rem .55rem; border-radius:.4rem;
+    font-size:.67rem; font-weight:600;
+    transition:all .15s; text-decoration:none !important;
+}
+.qual-doc-btn.acad { background:#f0fdf4; color:var(--green); border:1px solid #bbf7d0; }
+.qual-doc-btn.acad:hover { background:var(--green); color:#fff; border-color:var(--green); }
+.qual-doc-btn.prof { background:#fef3e2; color:var(--amber); border:1px solid #fde68a; }
+.qual-doc-btn.prof:hover { background:var(--amber); color:#fff; border-color:var(--amber); }
+
 /* Status pill */
 .status-pill {
     display:inline-flex; align-items:center; gap:.4rem;
@@ -264,6 +277,19 @@ a { text-decoration:none !important; }
                             {% if edu.grade %}&nbsp;|&nbsp; Grade: <strong>{{ edu.grade }}</strong>{% endif %}
                             {% if edu.cert_number %}&nbsp;|&nbsp; Cert No: {{ edu.cert_number }}{% endif %}
                         </p>
+                        {% if edu.documents %}
+                        <div class="qual-docs">
+                            {% for doc in edu.documents %}
+                            {% if doc.file_url %}
+                            <a href="{{ doc.file_url }}" target="_blank" class="qual-doc-btn acad">
+                                <i class="fas fa-file-pdf"></i>
+                                {{ doc.document_type }}
+                                {% if doc.filename %}<small style="opacity:.65;">· {{ doc.filename }}</small>{% endif %}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     {% empty %}
                     <p class="empty-sec">No academic qualifications in snapshot.</p>
@@ -297,6 +323,19 @@ a { text-decoration:none !important; }
                             {% if prof.expiry_year %}&nbsp;|&nbsp; Expires: {{ prof.expiry_year }}{% endif %}
                             {% if prof.cert_number %}&nbsp;|&nbsp; Cert No: {{ prof.cert_number }}{% endif %}
                         </p>
+                        {% if prof.documents %}
+                        <div class="qual-docs">
+                            {% for doc in prof.documents %}
+                            {% if doc.file_url %}
+                            <a href="{{ doc.file_url }}" target="_blank" class="qual-doc-btn prof">
+                                <i class="fas fa-file-pdf"></i>
+                                {{ doc.document_type }}
+                                {% if doc.filename %}<small style="opacity:.65;">· {{ doc.filename }}</small>{% endif %}
+                            </a>
+                            {% endif %}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
                     </div>
                     {% empty %}
                     <p class="empty-sec">No professional qualifications in snapshot.</p>
