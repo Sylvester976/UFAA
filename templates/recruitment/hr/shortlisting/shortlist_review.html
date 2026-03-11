@@ -1,0 +1,703 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Shortlist Review — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
+    --green: #1a7a45; --red: #c0392b; --amber: #b7770d;
+}
+a { text-decoration: none !important; }
+
+.page-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+    border-radius: 1rem; padding: 1.1rem 1.5rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.banner-title { font-size: 1rem; font-weight: 700; color: var(--gold); margin: 0; }
+.banner-sub   { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; }
+.banner-ref   { font-family: monospace; font-size: 0.7rem;
+                background: rgba(249,230,161,0.15); color: var(--gold);
+                padding: 0.2rem 0.6rem; border-radius: 0.35rem; }
+.back-link { color: rgba(255,255,255,0.65); font-size: 0.76rem;
+             display: flex; align-items: center; gap: 0.35rem; }
+.back-link:hover { color: var(--gold); }
+
+/* Stats */
+.stat-pill {
+    background: #fff; border-radius: 0.75rem;
+    padding: 0.7rem 1rem; box-shadow: 0 2px 10px rgba(38,37,97,0.07);
+    display: flex; align-items: center; gap: 0.6rem;
+    flex: 1; min-width: 100px;
+}
+.sp-icon { width: 36px; height: 36px; border-radius: 0.45rem;
+           display: flex; align-items: center; justify-content: center;
+           font-size: 0.85rem; flex-shrink: 0; }
+.sp-val  { font-size: 1.2rem; font-weight: 800; color: var(--navy); line-height: 1; }
+.sp-lbl  { font-size: 0.6rem; color: #8392ab; font-weight: 600;
+           text-transform: uppercase; letter-spacing: .04em; }
+.sp-total     .sp-icon { background: #eef0fb; color: var(--navy); }
+.sp-short     .sp-icon { background: #d4f5e2; color: var(--green); }
+.sp-rejected  .sp-icon { background: #fde8e8; color: var(--red); }
+.sp-threshold .sp-icon { background: #fff8e1; color: var(--amber); }
+
+/* Finalise bar */
+.finalise-bar {
+    background: linear-gradient(135deg, #1a5c38, #1a7a45);
+    border-radius: 0.75rem; padding: 1rem 1.25rem;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.finalise-bar-text { color: #fff; font-size: 0.82rem; font-weight: 600; }
+.finalise-bar-sub  { color: rgba(255,255,255,0.75); font-size: 0.73rem; }
+.btn-finalise {
+    background: var(--gold); color: var(--navy) !important; border: none;
+    padding: 0.52rem 1.4rem; border-radius: 0.45rem;
+    font-size: 0.8rem; font-weight: 700; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.45rem;
+    transition: opacity 0.15s; flex-shrink: 0;
+}
+.btn-finalise:hover { opacity: 0.85; }
+
+/* Finalised badge */
+.finalised-banner {
+    background: #d4f5e2; border: 1px solid #a5d6a7; border-radius: 0.6rem;
+    padding: 0.75rem 1.1rem; font-size: 0.8rem; color: #1a5c38;
+    display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem;
+}
+
+/* Section card */
+.section-card {
+    background: #fff; border-radius: 0.85rem;
+    box-shadow: 0 2px 12px rgba(38,37,97,0.08);
+    margin-bottom: 1rem; overflow: hidden;
+}
+.section-header {
+    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f0f2f8;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+    background: #fafbff;
+}
+.section-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--navy);
+    margin: 0; display: flex; align-items: center; gap: 0.45rem;
+}
+
+/* Results table */
+.results-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.results-table th {
+    background: #f8f9ff; color: #8392ab;
+    font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 0.65rem 1.25rem; border-bottom: 1px solid #f0f2f8;
+}
+.results-table td {
+    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f7f8fc;
+    color: #344767; vertical-align: middle;
+}
+.results-table tr:last-child td { border-bottom: none; }
+.results-table tr:hover td { background: #fafbff; }
+.results-table tr.row-shortlisted { background: #f6fdf9; }
+.results-table tr.row-rejected    { background: #fff9f9; }
+
+.app-name { font-weight: 600; color: var(--navy); font-size: 0.83rem; }
+.app-num  { font-size: 0.68rem; font-family: monospace; color: #8392ab; }
+
+/* Vote bar */
+.vote-bar-wrap { display: flex; align-items: center; gap: 0.5rem; min-width: 130px; }
+.vote-bar-track {
+    flex: 1; height: 8px; background: #f0f2f8;
+    border-radius: 99px; overflow: hidden; display: flex;
+}
+.vb-approve { background: var(--green); height: 100%; }
+.vb-reject  { background: var(--red);   height: 100%; }
+.vote-bar-label { font-size: 0.72rem; font-weight: 700; color: #344767;
+                  white-space: nowrap; min-width: 32px; }
+
+.outcome-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.7rem; font-weight: 700; padding: 0.22rem 0.65rem;
+    border-radius: 99px;
+}
+.ob-shortlisted { background: #d4f5e2; color: #1a5c38; }
+.ob-rejected    { background: #fde8e8; color: var(--red); }
+.ob-overridden  { background: #fff3cd; color: #856404; }
+
+/* Override button */
+.btn-override {
+    font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.65rem;
+    border-radius: 0.35rem; border: 1px solid #e0e4ef;
+    background: #f8f9ff; color: #344767; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    transition: all 0.15s; white-space: nowrap;
+}
+.btn-override:hover { background: #fff3cd; border-color: var(--amber); color: var(--amber); }
+
+/* Vote detail expand */
+.votes-detail {
+    display: none; padding: 0.75rem 1.25rem 1rem;
+    background: #fafbff; border-top: 1px solid #f0f2f8;
+}
+.votes-detail.open { display: block; }
+.vote-detail-row {
+    display: flex; align-items: flex-start; gap: 0.75rem;
+    padding: 0.45rem 0; border-bottom: 1px solid #f0f2f8;
+    font-size: 0.76rem;
+}
+.vote-detail-row:last-child { border-bottom: none; }
+.vdr-name    { min-width: 150px; font-weight: 600; color: #344767; flex-shrink: 0; }
+.vdr-dec     { font-weight: 700; min-width: 90px; flex-shrink: 0; }
+.vdr-dec.approve { color: var(--green); }
+.vdr-dec.reject  { color: var(--red); }
+.vdr-comment { color: #67748e; flex: 1; }
+.vdr-time    { font-size: 0.68rem; color: #b0bac9; white-space: nowrap; flex-shrink: 0; }
+
+.btn-expand {
+    background: none; border: none; color: #8392ab;
+    font-size: 0.7rem; cursor: pointer; padding: 0;
+    display: inline-flex; align-items: center; gap: 0.3rem;
+}
+.btn-expand:hover { color: var(--navy); }
+
+/* Override log */
+.log-row {
+    display: flex; gap: 1rem; padding: 0.65rem 1.25rem;
+    border-bottom: 1px solid #f7f8fc; font-size: 0.76rem;
+}
+.log-row:last-child { border-bottom: none; }
+.log-time   { color: #b0bac9; white-space: nowrap; flex-shrink: 0; font-size: 0.7rem; }
+.log-actor  { font-weight: 600; color: #344767; flex-shrink: 0; min-width: 120px; }
+.log-detail { color: #67748e; flex: 1; }
+
+/* Modals */
+#overrideModal .modal-header { background: var(--navy); }
+#overrideModal .modal-title  { color: var(--gold); font-size: 0.9rem; }
+#finaliseModal .modal-header { background: linear-gradient(135deg, #1a5c38, #1a7a45); }
+#finaliseModal .modal-title  { color: #fff; font-size: 0.9rem; }
+
+.spin { animation: spin 0.6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.toast-wrap {
+    position: fixed; bottom: 1.5rem; right: 1.5rem;
+    z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
+    pointer-events: none;
+}
+.toast-msg {
+    background: #344767; color: #fff; padding: 0.6rem 1rem;
+    border-radius: 0.5rem; font-size: 0.8rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    display: flex; align-items: center; gap: 0.5rem;
+    animation: slideUp 0.2s ease-out; pointer-events: auto;
+}
+.toast-msg.success { background: #1a7a45; }
+.toast-msg.error   { background: #c0392b; }
+@keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner mb-3">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-list-check me-2"></i>Shortlist Review
+            </p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'hr_committee_progress' vacancy.id %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Committee Progress
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="d-flex flex-wrap gap-3 mb-3">
+        <div class="stat-pill sp-total">
+            <div class="sp-icon"><i class="fas fa-users"></i></div>
+            <div><div class="sp-val">{{ total_count }}</div><div class="sp-lbl">Reviewed</div></div>
+        </div>
+        <div class="stat-pill sp-short">
+            <div class="sp-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+                <div class="sp-val" id="shortlisted-count">{{ shortlisted_count }}</div>
+                <div class="sp-lbl">Shortlisted</div>
+            </div>
+        </div>
+        <div class="stat-pill sp-rejected">
+            <div class="sp-icon"><i class="fas fa-times-circle"></i></div>
+            <div>
+                <div class="sp-val" id="rejected-count">{{ not_selected_count }}</div>
+                <div class="sp-lbl">Not Selected</div>
+            </div>
+        </div>
+        <div class="stat-pill sp-threshold">
+            <div class="sp-icon"><i class="fas fa-vote-yea"></i></div>
+            <div>
+                <div class="sp-val">{{ threshold }}/{{ committee_count }}</div>
+                <div class="sp-lbl">Threshold</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finalise / Already finalised -->
+    {% if shortlist_finalised %}
+    <div class="finalised-banner">
+        <i class="fas fa-check-circle" style="flex-shrink:0;font-size:1.1rem;"></i>
+        <span>
+            This shortlist has been finalised and applicants notified.
+            The vacancy has moved to interview scheduling.
+        </span>
+    </div>
+    {% elif all_voted %}
+    <div class="finalise-bar">
+        <div>
+            <div class="finalise-bar-text">
+                <i class="fas fa-clipboard-check me-1"></i>
+                All committee votes are in — shortlist is ready to finalise
+            </div>
+            <div class="finalise-bar-sub">
+                Review the results below. You may override individual decisions before finalising.
+                Overrides are permanently logged.
+            </div>
+        </div>
+        <button class="btn-finalise" onclick="openFinaliseModal()">
+            <i class="fas fa-paper-plane"></i> Finalise Shortlist
+        </button>
+    </div>
+    {% else %}
+    <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:0.6rem;
+                padding:0.75rem 1.1rem;font-size:0.8rem;color:#6d4c00;
+                display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem;">
+        <i class="fas fa-clock" style="flex-shrink:0;"></i>
+        <span>Not all committee members have submitted their votes yet.
+              The shortlist results shown are preliminary.</span>
+    </div>
+    {% endif %}
+
+    <!-- Results table -->
+    <div class="section-card">
+        <div class="section-header">
+            <h6 class="section-title">
+                <i class="fas fa-poll" style="color:var(--gold-dk);"></i>
+                Shortlist Results
+            </h6>
+            <span style="font-size:0.72rem;color:#8392ab;">
+                Click a row to expand individual votes
+            </span>
+        </div>
+
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Committee Vote</th>
+                    <th>Outcome</th>
+                    <th style="text-align:right;">
+                        {% if not shortlist_finalised %}Action{% endif %}
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in app_rows %}
+            <tr class="{% if row.result and row.result.shortlisted %}row-shortlisted{% elif row.result %}row-rejected{% endif %}"
+                id="result-row-{{ row.app.id }}">
+                <td>
+                    <div class="app-name">
+                        {{ row.app.user.first_name }} {{ row.app.user.last_name }}
+                    </div>
+                    <div class="app-num">{{ row.app.application_number }}</div>
+                    <button class="btn-expand mt-1"
+                            onclick="toggleVotes({{ row.app.id }}, this)">
+                        <i class="fas fa-chevron-right" id="chevron-{{ row.app.id }}"></i>
+                        <span>{{ row.votes|length }} vote{{ row.votes|length|pluralize }}</span>
+                    </button>
+                </td>
+                <td>
+                    <div class="vote-bar-wrap">
+                        <div class="vote-bar-track">
+                            {% if row.approvals or row.rejections %}
+                            <div class="vb-approve"
+                                 style="width:{% widthratio row.approvals committee_count 100 %}%"></div>
+                            <div class="vb-reject"
+                                 style="width:{% widthratio row.rejections committee_count 100 %}%"></div>
+                            {% endif %}
+                        </div>
+                        <span class="vote-bar-label">
+                            {{ row.approvals }}/{{ committee_count }}
+                        </span>
+                    </div>
+                    <div style="font-size:0.68rem;color:#8392ab;margin-top:0.25rem;">
+                        {{ row.approvals }} approve · {{ row.rejections }} disapprove
+                    </div>
+                </td>
+                <td>
+                    {% if row.result %}
+                        {% if row.result.shortlisted %}
+                            <span class="outcome-badge ob-shortlisted" id="outcome-badge-{{ row.app.id }}">
+                                <i class="fas fa-check-double"></i> Shortlisted
+                            </span>
+                        {% else %}
+                            <span class="outcome-badge ob-rejected" id="outcome-badge-{{ row.app.id }}">
+                                <i class="fas fa-times"></i> Not Selected
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="outcome-badge" style="background:#f0f2f8;color:#8392ab;"
+                              id="outcome-badge-{{ row.app.id }}">
+                            <i class="fas fa-clock"></i> Pending
+                        </span>
+                    {% endif %}
+                </td>
+                <td style="text-align:right;">
+                    {% if not shortlist_finalised and row.result %}
+                    <button class="btn-override"
+                            onclick="openOverrideModal(
+                                '{{ row.app.id }}',
+                                '{{ row.app.user.first_name|escapejs }} {{ row.app.user.last_name|escapejs }}',
+                                {{ row.result.shortlisted|lower }}
+                            )">
+                        <i class="fas fa-edit"></i> Override
+                    </button>
+                    {% endif %}
+                </td>
+            </tr>
+            <!-- Expandable vote detail -->
+            <tr id="votes-detail-row-{{ row.app.id }}" style="display:none;">
+                <td colspan="4" style="padding:0;">
+                    <div class="votes-detail" id="votes-detail-{{ row.app.id }}">
+                        {% if row.votes %}
+                            {% for v in row.votes %}
+                            <div class="vote-detail-row">
+                                <span class="vdr-name">
+                                    {{ v.member.first_name }} {{ v.member.last_name }}
+                                </span>
+                                <span class="vdr-dec {% if v.approve %}approve{% else %}reject{% endif %}">
+                                    <i class="fas fa-{% if v.approve %}check{% else %}times{% endif %}-circle me-1"></i>
+                                    {% if v.approve %}Approved{% else %}Disapproved{% endif %}
+                                </span>
+                                <span class="vdr-comment">{{ v.comment }}</span>
+                                <span class="vdr-time">{{ v.submitted_at|date:"d M Y H:i" }}</span>
+                            </div>
+                            {% endfor %}
+                        {% else %}
+                            <p style="font-size:0.76rem;color:#b0bac9;margin:0;font-style:italic;">
+                                No votes submitted yet.
+                            </p>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Override log -->
+    {% if override_logs %}
+    <div class="section-card">
+        <div class="section-header">
+            <h6 class="section-title">
+                <i class="fas fa-history" style="color:var(--gold-dk);"></i>
+                Override Log
+            </h6>
+        </div>
+        {% for log in override_logs %}
+        <div class="log-row">
+            <span class="log-time">{{ log.timestamp|date:"d M Y H:i" }}</span>
+            <span class="log-actor">{{ log.performed_by_label }}</span>
+            <span class="log-detail">{{ log.notes }}</span>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Override Modal -->
+<div class="modal fade" id="overrideModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="fas fa-edit me-2"></i>Override Shortlist Decision
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.82rem;color:#344767;margin-bottom:0.35rem;">
+                    Applicant: <strong id="override-name">—</strong>
+                </p>
+                <p style="font-size:0.78rem;color:#8392ab;margin-bottom:1rem;">
+                    Current decision:
+                    <span id="override-current"
+                          style="font-weight:700;">—</span>
+                </p>
+
+                <label style="font-size:0.75rem;font-weight:700;color:#8392ab;
+                               text-transform:uppercase;letter-spacing:.04em;">
+                    New Decision
+                </label>
+                <div style="display:flex;gap:0.5rem;margin:0.4rem 0 1rem;">
+                    <button type="button" class="decision-btn" id="ov-btn-shortlist"
+                            style="flex:1;padding:0.55rem;border:2px solid #e0e4ef;
+                                   border-radius:0.45rem;background:#fafbff;
+                                   font-size:0.8rem;font-weight:700;cursor:pointer;
+                                   color:#8392ab;transition:all 0.15s;"
+                            onclick="selectOverride('shortlist')">
+                        <i class="fas fa-check-double me-1"></i> Shortlist
+                    </button>
+                    <button type="button" class="decision-btn" id="ov-btn-reject"
+                            style="flex:1;padding:0.55rem;border:2px solid #e0e4ef;
+                                   border-radius:0.45rem;background:#fafbff;
+                                   font-size:0.8rem;font-weight:700;cursor:pointer;
+                                   color:#8392ab;transition:all 0.15s;"
+                            onclick="selectOverride('reject')">
+                        <i class="fas fa-times me-1"></i> Not Selected
+                    </button>
+                </div>
+
+                <label style="font-size:0.75rem;font-weight:700;color:#8392ab;
+                               text-transform:uppercase;letter-spacing:.04em;">
+                    Written Justification <span style="color:var(--red);">*</span>
+                </label>
+                <textarea id="override-justification" rows="4"
+                          style="width:100%;padding:0.55rem;border:1px solid #e0e4ef;
+                                 border-radius:0.4rem;font-size:0.8rem;margin-top:0.3rem;
+                                 resize:vertical;font-family:inherit;"
+                          placeholder="State the grounds for overriding the committee's decision…">
+                </textarea>
+                <div style="font-size:0.72rem;color:#8392ab;margin-top:0.3rem;">
+                    <i class="fas fa-lock me-1"></i>
+                    This justification will be permanently and immutably logged.
+                </div>
+                <div id="override-error"
+                     style="color:var(--red);font-size:0.75rem;margin-top:0.4rem;display:none;">
+                </div>
+            </div>
+            <div class="modal-footer gap-2">
+                <button type="button" class="btn btn-sm btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-warning"
+                        id="btn-confirm-override" onclick="doOverride()">
+                    <i class="fas fa-edit me-1"></i> Apply Override
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Finalise Modal -->
+<div class="modal fade" id="finaliseModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h6 class="modal-title">
+                    <i class="fas fa-paper-plane me-2"></i>Finalise Shortlist
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p style="font-size:0.82rem;color:#344767;margin-bottom:0.5rem;">
+                    Finalising the shortlist will:
+                </p>
+                <ul style="font-size:0.8rem;color:#344767;padding-left:1.2rem;margin-bottom:0.75rem;">
+                    <li><strong id="finalise-count">{{ shortlisted_count }}</strong>
+                        applicant{{ shortlisted_count|pluralize }} will be marked <strong>Shortlisted</strong></li>
+                    <li><strong>{{ not_selected_count }}</strong>
+                        applicant{{ not_selected_count|pluralize }} will be marked <strong>Not Selected</strong></li>
+                    <li>Applicants will be notified by email</li>
+                    <li>Vacancy will advance to Interview Scheduling</li>
+                </ul>
+                <p style="font-size:0.76rem;color:#8392ab;margin:0;">
+                    This action cannot be undone.
+                </p>
+            </div>
+            <div class="modal-footer gap-2">
+                <button type="button" class="btn btn-sm btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-success"
+                        id="btn-confirm-finalise" onclick="doFinalise()">
+                    <i class="fas fa-paper-plane me-1"></i> Confirm & Finalise
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const CSRF_TOKEN    = '{{ csrf_token }}';
+const OVERRIDE_URL  = "{% url 'hr_shortlist_override'  vacancy.id %}";
+const FINALISE_URL  = "{% url 'hr_shortlist_finalise'  vacancy.id %}";
+
+let overridingAppId      = null;
+let overridingDecision   = null;
+let currentlyShortlisted = null;
+
+function toast(msg, type = 'success') {
+    const el = document.createElement('div');
+    el.className = `toast-msg ${type}`;
+    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${msg}`;
+    document.getElementById('toast-wrap').appendChild(el);
+    setTimeout(() => el.remove(), 4500);
+}
+
+// ── Vote detail expand ────────────────────────────────────────────
+function toggleVotes(appId, btn) {
+    const detailRow = document.getElementById(`votes-detail-row-${appId}`);
+    const chevron   = document.getElementById(`chevron-${appId}`);
+    const isOpen    = detailRow.style.display !== 'none';
+    detailRow.style.display = isOpen ? 'none' : 'table-row';
+    chevron.style.transform = isOpen ? '' : 'rotate(90deg)';
+    chevron.style.transition = 'transform 0.2s';
+}
+
+// ── Override ──────────────────────────────────────────────────────
+function openOverrideModal(appId, name, isShortlisted) {
+    overridingAppId      = appId;
+    overridingDecision   = null;
+    currentlyShortlisted = isShortlisted;
+
+    document.getElementById('override-name').textContent = name;
+    document.getElementById('override-current').textContent =
+        isShortlisted ? 'Shortlisted' : 'Not Selected';
+    document.getElementById('override-current').style.color =
+        isShortlisted ? 'var(--green)' : 'var(--red)';
+    document.getElementById('override-justification').value = '';
+    document.getElementById('override-error').style.display = 'none';
+
+    // Reset buttons
+    ['shortlist','reject'].forEach(d => {
+        const b = document.getElementById(`ov-btn-${d}`);
+        b.style.borderColor = '#e0e4ef';
+        b.style.background  = '#fafbff';
+        b.style.color       = '#8392ab';
+    });
+
+    new bootstrap.Modal(document.getElementById('overrideModal')).show();
+}
+
+function selectOverride(decision) {
+    overridingDecision = decision;
+    ['shortlist','reject'].forEach(d => {
+        const b = document.getElementById(`ov-btn-${d}`);
+        if (d === decision) {
+            b.style.borderColor = d === 'shortlist' ? 'var(--green)' : 'var(--red)';
+            b.style.background  = d === 'shortlist' ? '#d4f5e2' : '#fde8e8';
+            b.style.color       = d === 'shortlist' ? 'var(--green)' : 'var(--red)';
+        } else {
+            b.style.borderColor = '#e0e4ef';
+            b.style.background  = '#fafbff';
+            b.style.color       = '#8392ab';
+        }
+    });
+}
+
+async function doOverride() {
+    const justification = document.getElementById('override-justification').value.trim();
+    const errEl         = document.getElementById('override-error');
+    errEl.style.display = 'none';
+
+    if (!overridingDecision) {
+        errEl.textContent   = 'Please select a new decision.';
+        errEl.style.display = 'block';
+        return;
+    }
+    if (!justification) {
+        errEl.textContent   = 'A written justification is mandatory.';
+        errEl.style.display = 'block';
+        return;
+    }
+
+    const btn = document.getElementById('btn-confirm-override');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch spin me-1"></i>Applying…';
+
+    try {
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+        fd.append('application_id',  overridingAppId);
+        fd.append('decision',        overridingDecision);
+        fd.append('justification',   justification);
+
+        const resp = await fetch(OVERRIDE_URL, { method: 'POST', body: fd });
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+            errEl.textContent   = data.error || 'Override failed.';
+            errEl.style.display = 'block';
+        } else {
+            // Update badge
+            const badge = document.getElementById(`outcome-badge-${overridingAppId}`);
+            if (data.shortlisted) {
+                badge.className = 'outcome-badge ob-shortlisted';
+                badge.innerHTML = '<i class="fas fa-check-double"></i> Shortlisted';
+                document.getElementById(`result-row-${overridingAppId}`)
+                    .className = 'row-shortlisted';
+            } else {
+                badge.className = 'outcome-badge ob-rejected';
+                badge.innerHTML = '<i class="fas fa-times"></i> Not Selected';
+                document.getElementById(`result-row-${overridingAppId}`)
+                    .className = 'row-rejected';
+            }
+
+            toast('Override applied and logged.', 'success');
+            bootstrap.Modal.getInstance(document.getElementById('overrideModal')).hide();
+        }
+    } catch(e) {
+        errEl.textContent   = 'Network error. Please try again.';
+        errEl.style.display = 'block';
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-edit me-1"></i> Apply Override';
+}
+
+// ── Finalise ──────────────────────────────────────────────────────
+function openFinaliseModal() {
+    new bootstrap.Modal(document.getElementById('finaliseModal')).show();
+}
+
+async function doFinalise() {
+    const btn = document.getElementById('btn-confirm-finalise');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch spin me-1"></i>Finalising…';
+
+    try {
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+        const resp = await fetch(FINALISE_URL, { method: 'POST', body: fd });
+        const data = await resp.json();
+
+        if (!resp.ok || data.error) {
+            toast(data.error || 'Finalisation failed.', 'error');
+        } else {
+            toast(
+                `Shortlist finalised. ${data.shortlisted_count} applicant(s) shortlisted.`,
+                'success'
+            );
+            setTimeout(() => { window.location.href = data.redirect_url; }, 1800);
+        }
+    } catch(e) {
+        toast('Network error. Please try again.', 'error');
+    }
+
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-paper-plane me-1"></i> Confirm & Finalise';
+}
+</script>
+{% endblock %}

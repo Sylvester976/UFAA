@@ -12,6 +12,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.db.models import Prefetch
 from django.http import FileResponse, Http404
 from django.template.loader import render_to_string
+from django.urls import reverse
 
 from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
@@ -21,7 +22,7 @@ from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, 
     PanelistReport, \
     ProfessionalQualification, ShortlistVote, ShortlistingDecision, WorkHistory, \
     AdditionalDetail, ProfessionalBodyMembership, Referee, \
-    JobApplicationNotification, VacancyApplicationCounter
+    JobApplicationNotification, VacancyApplicationCounter, CommitteeVote
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .models import (
@@ -2291,19 +2292,19 @@ def appoint_shortlisting_committee(request, vacancy_id):
     })
 
 
-@login_required
-@role_required(['committee'])
-def shortlisting_dashboard(request):
-    vacancies = Vacancy.objects.filter(
-        shortlisting_committee__members=request.user
-    )
-
-    context = {
-        'page': 'Committee Dashboard',
-        'vacancies': vacancies
-    }
-
-    return render(request, 'recruitment/committee/dashboard.html', context)
+# @login_required
+# @role_required(['committee'])
+# def shortlisting_dashboard(request):
+#     vacancies = Vacancy.objects.filter(
+#         shortlisting_committee__members=request.user
+#     )
+#
+#     context = {
+#         'page': 'Committee Dashboard',
+#         'vacancies': vacancies
+#     }
+#
+#     return render(request, 'recruitment/committee/dashboard.html', context)
 
 
 @login_required
@@ -4748,19 +4749,13 @@ def _send_appointment_email(member, vacancy, request):
 @login_required
 @role_required(['hod_hr'])
 def hr_appoint_committee(request, vacancy_id):
-    """
-    HR dashboard for appointing / managing the shortlisting committee
-    for a specific vacancy.
-    """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
 
-    # Final longlisted applications
     app_count = JobApplication.objects.filter(
         vacancy=vacancy,
         status__code='final_longlisted',
     ).count()
 
-    # Current committee
     committee_qs = ShortlistingCommittee.objects.filter(
         vacancy=vacancy,
         is_active=True,
@@ -4768,71 +4763,68 @@ def hr_appoint_committee(request, vacancy_id):
 
     committee_data = []
     for entry in committee_qs:
-        scores_done = CommitteeScore.objects.filter(
+        # Count submitted (non-draft) votes for this member
+        votes_done = CommitteeVote.objects.filter(
             vacancy=vacancy,
             member=entry.member,
-            submitted=True,
+            is_draft=False,
         ).count()
-        can_remove = (scores_done == 0 and not entry.scores_submitted)
+        # Can only remove if they haven't submitted any votes yet
+        can_remove = (votes_done == 0 and not entry.votes_submitted)
         committee_data.append({
-            'entry': entry,
-            'name': _display_name(entry.member),
-            'email': entry.member.email,
-            'scores_done': scores_done,
+            'entry':      entry,
+            'name':       _display_name(entry.member),
+            'email':      entry.member.email,
+            'votes_done': votes_done,
             'can_remove': can_remove,
         })
 
     committee_count = len(committee_data)
-    threshold = _threshold(committee_count)
-    deadline = vacancy.end_date + timedelta(days=21)
-    days_remaining = (deadline - timezone.now().date()).days
+    threshold       = _threshold(committee_count)
+    deadline        = vacancy.end_date + timedelta(days=21)
+    days_remaining  = (deadline - timezone.now().date()).days
 
-    # Consent summary (useful to show even on appoint screen)
-    consented_count = ShortlistConsent.objects.filter(
-        vacancy=vacancy, response='consented').count()
-
-    # All internal staff, excluding applicants for this vacancy
     on_committee_ids = set(
         str(mid) for mid in ShortlistingCommittee.objects.filter(
             vacancy=vacancy, is_active=True
         ).values_list('member_id', flat=True)
     )
-    # JobApplication.user is JobseekerAccount (external). Internal User model
-    # is completely separate — no overlap is possible, skip the applicant check.
     all_staff = []
     for u in User.objects.filter(user_type=2, is_active=True).order_by('first_name', 'last_name', 'email'):
         uid = str(u.pk)
         all_staff.append({
-            'id': uid,
-            'name': _display_name(u),
-            'email': u.email,
+            'id':           uid,
+            'name':         _display_name(u),
+            'email':        u.email,
             'on_committee': uid in on_committee_ids,
         })
 
     return render(request, 'recruitment/hr/shortlisting/appoint_committee.html', {
-        'page': 'Shortlisting',
-        'vacancy': vacancy,
-        'app_count': app_count,
-        'committee': committee_data,
+        'page':            'Shortlisting',
+        'vacancy':         vacancy,
+        'app_count':       app_count,
+        'committee':       committee_data,
         'committee_count': committee_count,
-        'threshold': threshold,
-        'deadline': deadline,
-        'all_staff': all_staff,
-        'days_remaining': days_remaining,
-        'consented_count': consented_count,
-        'deadline_amber': 0 < days_remaining <= 5,
-        'deadline_red': days_remaining <= 0,
+        'threshold':       threshold,
+        'deadline':        deadline,
+        'all_staff':       all_staff,
+        'days_remaining':  days_remaining,
+        'deadline_amber':  0 < days_remaining <= 5,
+        'deadline_red':    days_remaining <= 0,
     })
 
 
-# ── View 2: Add Member (POST / AJAX) ──────────────────────────────────────
+# hr_committee_add  — sits between hr_appoint_committee and hr_committee_remove
+# hr_shortlist_review — placeholder, full build comes in Step 5
+# ─────────────────────────────────────────────────────────────────────────────
+
 
 @login_required
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_add(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
-    member_id = request.POST.get('member_id', '').strip()
+    vacancy    = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    member_id  = request.POST.get('member_id', '').strip()
     send_email = request.POST.get('send_email', '1') == '1'
 
     if not member_id:
@@ -4843,10 +4835,6 @@ def hr_committee_add(request, vacancy_id):
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found.'}, status=404)
 
-    # Note: JobApplication.user is a JobseekerAccount (external users only).
-    # Internal staff (User model) are a separate model and can never be applicants,
-    # so no applicant-conflict check is needed here.
-
     try:
         with transaction.atomic():
             entry, created = ShortlistingCommittee.objects.get_or_create(
@@ -4854,7 +4842,7 @@ def hr_committee_add(request, vacancy_id):
                 member=member,
                 defaults={
                     'appointed_by': request.user,
-                    'is_active': True,
+                    'is_active':    True,
                 },
             )
             if not created:
@@ -4862,20 +4850,19 @@ def hr_committee_add(request, vacancy_id):
                     return JsonResponse({
                         'error': f'{_display_name(member)} is already on the committee.'
                     }, status=400)
-                # Re-activate
-                entry.is_active = True
+                entry.is_active    = True
                 entry.appointed_by = request.user
                 entry.appointed_at = timezone.now()
                 entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
 
             ShortlistLog.objects.create(
-                vacancy=vacancy,
-                application=None,
-                performed_by=request.user,
-                action='member_appointed',
-                notes=f'Appointed {_display_name(member)} to committee.',
-                metadata={'member_id': str(member.pk), 'member_email': member.email},
-                performed_by_label=_display_name(request.user),
+                vacancy            = vacancy,
+                application        = None,
+                performed_by       = request.user,
+                action             = 'member_appointed',
+                notes              = f'Appointed {_display_name(member)} to committee.',
+                metadata           = {'member_id': str(member.pk), 'member_email': member.email},
+                performed_by_label = _display_name(request.user),
             )
     except Exception as e:
         logger.error(f"Committee add error: {e}", exc_info=True)
@@ -4885,35 +4872,457 @@ def hr_committee_add(request, vacancy_id):
     if send_email:
         email_sent = _send_appointment_email(member, vacancy, request)
 
-    # Recalculate threshold with new count
-    new_count = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True).count()
+    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success': True,
-        'created': created,
-        'email_sent': email_sent,
+        'success':         True,
+        'created':         created,
+        'email_sent':      email_sent,
         'member': {
-            'id': member.pk,
-            'name': _display_name(member),
-            'email': member.email,
+            'id':           str(member.pk),
+            'name':         _display_name(member),
+            'email':        member.email,
             'appointed_at': entry.appointed_at.strftime('%d %b %Y %H:%M'),
         },
         'committee_count': new_count,
-        'new_threshold': new_threshold,
+        'new_threshold':   new_threshold,
     })
 
 
-# ── View 3: Remove Member (POST / AJAX) ───────────────────────────────────
+@login_required
+@role_required(['hod_hr'])
+def hr_shortlist_review(request, vacancy_id):
+    """
+    HR shortlist review screen.
+    Shown after all committee votes are in and _generate_shortlist() has run.
+    HR can:
+      - View full vote breakdown per applicant
+      - Override a result (with mandatory justification, immutably logged)
+      - Confirm and finalise the shortlist (advances vacancy to next stage)
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    # ── Stats ──────────────────────────────────────────────────────
+    committee_members = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    ).select_related('member')
+    committee_count = committee_members.count()
+    threshold       = _threshold(committee_count)
+
+    all_voted = not committee_members.filter(votes_submitted=False).exists()
+
+    # ── Shortlist results ──────────────────────────────────────────
+    results = ShortlistResult.objects.filter(
+        vacancy=vacancy
+    ).select_related('application', 'application__user', 'application__status')
+
+    results_by_app = {r.application_id: r for r in results}
+
+    # ── All submitted votes ────────────────────────────────────────
+    all_votes = CommitteeVote.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).select_related('member').order_by('voted_at')
+
+    votes_by_app = {}
+    for v in all_votes:
+        votes_by_app.setdefault(v.application_id, []).append(v)
+
+    # ── Applications ───────────────────────────────────────────────
+    applications = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code__in=['final_longlisted', 'shortlisted', 'not_selected'],
+    ).select_related('user', 'status').order_by('application_number')
+
+    shortlisted_count   = 0
+    not_selected_count  = 0
+    app_rows = []
+
+    for app in applications:
+        result = results_by_app.get(app.id)
+        votes  = votes_by_app.get(app.id, [])
+        approvals  = sum(1 for v in votes if v.approve)
+        rejections = len(votes) - approvals
+
+        if result:
+            if result.shortlisted:
+                shortlisted_count += 1
+            else:
+                not_selected_count += 1
+
+        app_rows.append({
+            'app':        app,
+            'result':     result,
+            'votes':      votes,
+            'approvals':  approvals,
+            'rejections': rejections,
+            'pct':        int(approvals / committee_count * 100) if committee_count else 0,
+        })
+
+    # Sort: shortlisted first, then by approvals desc
+    app_rows.sort(key=lambda r: (
+        0 if r['result'] and r['result'].shortlisted else 1,
+        -r['approvals']
+    ))
+
+    # ── Logs ───────────────────────────────────────────────────────
+    override_logs = ShortlistLog.objects.filter(
+        vacancy=vacancy,
+        action__in=['override_requested', 'override_approved'],
+    ).order_by('-timestamp')
+
+    # ── Shortlist already finalised? ───────────────────────────────
+    shortlist_finalised = vacancy.status in ('interview_scheduled', 'shortlisted_final')
+
+    return render(request, 'recruitment/hr/shortlisting/shortlist_review.html', {
+        'page':                'Shortlist Review',
+        'vacancy':             vacancy,
+        'committee_count':     committee_count,
+        'threshold':           threshold,
+        'all_voted':           all_voted,
+        'app_rows':            app_rows,
+        'shortlisted_count':   shortlisted_count,
+        'not_selected_count':  not_selected_count,
+        'total_count':         len(app_rows),
+        'override_logs':       override_logs,
+        'shortlist_finalised': shortlist_finalised,
+    })
+
+
+@login_required
+@role_required(['hod_hr'])
+@require_POST
+def hr_shortlist_override(request, vacancy_id):
+    """
+    HR overrides a single shortlist result.
+    Mandatory justification — immutably logged.
+    """
+    vacancy        = get_object_or_404(Vacancy, id=vacancy_id)
+    application_id = request.POST.get('application_id', '').strip()
+    new_decision   = request.POST.get('decision', '').strip()   # 'shortlist' or 'reject'
+    justification  = request.POST.get('justification', '').strip()
+
+    if not application_id or new_decision not in ('shortlist', 'reject'):
+        return JsonResponse({'error': 'Invalid request.'}, status=400)
+    if not justification:
+        return JsonResponse({'error': 'A written justification is mandatory for overrides.'}, status=400)
+
+    try:
+        application = JobApplication.objects.get(pk=application_id, vacancy=vacancy)
+        result      = ShortlistResult.objects.get(application=application, vacancy=vacancy)
+    except (JobApplication.DoesNotExist, ShortlistResult.DoesNotExist):
+        return JsonResponse({'error': 'Record not found.'}, status=404)
+
+    new_shortlisted = (new_decision == 'shortlist')
+    old_decision    = 'shortlisted' if result.shortlisted else 'not_selected'
+    new_label       = 'shortlisted' if new_shortlisted else 'not_selected'
+
+    with transaction.atomic():
+        result.shortlisted = new_shortlisted
+        result.save(update_fields=['shortlisted'])
+
+        # Update application status
+        new_status = JobApplicationStatus.objects.get(
+            code='shortlisted' if new_shortlisted else 'not_selected'
+        )
+        application.status = new_status
+        application.save(update_fields=['status'])
+
+        ShortlistLog.objects.create(
+            vacancy            = vacancy,
+            application        = application,
+            performed_by       = request.user,
+            action             = 'override_approved',
+            notes              = (
+                f'HR override: {old_decision} → {new_label}. '
+                f'Justification: {justification}'
+            ),
+            metadata           = {
+                'old_decision':  old_decision,
+                'new_decision':  new_label,
+                'justification': justification,
+            },
+            performed_by_label = _display_name(request.user),
+        )
+
+    return JsonResponse({
+        'success':       True,
+        'new_decision':  new_label,
+        'shortlisted':   new_shortlisted,
+    })
+
+
+def _notify_shortlisted_applicants(vacancy, request):
+    """
+    Sends a congratulations email to every shortlisted applicant.
+    Returns number of emails successfully sent.
+    """
+    applications = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code='shortlisted',
+    ).select_related('user')
+
+    sent_count = 0
+    for app in applications:
+        applicant = app.user
+        try:
+            subject = f"Congratulations — You Have Been Shortlisted | {vacancy.title}"
+
+            message_html = f"""
+            <p style="font-size:1rem;font-weight:600;color:#262561;margin:0 0 1rem;">
+                Dear {applicant.name},
+            </p>
+
+            <p style="font-size:0.88rem;color:#344767;line-height:1.65;margin:0 0 1rem;">
+                We are pleased to inform you that following a thorough review by our
+                shortlisting committee, your application has been successful at the
+                shortlisting stage.
+            </p>
+
+            <div style="background:#f8f9ff;border-left:4px solid #262561;
+                        border-radius:0 0.5rem 0.5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.68rem;font-weight:700;color:#8392ab;
+                            text-transform:uppercase;letter-spacing:.06em;margin-bottom:0.3rem;">
+                    Position Applied For
+                </div>
+                <div style="font-size:0.9rem;font-weight:700;color:#262561;">
+                    {vacancy.title}
+                </div>
+                <div style="font-size:0.76rem;color:#8392ab;margin-top:0.15rem;">
+                    Ref: {vacancy.reference_number}
+                </div>
+            </div>
+
+            <div style="background:#f8f9ff;border-left:4px solid #262561;
+                        border-radius:0 0.5rem 0.5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.68rem;font-weight:700;color:#8392ab;
+                            text-transform:uppercase;letter-spacing:.06em;margin-bottom:0.3rem;">
+                    Application Reference
+                </div>
+                <div style="font-size:0.9rem;font-weight:700;color:#262561;">
+                    {app.application_number}
+                </div>
+            </div>
+
+            <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:0.5rem;
+                        padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.78rem;font-weight:700;color:#6d4c00;
+                            text-transform:uppercase;letter-spacing:.04em;margin-bottom:0.6rem;">
+                    📋 What Happens Next
+                </div>
+                <div style="font-size:0.82rem;color:#344767;margin-bottom:0.4rem;">
+                    <span style="background:#C39545;color:#fff;width:18px;height:18px;
+                                 border-radius:50%;font-size:0.65rem;font-weight:700;
+                                 display:inline-flex;align-items:center;justify-content:center;
+                                 margin-right:0.5rem;">1</span>
+                    Our HR team will contact you shortly with interview scheduling details.
+                </div>
+                <div style="font-size:0.82rem;color:#344767;margin-bottom:0.4rem;">
+                    <span style="background:#C39545;color:#fff;width:18px;height:18px;
+                                 border-radius:50%;font-size:0.65rem;font-weight:700;
+                                 display:inline-flex;align-items:center;justify-content:center;
+                                 margin-right:0.5rem;">2</span>
+                    Ensure your contact details and documents on the portal are up to date.
+                </div>
+                <div style="font-size:0.82rem;color:#344767;">
+                    <span style="background:#C39545;color:#fff;width:18px;height:18px;
+                                 border-radius:50%;font-size:0.65rem;font-weight:700;
+                                 display:inline-flex;align-items:center;justify-content:center;
+                                 margin-right:0.5rem;">3</span>
+                    Monitor your email inbox for further communication from us.
+                </div>
+            </div>
+
+            <p style="font-size:0.88rem;color:#344767;line-height:1.65;margin:1rem 0;">
+                We look forward to meeting you at the interview stage.
+                Congratulations once again on this achievement. We will communicate further on the interview date
+            </p>
+            """
+
+            _send_html_email(subject, applicant.email, message_html)
+
+            ShortlistLog.objects.create(
+                vacancy            = vacancy,
+                application        = app,
+                performed_by       = None,
+                action             = 'applicant_notified',
+                notes              = f'Shortlisted notification sent to {applicant.email}',
+                metadata           = {'email': applicant.email, 'outcome': 'shortlisted'},
+                performed_by_label = 'System',
+            )
+            sent_count += 1
+
+        except Exception as e:
+            logger.error(
+                f"Failed to send shortlist email to {applicant.email} "
+                f"for vacancy {vacancy.id}: {e}",
+                exc_info=True,
+            )
+
+    return sent_count
+
+
+def _notify_rejected_applicants(vacancy, request):
+    """
+    Sends a regret email to every not-selected applicant.
+    Returns number of emails successfully sent.
+    """
+    applications = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code='not_selected',
+    ).select_related('user')
+
+    sent_count = 0
+    for app in applications:
+        applicant = app.user
+        try:
+            subject = f"Application Outcome — {vacancy.title} | {vacancy.reference_number}"
+
+            message_html = f"""
+            <p style="font-size:1rem;font-weight:600;color:#262561;margin:0 0 1rem;">
+                Dear {applicant.name},
+            </p>
+
+            <p style="font-size:0.88rem;color:#344767;line-height:1.65;margin:0 0 1rem;">
+                Thank you for taking the time to apply for the position below and for
+                the interest you have shown in joining our organisation. We sincerely
+                appreciate the effort you put into your application.
+            </p>
+
+            <div style="background:#f8f9ff;border-left:4px solid #8392ab;
+                        border-radius:0 0.5rem 0.5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.68rem;font-weight:700;color:#8392ab;
+                            text-transform:uppercase;letter-spacing:.06em;margin-bottom:0.3rem;">
+                    Position Applied For
+                </div>
+                <div style="font-size:0.9rem;font-weight:700;color:#262561;">
+                    {vacancy.title}
+                </div>
+                <div style="font-size:0.76rem;color:#8392ab;margin-top:0.15rem;">
+                    Ref: {vacancy.reference_number}
+                </div>
+            </div>
+
+            <div style="background:#f8f9ff;border-left:4px solid #8392ab;
+                        border-radius:0 0.5rem 0.5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.68rem;font-weight:700;color:#8392ab;
+                            text-transform:uppercase;letter-spacing:.06em;margin-bottom:0.3rem;">
+                    Application Reference
+                </div>
+                <div style="font-size:0.9rem;font-weight:700;color:#262561;">
+                    {app.application_number}
+                </div>
+            </div>
+
+            <p style="font-size:0.88rem;color:#344767;line-height:1.65;margin:0 0 1rem;">
+                After careful consideration of all applications received, we regret to
+                inform you that on this occasion your application has not been successful
+                at the shortlisting stage. This decision was made following a thorough
+                review of all candidates against the requirements of the role.
+            </p>
+
+            <p style="font-size:0.88rem;color:#344767;line-height:1.65;margin:0 0 1rem;">
+                We recognise this is disappointing news. The quality of applications
+                we received was high, and this outcome is not a reflection of your
+                overall abilities or qualifications.
+            </p>
+
+            <div style="background:#f0f2f8;border-radius:0.5rem;
+                        padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:0.78rem;font-weight:700;color:#262561;
+                            text-transform:uppercase;letter-spacing:.04em;margin-bottom:0.5rem;">
+                    Keep an Eye on Future Opportunities
+                </div>
+                <p style="font-size:0.82rem;color:#344767;line-height:1.6;margin:0;">
+                    We regularly advertise new vacancies. We encourage you to visit our
+                    recruitment portal to view other open positions that may suit your
+                    experience and career aspirations. Your profile remains active for
+                    future opportunities.
+                </p>
+            </div>
+            """
+
+            _send_html_email(subject, applicant.email, message_html)
+
+            ShortlistLog.objects.create(
+                vacancy            = vacancy,
+                application        = app,
+                performed_by       = None,
+                action             = 'applicant_notified',
+                notes              = f'Not-selected notification sent to {applicant.email}',
+                metadata           = {'email': applicant.email, 'outcome': 'not_selected'},
+                performed_by_label = 'System',
+            )
+            sent_count += 1
+
+        except Exception as e:
+            logger.error(
+                f"Failed to send rejection email to {applicant.email} "
+                f"for vacancy {vacancy.id}: {e}",
+                exc_info=True,
+            )
+
+    return sent_count
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# Updated hr_shortlist_finalise
+# ─────────────────────────────────────────────────────────────────────────────
+
+@login_required
+@role_required(['hod_hr'])
+@require_POST
+def hr_shortlist_finalise(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    shortlisted_apps = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code='shortlisted',
+    )
+    if not shortlisted_apps.exists():
+        return JsonResponse({
+            'error': 'No shortlisted applicants found. Cannot finalise an empty shortlist.'
+        }, status=400)
+
+    with transaction.atomic():
+        vacancy.status = 'interview_scheduling'   # ← verify against your pipeline
+        vacancy.save(update_fields=['status'])
+
+        ShortlistLog.objects.create(
+            vacancy            = vacancy,
+            application        = None,
+            performed_by       = request.user,
+            action             = 'emails_sent',
+            notes              = (
+                f'Shortlist finalised by {_display_name(request.user)}. '
+                f'{shortlisted_apps.count()} applicant(s) shortlisted.'
+            ),
+            metadata           = {'shortlisted_count': shortlisted_apps.count()},
+            performed_by_label = _display_name(request.user),
+        )
+
+    # Outside transaction — a failed email won't roll back the status change
+    sent_shortlisted = _notify_shortlisted_applicants(vacancy, request)
+    sent_rejected    = _notify_rejected_applicants(vacancy, request)
+
+    return JsonResponse({
+        'success':           True,
+        'shortlisted_count': shortlisted_apps.count(),
+        'emails_sent':       sent_shortlisted + sent_rejected,
+        'redirect_url':      '/recruitment/vacancies/shortlisting/',
+    })
+
+
+# ── View 3: Remove Member (POST / AJAX) ───────────────────────────────────────
+# Changes: scores_submitted → votes_submitted, CommitteeScore → CommitteeVote
 
 @login_required
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_remove(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
     member_id = request.POST.get('member_id', '').strip()
-    reason = request.POST.get('reason', '').strip()
+    reason    = request.POST.get('reason', '').strip()
 
     if not member_id:
         return JsonResponse({'error': 'No member specified.'}, status=400)
@@ -4923,39 +5332,39 @@ def hr_committee_remove(request, vacancy_id):
     entry = get_object_or_404(
         ShortlistingCommittee, vacancy=vacancy, member_id=member_id, is_active=True)
 
-    # Guard: cannot remove if member has already submitted scores
-    if entry.scores_submitted:
+    # Cannot remove once they have submitted any votes
+    if entry.votes_submitted:
         return JsonResponse({
-            'error': 'Cannot remove a member who has already submitted their scores.'
+            'error': 'Cannot remove a member who has already submitted their votes.'
         }, status=400)
 
-    scores_count = CommitteeScore.objects.filter(
-        vacancy=vacancy, member_id=member_id, submitted=True).count()
-    if scores_count > 0:
+    votes_count = CommitteeVote.objects.filter(
+        vacancy=vacancy, member_id=member_id, is_draft=False).count()
+    if votes_count > 0:
         return JsonResponse({
-            'error': f'Cannot remove — member has submitted {scores_count} score(s).'
+            'error': f'Cannot remove — member has submitted {votes_count} vote(s).'
         }, status=400)
 
     with transaction.atomic():
         entry.is_active = False
         entry.save(update_fields=['is_active'])
         ShortlistLog.objects.create(
-            vacancy=vacancy,
-            application=None,
-            performed_by=request.user,
-            action='member_removed',
-            notes=reason,
-            metadata={'member_id': str(member_id)},
-            performed_by_label=_display_name(request.user),
+            vacancy            = vacancy,
+            application        = None,
+            performed_by       = request.user,
+            action             = 'member_removed',
+            notes              = reason,
+            metadata           = {'member_id': str(member_id)},
+            performed_by_label = _display_name(request.user),
         )
 
-    new_count = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success': True,
+        'success':         True,
         'committee_count': new_count,
-        'new_threshold': new_threshold,
+        'new_threshold':   new_threshold,
     })
 
 
@@ -5052,17 +5461,648 @@ def hr_committee_staff_search(request, vacancy_id):
     return JsonResponse({'results': results})
 
 
-# ── View 6: Committee Progress (HR Monitor) ───────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────
+# Add these imports at the top of views.py if not already present
+# from .models import CommitteeVote, ShortlistResult, ShortlistLog
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+def _generate_shortlist(vacancy, triggered_by):
+    """
+    Compute ShortlistResult for every final_longlisted application on
+    a vacancy. Called once all active committee members have submitted
+    all their votes.
+
+    Returns (shortlisted_count, not_shortlisted_count).
+    Safe to call multiple times — uses update_or_create.
+    """
+    from django.db import transaction
+
+    committee = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    )
+    committee_count = committee.count()
+    threshold = _threshold(committee_count)
+
+    applications = JobApplication.objects.filter(
+        vacancy=vacancy,
+        status__code='final_longlisted',
+    ).select_related('status')
+
+    shortlisted_count     = 0
+    not_shortlisted_count = 0
+
+    shortlisted_status    = JobApplicationStatus.objects.get(code='shortlisted')
+    not_selected_status   = JobApplicationStatus.objects.get(code='not_selected')
+
+    with transaction.atomic():
+        for app in applications:
+            votes = CommitteeVote.objects.filter(
+                vacancy=vacancy,
+                application=app,
+                is_draft=False,
+            )
+            approve_count = votes.filter(approve=True).count()
+            reject_count  = votes.filter(approve=False).count()
+            total_votes   = approve_count + reject_count
+            shortlisted   = approve_count >= threshold
+
+            ShortlistResult.objects.update_or_create(
+                vacancy=vacancy,
+                application=app,
+                defaults={
+                    'total_votes':   total_votes,
+                    'approve_count': approve_count,
+                    'reject_count':  reject_count,
+                    'threshold':     threshold,
+                    'shortlisted':   shortlisted,
+                    'computed_at':   timezone.now(),
+                },
+            )
+
+            # Update application status
+            old_status = app.status
+            new_status = shortlisted_status if shortlisted else not_selected_status
+            app.status = new_status
+            app.save(update_fields=['status'])
+
+            # Write to status history
+            JobApplicationStatusLog.objects.create(
+                application = app,
+                from_status = old_status,
+                to_status   = new_status,
+                changed_by  = triggered_by,
+                notes       = (
+                    f'{"Shortlisted" if shortlisted else "Not shortlisted"} by committee vote. '
+                    f'Approve: {approve_count}, Reject: {reject_count}, Threshold: {threshold}/{committee_count}.'
+                ),
+            )
+
+            if shortlisted:
+                shortlisted_count += 1
+            else:
+                not_shortlisted_count += 1
+
+        # Log
+        ShortlistLog.objects.create(
+            vacancy            = vacancy,
+            performed_by       = triggered_by,
+            action             = 'all_votes_in',
+            notes              = (
+                f'Shortlist generated. {shortlisted_count} shortlisted, '
+                f'{not_shortlisted_count} not shortlisted. '
+                f'Threshold was {threshold}/{committee_count}.'
+            ),
+            metadata           = {
+                'shortlisted':     shortlisted_count,
+                'not_shortlisted': not_shortlisted_count,
+                'threshold':       threshold,
+                'committee_count': committee_count,
+            },
+            performed_by_label = _display_name(triggered_by) if triggered_by else 'System',
+        )
+
+    return shortlisted_count, not_shortlisted_count
+
+
+# ── View: HR Committee Progress ───────────────────────────────────────────────
 
 @login_required
 @role_required(['hod_hr'])
 def hr_committee_progress(request, vacancy_id):
     """
-    HR view to monitor committee scoring/consent progress and
-    trigger finalisation when threshold is met.
-    Will be built in the next step.
+    HR monitoring screen for a vacancy's committee voting progress.
+
+    Shows:
+    - Each committee member and how many votes they've submitted
+    - Each longlisted applicant and vote tally (masked until all voted)
+    - Shortlist results once generated
+    - Button to trigger shortlist generation once all votes are in
     """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
-    # Placeholder — full implementation in hr_committee_progress_view.py
-    from django.shortcuts import redirect
-    return redirect('hr_appoint_committee', vacancy_id=vacancy_id)
+
+    # Applications to be reviewed
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code__in=['final_longlisted', 'shortlisted', 'not_selected'],
+        ).select_related('user', 'status').order_by('application_number')
+    )
+    app_count = len(applications)
+
+    # Active committee members
+    committee = list(
+        ShortlistingCommittee.objects.filter(
+            vacancy=vacancy, is_active=True
+        ).select_related('member').order_by('appointed_at')
+    )
+    committee_count = len(committee)
+    threshold       = _threshold(committee_count)
+
+    # Per-member vote counts
+    member_progress = []
+    for entry in committee:
+        submitted_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=entry.member,
+            is_draft=False,
+        ).count()
+        draft_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=entry.member,
+            is_draft=True,
+        ).count()
+        member_progress.append({
+            'entry':           entry,
+            'name':            _display_name(entry.member),
+            'email':           entry.member.email,
+            'acknowledged':    entry.acknowledged,
+            'votes_submitted': entry.votes_submitted,
+            'submitted_count': submitted_votes,
+            'draft_count':     draft_votes,
+            'remaining':       app_count - submitted_votes,
+            'percent':         int((submitted_votes / app_count * 100)) if app_count else 0,
+        })
+
+    # Overall completion
+    members_done  = sum(1 for m in member_progress if m['votes_submitted'])
+    all_voted     = (members_done == committee_count and committee_count > 0)
+
+    # Shortlist already generated?
+    shortlist_generated = ShortlistResult.objects.filter(vacancy=vacancy).exists()
+
+    # Auto-generate if all voted and not yet generated
+    if all_voted and not shortlist_generated and committee_count > 0:
+        _generate_shortlist(vacancy, request.user)
+        shortlist_generated = True
+
+    # Per-applicant vote data
+    # HR always sees the full picture (no blind rule for HR monitor view)
+    app_rows = []
+    all_votes_qs = CommitteeVote.objects.filter(
+        vacancy=vacancy, is_draft=False
+    ).select_related('member')
+
+    # Build a dict: application_id → list of votes
+    votes_by_app = {}
+    for v in all_votes_qs:
+        votes_by_app.setdefault(v.application_id, []).append(v)
+
+    # Shortlist results dict
+    results_by_app = {
+        r.application_id: r
+        for r in ShortlistResult.objects.filter(vacancy=vacancy)
+    }
+
+    for app in applications:
+        votes      = votes_by_app.get(app.id, [])
+        approvals  = sum(1 for v in votes if v.approve)
+        rejections = sum(1 for v in votes if not v.approve)
+        voted_ids  = {v.member_id for v in votes}
+        pending    = [m for m in committee if m.member_id not in voted_ids]
+        result     = results_by_app.get(app.id)
+
+        app_rows.append({
+            'app':        app,
+            'votes':      votes,
+            'approvals':  approvals,
+            'rejections': rejections,
+            'pending':    pending,
+            'voted_count': len(votes),
+            'result':     result,
+        })
+
+    # Deadline
+    deadline       = vacancy.end_date + timedelta(days=21)
+    days_remaining = (deadline - timezone.now().date()).days
+
+    return render(request, 'recruitment/hr/shortlisting/committee_progress.html', {
+        'page':                'Shortlisting',
+        'vacancy':             vacancy,
+        'app_count':           app_count,
+        'committee':           member_progress,
+        'committee_count':     committee_count,
+        'threshold':           threshold,
+        'members_done':        members_done,
+        'all_voted':           all_voted,
+        'shortlist_generated': shortlist_generated,
+        'app_rows':            app_rows,
+        'deadline':            deadline,
+        'days_remaining':      days_remaining,
+        'deadline_amber':      0 < days_remaining <= 5,
+        'deadline_red':        days_remaining <= 0,
+    })
+
+
+
+def _committee_member_check(request, vacancy_id):
+    """
+    Returns the ShortlistingCommittee entry if the current user is an
+    active member of the committee for this vacancy, else None.
+    """
+    return ShortlistingCommittee.objects.filter(
+        vacancy_id=vacancy_id,
+        member=request.user,
+        is_active=True,
+    ).select_related('vacancy').first()
+
+# ── View 1: Committee Member Dashboard ───────────────────────────────────────
+
+@login_required
+def committee_dashboard(request):
+    """
+    Dashboard for internal staff who are on one or more shortlisting committees.
+    """
+    assignments = ShortlistingCommittee.objects.filter(
+        member=request.user,
+        is_active=True,
+    ).select_related('vacancy').order_by('appointed_at')
+
+    if not assignments.exists():
+        return render(request, 'recruitment/committee/committee_dashboard.html', {
+            'page':        'My Committee Assignments',
+            'assignments': [],
+        })
+
+    rows = []
+    for entry in assignments:
+        vacancy   = entry.vacancy
+        app_count = JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code='final_longlisted',
+        ).count()
+
+        submitted_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=request.user,
+            is_draft=False,
+        ).count()
+
+        draft_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=request.user,
+            is_draft=True,
+        ).count()
+
+        deadline       = vacancy.end_date + timedelta(days=21)
+        days_remaining = (deadline - timezone.now().date()).days
+
+        rows.append({
+            'entry':           entry,
+            'vacancy':         vacancy,
+            'app_count':       app_count,
+            'submitted_votes': submitted_votes,
+            'draft_votes':     draft_votes,
+            'remaining':       app_count - submitted_votes,
+            'percent':         int(submitted_votes / app_count * 100) if app_count else 0,
+            'all_done':        entry.votes_submitted,
+            'acknowledged':    entry.acknowledged,
+            'deadline':        deadline,
+            'days_remaining':  days_remaining,
+            'deadline_amber':  0 < days_remaining <= 5,
+            'deadline_red':    days_remaining <= 0,
+        })
+
+    return render(request, 'recruitment/committee/committee_dashboard.html', {
+        'page':        'My Committee Assignments',
+        'assignments': rows,
+    })
+
+
+# ── View 2: Acknowledge Appointment (POST/AJAX) ───────────────────────────────
+
+@login_required
+@require_POST
+def committee_acknowledge(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'You are not on this committee.'}, status=403)
+
+    if entry.acknowledged:
+        return JsonResponse({'already': True})
+
+    entry.acknowledged    = True
+    entry.acknowledged_at = timezone.now()
+    entry.save(update_fields=['acknowledged', 'acknowledged_at'])
+
+    ShortlistLog.objects.create(
+        vacancy            = entry.vacancy,
+        application        = None,
+        performed_by       = request.user,
+        action             = 'member_acknowledged',
+        notes              = f'{_display_name(request.user)} acknowledged their appointment.',
+        metadata           = {'member_id': str(request.user.pk)},
+        performed_by_label = _display_name(request.user),
+    )
+
+    return JsonResponse({'success': True})
+
+
+# ── View 3: Review & Vote Screen ─────────────────────────────────────────────
+
+@login_required
+def committee_review(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/committee/not_assigned.html', {
+            'page': 'Committee Review',
+        })
+
+    vacancy = entry.vacancy
+
+    # FIX 1: was rendering committee_review.html here — must be acknowledge template
+    if not entry.acknowledged:
+        return render(request, 'recruitment/committee/committee_acknowledge.html', {
+            'page':    'Committee Review',
+            'entry':   entry,
+            'vacancy': vacancy,
+        })
+
+    if entry.votes_submitted:
+        return redirect('committee_results', vacancy_id=vacancy_id)
+
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code='final_longlisted',
+        ).select_related('user', 'status').order_by('application_number')
+    )
+    app_count = len(applications)
+
+    my_votes = {
+        v.application_id: v
+        for v in CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=request.user,
+        )
+    }
+
+    my_submitted_ids = {
+        app_id for app_id, v in my_votes.items()
+        if not v.is_draft
+    }
+
+    other_votes_by_app = {}
+    if my_submitted_ids:
+        for ov in CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            application_id__in=my_submitted_ids,
+            is_draft=False,
+        ).exclude(member=request.user).select_related('member'):
+            other_votes_by_app.setdefault(ov.application_id, []).append(ov)
+
+    app_rows = []
+    submitted_count = 0
+    for app in applications:
+        my_vote      = my_votes.get(app.id)
+        is_submitted = bool(my_vote and not my_vote.is_draft)
+        if is_submitted:
+            submitted_count += 1
+
+        app_rows.append({
+            'app':          app,
+            'my_vote':      my_vote,
+            'is_submitted': is_submitted,
+            'other_votes':  other_votes_by_app.get(app.id, []) if is_submitted else [],
+            'can_vote':     not is_submitted,
+        })
+
+    committee_count = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    ).count()
+    threshold = _threshold(committee_count)
+    deadline  = vacancy.end_date + timedelta(days=21)
+
+    # FIX 2: was 'review.html' — must match actual template filename
+    return render(request, 'recruitment/committee/committee_review.html', {
+        'page':            'Committee Review',
+        'entry':           entry,
+        'vacancy':         vacancy,
+        'app_rows':        app_rows,
+        'app_count':       app_count,
+        'submitted_count': submitted_count,
+        'remaining':       app_count - submitted_count,
+        'all_submitted':   submitted_count == app_count,
+        'committee_count': committee_count,
+        'threshold':       threshold,
+        'deadline':        deadline,
+        'days_remaining':  (deadline - timezone.now().date()).days,
+    })
+
+
+# ── View 4: Save / Submit Single Vote (POST/AJAX) ────────────────────────────
+
+@login_required
+@require_POST
+def committee_vote_save(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'Not authorised.'}, status=403)
+
+    if entry.votes_submitted:
+        return JsonResponse({'error': 'You have already submitted all votes.'}, status=400)
+
+    app_id  = request.POST.get('application_id', '').strip()
+    approve = request.POST.get('approve', '').strip().lower()
+    comment = request.POST.get('comment', '').strip()
+    action  = request.POST.get('action', 'draft')
+
+    if not app_id:
+        return JsonResponse({'error': 'No application specified.'}, status=400)
+    if approve not in ('true', 'false'):
+        return JsonResponse({'error': 'Invalid decision value.'}, status=400)
+    if action == 'submit' and not comment:
+        return JsonResponse({'error': 'A comment is required before submitting.'}, status=400)
+
+    try:
+        application = JobApplication.objects.get(
+            pk=app_id,
+            vacancy_id=vacancy_id,
+            status__code='final_longlisted',
+        )
+    except JobApplication.DoesNotExist:
+        return JsonResponse({'error': 'Application not found.'}, status=404)
+
+    approve_bool = (approve == 'true')
+    is_draft     = (action == 'draft')
+    now          = timezone.now()
+
+    vote, created = CommitteeVote.objects.update_or_create(
+        vacancy     = entry.vacancy,
+        application = application,
+        member      = request.user,
+        defaults    = {
+            'approve':      approve_bool,
+            'comment':      comment,
+            'is_draft':     is_draft,
+            'voted_at':     now,
+            'submitted_at': None if is_draft else now,
+        },
+    )
+
+    if not is_draft:
+        ShortlistLog.objects.create(
+            vacancy            = entry.vacancy,
+            application        = application,
+            performed_by       = request.user,
+            action             = 'vote_submitted',
+            notes              = f'{"Approved" if approve_bool else "Disapproved"}: {comment[:120]}',
+            metadata           = {
+                'member_id': str(request.user.pk),
+                'approve':   approve_bool,
+                'app_id':    str(application.pk),
+            },
+            performed_by_label = _display_name(request.user),
+        )
+
+    revealed_votes = []
+    if not is_draft:
+        for ov in CommitteeVote.objects.filter(
+            vacancy=entry.vacancy,
+            application=application,
+            is_draft=False,
+        ).exclude(member=request.user).select_related('member'):
+            revealed_votes.append({
+                'name':    _display_name(ov.member),
+                'approve': ov.approve,
+                'comment': ov.comment,
+            })
+
+    return JsonResponse({
+        'success':        True,
+        'is_draft':       is_draft,
+        'approve':        approve_bool,
+        'revealed_votes': revealed_votes,
+    })
+
+
+# ── View 5: Submit All Votes ──────────────────────────────────────────────────
+
+@login_required
+@require_POST
+def committee_submit_all(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'Not authorised.'}, status=403)
+
+    if entry.votes_submitted:
+        return JsonResponse({'error': 'Already submitted.'}, status=400)
+
+    vacancy = entry.vacancy
+
+    app_ids = set(
+        JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code='final_longlisted',
+        ).values_list('pk', flat=True)
+    )
+
+    submitted_vote_app_ids = set(
+        CommitteeVote.objects.filter(
+            vacancy=vacancy,
+            member=request.user,
+            is_draft=False,
+        ).values_list('application_id', flat=True)
+    )
+
+    missing = app_ids - submitted_vote_app_ids
+    if missing:
+        return JsonResponse({
+            'error': (
+                f'You still have {len(missing)} applicant(s) without a submitted vote. '
+                f'Please vote on all applicants before submitting.'
+            )
+        }, status=400)
+
+    entry.votes_submitted    = True
+    entry.votes_submitted_at = timezone.now()
+    entry.save(update_fields=['votes_submitted', 'votes_submitted_at'])
+
+    total_members = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    ).count()
+    done_members = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True, votes_submitted=True
+    ).count()
+
+    shortlist_generated = False
+    if done_members == total_members:
+        _generate_shortlist(vacancy, request.user)
+        shortlist_generated = True
+
+    return JsonResponse({
+        'success':             True,
+        'shortlist_generated': shortlist_generated,
+        'redirect_url':        f'/recruitment/committee/vacancy/{vacancy_id}/results/',
+    })
+
+
+# ── View 6: Results Screen ────────────────────────────────────────────────────
+
+@login_required
+def committee_results(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/committee/not_assigned.html', {
+            'page': 'Committee Results',
+        })
+
+    vacancy = entry.vacancy
+
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code__in=['final_longlisted', 'shortlisted', 'not_selected'],
+        ).select_related('user', 'status').order_by('application_number')
+    )
+
+    all_votes = CommitteeVote.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).select_related('member')
+
+    votes_by_app = {}
+    for v in all_votes:
+        votes_by_app.setdefault(v.application_id, []).append(v)
+
+    results_by_app = {
+        r.application_id: r
+        for r in ShortlistResult.objects.filter(vacancy=vacancy)
+    }
+
+    committee_count = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True
+    ).count()
+    all_done = (
+        ShortlistingCommittee.objects.filter(
+            vacancy=vacancy, is_active=True, votes_submitted=True
+        ).count() == committee_count
+    )
+
+    app_rows = []
+    for app in applications:
+        votes    = votes_by_app.get(app.id, [])
+        # FIX 3: compare via member object, not member_id, to avoid UUID type mismatch
+        my_vote  = next((v for v in votes if v.member == request.user), None)
+        result   = results_by_app.get(app.id)
+        approvals = sum(1 for v in votes if v.approve)
+
+        app_rows.append({
+            'app':        app,
+            'votes':      votes,
+            'my_vote':    my_vote,
+            'approvals':  approvals,
+            'rejections': len(votes) - approvals,
+            'result':     result,
+        })
+
+    return render(request, 'recruitment/committee/committee_results.html', {
+        'page':            'My Votes — Results',
+        'entry':           entry,
+        'vacancy':         vacancy,
+        'app_rows':        app_rows,
+        'committee_count': committee_count,
+        'all_done':        all_done,
+        'threshold':       _threshold(committee_count),
+    })
+
+

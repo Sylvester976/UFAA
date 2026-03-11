@@ -1,0 +1,507 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Committee Progress — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy:    #262561;
+    --gold:    #F9E6A1;
+    --gold-dk: #C39545;
+    --green:   #1a7a45;
+    --red:     #c0392b;
+    --amber:   #b7770d;
+}
+a { text-decoration: none !important; }
+
+/* ── Banner ── */
+.page-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+    border-radius: 1rem; padding: 1.25rem 1.5rem;
+    color: #fff; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+}
+.banner-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); margin: 0; }
+.banner-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
+.banner-ref   {
+    font-family: monospace; font-size: 0.72rem;
+    background: rgba(249,230,161,0.15); color: var(--gold);
+    padding: 0.25rem 0.65rem; border-radius: 0.4rem;
+}
+.back-link { color: rgba(255,255,255,0.65); font-size: 0.78rem;
+             display: flex; align-items: center; gap: 0.35rem; }
+.back-link:hover { color: var(--gold); }
+
+/* ── Stat pills ── */
+.stat-pill {
+    background: #fff; border-radius: 0.75rem;
+    padding: 0.75rem 1rem;
+    box-shadow: 0 2px 10px rgba(38,37,97,0.07);
+    display: flex; align-items: center; gap: 0.65rem;
+    flex: 1; min-width: 110px;
+}
+.sp-icon { width: 38px; height: 38px; border-radius: 0.5rem;
+           display: flex; align-items: center; justify-content: center;
+           font-size: 0.9rem; flex-shrink: 0; }
+.sp-val  { font-size: 1.3rem; font-weight: 800; color: var(--navy); line-height: 1; }
+.sp-lbl  { font-size: 0.62rem; color: #8392ab; font-weight: 600;
+           text-transform: uppercase; letter-spacing: .04em; }
+
+/* ── Section card ── */
+.section-card {
+    background: #fff; border-radius: 0.75rem;
+    box-shadow: 0 2px 10px rgba(38,37,97,0.06);
+    margin-bottom: 1rem; overflow: hidden;
+}
+.section-header {
+    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f0f2f8;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 0.5rem;
+}
+.section-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--navy);
+    margin: 0; display: flex; align-items: center; gap: 0.45rem;
+}
+
+/* ── Member progress cards ── */
+.member-card {
+    display: flex; align-items: center; gap: 0.85rem;
+    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f7f8fc;
+}
+.member-card:last-child { border-bottom: none; }
+.member-avatar {
+    width: 36px; height: 36px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--navy), #3949ab);
+    color: #fff; font-size: 0.78rem; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+}
+.member-meta { flex: 1; min-width: 0; }
+.member-name  { font-weight: 600; color: #344767; font-size: 0.82rem;
+                white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.member-email { font-size: 0.7rem; color: #8392ab; }
+
+.progress-wrap { flex: 0 0 160px; }
+.progress-bar-track {
+    height: 6px; background: #f0f2f8; border-radius: 99px; overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, #1a7a45, #2ecc71);
+    transition: width 0.4s ease;
+}
+.progress-bar-fill.amber { background: linear-gradient(90deg, #b7770d, #f39c12); }
+.progress-label { font-size: 0.68rem; color: #8392ab; margin-top: 0.25rem; }
+
+.status-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.2rem 0.6rem; border-radius: 99px;
+    font-size: 0.65rem; font-weight: 700; flex-shrink: 0;
+}
+.chip-done    { background: #d4f5e2; color: #1a7a45; }
+.chip-partial { background: #fff8e1; color: #b7770d; }
+.chip-pending { background: #f0f2f8; color: #8392ab; }
+.chip-noack   { background: #fde8e8; color: #c0392b; }
+
+/* ── Applicant table ── */
+.app-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.app-table th {
+    background: #f8f9ff; color: #8392ab;
+    font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 0.6rem 1rem; border-bottom: 1px solid #f0f2f8;
+    white-space: nowrap;
+}
+.app-table td {
+    padding: 0.7rem 1rem; border-bottom: 1px solid #f7f8fc;
+    color: #344767; vertical-align: middle;
+}
+.app-table tr:last-child td { border-bottom: none; }
+.app-table tr:hover td { background: #fafbff; }
+
+.vote-bar {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.72rem; font-weight: 700;
+}
+.vb-approve { color: var(--green); }
+.vb-reject  { color: var(--red); }
+.vb-pending { color: #b0bac9; font-weight: 400; font-size: 0.68rem; }
+
+.result-badge {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    padding: 0.25rem 0.7rem; border-radius: 99px;
+    font-size: 0.68rem; font-weight: 700;
+}
+.rb-shortlisted { background: #d4f5e2; color: #1a7a45; }
+.rb-rejected    { background: #fde8e8; color: #c0392b; }
+.rb-pending     { background: #f0f2f8; color: #8392ab; }
+
+/* Vote detail popover trigger */
+.vote-detail-btn {
+    background: none; border: none; padding: 0;
+    color: #8392ab; font-size: 0.7rem; cursor: pointer;
+    text-decoration: underline dotted;
+}
+.vote-detail-btn:hover { color: var(--navy); }
+
+/* ── Shortlist banner ── */
+.shortlist-banner {
+    background: linear-gradient(135deg, #1a7a45, #2e8b57);
+    border-radius: 0.75rem; padding: 1.1rem 1.5rem;
+    color: #fff; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.shortlist-banner h6 { color: #d4f5e2; margin: 0; font-size: 0.82rem; }
+.shortlist-banner p  { margin: 0; font-size: 0.75rem; color: rgba(255,255,255,0.8); }
+
+/* ── Action button ── */
+.btn-action {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    padding: 0.45rem 1.1rem; border-radius: 0.4rem;
+    font-size: 0.78rem; font-weight: 600; cursor: pointer;
+    border: none; transition: all 0.15s;
+}
+.btn-navy  { background: var(--navy); color: var(--gold); }
+.btn-navy:hover { opacity: 0.88; color: var(--gold); }
+.btn-gold  { background: var(--gold-dk); color: #fff; }
+.btn-gold:hover  { opacity: 0.88; }
+
+/* ── Tooltip/popover votes ── */
+.votes-popover {
+    font-size: 0.75rem;
+}
+.vote-item {
+    display: flex; gap: 0.5rem; align-items: flex-start;
+    padding: 0.4rem 0; border-bottom: 1px solid #f0f2f8;
+}
+.vote-item:last-child { border-bottom: none; }
+.vi-name    { font-weight: 600; min-width: 100px; }
+.vi-approve { color: var(--green); font-weight: 700; }
+.vi-reject  { color: var(--red); font-weight: 700; }
+.vi-comment { color: #67748e; font-size: 0.7rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner mb-3">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-tasks me-2"></i>Committee Progress
+            </p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'hr_appoint_committee' vacancy.id %}" class="back-link">
+                <i class="fas fa-users-cog me-1"></i> Manage Committee
+            </a>
+            {% if shortlist_generated %}
+            <a href="{% url 'hr_shortlist_review' vacancy.id %}" class="btn-action btn-gold" style="font-size:0.76rem;padding:0.35rem 0.9rem;">
+                <i class="fas fa-list-check"></i> View Shortlist
+            </a>
+            {% endif %}
+            <a href="{% url 'vacancy_shortlisting' %}" class="back-link">
+                <i class="fas fa-arrow-left me-1"></i> All Vacancies
+            </a>
+        </div>
+    </div>
+
+    <!-- Shortlist generated banner -->
+    {% if shortlist_generated %}
+    <div class="shortlist-banner">
+        <div>
+            <h6><i class="fas fa-check-circle me-2"></i>Shortlist Generated</h6>
+            <p>All committee members have submitted their decisions. Results are shown below.</p>
+        </div>
+        <a href="{% url 'hr_shortlist_review' vacancy.id %}" class="btn-action btn-gold">
+            <i class="fas fa-list-check"></i> View Shortlist
+        </a>
+    </div>
+    {% endif %}
+
+    <!-- Stats row -->
+    <div class="d-flex flex-wrap gap-3 mb-3">
+        <div class="stat-pill">
+            <div class="sp-icon" style="background:#eef0fb;color:var(--navy);">
+                <i class="fas fa-file-alt"></i>
+            </div>
+            <div>
+                <div class="sp-val">{{ app_count }}</div>
+                <div class="sp-lbl">Applicants</div>
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="sp-icon" style="background:#d4f5e2;color:var(--green);">
+                <i class="fas fa-users"></i>
+            </div>
+            <div>
+                <div class="sp-val">{{ committee_count }}</div>
+                <div class="sp-lbl">Members</div>
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="sp-icon" style="background:#fff8e1;color:var(--amber);">
+                <i class="fas fa-vote-yea"></i>
+            </div>
+            <div>
+                <div class="sp-val">{{ threshold }}</div>
+                <div class="sp-lbl">Votes to Pass</div>
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="sp-icon" style="{% if all_voted %}background:#d4f5e2;color:var(--green);{% else %}background:#fff8e1;color:var(--amber);{% endif %}">
+                <i class="fas fa-{% if all_voted %}check{% else %}hourglass-half{% endif %}"></i>
+            </div>
+            <div>
+                <div class="sp-val">{{ members_done }}/{{ committee_count }}</div>
+                <div class="sp-lbl">Done Voting</div>
+            </div>
+        </div>
+        <div class="stat-pill">
+            <div class="sp-icon" style="{% if deadline_red %}background:#fde8e8;color:var(--red);{% elif deadline_amber %}background:#fff3cd;color:var(--amber);{% else %}background:#d4f5e2;color:var(--green);{% endif %}">
+                <i class="fas fa-calendar"></i>
+            </div>
+            <div>
+                <div class="sp-val" style="font-size:0.95rem;">{{ deadline|date:"d M" }}</div>
+                <div class="sp-lbl">
+                    {% if deadline_red %}OVERDUE
+                    {% elif deadline_amber %}{{ days_remaining }}d left
+                    {% else %}{{ days_remaining }} days{% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3">
+
+        <!-- Member progress + applicant table -->
+        <div class="col-12">
+
+            <!-- Member progress -->
+            <div class="section-card mb-3">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-users" style="color:var(--gold-dk);"></i>
+                        Member Voting Progress
+                    </h6>
+                    <span style="font-size:0.72rem;color:#8392ab;">
+                        {{ members_done }}/{{ committee_count }} submitted all votes
+                    </span>
+                </div>
+                {% for m in committee %}
+                <div class="member-card">
+                    <div class="member-avatar">{{ m.name|first|upper }}</div>
+                    <div class="member-meta">
+                        <div class="member-name">{{ m.name }}</div>
+                        <div class="member-email">{{ m.email }}</div>
+                    </div>
+                    <div class="progress-wrap">
+                        <div class="progress-bar-track">
+                            <div class="progress-bar-fill {% if not m.votes_submitted %}amber{% endif %}"
+                                 style="width:{{ m.percent }}%"></div>
+                        </div>
+                        <div class="progress-label">
+                            {{ m.submitted_count }}/{{ app_count }} submitted
+                            {% if m.draft_count > 0 %}&nbsp;· {{ m.draft_count }} draft{% endif %}
+                        </div>
+                    </div>
+                    {% if m.votes_submitted %}
+                        <span class="status-chip chip-done">
+                            <i class="fas fa-check-circle"></i> Done
+                        </span>
+                    {% elif not m.acknowledged %}
+                        <span class="status-chip chip-noack">
+                            <i class="fas fa-envelope"></i> Not Acknowledged
+                        </span>
+                    {% elif m.submitted_count > 0 %}
+                        <span class="status-chip chip-partial">
+                            <i class="fas fa-clock"></i> In Progress
+                        </span>
+                    {% else %}
+                        <span class="status-chip chip-pending">
+                            <i class="fas fa-minus-circle"></i> Not Started
+                        </span>
+                    {% endif %}
+                </div>
+                {% empty %}
+                <div style="text-align:center;padding:2rem;color:#b0bac9;font-size:0.8rem;">
+                    <i class="fas fa-user-plus" style="font-size:1.5rem;display:block;margin-bottom:0.5rem;"></i>
+                    No committee members appointed.
+                    <a href="{% url 'hr_appoint_committee' vacancy.id %}">Appoint now</a>
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Applicant vote table -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-file-alt" style="color:var(--gold-dk);"></i>
+                        Applicant Vote Breakdown
+                    </h6>
+                    {% if not all_voted %}
+                    <span style="font-size:0.72rem;color:#b7770d;">
+                        <i class="fas fa-eye-slash me-1"></i>
+                        Full breakdown visible once all members vote
+                    </span>
+                    {% endif %}
+                </div>
+                <div class="table-responsive">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Applicant</th>
+                                <th>App No.</th>
+                                <th style="text-align:center;">Votes In</th>
+                                <th style="text-align:center;">✅ Approve</th>
+                                <th style="text-align:center;">❌ Disapprove</th>
+                                <th style="text-align:center;">Result</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in app_rows %}
+                            <tr>
+                                <td style="color:#adb5bd;font-size:0.72rem;">
+                                    {{ forloop.counter }}
+                                </td>
+                                <td>
+                                    <div style="font-weight:600;color:#344767;font-size:0.82rem;">
+                                        {{ row.app.user.get_full_name|default:row.app.user.email }}
+                                    </div>
+                                </td>
+                                <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
+                                    {{ row.app.application_number }}
+                                </td>
+                                <td style="text-align:center;">
+                                    <span style="font-size:0.8rem;font-weight:700;color:{% if row.voted_count == committee_count %}var(--green){% else %}var(--amber){% endif %};">
+                                        {{ row.voted_count }}/{{ committee_count }}
+                                    </span>
+                                </td>
+                                <td style="text-align:center;">
+                                    {% if all_voted or row.result %}
+                                        <span class="vote-bar vb-approve">
+                                            <i class="fas fa-thumbs-up"></i> {{ row.approvals }}
+                                        </span>
+                                    {% else %}
+                                        <span class="vb-pending">—</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align:center;">
+                                    {% if all_voted or row.result %}
+                                        <span class="vote-bar vb-reject">
+                                            <i class="fas fa-thumbs-down"></i> {{ row.rejections }}
+                                        </span>
+                                    {% else %}
+                                        <span class="vb-pending">—</span>
+                                    {% endif %}
+                                </td>
+                                <td style="text-align:center;">
+                                    {% if row.result %}
+                                        {% if row.result.shortlisted %}
+                                            <span class="result-badge rb-shortlisted">
+                                                <i class="fas fa-check"></i> Shortlisted
+                                            </span>
+                                        {% else %}
+                                            <span class="result-badge rb-rejected">
+                                                <i class="fas fa-times"></i> Not Shortlisted
+                                            </span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="result-badge rb-pending">Pending</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if all_voted and row.votes %}
+                                    <button class="vote-detail-btn"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#voteModal"
+                                            data-appname="{{ row.app.user.get_full_name|default:row.app.user.email }}"
+                                            data-votes='{% for v in row.votes %}{"name":"{{ v.member.get_full_name|default:v.member.email|escapejs }}","approve":{{ v.approve|yesno:"true,false" }},"comment":"{{ v.comment|escapejs }}"}{% if not forloop.last %},{% endif %}{% endfor %}'>
+                                        <i class="fas fa-comment-alt me-1"></i>Comments
+                                    </button>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="8" style="text-align:center;color:#b0bac9;padding:2rem;font-size:0.8rem;">
+                                    No applications found.
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+<!-- Vote detail modal -->
+<div class="modal fade" id="voteModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header" style="background:var(--navy);">
+                <h6 class="modal-title" style="color:var(--gold);font-size:0.9rem;">
+                    <i class="fas fa-comment-alt me-2"></i>
+                    <span id="modal-app-name"></span> — Member Decisions
+                </h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-votes-body" style="font-size:0.8rem;">
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Populate vote detail modal
+document.getElementById('voteModal').addEventListener('show.bs.modal', function(e) {
+    const btn      = e.relatedTarget;
+    const appName  = btn.dataset.appname;
+    const rawVotes = btn.dataset.votes;
+
+    document.getElementById('modal-app-name').textContent = appName;
+
+    let votes = [];
+    try { votes = JSON.parse('[' + rawVotes + ']'); } catch(e) {}
+
+    const body = document.getElementById('modal-votes-body');
+    if (!votes.length) {
+        body.innerHTML = '<p class="text-muted text-center">No votes recorded.</p>';
+        return;
+    }
+
+    body.innerHTML = votes.map(v => `
+        <div class="vote-item">
+            <div style="flex-shrink:0;width:28px;height:28px;border-radius:50%;
+                        background:linear-gradient(135deg,#262561,#3949ab);
+                        color:#fff;display:flex;align-items:center;justify-content:center;
+                        font-size:0.68rem;font-weight:700;">
+                ${v.name[0].toUpperCase()}
+            </div>
+            <div style="flex:1;">
+                <div style="display:flex;align-items:center;gap:0.5rem;">
+                    <span class="vi-name">${v.name}</span>
+                    <span class="${v.approve ? 'vi-approve' : 'vi-reject'}">
+                        ${v.approve
+                            ? '<i class="fas fa-thumbs-up"></i> Approved'
+                            : '<i class="fas fa-thumbs-down"></i> Disapproved'}
+                    </span>
+                </div>
+                <div class="vi-comment mt-1">${v.comment || '<em style="opacity:0.5">No comment</em>'}</div>
+            </div>
+        </div>
+    `).join('');
+});
+</script>
+{% endblock %}

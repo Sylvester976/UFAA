@@ -1,0 +1,215 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}My Votes — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
+    --green: #1a7a45; --red: #c0392b; --amber: #b7770d;
+}
+a { text-decoration: none !important; }
+
+.page-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+    border-radius: 1rem; padding: 1.1rem 1.5rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+.banner-title { font-size: 1rem; font-weight: 700; color: var(--gold); margin: 0; }
+.banner-sub   { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; }
+.banner-ref   { font-family: monospace; font-size: 0.7rem;
+                background: rgba(249,230,161,0.15); color: var(--gold);
+                padding: 0.2rem 0.6rem; border-radius: 0.35rem; }
+.back-link { color: rgba(255,255,255,0.65); font-size: 0.76rem;
+             display: flex; align-items: center; gap: 0.35rem; }
+.back-link:hover { color: var(--gold); }
+
+/* Pending banner */
+.pending-banner {
+    background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: 0.6rem; padding: 0.75rem 1.1rem;
+    font-size: 0.8rem; color: #6d4c00; margin-bottom: 1rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+
+/* Results table */
+.results-card {
+    background: #fff; border-radius: 0.85rem;
+    box-shadow: 0 2px 12px rgba(38,37,97,0.08);
+    overflow: hidden; margin-bottom: 1rem;
+}
+.rc-header {
+    padding: 0.85rem 1.25rem; background: #f8f9ff;
+    border-bottom: 1px solid #f0f2f8;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;
+}
+.rc-title {
+    font-size: 0.82rem; font-weight: 700; color: var(--navy);
+    display: flex; align-items: center; gap: 0.45rem; margin: 0;
+}
+
+.results-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
+.results-table th {
+    background: #f8f9ff; color: #8392ab;
+    font-size: 0.62rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    padding: 0.65rem 1.25rem; border-bottom: 1px solid #f0f2f8;
+}
+.results-table td {
+    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f7f8fc;
+    color: #344767; vertical-align: top;
+}
+.results-table tr:last-child td { border-bottom: none; }
+.results-table tr:hover td { background: #fafbff; }
+
+.app-name  { font-weight: 600; font-size: 0.83rem; color: var(--navy); }
+.app-num   { font-size: 0.68rem; font-family: monospace; color: #8392ab; }
+
+.vote-indicator {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    font-size: 0.72rem; font-weight: 700; padding: 0.22rem 0.6rem;
+    border-radius: 99px;
+}
+.vi-approve { background: #d4f5e2; color: #1a5c38; }
+.vi-reject  { background: #fde8e8; color: var(--red); }
+.vi-none    { background: #f0f2f8; color: #8392ab; }
+
+.comment-text { font-size: 0.76rem; color: #67748e; margin-top: 0.25rem; }
+
+/* Vote bar */
+.vote-bar-wrap { display: flex; align-items: center; gap: 0.5rem; min-width: 140px; }
+.vote-bar-track {
+    flex: 1; height: 6px; background: #f0f2f8;
+    border-radius: 99px; overflow: hidden; display: flex;
+}
+.vb-approve { background: var(--green); height: 100%; transition: width 0.3s; }
+.vb-reject  { background: var(--red);   height: 100%; transition: width 0.3s; }
+.vote-bar-label { font-size: 0.7rem; font-weight: 700; color: #344767; white-space: nowrap; }
+
+.outcome-badge {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    font-size: 0.72rem; font-weight: 700; padding: 0.25rem 0.7rem;
+    border-radius: 99px;
+}
+.ob-shortlisted { background: #d4f5e2; color: #1a5c38; }
+.ob-rejected    { background: #fde8e8; color: var(--red); }
+.ob-pending     { background: #f0f2f8; color: #8392ab; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner mb-3">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-poll me-2"></i>My Votes — Results
+            </p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'committee_dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> My Assignments
+            </a>
+        </div>
+    </div>
+
+    <!-- Pending notice if not all members done -->
+    {% if not all_done %}
+    <div class="pending-banner">
+        <i class="fas fa-clock" style="flex-shrink:0;"></i>
+        <span>
+            Your votes are submitted. The shortlist will be generated automatically once
+            all <strong>{{ committee_count }}</strong> committee members have submitted their votes.
+        </span>
+    </div>
+    {% endif %}
+
+    <!-- Results table -->
+    <div class="results-card">
+        <div class="rc-header">
+            <h6 class="rc-title">
+                <i class="fas fa-list-check" style="color:var(--gold-dk);"></i>
+                Full Vote Summary
+            </h6>
+            <span style="font-size:0.72rem;color:#8392ab;">
+                Threshold: <strong>{{ threshold }}</strong> approval{{ threshold|pluralize }} needed
+            </span>
+        </div>
+
+        <table class="results-table">
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Your Vote</th>
+                    {% if all_done %}<th>Votes</th><th>Outcome</th>{% endif %}
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in app_rows %}
+            <tr>
+                <td>
+                    <div class="app-name">
+                        {{ row.app.user.first_name }} {{ row.app.user.last_name }}
+                    </div>
+                    <div class="app-num">{{ row.app.application_number }}</div>
+                </td>
+                <td>
+                    {% if row.my_vote %}
+                        <span class="vote-indicator {% if row.my_vote.approve %}vi-approve{% else %}vi-reject{% endif %}">
+                            <i class="fas fa-{% if row.my_vote.approve %}check{% else %}times{% endif %}-circle"></i>
+                            {% if row.my_vote.approve %}Approved{% else %}Disapproved{% endif %}
+                        </span>
+                        <div class="comment-text">{{ row.my_vote.comment }}</div>
+                    {% else %}
+                        <span class="vote-indicator vi-none">
+                            <i class="fas fa-minus"></i> No vote recorded
+                        </span>
+                    {% endif %}
+                </td>
+                {% if all_done %}
+                <td>
+                    <div class="vote-bar-wrap">
+                        <div class="vote-bar-track">
+                            {% if row.approvals or row.rejections %}
+                            <div class="vb-approve"
+                                 style="width:{% widthratio row.approvals committee_count 100 %}%"></div>
+                            <div class="vb-reject"
+                                 style="width:{% widthratio row.rejections committee_count 100 %}%"></div>
+                            {% endif %}
+                        </div>
+                        <span class="vote-bar-label">
+                            {{ row.approvals }}/{{ committee_count }}
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    {% if row.result %}
+                        {% if row.result.shortlisted %}
+                            <span class="outcome-badge ob-shortlisted">
+                                <i class="fas fa-check-double"></i> Shortlisted
+                            </span>
+                        {% else %}
+                            <span class="outcome-badge ob-rejected">
+                                <i class="fas fa-times"></i> Not Selected
+                            </span>
+                        {% endif %}
+                    {% else %}
+                        <span class="outcome-badge ob-pending">
+                            <i class="fas fa-clock"></i> Pending
+                        </span>
+                    {% endif %}
+                </td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}
