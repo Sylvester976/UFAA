@@ -1,0 +1,214 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Acknowledge Appointment — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545; --green: #1a7a45; }
+a { text-decoration: none !important; }
+
+.ack-wrapper {
+    max-width: 620px; margin: 2rem auto;
+}
+.ack-card {
+    background: #fff; border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(38,37,97,0.1);
+    overflow: hidden;
+}
+.ack-header {
+    background: linear-gradient(135deg, var(--navy), #1a1f5c);
+    padding: 2rem 2rem 1.5rem;
+    text-align: center;
+}
+.ack-icon {
+    width: 64px; height: 64px; border-radius: 50%;
+    background: rgba(249,230,161,0.15); border: 2px solid rgba(249,230,161,0.3);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem; color: var(--gold);
+}
+.ack-title { font-size: 1.1rem; font-weight: 700; color: var(--gold); margin: 0 0 0.35rem; }
+.ack-sub   { font-size: 0.8rem; color: rgba(255,255,255,0.7); margin: 0; }
+
+.ack-body { padding: 1.75rem 2rem; }
+
+.detail-row {
+    display: flex; gap: 0.75rem; padding: 0.6rem 0;
+    border-bottom: 1px solid #f0f2f8; font-size: 0.82rem;
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-label { min-width: 120px; color: #8392ab; font-weight: 600; flex-shrink: 0; }
+.detail-value { color: #344767; font-weight: 500; }
+
+.obligations-box {
+    background: #f8f9ff; border: 1px solid #e0e4ef;
+    border-radius: 0.6rem; padding: 1rem 1.25rem;
+    margin: 1.25rem 0; font-size: 0.8rem; color: #344767;
+}
+.obligations-box h6 {
+    font-size: 0.75rem; font-weight: 700; color: var(--navy);
+    text-transform: uppercase; letter-spacing: .05em; margin: 0 0 0.75rem;
+}
+.ob-item {
+    display: flex; gap: 0.6rem; align-items: flex-start; margin-bottom: 0.55rem;
+}
+.ob-item:last-child { margin-bottom: 0; }
+.ob-item i { color: var(--gold-dk); margin-top: 0.15rem; flex-shrink: 0; }
+
+.ack-checkbox-row {
+    display: flex; gap: 0.75rem; align-items: flex-start;
+    background: #fff8e1; border: 1px solid #ffe082;
+    border-radius: 0.6rem; padding: 0.85rem 1rem;
+    margin-bottom: 1.25rem; cursor: pointer;
+}
+.ack-checkbox-row input[type=checkbox] {
+    width: 18px; height: 18px; margin-top: 0.1rem;
+    accent-color: var(--navy); flex-shrink: 0; cursor: pointer;
+}
+.ack-checkbox-row label {
+    font-size: 0.8rem; color: #344767; font-weight: 500; cursor: pointer; margin: 0;
+}
+
+.btn-confirm {
+    width: 100%; padding: 0.75rem;
+    background: linear-gradient(135deg, var(--navy), #1a1f5c);
+    color: #fff; border: none; border-radius: 0.5rem;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    transition: opacity 0.15s;
+}
+.btn-confirm:hover:not(:disabled) { opacity: 0.88; }
+.btn-confirm:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.back-link {
+    display: flex; align-items: center; gap: 0.4rem;
+    font-size: 0.76rem; color: #8392ab; margin-top: 1rem;
+    justify-content: center;
+}
+.back-link:hover { color: var(--navy); }
+
+.spin { animation: spin 0.6s linear infinite; display: inline-block; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-3">
+<div class="ack-wrapper">
+    <div class="ack-card">
+        <div class="ack-header">
+            <div class="ack-icon"><i class="fas fa-user-check"></i></div>
+            <p class="ack-title">Committee Appointment</p>
+            <p class="ack-sub">You have been appointed to the shortlisting committee for this vacancy</p>
+        </div>
+
+        <div class="ack-body">
+            <!-- Vacancy details -->
+            <div style="margin-bottom:1.25rem;">
+                <div class="detail-row">
+                    <span class="detail-label">Vacancy</span>
+                    <span class="detail-value">{{ vacancy.title }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reference</span>
+                    <span class="detail-value" style="font-family:monospace;">{{ vacancy.reference_number }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Appointed on</span>
+                    <span class="detail-value">{{ entry.appointed_at|date:"d M Y, H:i" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Appointed by</span>
+                    <span class="detail-value">
+                        {{ entry.appointed_by.first_name|default:'' }}
+                        {{ entry.appointed_by.last_name|default:entry.appointed_by.email }}
+                    </span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Your role</span>
+                    <span class="detail-value">Shortlisting Committee Member</span>
+                </div>
+            </div>
+
+            <!-- Obligations -->
+            <div class="obligations-box">
+                <h6><i class="fas fa-gavel me-2"></i>Your obligations</h6>
+                <div class="ob-item">
+                    <i class="fas fa-check-square"></i>
+                    <span>Review the dossier of every longlisted applicant thoroughly before voting.</span>
+                </div>
+                <div class="ob-item">
+                    <i class="fas fa-check-square"></i>
+                    <span>Cast an <strong>Approve</strong> or <strong>Disapprove</strong> vote with a written comment for each applicant.</span>
+                </div>
+                <div class="ob-item">
+                    <i class="fas fa-check-square"></i>
+                    <span>Your vote is confidential until you submit it — other members cannot see your position beforehand.</span>
+                </div>
+                <div class="ob-item">
+                    <i class="fas fa-check-square"></i>
+                    <span>Complete and submit all votes within the prescribed 21-day window.</span>
+                </div>
+                <div class="ob-item">
+                    <i class="fas fa-check-square"></i>
+                    <span>Declare any conflict of interest to HR immediately.</span>
+                </div>
+            </div>
+
+            <!-- Confirmation checkbox -->
+            <div class="ack-checkbox-row" onclick="toggleAck()">
+                <input type="checkbox" id="ack-check" onchange="toggleAck()">
+                <label for="ack-check">
+                    I acknowledge my appointment to this shortlisting committee and confirm I have
+                    no conflict of interest with any of the applicants for this vacancy.
+                </label>
+            </div>
+
+            <button class="btn-confirm" id="btn-confirm" disabled onclick="doAcknowledge()">
+                <i class="fas fa-clipboard-check"></i> Confirm & Proceed to Review
+            </button>
+        </div>
+    </div>
+
+    <a href="{% url 'committee_dashboard' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to My Assignments
+    </a>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const ACK_URL    = "{% url 'committee_acknowledge' vacancy.id %}";
+const CSRF_TOKEN = '{{ csrf_token }}';
+const REVIEW_URL = "{% url 'committee_review' vacancy.id %}";
+
+function toggleAck() {
+    const checked = document.getElementById('ack-check').checked;
+    document.getElementById('btn-confirm').disabled = !checked;
+}
+
+async function doAcknowledge() {
+    const btn = document.getElementById('btn-confirm');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch spin"></i> Confirming…';
+
+    try {
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+        const resp = await fetch(ACK_URL, { method: 'POST', body: fd });
+        const data = await resp.json();
+        if (resp.ok) {
+            window.location.href = REVIEW_URL;
+        } else {
+            alert(data.error || 'Something went wrong. Please try again.');
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-clipboard-check"></i> Confirm & Proceed to Review';
+        }
+    } catch(e) {
+        alert('Network error. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-clipboard-check"></i> Confirm & Proceed to Review';
+    }
+}
+</script>
+{% endblock %}

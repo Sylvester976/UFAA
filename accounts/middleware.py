@@ -101,7 +101,20 @@ class LoginRequiredMiddleware:
         'hr_committee_notify',
         'hr_committee_remove',
         'hr_committee_add',
+        'hr_shortlist_review',
+        'hr_shortlist_override',
+        'hr_shortlist_finalise',
+        '_notify_rejected_applicants',
+        '_notify_shortlisted_applicants',
 
+
+        #commitee
+        'committee_dashboard',
+        'committee_acknowledge',
+        'committee_review',
+        'committee_vote_save',
+        'committee_submit_all',
+        'committee_results',
 
 
 

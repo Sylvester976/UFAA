@@ -1,0 +1,212 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}My Committee Assignments{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
+    --green: #1a7a45; --red: #c0392b; --amber: #b7770d;
+}
+a { text-decoration: none !important; }
+
+.page-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+    border-radius: 1rem; padding: 1.25rem 1.5rem; color: #fff;
+    display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.banner-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); margin: 0; }
+.banner-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
+
+.assignment-card {
+    background: #fff; border-radius: 0.85rem;
+    box-shadow: 0 2px 12px rgba(38,37,97,0.08);
+    overflow: hidden; transition: box-shadow 0.2s;
+    display: flex; flex-direction: column;
+}
+.assignment-card:hover { box-shadow: 0 6px 24px rgba(38,37,97,0.13); }
+
+.card-head {
+    padding: 1rem 1.25rem; border-bottom: 1px solid #f0f2f8;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 0.75rem;
+}
+.vacancy-title { font-size: 0.88rem; font-weight: 700; color: var(--navy); margin: 0; }
+.vacancy-ref   { font-size: 0.7rem; color: #8392ab; font-family: monospace; }
+
+.status-pill {
+    font-size: 0.68rem; font-weight: 700; padding: 0.2rem 0.6rem;
+    border-radius: 99px; white-space: nowrap; flex-shrink: 0;
+}
+.pill-done   { background: #d4f5e2; color: #1a5c38; }
+.pill-active { background: #eef0fb; color: var(--navy); }
+.pill-noack  { background: #fff3cd; color: #856404; }
+
+.card-body-inner { padding: 1rem 1.25rem; flex: 1; }
+
+.progress-row {
+    display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;
+}
+.progress-track {
+    flex: 1; height: 6px; background: #f0f2f8; border-radius: 99px; overflow: hidden;
+}
+.progress-fill {
+    height: 100%; border-radius: 99px;
+    background: linear-gradient(90deg, var(--navy), #3949ab);
+    transition: width 0.4s ease;
+}
+.progress-fill.done { background: linear-gradient(90deg, var(--green), #2e8b57); }
+.progress-label { font-size: 0.72rem; font-weight: 700; color: var(--navy); min-width: 40px; text-align: right; }
+
+.meta-row {
+    display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 0.5rem;
+}
+.meta-item { font-size: 0.74rem; color: #8392ab; display: flex; align-items: center; gap: 0.3rem; }
+.meta-item strong { color: #344767; }
+
+.deadline-text { font-size: 0.72rem; font-weight: 600; }
+.dl-red    { color: var(--red); }
+.dl-amber  { color: var(--amber); }
+.dl-green  { color: var(--green); }
+
+.card-footer-inner {
+    padding: 0.75rem 1.25rem; background: #fafbff;
+    border-top: 1px solid #f0f2f8;
+    display: flex; justify-content: flex-end; align-items: center; gap: 0.5rem;
+}
+.btn-action {
+    font-size: 0.76rem; font-weight: 600; padding: 0.4rem 1rem;
+    border-radius: 0.4rem; border: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    transition: all 0.15s; text-decoration: none !important;
+}
+.btn-navy  { background: var(--navy); color: #fff !important; }
+.btn-navy:hover { background: #1a1f5c; }
+.btn-green { background: #1a7a45; color: #fff !important; }
+.btn-green:hover { background: #155e36; }
+.btn-outline {
+    background: #fff; border: 1px solid #d0d7f0;
+    color: var(--navy) !important;
+}
+.btn-outline:hover { background: #eef0fb; }
+
+.empty-wrap { text-align: center; padding: 3.5rem 1rem; color: #b0bac9; }
+.empty-wrap i { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+    <div class="page-banner">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-clipboard-check me-2"></i>My Committee Assignments
+            </p>
+            <p class="banner-sub mb-0">
+                Vacancies where you have been appointed to the shortlisting committee
+            </p>
+        </div>
+        <div>
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);">
+                {{ assignments|length }} active assignment{{ assignments|length|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    {% if assignments %}
+    <div class="row g-3">
+        {% for row in assignments %}
+        <div class="col-lg-6">
+            <div class="assignment-card">
+                <div class="card-head">
+                    <div>
+                        <div class="vacancy-title">{{ row.vacancy.title }}</div>
+                        <div class="vacancy-ref">{{ row.vacancy.reference_number }}</div>
+                    </div>
+                    {% if row.all_done %}
+                        <span class="status-pill pill-done"><i class="fas fa-check me-1"></i>Votes Submitted</span>
+                    {% elif not row.acknowledged %}
+                        <span class="status-pill pill-noack"><i class="fas fa-exclamation me-1"></i>Awaiting Acknowledgement</span>
+                    {% else %}
+                        <span class="status-pill pill-active"><i class="fas fa-edit me-1"></i>In Progress</span>
+                    {% endif %}
+                </div>
+
+                <div class="card-body-inner">
+                    <div class="progress-row">
+                        <div class="progress-track">
+                            <div class="progress-fill {% if row.all_done %}done{% endif %}"
+                                 style="width:{{ row.percent }}%"></div>
+                        </div>
+                        <div class="progress-label">{{ row.percent }}%</div>
+                    </div>
+
+                    <div class="meta-row">
+                        <div class="meta-item">
+                            <i class="fas fa-file-alt"></i>
+                            <span><strong>{{ row.app_count }}</strong> applicants</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class="fas fa-check-circle" style="color:var(--green);"></i>
+                            <span><strong>{{ row.submitted_votes }}</strong> submitted</span>
+                        </div>
+                        {% if row.draft_votes %}
+                        <div class="meta-item">
+                            <i class="fas fa-save" style="color:var(--amber);"></i>
+                            <span><strong>{{ row.draft_votes }}</strong> saved as draft</span>
+                        </div>
+                        {% endif %}
+                        <div class="meta-item">
+                            <i class="fas fa-hourglass-half"></i>
+                            <span><strong>{{ row.remaining }}</strong> remaining</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <span class="deadline-text {% if row.deadline_red %}dl-red{% elif row.deadline_amber %}dl-amber{% else %}dl-green{% endif %}">
+                            <i class="fas fa-calendar me-1"></i>
+                            Deadline: {{ row.deadline|date:"d M Y" }}
+                            {% if row.deadline_red %}
+                                — <strong>OVERDUE</strong>
+                            {% elif row.deadline_amber %}
+                                — {{ row.days_remaining }} day{{ row.days_remaining|pluralize }} left
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="card-footer-inner">
+                    {% if row.all_done %}
+                        <a href="{% url 'committee_results' row.vacancy.id %}" class="btn-action btn-outline">
+                            <i class="fas fa-poll"></i> View Results
+                        </a>
+                    {% elif not row.acknowledged %}
+                        <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-action btn-navy">
+                            <i class="fas fa-clipboard-check"></i> Acknowledge Appointment
+                        </a>
+                    {% else %}
+                        <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-action btn-green">
+                            <i class="fas fa-edit"></i>
+                            {% if row.submitted_votes > 0 %}Continue Voting{% else %}Start Voting{% endif %}
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-wrap">
+        <i class="fas fa-clipboard" style="color:#d0d7f0;"></i>
+        <p style="font-size:0.9rem;font-weight:600;color:#8392ab;margin:0;">
+            No active committee assignments
+        </p>
+        <p style="font-size:0.8rem;color:#b0bac9;margin-top:0.35rem;">
+            You will appear here when HR appoints you to a shortlisting committee.
+        </p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

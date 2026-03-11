@@ -921,20 +921,19 @@ main.main-content {
             
             {% if 'admin' in user_roles %}
 
-            <!-- System User Dashboards -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Committee
-                </h6>
-            </li>   
-            <!-- Committee Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
-                href="{% url 'shortlisting_dashboard' %}">
-                    <i class="fas fa-users me-1"></i>
-                    <span class="nav-link-text ms-1">Committee Dashboard</span>
-                </a>
-            </li>
+            <!-- Committee -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        Committee
+                    </h6>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name in 'committee_dashboard,committee_review,committee_acknowledge,committee_results' %}active{% endif %}"
+                       href="{% url 'committee_dashboard' %}">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        <span class="nav-link-text ms-1">My Assignments</span>
+                    </a>
+                </li>
             {% endif %}
 
 

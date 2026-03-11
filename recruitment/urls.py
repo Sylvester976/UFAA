@@ -70,7 +70,7 @@ urlpatterns = [
 
     # Panelist area
     path('panelist/dashboard/', views.panelist_dashboard, name='panelist_dashboard'),
-    path('committee/dashboard/', views.shortlisting_dashboard, name='shortlisting_dashboard'),
+    # path('committee/dashboard/', views.shortlisting_dashboard, name='shortlisting_dashboard'),
 
     path('panelist/vacancy/<int:vacancy_id>/interviews/',
          views.panelist_interview_list,
@@ -220,5 +220,18 @@ urlpatterns = [
     path('hr/vacancy/<int:vacancy_id>/committee/progress/',
          views.hr_committee_progress,
          name='hr_committee_progress'),
+    path('hr/vacancy/<int:vacancy_id>/committee/shortlist/', views.hr_shortlist_review, name='hr_shortlist_review'),
+    path('hr/vacancy/<int:vacancy_id>/committee/shortlist/override/', views.hr_shortlist_override,
+         name='hr_shortlist_override'),
+    path('hr/vacancy/<int:vacancy_id>/committee/shortlist/finalise/', views.hr_shortlist_finalise,
+         name='hr_shortlist_finalise'),
     path('profile/document/<int:doc_id>/delete/', views.delete_document, name='delete_document'),
+
+    #comitee urls
+    path('committee/dashboard/',views.committee_dashboard,   name='committee_dashboard'),
+    path('committee/vacancy/<int:vacancy_id>/acknowledge/', views.committee_acknowledge, name='committee_acknowledge'),
+    path('committee/vacancy/<int:vacancy_id>/review/',   views.committee_review,      name='committee_review'),
+    path('committee/vacancy/<int:vacancy_id>/vote/',     views.committee_vote_save,   name='committee_vote_save'),
+    path('committee/vacancy/<int:vacancy_id>/submit/',   views.committee_submit_all,  name='committee_submit_all'),
+    path('committee/vacancy/<int:vacancy_id>/results/',  views.committee_results,     name='committee_results'),
 ]

@@ -24,738 +24,823 @@
     <link id="pagestyle" href="{% static 'assets/css/base.css' %}" rel="stylesheet"/>
 
     <style>
-/* ══════════════════════════════════════════════════
-   UFAA Job Portal Dashboard
-   Brand: Navy #1D255B · Gold #F9E6A1 / #C7B77F
-   Cleaned + Scrollable Tables Version
-══════════════════════════════════════════════════ */
-
-:root {
-    --ufaa-navy:      #1D255B;
-    --ufaa-navy-deep: #141A45;
-    --ufaa-gold:      #F9E6A1;
-    --ufaa-gold-dark: #C7B77F;
-    --ufaa-gold-mid:  #E0CA7A;
-}
-
-/* ───────────────── KPI CARDS ───────────────── */
-
-.kpi-card {
-    background: #262561;
-    color: #fff;
-    border: none;
-    border-radius: 12px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-}
-
-.kpi-label {
-    font-size: 0.7rem;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    color: #f5f5f5;
-}
-
-.kpi-value {
-    font-weight: 700;
-    color: #fff;
-}
-
-.kpi-icon {
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: #262561;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #fff;
-}
-
-/* ───────────────── DASH CARDS ───────────────── */
-
-.dash-card {
-    background: #fff;
-    border-radius: 1rem;
-    border: none;
-    box-shadow: 0 4px 20px rgba(29,37,91,0.06);
-    /* allow scrollable tables inside cards */
-    overflow: visible;
-}
-
-.dash-card .card-header {
-    background: transparent;
-    border-bottom: 1px solid #f1f1f1;
-    padding: 1rem 1.25rem 0.8rem;
-}
-
-.dash-card .card-body {
-    padding: 1rem 1.25rem;
-}
-
-/* Brand accent */
-.brand-card {
-    border-left: 5px solid #C39545;
-}
-
-/* ───────────────── TABLE FIXED + SCROLL ───────────────── */
-
-.table-responsive {
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(198, 198, 198, 0.5) transparent;
-    padding-bottom: 0.5rem;
-}
-
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: rgba(198, 198, 198, 0.5);
-    border-radius: 4px;
-}
-
-.brand-table {
-    width: 100%;
-    border-collapse: separate;
-    table-layout: auto;
-    min-width: 900px; /* ensure horizontal scroll if table is wider */
-}
-
-.brand-table th,
-.brand-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-/* Sticky header */
-.brand-table thead th {
-    position: sticky;
-    top: 0;
-    background: #262561;
-    color: #fff;
-    z-index: 2;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-}
-
-.brand-table tbody tr:hover {
-    background-color: #FBF1A9;
-}
-
-/* Keep action buttons aligned */
-.table-actions,
-.brand-table td:last-child .d-flex {
-    display: flex;
-    flex-wrap: nowrap;
-    gap: .5rem;
-    justify-content: center;
-}
-
-/* ───────────────── BUTTONS ───────────────── */
-
-.btn-brand {
-    background: #C39545;
-    color: #fff;
-    border: none;
-}
-
-.btn-brand:hover {
-    background: #262561;
-    color: #fff;
-}
-
-.btn-outline-brand {
-    border: 2px solid #C39545;
-    color: #C39545;
-    background: transparent;
-}
-
-.btn-outline-brand:hover {
-    background: #C39545;
-    color: #fff;
-}
-
-.btn-outline-blue {
-    border: 2px solid #262561;
-    color: #262561;
-    background: transparent;
-}
-
-.btn-outline-blue:hover {
-    background: #262561;
-    color: #fff;
-}
-
-/* ───────────────── BADGES ───────────────── */
-
-.status-badge {
-    background: #262561;
-    color: #fff;
-    font-size: 11px;
-    padding: 6px 10px;
-    border-radius: 20px;
-}
-
-/* ───────────────── VACANCY TITLE ───────────────── */
-
-.vacancy-title {
-    font-weight: 700;
-    color: #262561;
-}
-
-.vacancy-ref {
-    font-size: 12px;
-    color: #6c757d;
-}
-
-/* ───────────────── MOBILE VACANCY CARDS ───────────────── */
-
-.vacancy-card {
-    border-radius: 10px;
-    border-left: 4px solid #C39545;
-    background: #fff;
-    padding: 16px;
-    margin-bottom: 15px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
-}
-
-.vacancy-card-title {
-    font-weight: 700;
-    color: #262561;
-}
-
-.vacancy-meta {
-    font-size: 13px;
-    color: #6c757d;
-}
-
-.vacancy-actions {
-    margin-top: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-/* Hide table on small screens */
-@media (max-width: 768px) {
-    .vacancy-table-wrapper {
-        display: none;
-    }
-}
-
-/* Hide cards on desktop */
-@media (min-width: 769px) {
-    .vacancy-card-wrapper {
-        display: none;
-    }
-}
-
-/* ───────────────── FINAL APPOINTMENT ───────────────── */
-
-.final-appointment-card {
-    border-left: 4px solid #262561;
-    border-radius: 10px;
-    padding: 16px;
-    background: #f8f9fa;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 12px;
-}
-
-.final-appointment-title {
-    font-weight: 600;
-    color: #262561;
-}
-
-@media (max-width:768px){
-    .final-appointment-card{
-        flex-direction: column;
-        align-items: flex-start;
-        gap:10px;
-    }
-}
-/* ───────────────── CUSTOM VACANCY TABLE ───────────────── */
-
-.vacancy-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    margin-bottom: 1rem;
-    width: 100%;
-}
-
-.vacancy-table {
-    width: 100%;
-    min-width: 900px; /* ensures horizontal scroll if needed */
-    border-collapse: separate;
-    table-layout: auto;
-}
-
-.vacancy-table th,
-.vacancy-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-.vacancy-table thead th {
-    position: sticky;
-    top: 0;
-    background: #262561;
-    color: #fff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: .5px;
-    z-index: 2;
-}
-
-.vacancy-table tbody tr:hover {
-    background-color: #FBF1A9;
-}
-
-/* Status badges */
-.vacancy-status {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-}
-
-.vacancy-status-draft      { background: #6c757d; } /* gray */
-.vacancy-status-open       { background: #0d6efd; } /* blue */
-.vacancy-status-closed     { background: #343a40; } /* dark */
-.vacancy-status-longlisting { background: #17a2b8; } /* teal */
-.vacancy-status-shortlisting { background: #ffc107; color:#212529; } /* gold */
-.vacancy-status-interviews { background: #6c757d; } /* gray */
-.vacancy-status-ceo_review { background: #198754; } /* green */
-
-/* Action buttons in table */
-.vacancy-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem;
-    justify-content: center;
-}
-
-.vacancy-actions a {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    text-decoration: none;
-    color: #fff;
-}
-
-.vacancy-actions .btn-draft       { background: #6c757d; }
-.vacancy-actions .btn-open        { background: #0d6efd; }
-.vacancy-actions .btn-closed      { background: #343a40; }
-.vacancy-actions .btn-longlisting { background: #17a2b8; }
-.vacancy-actions .btn-shortlisting { background: #ffc107; color:#212529; }
-.vacancy-actions .btn-interviews  { background: #6c757d; }
-.vacancy-actions .btn-ceo_review  { background: #198754; }
-
-/* Responsive: allow scroll on small screens */
-@media (max-width: 768px) {
-    .vacancy-table-container {
-        overflow-x: auto;
-    }
-    .vacancy-actions {
-        justify-content: flex-start;
-    }
-}
-
-/* ───────────────── APPLICATIONS TABLE ───────────────── */
-
-.applications-table-container {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    margin-bottom: 1rem;
-}
-
-.applications-table {
-    width: 100%;
-    min-width: 900px;
-    border-collapse: separate;
-    table-layout: auto;
-}
-
-.applications-table th,
-.applications-table td {
-    vertical-align: middle;
-    white-space: nowrap;
-    padding: 0.75rem 1rem;
-}
-
-/* Sticky header */
-.applications-table thead th {
-    position: sticky;
-    top: 0;
-    background: var(--ufaa-navy);
-    color: #fff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    z-index: 2;
-}
-
-/* Hover effect for rows */
-.applications-table tbody tr:hover {
-    background-color: var(--ufaa-gold-mid);
-}
-
-/* Status badges aligned with dashboard */
-.app-status {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    display: inline-block;
-}
-
-.app-status-pending    { background: var(--ufaa-gold); color: #262561; } /* gold */
-.app-status-reviewed   { background: #262561; } /* navy */
-.app-status-selected   { background: var(--ufaa-gold-dark); color: #fff; } /* dark gold */
-.app-status-rejected   { background: #dc3545; color: #fff; } /* red for rejected */
-
-/* Action buttons styled like dashboard */
-.app-action-btn {
-    font-size: 0.75rem;
-    padding: 4px 8px;
-    border-radius: 6px;
-    text-decoration: none;
-    white-space: nowrap;
-}
-
-.app-action-btn-primary {
-    background: var(--ufaa-navy);
-    color: #fff;
-    border: none;
-}
-
-.app-action-btn-primary:hover {
-    background: var(--ufaa-gold);
-    color: #262561;
-    transition: 0.3s;
-}
-
-/* Responsive adjustments */
-@media (max-width: 768px) {
-    .applications-table-container {
-        overflow-x: auto;
-    }
-    .app-action-btn {
-        margin-bottom: 0.25rem;
-    }
-}
-.messages {
-    margin: 20px 0;
-}
-
-.alert {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 16px;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    font-size: 14px;
-    font-weight: 500;
-    animation: fadeIn 0.3s ease-in-out;
-}
-
-/* Text spacing */
-.alert-text {
-    margin-right: 10px;
-}
-
-/* Success */
-.alert-success {
-    background-color: #e6f9f0;
-    color: #0f5132;
-    border-left: 4px solid #198754;
-}
-
-/* Error */
-.alert-error,
-.alert-danger {
-    background-color: #fdecea;
-    color: #842029;
-    border-left: 4px solid #dc3545;
-}
-
-/* Warning */
-.alert-warning {
-    background-color: #fff4e5;
-    color: #664d03;
-    border-left: 4px solid #ffc107;
-}
-
-/* Info */
-.alert-info {
-    background-color: #e7f3fe;
-    color: #055160;
-    border-left: 4px solid #0dcaf0;
-}
-
-/* Close button */
-.close-btn {
-    background: none;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    color: inherit;
-    padding: 0;
-    line-height: 1;
-}
-
-.close-btn:hover {
-    opacity: 0.6;
-}
-
-/* Animation */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-5px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-                
+        /* ══════════════════════════════════════════════════
+           UFAA Job Portal Dashboard
+           Brand: Navy #1D255B · Gold #F9E6A1 / #C7B77F
+           Cleaned + Scrollable Tables Version
+        ══════════════════════════════════════════════════ */
+
+        :root {
+            --ufaa-navy: #1D255B;
+            --ufaa-navy-deep: #141A45;
+            --ufaa-gold: #F9E6A1;
+            --ufaa-gold-dark: #C7B77F;
+            --ufaa-gold-mid: #E0CA7A;
+        }
+
+        /* ───────────────── KPI CARDS ───────────────── */
+
+        .kpi-card {
+            background: #262561;
+            color: #fff;
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .kpi-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            color: #f5f5f5;
+        }
+
+        .kpi-value {
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .kpi-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #262561;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            color: #fff;
+        }
+
+        /* ───────────────── DASH CARDS ───────────────── */
+
+        .dash-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(29, 37, 91, 0.06);
+            /* allow scrollable tables inside cards */
+            overflow: visible;
+        }
+
+        .dash-card .card-header {
+            background: transparent;
+            border-bottom: 1px solid #f1f1f1;
+            padding: 1rem 1.25rem 0.8rem;
+        }
+
+        .dash-card .card-body {
+            padding: 1rem 1.25rem;
+        }
+
+        /* Brand accent */
+        .brand-card {
+            border-left: 5px solid #C39545;
+        }
+
+        /* ───────────────── TABLE FIXED + SCROLL ───────────────── */
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(198, 198, 198, 0.5) transparent;
+            padding-bottom: 0.5rem;
+        }
+
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+        }
+
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: rgba(198, 198, 198, 0.5);
+            border-radius: 4px;
+        }
+
+        .brand-table {
+            width: 100%;
+            border-collapse: separate;
+            table-layout: auto;
+            min-width: 900px; /* ensure horizontal scroll if table is wider */
+        }
+
+        .brand-table th,
+        .brand-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Sticky header */
+        .brand-table thead th {
+            position: sticky;
+            top: 0;
+            background: #262561;
+            color: #fff;
+            z-index: 2;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+        }
+
+        .brand-table tbody tr:hover {
+            background-color: #FBF1A9;
+        }
+
+        /* Keep action buttons aligned */
+        .table-actions,
+        .brand-table td:last-child .d-flex {
+            display: flex;
+            flex-wrap: nowrap;
+            gap: .5rem;
+            justify-content: center;
+        }
+
+        /* ───────────────── BUTTONS ───────────────── */
+
+        .btn-brand {
+            background: #C39545;
+            color: #fff;
+            border: none;
+        }
+
+        .btn-brand:hover {
+            background: #262561;
+            color: #fff;
+        }
+
+        .btn-outline-brand {
+            border: 2px solid #C39545;
+            color: #C39545;
+            background: transparent;
+        }
+
+        .btn-outline-brand:hover {
+            background: #C39545;
+            color: #fff;
+        }
+
+        .btn-outline-blue {
+            border: 2px solid #262561;
+            color: #262561;
+            background: transparent;
+        }
+
+        .btn-outline-blue:hover {
+            background: #262561;
+            color: #fff;
+        }
+
+        /* ───────────────── BADGES ───────────────── */
+
+        .status-badge {
+            background: #262561;
+            color: #fff;
+            font-size: 11px;
+            padding: 6px 10px;
+            border-radius: 20px;
+        }
+
+        /* ───────────────── VACANCY TITLE ───────────────── */
+
+        .vacancy-title {
+            font-weight: 700;
+            color: #262561;
+        }
+
+        .vacancy-ref {
+            font-size: 12px;
+            color: #6c757d;
+        }
+
+        /* ───────────────── MOBILE VACANCY CARDS ───────────────── */
+
+        .vacancy-card {
+            border-radius: 10px;
+            border-left: 4px solid #C39545;
+            background: #fff;
+            padding: 16px;
+            margin-bottom: 15px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+        }
+
+        .vacancy-card-title {
+            font-weight: 700;
+            color: #262561;
+        }
+
+        .vacancy-meta {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .vacancy-actions {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+
+        /* Hide table on small screens */
+        @media (max-width: 768px) {
+            .vacancy-table-wrapper {
+                display: none;
+            }
+        }
+
+        /* Hide cards on desktop */
+        @media (min-width: 769px) {
+            .vacancy-card-wrapper {
+                display: none;
+            }
+        }
+
+        /* ───────────────── FINAL APPOINTMENT ───────────────── */
+
+        .final-appointment-card {
+            border-left: 4px solid #262561;
+            border-radius: 10px;
+            padding: 16px;
+            background: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .final-appointment-title {
+            font-weight: 600;
+            color: #262561;
+        }
+
+        @media (max-width: 768px) {
+            .final-appointment-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+        }
+
+        /* ───────────────── CUSTOM VACANCY TABLE ───────────────── */
+
+        .vacancy-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .vacancy-table {
+            width: 100%;
+            min-width: 900px; /* ensures horizontal scroll if needed */
+            border-collapse: separate;
+            table-layout: auto;
+        }
+
+        .vacancy-table th,
+        .vacancy-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        .vacancy-table thead th {
+            position: sticky;
+            top: 0;
+            background: #262561;
+            color: #fff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            z-index: 2;
+        }
+
+        .vacancy-table tbody tr:hover {
+            background-color: #FBF1A9;
+        }
+
+        /* Status badges */
+        .vacancy-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+        }
+
+        .vacancy-status-draft {
+            background: #6c757d;
+        }
+
+        /* gray */
+        .vacancy-status-open {
+            background: #0d6efd;
+        }
+
+        /* blue */
+        .vacancy-status-closed {
+            background: #343a40;
+        }
+
+        /* dark */
+        .vacancy-status-longlisting {
+            background: #17a2b8;
+        }
+
+        /* teal */
+        .vacancy-status-shortlisting {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        /* gold */
+        .vacancy-status-interviews {
+            background: #6c757d;
+        }
+
+        /* gray */
+        .vacancy-status-ceo_review {
+            background: #198754;
+        }
+
+        /* green */
+
+        /* Action buttons in table */
+        .vacancy-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            justify-content: center;
+        }
+
+        .vacancy-actions a {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            color: #fff;
+        }
+
+        .vacancy-actions .btn-draft {
+            background: #6c757d;
+        }
+
+        .vacancy-actions .btn-open {
+            background: #0d6efd;
+        }
+
+        .vacancy-actions .btn-closed {
+            background: #343a40;
+        }
+
+        .vacancy-actions .btn-longlisting {
+            background: #17a2b8;
+        }
+
+        .vacancy-actions .btn-shortlisting {
+            background: #ffc107;
+            color: #212529;
+        }
+
+        .vacancy-actions .btn-interviews {
+            background: #6c757d;
+        }
+
+        .vacancy-actions .btn-ceo_review {
+            background: #198754;
+        }
+
+        /* Responsive: allow scroll on small screens */
+        @media (max-width: 768px) {
+            .vacancy-table-container {
+                overflow-x: auto;
+            }
+
+            .vacancy-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        /* ───────────────── APPLICATIONS TABLE ───────────────── */
+
+        .applications-table-container {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+
+        .applications-table {
+            width: 100%;
+            min-width: 900px;
+            border-collapse: separate;
+            table-layout: auto;
+        }
+
+        .applications-table th,
+        .applications-table td {
+            vertical-align: middle;
+            white-space: nowrap;
+            padding: 0.75rem 1rem;
+        }
+
+        /* Sticky header */
+        .applications-table thead th {
+            position: sticky;
+            top: 0;
+            background: var(--ufaa-navy);
+            color: #fff;
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        /* Hover effect for rows */
+        .applications-table tbody tr:hover {
+            background-color: var(--ufaa-gold-mid);
+        }
+
+        /* Status badges aligned with dashboard */
+        .app-status {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #fff;
+            display: inline-block;
+        }
+
+        .app-status-pending {
+            background: var(--ufaa-gold);
+            color: #262561;
+        }
+
+        /* gold */
+        .app-status-reviewed {
+            background: #262561;
+        }
+
+        /* navy */
+        .app-status-selected {
+            background: var(--ufaa-gold-dark);
+            color: #fff;
+        }
+
+        /* dark gold */
+        .app-status-rejected {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        /* red for rejected */
+
+        /* Action buttons styled like dashboard */
+        .app-action-btn {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 6px;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .app-action-btn-primary {
+            background: var(--ufaa-navy);
+            color: #fff;
+            border: none;
+        }
+
+        .app-action-btn-primary:hover {
+            background: var(--ufaa-gold);
+            color: #262561;
+            transition: 0.3s;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .applications-table-container {
+                overflow-x: auto;
+            }
+
+            .app-action-btn {
+                margin-bottom: 0.25rem;
+            }
+        }
+
+        .messages {
+            margin: 20px 0;
+        }
+
+        .alert {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 16px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        /* Text spacing */
+        .alert-text {
+            margin-right: 10px;
+        }
+
+        /* Success */
+        .alert-success {
+            background-color: #e6f9f0;
+            color: #0f5132;
+            border-left: 4px solid #198754;
+        }
+
+        /* Error */
+        .alert-error,
+        .alert-danger {
+            background-color: #fdecea;
+            color: #842029;
+            border-left: 4px solid #dc3545;
+        }
+
+        /* Warning */
+        .alert-warning {
+            background-color: #fff4e5;
+            color: #664d03;
+            border-left: 4px solid #ffc107;
+        }
+
+        /* Info */
+        .alert-info {
+            background-color: #e7f3fe;
+            color: #055160;
+            border-left: 4px solid #0dcaf0;
+        }
+
+        /* Close button */
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 18px;
+            cursor: pointer;
+            color: inherit;
+            padding: 0;
+            line-height: 1;
+        }
+
+        .close-btn:hover {
+            opacity: 0.6;
+        }
+
+        /* Animation */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-5px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         .logo {
-        display: flex;
-        align-items: center;        /* Vertical alignment */
-        justify-content: center;    /* Horizontal centering */
-        width: 100%;                /* Full width so centering works */
+            display: flex;
+            align-items: center; /* Vertical alignment */
+            justify-content: center; /* Horizontal centering */
+            width: 100%; /* Full width so centering works */
         }
 
         .logo-divider {
-        width: 3px;
-        height: 50px;               /* Match logo height */
-        background: linear-gradient(
-            to bottom,
-            #000000 0%, 
-            #000000 28%,
-            #ffffff 28%, 
-            #ffffff 34%, 
-            #BD272F 34%, 
-            #BD272F 62%, 
-            #ffffff 62%, 
-            #ffffff 68%, 
-            #136B38 68%, 
-            #136B38 100%
-        );
-        margin: 0 12px;
+            width: 3px;
+            height: 50px; /* Match logo height */
+            background: linear-gradient(
+                    to bottom,
+                    #000000 0%,
+                    #000000 28%,
+                    #ffffff 28%,
+                    #ffffff 34%,
+                    #BD272F 34%,
+                    #BD272F 62%,
+                    #ffffff 62%,
+                    #ffffff 68%,
+                    #136B38 68%,
+                    #136B38 100%
+            );
+            margin: 0 12px;
         }
 
         /* ===============================
 GLOBAL RESPONSIVE TABLE WRAPPER
 ================================ */
 
-.ufaa-table-wrapper{
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:thin;
-    padding-bottom:4px;
-}
+        .ufaa-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            padding-bottom: 4px;
+        }
 
-.ufaa-table-wrapper::-webkit-scrollbar{
-    height:6px;
-}
+        .ufaa-table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
 
-.ufaa-table-wrapper::-webkit-scrollbar-thumb{
-    background:rgba(0,0,0,.2);
-    border-radius:3px;
-}
-/* ===============================
-TABLE MOBILE BEHAVIOR
-================================ */
+        .ufaa-table-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, .2);
+            border-radius: 3px;
+        }
 
-.brand-table{
-    min-width:750px;
-}
+        /* ===============================
+        TABLE MOBILE BEHAVIOR
+        ================================ */
 
-@media (max-width:768px){
+        .brand-table {
+            min-width: 750px;
+        }
 
-    .brand-table{
-        min-width:650px;
-    }
+        @media (max-width: 768px) {
 
-}
-/* ===============================
-CARD RESPONSIVE FIX
-================================ */
+            .brand-table {
+                min-width: 650px;
+            }
 
-@media (max-width:768px){
+        }
 
-    .dash-card .card-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:4px;
-    }
+        /* ===============================
+        CARD RESPONSIVE FIX
+        ================================ */
 
-    .dash-card .card-body{
-        padding:.8rem;
-    }
+        @media (max-width: 768px) {
 
-}
-/* ===============================
-TABLE ACTIONS
-================================ */
+            .dash-card .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
 
-.table-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:4px;
-    justify-content:center;
-}
+            .dash-card .card-body {
+                padding: .8rem;
+            }
 
-@media (max-width:768px){
+        }
 
-    .table-actions{
-        justify-content:flex-start;
-    }
+        /* ===============================
+        TABLE ACTIONS
+        ================================ */
 
-}
-/* ===============================
-EMPTY STATE
-================================ */
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            justify-content: center;
+        }
 
-.empty-state{
-    text-align:center;
-    padding:2rem 1rem;
-    color:#9aa3b2;
-}
+        @media (max-width: 768px) {
 
-.empty-state i{
-    font-size:2rem;
-    opacity:.15;
-    margin-bottom:.5rem;
-}
-/* =====================================
-UFAA DASHBOARD TABLE SYSTEM
-===================================== */
+            .table-actions {
+                justify-content: flex-start;
+            }
 
-/* ---------- Table Wrapper (mobile scroll) ---------- */
+        }
 
-.ufaa-table-wrapper{
-    width:100%;
-    overflow-x:auto;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:thin;
-    padding-bottom:4px;
-}
+        /* ===============================
+        EMPTY STATE
+        ================================ */
 
-.ufaa-table-wrapper::-webkit-scrollbar{
-    height:6px;
-}
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #9aa3b2;
+        }
 
-.ufaa-table-wrapper::-webkit-scrollbar-thumb{
-    background:rgba(0,0,0,.25);
-    border-radius:3px;
-}
+        .empty-state i {
+            font-size: 2rem;
+            opacity: .15;
+            margin-bottom: .5rem;
+        }
 
+        /* =====================================
+        UFAA DASHBOARD TABLE SYSTEM
+        ===================================== */
 
-/* ---------- Dashboard Scroll Section ---------- */
+        /* ---------- Table Wrapper (mobile scroll) ---------- */
 
-.appoint-scroll{
-    max-height:180px;
-    overflow-y:auto;
-    overflow-x:auto;
+        .ufaa-table-wrapper {
+            width: 100%;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+            padding-bottom: 4px;
+        }
 
-    scrollbar-width:thin;
-    scrollbar-color:rgba(38,37,97,0.2) transparent;
-}
+        .ufaa-table-wrapper::-webkit-scrollbar {
+            height: 6px;
+        }
 
-.appoint-scroll::-webkit-scrollbar{
-    width:5px;
-    height:5px;
-}
-
-.appoint-scroll::-webkit-scrollbar-thumb{
-    background:rgba(38,37,97,0.18);
-    border-radius:3px;
-}
+        .ufaa-table-wrapper::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, .25);
+            border-radius: 3px;
+        }
 
 
-/* ---------- Table Behaviour ---------- */
+        /* ---------- Dashboard Scroll Section ---------- */
 
-.brand-table,
-.vacancy-table{
-    min-width:650px;
-}
+        .appoint-scroll {
+            max-height: 180px;
+            overflow-y: auto;
+            overflow-x: auto;
 
-@media (max-width:768px){
+            scrollbar-width: thin;
+            scrollbar-color: rgba(38, 37, 97, 0.2) transparent;
+        }
 
-    .brand-table,
-    .vacancy-table{
-        min-width:520px;
-    }
+        .appoint-scroll::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
 
-}
-
-
-/* ---------- Table Action Buttons ---------- */
-
-.vacancy-actions,
-.table-actions{
-    display:flex;
-    flex-wrap:wrap;
-    gap:.35rem;
-}
-
-@media (max-width:768px){
-
-    .vacancy-actions,
-    .table-actions{
-        justify-content:flex-start;
-    }
-
-}
+        .appoint-scroll::-webkit-scrollbar-thumb {
+            background: rgba(38, 37, 97, 0.18);
+            border-radius: 3px;
+        }
 
 
-/* ---------- Empty State ---------- */
+        /* ---------- Table Behaviour ---------- */
 
-.empty-state{
-    text-align:center;
-    padding:2rem 1rem;
-    color:#9aa3b2;
-}
+        .brand-table,
+        .vacancy-table {
+            min-width: 650px;
+        }
 
-.empty-state i{
-    font-size:2rem;
-    opacity:.15;
-    margin-bottom:.5rem;
-}
+        @media (max-width: 768px) {
+
+            .brand-table,
+            .vacancy-table {
+                min-width: 520px;
+            }
+
+        }
 
 
-/* ---------- Card Mobile Fix ---------- */
+        /* ---------- Table Action Buttons ---------- */
 
-@media (max-width:768px){
+        .vacancy-actions,
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .35rem;
+        }
 
-    .dash-card .card-header{
-        flex-direction:column;
-        align-items:flex-start;
-        gap:4px;
-    }
+        @media (max-width: 768px) {
 
-    .dash-card .card-body{
-        padding:.8rem;
-    }
+            .vacancy-actions,
+            .table-actions {
+                justify-content: flex-start;
+            }
 
-}
-main.main-content {
-    overflow-y: auto !important;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-}
-        
+        }
+
+
+        /* ---------- Empty State ---------- */
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: #9aa3b2;
+        }
+
+        .empty-state i {
+            font-size: 2rem;
+            opacity: .15;
+            margin-bottom: .5rem;
+        }
+
+
+        /* ---------- Card Mobile Fix ---------- */
+
+        @media (max-width: 768px) {
+
+            .dash-card .card-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 4px;
+            }
+
+            .dash-card .card-body {
+                padding: .8rem;
+            }
+
+        }
+
+        main.main-content {
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
+
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -766,12 +851,12 @@ main.main-content {
        id="sidenav-main">
     <div class="sidenav-header m-0">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-        aria-hidden="true" id="iconSidenav"></i>
-        
+           aria-hidden="true" id="iconSidenav"></i>
+
         <a href="#" class="logo d-flex align-items-center justify-content-center w-100">
-        <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
-        <div class="logo-divider mx-2"></div>
-        <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
+            <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
+            <div class="logo-divider mx-2"></div>
+            <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
         </a>
     </div>
     <hr class="horizontal dark mt-0">
@@ -779,87 +864,83 @@ main.main-content {
         <ul class="navbar-nav">
 
 
-
-
-
-
             {% if 'hod_hr' in user_roles %}
-            <!-- System User Dashboards -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Human Resource
-                </h6>
-            </li> 
-                
-                        <!-- Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
-                            href="{% url 'hr_dashboard' %}">
-                                <i class="fas fa-chart-pie me-2"></i>
-                                Dashboard
-                            </a>
-                        </li>
+                <!-- System User Dashboards -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        Human Resource
+                    </h6>
+                </li>
+
+                <!-- Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'hr_dashboard' %}active{% endif %}"
+                       href="{% url 'hr_dashboard' %}">
+                        <i class="fas fa-chart-pie me-2"></i>
+                        Dashboard
+                    </a>
+                </li>
 
 
-                        <!-- Published Vacancies -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
-                            href="{% url 'vacancy_list' %}">
-                                <i class="fas fa-bullhorn me-2"></i>
-                                Published Vacancies
-                            </a>
-                        </li>
+                <!-- Published Vacancies -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_list' %}active{% endif %}"
+                       href="{% url 'vacancy_list' %}">
+                        <i class="fas fa-bullhorn me-2"></i>
+                        Published Vacancies
+                    </a>
+                </li>
 
 
-                        <!-- Longlists -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
-                            href="{% url 'vacancy_longlisting' %}">
-                                <i class="fas fa-list-ul me-2"></i>
-                                Longlists
-                            </a>
-                        </li>
+                <!-- Longlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_longlisting' %}active{% endif %}"
+                       href="{% url 'vacancy_longlisting' %}">
+                        <i class="fas fa-list-ul me-2"></i>
+                        Longlists
+                    </a>
+                </li>
 
 
-                        <!-- Shortlists -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
-                            href="{% url 'vacancy_shortlisting' %}">
-                                <i class="fas fa-user-check me-2"></i>
-                                <span class="nav-link-text ms-1">Shortlists</span>
-                            </a>
-                        </li>
+                <!-- Shortlists -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_shortlisting' %}active{% endif %}"
+                       href="{% url 'vacancy_shortlisting' %}">
+                        <i class="fas fa-user-check me-2"></i>
+                        <span class="nav-link-text ms-1">Shortlists</span>
+                    </a>
+                </li>
 
 
-                        <!-- Interviews -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
-                            href="{% url 'vacancy_interviews' %}">
-                                <i class="fas fa-comments me-2"></i>
-                                <span class="nav-link-text ms-1">Interviews</span>
-                            </a>
-                        </li>
+                <!-- Interviews -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_interviews' %}active{% endif %}"
+                       href="{% url 'vacancy_interviews' %}">
+                        <i class="fas fa-comments me-2"></i>
+                        <span class="nav-link-text ms-1">Interviews</span>
+                    </a>
+                </li>
 
 
-                        <!-- Appointments -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
-                            href="{% url 'vacancy_appointments' %}">
-                                <i class="fas fa-user-tie me-2"></i>
-                                <span class="nav-link-text ms-1">Appointments</span>
-                            </a>
-                        </li>
+                <!-- Appointments -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'vacancy_appointments' %}active{% endif %}"
+                       href="{% url 'vacancy_appointments' %}">
+                        <i class="fas fa-user-tie me-2"></i>
+                        <span class="nav-link-text ms-1">Appointments</span>
+                    </a>
+                </li>
 
-                        <!-- Interview Templates -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
-                            href="{% url 'template_list' %}">
-                                <i class="fas fa-file-alt me-1"></i>
-                                <span class="nav-link-text ms-1">Interview Templates</span>
-                            </a>
-                        </li>
+                <!-- Interview Templates -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
+                       href="{% url 'template_list' %}">
+                        <i class="fas fa-file-alt me-1"></i>
+                        <span class="nav-link-text ms-1">Interview Templates</span>
+                    </a>
+                </li>
 
-                        
+
                 <!-- Manage Users -->
                 <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'user_list' %}">
@@ -870,74 +951,74 @@ main.main-content {
             {% endif %}
 
 
-            
+
             {% if 'committee' in user_roles %}
 
-            <!-- System User Dashboards -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Committee
-                </h6>
-            </li>   
-                        <!-- Committee Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'shortlisting_dashboard' %}active{% endif %}"
-                            href="{% url 'shortlisting_dashboard' %}">
-                                <i class="fas fa-users me-1"></i>
-                                <span class="nav-link-text ms-1">Committee Dashboard</span>
-                            </a>
-                        </li>
+                <!-- Committee -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        Committee
+                    </h6>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name in 'committee_dashboard,committee_review,committee_acknowledge,committee_results' %}active{% endif %}"
+                       href="{% url 'committee_dashboard' %}">
+                        <i class="fas fa-clipboard-check me-1"></i>
+                        <span class="nav-link-text ms-1">My Assignments</span>
+                    </a>
+                </li>
+
             {% endif %}
 
 
             {% if 'panelist' in user_roles %}
-            
-            <!-- System User Dashboards -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Panelist
-                </h6>
-            </li>   
-                 
-                        <!-- Panelist / Interview Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
-                            href="{% url 'panelist_dashboard' %}">
-                                <i class="fas fa-comments me-1"></i>
-                                <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
-                            </a>
-                        </li>
+
+                <!-- System User Dashboards -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        Panelist
+                    </h6>
+                </li>
+
+                <!-- Panelist / Interview Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
+                       href="{% url 'panelist_dashboard' %}">
+                        <i class="fas fa-comments me-1"></i>
+                        <span class="nav-link-text ms-1">Panelist / Interview Dashboard</span>
+                    </a>
+                </li>
 
             {% endif %}
 
 
 
             {% if 'ceo' in user_roles %}
-                
-            <!-- System User Dashboards -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    CEO
-                </h6>
-            </li>  
-                        <!-- CEO Dashboard -->
-                        <li class="nav-item">
-                            <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
-                            href="{% url 'ceo_dashboard' %}">
-                                <i class="fas fa-chart-line me-1"></i>
-                                <span class="nav-link-text ms-1">CEO Dashboard</span>
-                            </a>
-                        </li>
+
+                <!-- System User Dashboards -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        CEO
+                    </h6>
+                </li>
+                <!-- CEO Dashboard -->
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
+                       href="{% url 'ceo_dashboard' %}">
+                        <i class="fas fa-chart-line me-1"></i>
+                        <span class="nav-link-text ms-1">CEO Dashboard</span>
+                    </a>
+                </li>
             {% endif %}
 
-            
+
             {% if 'admin' in user_roles %}
-            <!-- Administration -->
-            <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    System Admin
-                </h6>
-            </li>
+                <!-- Administration -->
+                <li class="nav-item mt-3">
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        System Admin
+                    </h6>
+                </li>
 
                 <!-- Manage Users -->
                 <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
@@ -963,7 +1044,7 @@ main.main-content {
                     </a>
                 </li>
             {% endif %}
-            
+
         </ul>
         <div class="ps__rail-x" style="left: 0px; bottom: 0px;">
             <div class="ps__thumb-x" tabindex="0" style="left: 0px; width: 0px;"></div>
@@ -1080,17 +1161,17 @@ main.main-content {
     <!-- End Navbar -->
     <div class="container-fluid py-4">
         {% if messages %}
-        <div class="messages">
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }}">
-                <span class="alert-text">{{ message }}</span>
-                <button class="close-btn"
-                        onclick="this.parentElement.style.display='none';">
-                    &times;
-                </button>
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }}">
+                        <span class="alert-text">{{ message }}</span>
+                        <button class="close-btn"
+                                onclick="this.parentElement.style.display='none';">
+                            &times;
+                        </button>
+                    </div>
+                {% endfor %}
             </div>
-            {% endfor %}
-        </div>
         {% endif %}
         <!-- Block content here -->
         {% block content %}
@@ -1149,11 +1230,11 @@ main.main-content {
 <!-- SiennaAccessibility-->
 <script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.SiennaAccessibility) {
-        new SiennaAccessibility();
-    }
-});
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.SiennaAccessibility) {
+            new SiennaAccessibility();
+        }
+    });
 </script>
 
 <script>
@@ -1172,13 +1253,13 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 </script>
 
-    <script>
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    var mainEl = document.querySelector('main.main-content');
-    if (mainEl && mainEl.__scrollbar) {
-      mainEl.__scrollbar.destroy();
+<script>
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        var mainEl = document.querySelector('main.main-content');
+        if (mainEl && mainEl.__scrollbar) {
+            mainEl.__scrollbar.destroy();
+        }
     }
-  }
 </script>
 
 {% block extra_js %}{% endblock %}

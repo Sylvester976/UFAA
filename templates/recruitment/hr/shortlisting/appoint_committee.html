@@ -13,13 +13,13 @@
 }
 a { text-decoration: none !important; }
 
-/* ── Banner ─────────────────────────────────────── */
+/* ── Banner ── */
 .page-banner {
     background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
-    border-radius: 1rem; padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem; color: #fff;
+    border-radius: 1rem; padding: 1.25rem 1.5rem; color: #fff;
     display: flex; align-items: center;
     justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1.25rem;
 }
 .banner-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); margin: 0; }
 .banner-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
@@ -29,16 +29,15 @@ a { text-decoration: none !important; }
     padding: 0.25rem 0.65rem; border-radius: 0.4rem;
 }
 .back-link { color: rgba(255,255,255,0.65); font-size: 0.78rem;
-             display: flex; align-items: center; gap: 0.35rem; transition: color 0.15s; }
+             display: flex; align-items: center; gap: 0.35rem; }
 .back-link:hover { color: var(--gold); }
 
-/* ── Stat pills ─────────────────────────────────── */
+/* ── Stats row ── */
 .stat-pill {
     background: #fff; border-radius: 0.75rem;
-    padding: 0.75rem 1rem;
-    box-shadow: 0 2px 10px rgba(38,37,97,0.07);
+    padding: 0.75rem 1rem; box-shadow: 0 2px 10px rgba(38,37,97,0.07);
     display: flex; align-items: center; gap: 0.65rem;
-    flex: 1; min-width: 120px;
+    flex: 1; min-width: 110px;
 }
 .sp-icon { width: 38px; height: 38px; border-radius: 0.5rem;
            display: flex; align-items: center; justify-content: center;
@@ -49,119 +48,152 @@ a { text-decoration: none !important; }
 .sp-apps      .sp-icon { background: #eef0fb; color: var(--navy); }
 .sp-members   .sp-icon { background: #d4f5e2; color: var(--green); }
 .sp-threshold .sp-icon { background: #fff8e1; color: var(--amber); }
-.sp-deadline  .sp-icon { background: #fde8e8; color: var(--red); }
+.sp-deadline       .sp-icon { background: #fde8e8; color: var(--red); }
 .sp-deadline-amber .sp-icon { background: #fff3cd; color: var(--amber); }
 .sp-deadline-green .sp-icon { background: #d4f5e2; color: var(--green); }
 
-/* ── Threshold banner ───────────────────────────── */
-.threshold-badge {
+/* ── Info banner ── */
+.info-banner {
     background: #fff8e1; border: 1px solid #ffe082;
     border-radius: 0.5rem; padding: 0.6rem 1rem;
     font-size: 0.8rem; color: #6d4c00;
     display: flex; align-items: center; gap: 0.5rem;
-}
-.threshold-met { background: #d4f5e2; border-color: #a5d6a7; color: #1a5c38; }
-
-/* ── Section cards ──────────────────────────────── */
-.section-card {
-    background: #fff; border-radius: 0.75rem;
-    box-shadow: 0 2px 10px rgba(38,37,97,0.06);
-    margin-bottom: 1rem; overflow: hidden;
-}
-.section-header {
-    padding: 0.85rem 1.25rem; border-bottom: 1px solid #f0f2f8;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.5rem;
-}
-.section-title {
-    font-size: 0.82rem; font-weight: 700; color: var(--navy);
-    margin: 0; display: flex; align-items: center; gap: 0.45rem;
+    margin-bottom: 1rem;
 }
 
-/* ── Committee table ────────────────────────────── */
+/* ── Main card ── */
+.main-card {
+    background: #fff; border-radius: 1rem;
+    box-shadow: 0 2px 16px rgba(38,37,97,0.08);
+    overflow: hidden;
+}
+
+/* ── Tab nav ── */
+.tab-nav {
+    display: flex; border-bottom: 2px solid #f0f2f8;
+    background: #fafbff; padding: 0 1.25rem;
+    gap: 0;
+}
+.tab-btn {
+    padding: 0.85rem 1.25rem; font-size: 0.8rem; font-weight: 700;
+    color: #8392ab; background: none; border: none;
+    border-bottom: 3px solid transparent; margin-bottom: -2px;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 0.45rem;
+    white-space: nowrap;
+}
+.tab-btn:hover { color: var(--navy); }
+.tab-btn.active {
+    color: var(--navy); border-bottom-color: var(--navy);
+}
+.tab-badge {
+    background: #eef0fb; color: var(--navy);
+    font-size: 0.62rem; font-weight: 700;
+    padding: 0.15rem 0.45rem; border-radius: 99px;
+    transition: background 0.15s;
+}
+.tab-btn.active .tab-badge { background: var(--navy); color: #fff; }
+
+/* ── Tab panes ── */
+.tab-pane { display: none; }
+.tab-pane.active { display: block; }
+
+/* ── Committee table ── */
 .committee-table { width: 100%; border-collapse: collapse; font-size: 0.8rem; }
 .committee-table th {
     background: #f8f9ff; color: #8392ab;
-    font-size: 0.63rem; font-weight: 700;
+    font-size: 0.62rem; font-weight: 700;
     text-transform: uppercase; letter-spacing: .05em;
-    padding: 0.6rem 1rem; border-bottom: 1px solid #f0f2f8;
+    padding: 0.65rem 1.25rem; border-bottom: 1px solid #f0f2f8;
 }
 .committee-table td {
-    padding: 0.75rem 1rem; border-bottom: 1px solid #f7f8fc;
+    padding: 0.8rem 1.25rem; border-bottom: 1px solid #f7f8fc;
     color: #344767; vertical-align: middle;
 }
 .committee-table tr:last-child td { border-bottom: none; }
 .committee-table tr:hover td { background: #fafbff; }
 
 .member-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
+    width: 34px; height: 34px; border-radius: 50%;
     background: linear-gradient(135deg, var(--navy), #3949ab);
-    color: #fff; font-size: 0.72rem; font-weight: 700;
+    color: #fff; font-size: 0.75rem; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
 .member-name  { font-weight: 600; color: #344767; font-size: 0.82rem; }
-.member-email { font-size: 0.72rem; color: #8392ab; }
+.member-email { font-size: 0.7rem; color: #8392ab; }
 
-.score-badge {
+.status-chip {
     display: inline-flex; align-items: center; gap: 0.3rem;
-    font-size: 0.72rem; font-weight: 600;
-    padding: 0.2rem 0.55rem; border-radius: 99px;
+    font-size: 0.7rem; font-weight: 600;
+    padding: 0.22rem 0.6rem; border-radius: 99px;
 }
-.sb-pending { background: #f0f2f8; color: #8392ab; }
-.sb-partial { background: #fff3cd; color: #856404; }
-.sb-done    { background: #d4f5e2; color: #1a5c38; }
+.chip-pending { background: #f0f2f8; color: #8392ab; }
+.chip-partial { background: #fff3cd; color: #856404; }
+.chip-done    { background: #d4f5e2; color: #1a5c38; }
+.chip-noack   { background: #fde8e8; color: #c0392b; }
 
 .btn-remove {
-    font-size: 0.72rem; padding: 0.25rem 0.65rem;
+    font-size: 0.72rem; padding: 0.28rem 0.7rem;
     border-radius: 0.35rem; border: 1px solid #fce4e4;
     background: #fff5f5; color: var(--red);
     cursor: pointer; transition: all 0.15s;
+    display: inline-flex; align-items: center; gap: 0.3rem;
 }
-.btn-remove:hover     { background: #fde8e8; }
-.btn-remove:disabled  { opacity: 0.4; cursor: not-allowed; }
+.btn-remove:hover { background: #fde8e8; border-color: var(--red); }
+.btn-remove.locked {
+    background: #f8f9ff; border-color: #e0e4ef;
+    color: #b0bac9; cursor: not-allowed;
+}
 
-.empty-state { text-align: center; padding: 2.5rem 1rem; color: #b0bac9; }
-.empty-state i { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
+.empty-state {
+    text-align: center; padding: 3rem 1rem; color: #b0bac9;
+}
+.empty-state i { font-size: 2.5rem; display: block; margin-bottom: 0.75rem; }
 .empty-state p { font-size: 0.82rem; margin: 0; }
 
-/* ── Staff list ─────────────────────────────────── */
-.staff-filter-bar {
+/* ── Table toolbar ── */
+.table-toolbar {
     padding: 0.85rem 1.25rem;
     border-bottom: 1px solid #f0f2f8;
-    display: flex; gap: 0.5rem; align-items: center;
+    display: flex; align-items: center;
+    justify-content: space-between; gap: 0.75rem; flex-wrap: wrap;
 }
-.staff-filter-input {
-    flex: 1; padding: 0.5rem 0.85rem 0.5rem 2.2rem;
+.toolbar-left  { display: flex; align-items: center; gap: 0.5rem; }
+.toolbar-right { display: flex; align-items: center; gap: 0.5rem; }
+
+/* ── Staff list ── */
+.staff-search-wrap { position: relative; }
+.staff-search-wrap .si {
+    position: absolute; left: 0.75rem; top: 50%;
+    transform: translateY(-50%); color: #b0bac9; font-size: 0.75rem;
+    pointer-events: none;
+}
+.staff-search-input {
+    padding: 0.48rem 0.85rem 0.48rem 2.1rem;
     border: 1px solid #e0e4ef; border-radius: 0.5rem;
     font-size: 0.8rem; color: #344767; background: #fafbff;
-    transition: border-color 0.15s;
+    transition: border-color 0.15s; width: 220px;
 }
-.staff-filter-input:focus {
+.staff-search-input:focus {
     outline: none; border-color: var(--navy);
     box-shadow: 0 0 0 3px rgba(38,37,97,0.08);
 }
-.filter-icon-wrap { position: relative; flex: 1; }
-.filter-icon-wrap .fi { position: absolute; left: 0.7rem; top: 50%;
-                        transform: translateY(-50%); color: #b0bac9;
-                        font-size: 0.75rem; pointer-events: none; }
 
-.staff-list-wrap {
-    max-height: 420px; overflow-y: auto;
-}
+.staff-list-wrap { max-height: 480px; overflow-y: auto; }
 .staff-row {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.65rem 1.25rem; border-bottom: 1px solid #f7f8fc;
+    padding: 0.7rem 1.25rem; border-bottom: 1px solid #f7f8fc;
     transition: background 0.1s; cursor: pointer;
 }
 .staff-row:last-child { border-bottom: none; }
-.staff-row:hover { background: #f8f9ff; }
+.staff-row:hover:not(.on-committee) { background: #f8f9ff; }
 .staff-row.on-committee { opacity: 0.45; cursor: default; pointer-events: none; }
 
 .staff-avatar {
-    width: 30px; height: 30px; border-radius: 50%;
+    width: 32px; height: 32px; border-radius: 50%;
     background: linear-gradient(135deg, #3949ab, #5c6bc0);
-    color: #fff; font-size: 0.68rem; font-weight: 700;
+    color: #fff; font-size: 0.7rem; font-weight: 700;
     display: inline-flex; align-items: center; justify-content: center;
     flex-shrink: 0;
 }
@@ -170,79 +202,85 @@ a { text-decoration: none !important; }
 
 .staff-tag-added {
     margin-left: auto; font-size: 0.65rem; font-weight: 700;
-    padding: 0.15rem 0.5rem; border-radius: 99px;
+    padding: 0.18rem 0.55rem; border-radius: 99px;
     background: #d4f5e2; color: #1a5c38; flex-shrink: 0;
 }
 .btn-add-staff {
     margin-left: auto; flex-shrink: 0;
-    font-size: 0.72rem; padding: 0.25rem 0.65rem;
+    font-size: 0.72rem; padding: 0.28rem 0.7rem;
     border-radius: 0.35rem; border: 1px solid #d0d7f0;
     background: #eef0fb; color: var(--navy);
     cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    display: inline-flex; align-items: center; gap: 0.3rem;
 }
 .btn-add-staff:hover { background: var(--navy); color: #fff; }
 
-.staff-empty { text-align: center; padding: 1.5rem; color: #b0bac9; font-size: 0.8rem; }
+.staff-empty {
+    text-align: center; padding: 2.5rem; color: #b0bac9; font-size: 0.8rem;
+}
 
-/* ── Notify button ──────────────────────────────── */
+/* ── Card footer ── */
+.card-footer-bar {
+    padding: 0.85rem 1.25rem;
+    border-top: 1px solid #f0f2f8;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 0.5rem;
+    background: #fafbff;
+}
+.footer-note { font-size: 0.72rem; color: #8392ab; }
+
+/* ── Buttons ── */
 .btn-notify {
     background: #fff; border: 1px solid #e0e4ef;
-    color: #344767; padding: 0.45rem 1rem;
-    border-radius: 0.4rem; font-size: 0.78rem; font-weight: 600;
-    cursor: pointer; display: flex; align-items: center; gap: 0.4rem;
+    color: #344767; padding: 0.42rem 0.9rem;
+    border-radius: 0.4rem; font-size: 0.76rem; font-weight: 600;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;
     transition: all 0.15s;
 }
 .btn-notify:hover { background: #f8f9ff; border-color: var(--navy); }
 
-/* ── Proceed button ─────────────────────────────── */
 .btn-proceed {
     background: linear-gradient(135deg, #1a7a45, #2e8b57);
-    color: #fff; border: none;
-    padding: 0.5rem 1.25rem; border-radius: 0.5rem;
-    font-size: 0.8rem; font-weight: 600; cursor: pointer;
-    display: flex; align-items: center; gap: 0.4rem;
+    color: #fff !important; border: none; text-decoration: none !important;
+    padding: 0.48rem 1.1rem; border-radius: 0.45rem;
+    font-size: 0.78rem; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    transition: opacity 0.15s;
 }
-.btn-proceed:hover { opacity: 0.88; color: #fff; }
+.btn-proceed:hover { opacity: 0.88; }
 
-/* ── Toast ──────────────────────────────────────── */
+/* ── Toasts ── */
 .toast-wrap {
     position: fixed; bottom: 1.5rem; right: 1.5rem;
     z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
     pointer-events: none;
 }
 .toast-msg {
-    background: #344767; color: #fff;
-    padding: 0.65rem 1rem; border-radius: 0.5rem;
-    font-size: 0.8rem; box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    background: #344767; color: #fff; padding: 0.65rem 1rem;
+    border-radius: 0.5rem; font-size: 0.8rem;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
     display: flex; align-items: center; gap: 0.5rem;
     animation: slideUp 0.2s ease-out; pointer-events: auto;
 }
 .toast-msg.success { background: #1a7a45; }
 .toast-msg.error   { background: #c0392b; }
 @keyframes slideUp {
-    from { transform: translateY(16px); opacity: 0; }
+    from { transform: translateY(12px); opacity: 0; }
     to   { transform: translateY(0);    opacity: 1; }
 }
-
-/* ── Spinner ────────────────────────────────────── */
-.spin { display: inline-block; animation: spin 0.6s linear infinite; }
+.spin { animation: spin 0.6s linear infinite; display: inline-block; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ── Remove modal ───────────────────────────────── */
-#removeModal .modal-header {
-    background: var(--navy); color: #fff;
-    border-radius: 0.5rem 0.5rem 0 0;
-}
-#removeModal .modal-title { color: var(--gold); font-size: 0.95rem; }
+#removeModal .modal-header { background: var(--navy); }
+#removeModal .modal-title  { color: var(--gold); font-size: 0.9rem; }
 </style>
 {% endblock %}
-
 
 {% block content %}
 <div class="container-fluid py-2">
 
-    <!-- ── Banner ───────────────────────────────────────────── -->
-    <div class="page-banner mb-3">
+    <!-- Banner -->
+    <div class="page-banner">
         <div>
             <p class="banner-title mb-1">
                 <i class="fas fa-users-cog me-2"></i>Appoint Shortlisting Committee
@@ -257,13 +295,13 @@ a { text-decoration: none !important; }
         </div>
     </div>
 
-    <!-- ── Stats ────────────────────────────────────────────── -->
+    <!-- Stats -->
     <div class="d-flex flex-wrap gap-3 mb-3">
         <div class="stat-pill sp-apps">
             <div class="sp-icon"><i class="fas fa-file-alt"></i></div>
             <div>
                 <div class="sp-val">{{ app_count }}</div>
-                <div class="sp-lbl">Candidates to Score</div>
+                <div class="sp-lbl">Applicants to Review</div>
             </div>
         </div>
         <div class="stat-pill sp-members">
@@ -277,210 +315,247 @@ a { text-decoration: none !important; }
             <div class="sp-icon"><i class="fas fa-vote-yea"></i></div>
             <div>
                 <div class="sp-val" id="threshold-display">{{ threshold }}</div>
-                <div class="sp-lbl">Consents Required (50%+1)</div>
+                <div class="sp-lbl">Approvals to Pass</div>
             </div>
         </div>
         <div class="stat-pill {% if deadline_red %}sp-deadline{% elif deadline_amber %}sp-deadline-amber{% else %}sp-deadline-green{% endif %}">
-            <div class="sp-icon"><i class="fas fa-calendar{% if deadline_red or deadline_amber %}-exclamation{% else %}-check{% endif %}"></i></div>
+            <div class="sp-icon">
+                <i class="fas fa-calendar{% if deadline_red or deadline_amber %}-exclamation{% else %}-check{% endif %}"></i>
+            </div>
             <div>
-                <div class="sp-val" style="font-size:0.95rem;{% if deadline_red %}color:var(--red);{% elif deadline_amber %}color:var(--amber);{% endif %}">
+                <div class="sp-val" style="font-size:0.95rem;
+                    {% if deadline_red %}color:var(--red);{% elif deadline_amber %}color:var(--amber);{% endif %}">
                     {{ deadline|date:"d M Y" }}
                 </div>
                 <div class="sp-lbl">
                     {% if deadline_red %}OVERDUE
-                    {% elif deadline_amber %}{{ days_remaining }} day{{ days_remaining|pluralize }} left
-                    {% else %}{{ days_remaining }} days left{% endif %}
+                    {% elif deadline_amber %}{{ days_remaining }}d left
+                    {% else %}{{ days_remaining }} days{% endif %}
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ── Threshold notice ─────────────────────────────────── -->
-    <div class="threshold-badge mb-3" id="threshold-banner">
-        <i class="fas fa-info-circle"></i>
+    <!-- Info banner -->
+    <div class="info-banner" id="threshold-banner">
+        <i class="fas fa-info-circle" style="flex-shrink:0;"></i>
         <span id="threshold-text">
             {% if committee_count == 0 %}
-                No committee members appointed yet. Select staff from the list on the right.
+                No committee members appointed yet. Go to the <strong>Staff Directory</strong> tab to appoint members.
             {% else %}
                 With <strong>{{ committee_count }}</strong> member{{ committee_count|pluralize }},
-                <strong>{{ threshold }}</strong> consent{{ threshold|pluralize }} are required
-                before HR can finalise the shortlist
+                <strong>{{ threshold }}</strong> approval{{ threshold|pluralize }} are required
+                per applicant to make the shortlist
                 (floor({{ committee_count }} ÷ 2) + 1 = {{ threshold }}).
             {% endif %}
         </span>
     </div>
 
-    <div class="row g-3">
+    <!-- Main tabbed card -->
+    <div class="main-card">
 
-        <!-- ── Left: Current Committee ──────────────────────── -->
-        <div class="col-lg-6">
-            <div class="section-card">
-                <div class="section-header">
-                    <h6 class="section-title">
-                        <i class="fas fa-users" style="color:var(--gold-dk);"></i>
-                        Appointed Committee
-                        <span class="badge ms-1"
-                              style="background:#eef0fb;color:var(--navy);
-                                     font-size:0.65rem;font-weight:700;
-                                     border-radius:99px;padding:0.2rem 0.5rem;"
-                              id="member-badge">{{ committee_count }}</span>
-                    </h6>
+        <!-- Tab nav -->
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('committee', this)">
+                <i class="fas fa-users"></i>
+                Appointed Committee
+                <span class="tab-badge" id="member-badge">{{ committee_count }}</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('staff', this)">
+                <i class="fas fa-address-book"></i>
+                Staff Directory
+                <span class="tab-badge">{{ all_staff|length }}</span>
+            </button>
+        </div>
+
+        <!-- ── Tab 1: Appointed Committee ── -->
+        <div class="tab-pane active" id="tab-committee">
+
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <span style="font-size:0.78rem;color:#67748e;">
+                        <strong id="member-count-text">{{ committee_count }}</strong>
+                        member{{ committee_count|pluralize }} appointed
+                    </span>
+                </div>
+                <div class="toolbar-right">
                     {% if committee_count > 0 %}
                     <button class="btn-notify" id="btn-notify-all">
                         <i class="fas fa-paper-plane"></i> Notify All
                     </button>
                     {% endif %}
-                </div>
-
-                <div id="committee-table-wrap">
-                {% if committee %}
-                <table class="committee-table">
-                    <thead>
-                        <tr>
-                            <th>Member</th>
-                            <th>Appointed</th>
-                            <th>Scores</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="committee-tbody">
-                    {% for item in committee %}
-                    <tr id="member-row-{{ item.entry.member_id }}">
-                        <td>
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="member-avatar">{{ item.name|first|upper }}</div>
-                                <div>
-                                    <div class="member-name">{{ item.name }}</div>
-                                    <div class="member-email">{{ item.email }}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="color:#8392ab;font-size:0.75rem;white-space:nowrap;">
-                            {{ item.entry.appointed_at|date:"d M Y" }}<br>
-                            <span style="font-size:0.68rem;">
-                                by {{ item.entry.appointed_by.first_name|default:'' }} {{ item.entry.appointed_by.last_name|default:item.entry.appointed_by.email }}
-                            </span>
-                        </td>
-                        <td>
-                            {% if item.entry.scores_submitted %}
-                                <span class="score-badge sb-done"><i class="fas fa-check-circle"></i> Submitted</span>
-                            {% elif item.scores_done > 0 %}
-                                <span class="score-badge sb-partial"><i class="fas fa-clock"></i> {{ item.scores_done }}/{{ app_count }}</span>
-                            {% else %}
-                                <span class="score-badge sb-pending"><i class="fas fa-minus-circle"></i> Not Started</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end">
-                            {% if item.can_remove %}
-                            <button class="btn-remove"
-                                    onclick="openRemoveModal('{{ item.entry.member_id }}', '{{ item.name|escapejs }}')">
-                                <i class="fas fa-times"></i> Remove
-                            </button>
-                            {% else %}
-                            <button class="btn-remove" disabled title="Cannot remove after scoring begins">
-                                <i class="fas fa-lock"></i>
-                            </button>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state" id="empty-state">
-                    <i class="fas fa-user-plus"></i>
-                    <p>No members appointed yet.<br>Select staff from the list on the right.</p>
-                </div>
-                {% endif %}
-                </div>
-
-                {% if committee_count >= 3 %}
-                <div class="d-flex justify-content-end p-3" style="border-top:1px solid #f0f2f8;">
+                    {% if committee_count >= 3 %}
                     <a href="{% url 'hr_committee_progress' vacancy.id %}" class="btn-proceed">
-                        <i class="fas fa-arrow-right"></i> Monitor Progress
+                        <i class="fas fa-tasks"></i> Monitor Progress
                     </a>
+                    {% endif %}
                 </div>
-                {% endif %}
             </div>
+
+            <div id="committee-table-wrap">
+            {% if committee %}
+            <table class="committee-table">
+                <thead>
+                    <tr>
+                        <th>Member</th>
+                        <th>Appointed</th>
+                        <th>Appointed By</th>
+                        <th>Status</th>
+                        <th style="text-align:right;">Action</th>
+                    </tr>
+                </thead>
+                <tbody id="committee-tbody">
+                {% for item in committee %}
+                <tr id="member-row-{{ item.entry.member_id }}">
+                    <td>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="member-avatar">{{ item.name|first|upper }}</div>
+                            <div>
+                                <div class="member-name">{{ item.name }}</div>
+                                <div class="member-email">{{ item.email }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td style="color:#8392ab;font-size:0.76rem;white-space:nowrap;">
+                        {{ item.entry.appointed_at|date:"d M Y" }}
+                    </td>
+                    <td style="color:#8392ab;font-size:0.76rem;">
+                        {{ item.entry.appointed_by.first_name|default:'' }}
+                        {{ item.entry.appointed_by.last_name|default:item.entry.appointed_by.email }}
+                    </td>
+                    <td>
+                        {% if item.entry.votes_submitted %}
+                            <span class="status-chip chip-done">
+                                <i class="fas fa-check-circle"></i> All Votes In
+                            </span>
+                        {% elif item.votes_done > 0 %}
+                            <span class="status-chip chip-partial">
+                                <i class="fas fa-clock"></i>
+                                {{ item.votes_done }}/{{ app_count }} voted
+                            </span>
+                        {% elif item.entry.acknowledged %}
+                            <span class="status-chip chip-pending">
+                                <i class="fas fa-eye"></i> Acknowledged
+                            </span>
+                        {% else %}
+                            <span class="status-chip chip-noack">
+                                <i class="fas fa-envelope"></i> Awaiting Ack.
+                            </span>
+                        {% endif %}
+                    </td>
+                    <td style="text-align:right;">
+                        {% if item.can_remove %}
+                        <button class="btn-remove"
+                                onclick="openRemoveModal('{{ item.entry.member_id }}', '{{ item.name|escapejs }}')">
+                            <i class="fas fa-times"></i> Remove
+                        </button>
+                        {% else %}
+                        <button class="btn-remove locked" disabled
+                                title="Cannot remove after voting begins">
+                            <i class="fas fa-lock"></i> Locked
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state" id="empty-state">
+                <i class="fas fa-user-plus" style="color:#d0d7f0;"></i>
+                <p>No members appointed yet.</p>
+                <p style="margin-top:0.35rem;">
+                    <button class="btn-add-staff" style="margin:0 auto;"
+                            onclick="switchTab('staff', document.querySelectorAll('.tab-btn')[1])">
+                        <i class="fas fa-arrow-right"></i> Go to Staff Directory
+                    </button>
+                </p>
+            </div>
+            {% endif %}
+            </div>
+
+            <div class="card-footer-bar">
+                <span class="footer-note">
+                    <i class="fas fa-lock me-1"></i>
+                    Members are locked once they submit any votes.
+                </span>
+                <span class="footer-note">
+                    <i class="fas fa-eye-slash me-1"></i>
+                    Each member's vote is hidden from others until they submit.
+                </span>
+            </div>
+
         </div>
 
-        <!-- ── Right: Staff List ─────────────────────────────── -->
-        <div class="col-lg-6">
-            <div class="section-card">
-                <div class="section-header">
-                    <h6 class="section-title">
-                        <i class="fas fa-users" style="color:var(--gold-dk);"></i>
-                        Staff Directory
-                        <span style="font-size:0.7rem;color:#8392ab;font-weight:400;">
-                            — click to appoint
-                        </span>
-                    </h6>
-                    <span style="font-size:0.72rem;color:#8392ab;" id="staff-count-label">
-                        {{ all_staff|length }} staff member{{ all_staff|length|pluralize }}
-                    </span>
-                </div>
+        <!-- ── Tab 2: Staff Directory ── -->
+        <div class="tab-pane" id="tab-staff">
 
-                <!-- Filter bar -->
-                <div class="staff-filter-bar">
-                    <div class="filter-icon-wrap">
-                        <i class="fas fa-search fi"></i>
-                        <input type="text" class="staff-filter-input"
+            <div class="table-toolbar">
+                <div class="toolbar-left">
+                    <div class="staff-search-wrap">
+                        <i class="fas fa-search si"></i>
+                        <input type="text" class="staff-search-input"
                                id="staff-filter"
-                               placeholder="Filter by name or email…"
+                               placeholder="Search by name or email…"
                                oninput="filterStaff(this.value)">
                     </div>
                 </div>
+                <div class="toolbar-right">
+                    <span style="font-size:0.76rem;color:#8392ab;" id="staff-count-label">
+                        {{ all_staff|length }} staff member{{ all_staff|length|pluralize }}
+                    </span>
+                </div>
+            </div>
 
-                <!-- Staff rows -->
-                <div class="staff-list-wrap" id="staff-list">
-                {% for s in all_staff %}
-                    <div class="staff-row {% if s.on_committee %}on-committee{% endif %}"
-                         id="staff-row-{{ s.id }}"
-                         data-name="{{ s.name|lower }}"
-                         data-email="{{ s.email|lower }}"
-                         {% if not s.on_committee %}onclick="appointStaff('{{ s.id }}', '{{ s.name|escapejs }}', '{{ s.email|escapejs }}')"{% endif %}>
-                        <div class="staff-avatar">{{ s.name|first|upper }}</div>
-                        <div>
-                            <div class="staff-name">{{ s.name }}</div>
-                            <div class="staff-email">{{ s.email }}</div>
-                        </div>
-                        {% if s.on_committee %}
-                            <span class="staff-tag-added"><i class="fas fa-check me-1"></i>Added</span>
-                        {% else %}
-                            <span class="btn-add-staff"><i class="fas fa-plus me-1"></i>Add</span>
-                        {% endif %}
+            <div class="staff-list-wrap" id="staff-list">
+            {% for s in all_staff %}
+                <div class="staff-row {% if s.on_committee %}on-committee{% endif %}"
+                     id="staff-row-{{ s.id }}"
+                     data-name="{{ s.name|lower }}"
+                     data-email="{{ s.email|lower }}"
+                     {% if not s.on_committee %}
+                     onclick="appointStaff('{{ s.id }}', '{{ s.name|escapejs }}', '{{ s.email|escapejs }}')"
+                     {% endif %}>
+                    <div class="staff-avatar">{{ s.name|first|upper }}</div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="staff-name">{{ s.name }}</div>
+                        <div class="staff-email">{{ s.email }}</div>
                     </div>
-                {% empty %}
-                    <div class="staff-empty">No internal staff accounts found.</div>
-                {% endfor %}
+                    {% if s.on_committee %}
+                        <span class="staff-tag-added">
+                            <i class="fas fa-check me-1"></i>On Committee
+                        </span>
+                    {% else %}
+                        <span class="btn-add-staff">
+                            <i class="fas fa-plus"></i> Appoint
+                        </span>
+                    {% endif %}
                 </div>
-
+            {% empty %}
+                <div class="staff-empty">No internal staff accounts found.</div>
+            {% endfor %}
             </div>
 
-            <!-- Guidance card -->
-            <div class="section-card">
-                <div style="padding:1rem 1.25rem;font-size:0.78rem;color:#67748e;">
-                    <p style="margin:0 0 0.5rem;">
-                        <i class="fas fa-lightbulb me-1" style="color:var(--gold-dk);"></i>
-                        <strong>Tip:</strong> Appoint an odd number of members to avoid tied consent votes. Minimum 3 is advised.
-                    </p>
-                    <p style="margin:0;">
-                        <i class="fas fa-lock me-1" style="color:#b0bac9;"></i>
-                        Members cannot be removed once they have submitted scores. Applicants for this vacancy are excluded from the list.
-                    </p>
-                </div>
+            <div class="card-footer-bar">
+                <span class="footer-note">
+                    <i class="fas fa-lightbulb me-1" style="color:var(--gold-dk);"></i>
+                    Appoint an odd number of members to avoid tied votes. Minimum 3 advised.
+                </span>
             </div>
+
         </div>
 
-    </div><!-- /row -->
+    </div><!-- /main-card -->
 </div>
 
-<!-- ── Remove Modal ──────────────────────────────────────────────── -->
+<!-- Remove Modal -->
 <div class="modal fade" id="removeModal" tabindex="-1">
     <div class="modal-dialog modal-sm modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h6 class="modal-title"><i class="fas fa-user-minus me-2"></i>Remove Member</h6>
+                <h6 class="modal-title">
+                    <i class="fas fa-user-minus me-2"></i>Remove Member
+                </h6>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -489,7 +564,7 @@ a { text-decoration: none !important; }
                 </p>
                 <label style="font-size:0.75rem;font-weight:600;color:#8392ab;
                                text-transform:uppercase;letter-spacing:.04em;">
-                    Reason <span style="color:#c0392b;">*</span>
+                    Reason <span style="color:var(--red);">*</span>
                 </label>
                 <textarea id="remove-reason" rows="3"
                           style="width:100%;padding:0.5rem;border:1px solid #e0e4ef;
@@ -500,7 +575,8 @@ a { text-decoration: none !important; }
                      style="color:var(--red);font-size:0.75rem;margin-top:0.3rem;display:none;"></div>
             </div>
             <div class="modal-footer" style="gap:0.5rem;">
-                <button type="button" class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-sm btn-secondary"
+                        data-bs-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-sm btn-danger"
                         id="btn-confirm-remove" onclick="doRemove()">
                     <i class="fas fa-user-minus me-1"></i>Remove
@@ -510,11 +586,8 @@ a { text-decoration: none !important; }
     </div>
 </div>
 
-<!-- ── Toast container ───────────────────────────────────────────── -->
 <div class="toast-wrap" id="toast-wrap"></div>
-
 {% endblock %}
-
 
 {% block extra_js %}
 <script>
@@ -526,43 +599,44 @@ const APP_COUNT  = {{ app_count }};
 
 let removingMemberId = null;
 
+// ── Tab switching ─────────────────────────────────────────────────
+function switchTab(name, btn) {
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    btn.classList.add('active');
+}
+
 // ── Toast ─────────────────────────────────────────────────────────
 function toast(msg, type = 'success') {
     const el = document.createElement('div');
     el.className = `toast-msg ${type}`;
-    const icon = type === 'success' ? 'check-circle' : 'times-circle';
-    el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${msg}`;
     document.getElementById('toast-wrap').appendChild(el);
     setTimeout(() => el.remove(), 4000);
 }
 
-// ── Filter staff list ─────────────────────────────────────────────
+// ── Staff filter ──────────────────────────────────────────────────
 function filterStaff(q) {
     q = q.toLowerCase().trim();
     let visible = 0;
     document.querySelectorAll('#staff-list .staff-row').forEach(row => {
-        const match = !q
-            || row.dataset.name.includes(q)
-            || row.dataset.email.includes(q);
+        const match = !q || row.dataset.name.includes(q) || row.dataset.email.includes(q);
         row.style.display = match ? '' : 'none';
         if (match) visible++;
     });
     document.getElementById('staff-count-label').textContent =
         visible + ' staff member' + (visible !== 1 ? 's' : '');
-
-    // Empty message
     let emptyEl = document.getElementById('staff-filter-empty');
     if (visible === 0 && q) {
         if (!emptyEl) {
             emptyEl = document.createElement('div');
             emptyEl.id = 'staff-filter-empty';
             emptyEl.className = 'staff-empty';
-            emptyEl.innerHTML = `No staff matching "<em>${q}</em>"`;
             document.getElementById('staff-list').appendChild(emptyEl);
-        } else {
-            emptyEl.innerHTML = `No staff matching "<em>${q}</em>"`;
-            emptyEl.style.display = '';
         }
+        emptyEl.innerHTML = `No staff matching "<em>${q}</em>"`;
+        emptyEl.style.display = '';
     } else if (emptyEl) {
         emptyEl.style.display = 'none';
     }
@@ -570,12 +644,8 @@ function filterStaff(q) {
 
 // ── Appoint ───────────────────────────────────────────────────────
 async function appointStaff(memberId, name, email) {
-    // Grey out the row immediately (optimistic UI)
     const staffRow = document.getElementById(`staff-row-${memberId}`);
-    if (staffRow) {
-        staffRow.style.opacity = '0.5';
-        staffRow.style.pointerEvents = 'none';
-    }
+    if (staffRow) { staffRow.style.opacity = '0.5'; staffRow.style.pointerEvents = 'none'; }
 
     try {
         const fd = new FormData();
@@ -588,35 +658,27 @@ async function appointStaff(memberId, name, email) {
 
         if (!resp.ok || data.error) {
             toast(data.error || 'Appointment failed.', 'error');
-            // Restore row
             if (staffRow) { staffRow.style.opacity = ''; staffRow.style.pointerEvents = ''; }
             return;
         }
 
-        // Mark staff row as "Added"
+        // Update staff row → "On Committee"
         if (staffRow) {
             staffRow.classList.add('on-committee');
             staffRow.style.opacity = '';
             staffRow.style.pointerEvents = '';
             staffRow.onclick = null;
             const btn = staffRow.querySelector('.btn-add-staff');
-            if (btn) {
-                btn.outerHTML = '<span class="staff-tag-added"><i class="fas fa-check me-1"></i>Added</span>';
-            }
+            if (btn) btn.outerHTML = '<span class="staff-tag-added"><i class="fas fa-check me-1"></i>On Committee</span>';
         }
 
-        // Append row to committee table
         appendMemberRow(data.member);
-        updateThresholdUI(data.committee_count, data.new_threshold);
+        updateCountUI(data.committee_count, data.new_threshold);
 
-        // Hide empty state
         const es = document.getElementById('empty-state');
         if (es) es.style.display = 'none';
 
-        // Show notify button if not already there
-        ensureNotifyButton(data.committee_count);
-
-        toast(`${name} appointed.${data.email_sent ? ' Email sent.' : ''}`, 'success');
+        toast(`${name} appointed.${data.email_sent ? ' Appointment email sent.' : ''}`, 'success');
 
     } catch (e) {
         toast('Network error. Please try again.', 'error');
@@ -627,11 +689,11 @@ async function appointStaff(memberId, name, email) {
 function appendMemberRow(member) {
     let tbody = document.getElementById('committee-tbody');
     if (!tbody) {
-        const wrap = document.getElementById('committee-table-wrap');
-        wrap.innerHTML = `
+        document.getElementById('committee-table-wrap').innerHTML = `
             <table class="committee-table">
                 <thead><tr>
-                    <th>Member</th><th>Appointed</th><th>Scores</th><th></th>
+                    <th>Member</th><th>Appointed</th><th>Appointed By</th>
+                    <th>Status</th><th style="text-align:right;">Action</th>
                 </tr></thead>
                 <tbody id="committee-tbody"></tbody>
             </table>`;
@@ -649,15 +711,14 @@ function appendMemberRow(member) {
                 </div>
             </div>
         </td>
-        <td style="color:#8392ab;font-size:0.75rem;white-space:nowrap;">
-            ${member.appointed_at}
-        </td>
+        <td style="color:#8392ab;font-size:0.76rem;white-space:nowrap;">${member.appointed_at}</td>
+        <td style="color:#8392ab;font-size:0.76rem;">You</td>
         <td>
-            <span class="score-badge sb-pending">
-                <i class="fas fa-minus-circle"></i> Not Started
+            <span class="status-chip chip-noack">
+                <i class="fas fa-envelope"></i> Awaiting Ack.
             </span>
         </td>
-        <td class="text-end">
+        <td style="text-align:right;">
             <button class="btn-remove"
                     onclick="openRemoveModal('${member.id}', '${member.name.replace(/'/g,"\\'")}')">
                 <i class="fas fa-times"></i> Remove
@@ -666,31 +727,39 @@ function appendMemberRow(member) {
     tbody.appendChild(tr);
 }
 
-// ── Update threshold UI ───────────────────────────────────────────
-function updateThresholdUI(count, threshold) {
+function updateCountUI(count, threshold) {
     document.getElementById('committee-count-display').textContent = count;
     document.getElementById('threshold-display').textContent       = threshold;
     document.getElementById('member-badge').textContent            = count;
+    document.getElementById('member-count-text').textContent       = count;
 
+    // Update toolbar notify/progress buttons
+    const toolbar = document.querySelector('#tab-committee .toolbar-right');
+    if (toolbar) {
+        if (count > 0 && !document.getElementById('btn-notify-all')) {
+            const nb = document.createElement('button');
+            nb.className = 'btn-notify'; nb.id = 'btn-notify-all';
+            nb.innerHTML = '<i class="fas fa-paper-plane"></i> Notify All';
+            nb.addEventListener('click', notifyAll);
+            toolbar.prepend(nb);
+        }
+        if (count >= 3 && !document.getElementById('btn-monitor')) {
+            const pb = document.createElement('a');
+            pb.className = 'btn-proceed'; pb.id = 'btn-monitor';
+            pb.href = window.location.pathname.replace('appoint', 'progress').replace('/committee/appoint/', '/committee/progress/');
+            pb.innerHTML = '<i class="fas fa-tasks"></i> Monitor Progress';
+            toolbar.appendChild(pb);
+        }
+    }
+
+    // Update threshold text
     const text = document.getElementById('threshold-text');
     if (count === 0) {
-        text.innerHTML = 'No committee members appointed yet. Select staff from the list on the right.';
+        text.innerHTML = 'No committee members appointed yet. Go to the <strong>Staff Directory</strong> tab to appoint members.';
     } else {
         text.innerHTML = `With <strong>${count}</strong> member${count !== 1 ? 's' : ''}, ` +
-            `<strong>${threshold}</strong> consent${threshold !== 1 ? 's are' : ' is'} required ` +
-            `before HR can finalise (floor(${count} ÷ 2) + 1 = ${threshold}).`;
-    }
-}
-
-function ensureNotifyButton(count) {
-    if (count === 1 && !document.getElementById('btn-notify-all')) {
-        const header = document.querySelector('.section-card .section-header');
-        const btn = document.createElement('button');
-        btn.className = 'btn-notify';
-        btn.id = 'btn-notify-all';
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Notify All';
-        btn.addEventListener('click', notifyAll);
-        header.appendChild(btn);
+            `<strong>${threshold}</strong> approval${threshold !== 1 ? 's are' : ' is'} required ` +
+            `per applicant (floor(${count} ÷ 2) + 1 = ${threshold}).`;
     }
 }
 
@@ -707,7 +776,7 @@ async function doRemove() {
     const reason = document.getElementById('remove-reason').value.trim();
     const errEl  = document.getElementById('remove-error');
     if (!reason) {
-        errEl.textContent   = 'Please enter a reason for removal.';
+        errEl.textContent = 'Please enter a reason for removal.';
         errEl.style.display = 'block';
         return;
     }
@@ -726,32 +795,31 @@ async function doRemove() {
         const data = await resp.json();
 
         if (!resp.ok || data.error) {
-            errEl.textContent   = data.error || 'Removal failed.';
+            errEl.textContent = data.error || 'Removal failed.';
             errEl.style.display = 'block';
         } else {
-            // Remove from committee table
             const row = document.getElementById(`member-row-${removingMemberId}`);
             if (row) row.remove();
 
-            // Re-enable staff row
+            // Re-enable in staff tab
             const staffRow = document.getElementById(`staff-row-${removingMemberId}`);
             if (staffRow) {
                 staffRow.classList.remove('on-committee');
                 staffRow.onclick = () => {
-                    const name  = staffRow.querySelector('.staff-name').textContent;
-                    const email = staffRow.querySelector('.staff-email').textContent;
-                    appointStaff(removingMemberId, name, email);
+                    const n = staffRow.querySelector('.staff-name').textContent;
+                    const e = staffRow.querySelector('.staff-email').textContent;
+                    appointStaff(removingMemberId, n, e);
                 };
                 const tag = staffRow.querySelector('.staff-tag-added');
-                if (tag) tag.outerHTML = '<span class="btn-add-staff"><i class="fas fa-plus me-1"></i>Add</span>';
+                if (tag) tag.outerHTML = '<span class="btn-add-staff"><i class="fas fa-plus"></i> Appoint</span>';
             }
 
-            updateThresholdUI(data.committee_count, data.new_threshold);
-            toast('Member removed.', 'success');
+            updateCountUI(data.committee_count, data.new_threshold);
+            toast('Member removed from committee.', 'success');
             bootstrap.Modal.getInstance(document.getElementById('removeModal')).hide();
         }
     } catch(e) {
-        errEl.textContent   = 'Network error. Please try again.';
+        errEl.textContent = 'Network error. Please try again.';
         errEl.style.display = 'block';
     }
 
@@ -765,8 +833,8 @@ async function notifyAll() {
         title: 'Send Appointment Emails?',
         text:  'Re-sends the appointment email to all active committee members.',
         icon:  'question',
-        showCancelButton: true,
-        confirmButtonText: 'Send Emails',
+        showCancelButton:   true,
+        confirmButtonText:  'Send Emails',
         confirmButtonColor: '#262561',
     });
     if (!ok.isConfirmed) return;
@@ -780,11 +848,10 @@ async function notifyAll() {
         fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
         const resp = await fetch(NOTIFY_URL, { method: 'POST', body: fd });
         const data = await resp.json();
-
         if (!resp.ok || data.error) {
             toast(data.error || 'Notification failed.', 'error');
         } else {
-            toast(`${data.sent_count} email${data.sent_count !== 1 ? 's' : ''} sent.`, 'success');
+            toast(`${data.sent_count} email${data.sent_count !== 1 ? 's' : ''} sent successfully.`, 'success');
         }
     } catch(e) {
         toast('Network error.', 'error');
