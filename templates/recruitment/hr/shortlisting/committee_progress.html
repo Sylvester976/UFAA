@@ -239,9 +239,20 @@ a { text-decoration: none !important; }
             </div>
             <div>
                 <div class="sp-val">{{ committee_count }}</div>
-                <div class="sp-lbl">Members</div>
+                <div class="sp-lbl">Active Members</div>
             </div>
         </div>
+        {% if recused_count %}
+        <div class="stat-pill">
+            <div class="sp-icon" style="background:#fde8e8;color:var(--red);">
+                <i class="fas fa-user-slash"></i>
+            </div>
+            <div>
+                <div class="sp-val">{{ recused_count }}</div>
+                <div class="sp-lbl">Recused (COI)</div>
+            </div>
+        </div>
+        {% endif %}
         <div class="stat-pill">
             <div class="sp-icon" style="background:#fff8e1;color:var(--amber);">
                 <i class="fas fa-vote-yea"></i>
@@ -289,15 +300,41 @@ a { text-decoration: none !important; }
                     </h6>
                     <span style="font-size:0.72rem;color:#8392ab;">
                         {{ members_done }}/{{ committee_count }} submitted all votes
+                        {% if recused_count %}&nbsp;·&nbsp;
+                            <span style="color:var(--red);">{{ recused_count }} recused</span>
+                        {% endif %}
                     </span>
                 </div>
                 {% for m in committee %}
-                <div class="member-card">
-                    <div class="member-avatar">{{ m.name|first|upper }}</div>
-                    <div class="member-meta">
-                        <div class="member-name">{{ m.name }}</div>
-                        <div class="member-email">{{ m.email }}</div>
+                <div class="member-card {% if m.is_recused %}opacity-50{% endif %}"
+                     style="{% if m.is_recused %}background:#fff8f8;{% endif %}">
+                    <div class="member-avatar"
+                         style="{% if m.is_recused %}background:linear-gradient(135deg,#c0392b,#96281b);{% endif %}">
+                        {{ m.name|first|upper }}
                     </div>
+                    <div class="member-meta">
+                        <div class="member-name">
+                            {{ m.name }}
+                            {% if m.is_recused %}
+                            <span style="font-size:0.65rem;font-weight:600;color:var(--red);
+                                         background:#fde8e8;padding:0.1rem 0.4rem;
+                                         border-radius:99px;margin-left:0.35rem;">
+                                RECUSED
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="member-email">{{ m.email }}</div>
+                        {% if m.is_recused and m.conflict_reason %}
+                        <div style="font-size:0.68rem;color:#c0392b;margin-top:0.2rem;font-style:italic;">
+                            COI: {{ m.conflict_reason|truncatechars:80 }}
+                        </div>
+                        {% elif not m.coi_declared and m.acknowledged %}
+                        <div style="font-size:0.68rem;color:var(--amber);margin-top:0.2rem;">
+                            <i class="fas fa-clock me-1"></i>Awaiting COI declaration
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% if not m.is_recused %}
                     <div class="progress-wrap">
                         <div class="progress-bar-track">
                             <div class="progress-bar-fill {% if not m.votes_submitted %}amber{% endif %}"
@@ -308,13 +345,22 @@ a { text-decoration: none !important; }
                             {% if m.draft_count > 0 %}&nbsp;· {{ m.draft_count }} draft{% endif %}
                         </div>
                     </div>
-                    {% if m.votes_submitted %}
+                    {% endif %}
+                    {% if m.is_recused %}
+                        <span class="status-chip" style="background:#fde8e8;color:var(--red);">
+                            <i class="fas fa-user-slash"></i> Recused
+                        </span>
+                    {% elif m.votes_submitted %}
                         <span class="status-chip chip-done">
                             <i class="fas fa-check-circle"></i> Done
                         </span>
                     {% elif not m.acknowledged %}
                         <span class="status-chip chip-noack">
                             <i class="fas fa-envelope"></i> Not Acknowledged
+                        </span>
+                    {% elif not m.coi_declared %}
+                        <span class="status-chip" style="background:#fff3cd;color:var(--amber);">
+                            <i class="fas fa-balance-scale"></i> COI Pending
                         </span>
                     {% elif m.submitted_count > 0 %}
                         <span class="status-chip chip-partial">

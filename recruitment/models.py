@@ -1026,6 +1026,12 @@ class ShortlistingCommittee(models.Model):
     votes_submitted    = models.BooleanField(default=False)
     votes_submitted_at = models.DateTimeField(null=True, blank=True)
 
+    coi_declared = models.BooleanField(default=False)
+    has_conflict = models.BooleanField(default=False)
+    conflict_reason = models.TextField(blank=True)
+    conflict_declared_at = models.DateTimeField(null=True, blank=True)
+
+
     class Meta:
         unique_together = [('vacancy', 'member')]
 

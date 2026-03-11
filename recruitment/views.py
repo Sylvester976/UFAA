@@ -4645,6 +4645,23 @@ def _display_name(user):
     full = f"{getattr(user, 'first_name', '') or ''} {getattr(user, 'last_name', '') or ''}".strip()
     return full or getattr(user, 'full_name', None) or user.email
 
+def _active_count(vacancy):
+    """Non-recused active committee members — used for threshold and completion checks."""
+    return ShortlistingCommittee.objects.filter(
+        vacancy=vacancy,
+        is_active=True,
+        has_conflict=False,
+    ).count()
+
+def _recused_member_ids(vacancy):
+    return list(
+        ShortlistingCommittee.objects.filter(
+            vacancy=vacancy,
+            is_active=True,
+            has_conflict=True,
+        ).values_list('member_id', flat=True)
+    )
+
 
 def _send_appointment_email(member, vacancy, request):
     """
@@ -4842,7 +4859,9 @@ def hr_committee_add(request, vacancy_id):
                 member=member,
                 defaults={
                     'appointed_by': request.user,
-                    'is_active':    True,
+                    'is_active': True,
+                    'coi_declared': False,  # ← add this
+                    'has_conflict': False,  # ← add this too while you're here
                 },
             )
             if not created:
@@ -5469,20 +5488,15 @@ def hr_committee_staff_search(request, vacancy_id):
 
 def _generate_shortlist(vacancy, triggered_by):
     """
-    Compute ShortlistResult for every final_longlisted application on
-    a vacancy. Called once all active committee members have submitted
-    all their votes.
-
-    Returns (shortlisted_count, not_shortlisted_count).
-    Safe to call multiple times — uses update_or_create.
+    Compute ShortlistResult for every final_longlisted application.
+    Excludes votes from recused members.
+    Called once all active non-recused members have submitted all votes.
     """
     from django.db import transaction
 
-    committee = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True
-    )
-    committee_count = committee.count()
-    threshold = _threshold(committee_count)
+    recused_ids     = _recused_member_ids(vacancy)
+    active_count    = _active_count(vacancy)
+    threshold       = _threshold(active_count)
 
     applications = JobApplication.objects.filter(
         vacancy=vacancy,
@@ -5492,8 +5506,8 @@ def _generate_shortlist(vacancy, triggered_by):
     shortlisted_count     = 0
     not_shortlisted_count = 0
 
-    shortlisted_status    = JobApplicationStatus.objects.get(code='shortlisted')
-    not_selected_status   = JobApplicationStatus.objects.get(code='not_selected')
+    shortlisted_status  = JobApplicationStatus.objects.get(code='shortlisted')
+    not_selected_status = JobApplicationStatus.objects.get(code='not_selected')
 
     with transaction.atomic():
         for app in applications:
@@ -5501,7 +5515,8 @@ def _generate_shortlist(vacancy, triggered_by):
                 vacancy=vacancy,
                 application=app,
                 is_draft=False,
-            )
+            ).exclude(member_id__in=recused_ids)
+
             approve_count = votes.filter(approve=True).count()
             reject_count  = votes.filter(approve=False).count()
             total_votes   = approve_count + reject_count
@@ -5520,21 +5535,21 @@ def _generate_shortlist(vacancy, triggered_by):
                 },
             )
 
-            # Update application status
             old_status = app.status
             new_status = shortlisted_status if shortlisted else not_selected_status
             app.status = new_status
             app.save(update_fields=['status'])
 
-            # Write to status history
             JobApplicationStatusLog.objects.create(
-                application = app,
-                from_status = old_status,
-                to_status   = new_status,
-                changed_by  = triggered_by,
-                notes       = (
+                application=app,
+                from_status=old_status,
+                to_status=new_status,
+                changed_by=triggered_by,
+                notes=(
                     f'{"Shortlisted" if shortlisted else "Not shortlisted"} by committee vote. '
-                    f'Approve: {approve_count}, Reject: {reject_count}, Threshold: {threshold}/{committee_count}.'
+                    f'Approve: {approve_count}, Reject: {reject_count}, '
+                    f'Threshold: {threshold}/{active_count}.'
+                    + (f' ({len(recused_ids)} member(s) recused due to COI.)' if recused_ids else '')
                 ),
             )
 
@@ -5543,23 +5558,24 @@ def _generate_shortlist(vacancy, triggered_by):
             else:
                 not_shortlisted_count += 1
 
-        # Log
         ShortlistLog.objects.create(
-            vacancy            = vacancy,
-            performed_by       = triggered_by,
-            action             = 'all_votes_in',
-            notes              = (
+            vacancy=vacancy,
+            performed_by=triggered_by,
+            action='all_votes_in',
+            notes=(
                 f'Shortlist generated. {shortlisted_count} shortlisted, '
                 f'{not_shortlisted_count} not shortlisted. '
-                f'Threshold was {threshold}/{committee_count}.'
+                f'Threshold: {threshold}/{active_count}.'
+                + (f' {len(recused_ids)} member(s) recused (COI).' if recused_ids else '')
             ),
-            metadata           = {
+            metadata={
                 'shortlisted':     shortlisted_count,
                 'not_shortlisted': not_shortlisted_count,
                 'threshold':       threshold,
-                'committee_count': committee_count,
+                'active_count':    active_count,
+                'recused_count':   len(recused_ids),
             },
-            performed_by_label = _display_name(triggered_by) if triggered_by else 'System',
+            performed_by_label=_display_name(triggered_by) if triggered_by else 'System',
         )
 
     return shortlisted_count, not_shortlisted_count
@@ -5696,13 +5712,10 @@ def hr_committee_progress(request, vacancy_id):
 
 
 def _committee_member_check(request, vacancy_id):
-    """
-    Returns the ShortlistingCommittee entry if the current user is an
-    active member of the committee for this vacancy, else None.
-    """
+    """Return the active ShortlistingCommittee entry for this user/vacancy, or None."""
     return ShortlistingCommittee.objects.filter(
-        vacancy_id=vacancy_id,
         member=request.user,
+        vacancy_id=vacancy_id,
         is_active=True,
     ).select_related('vacancy').first()
 
@@ -5710,9 +5723,6 @@ def _committee_member_check(request, vacancy_id):
 
 @login_required
 def committee_dashboard(request):
-    """
-    Dashboard for internal staff who are on one or more shortlisting committees.
-    """
     assignments = ShortlistingCommittee.objects.filter(
         member=request.user,
         is_active=True,
@@ -5733,19 +5743,26 @@ def committee_dashboard(request):
         ).count()
 
         submitted_votes = CommitteeVote.objects.filter(
-            vacancy=vacancy,
-            member=request.user,
-            is_draft=False,
+            vacancy=vacancy, member=request.user, is_draft=False,
         ).count()
-
         draft_votes = CommitteeVote.objects.filter(
-            vacancy=vacancy,
-            member=request.user,
-            is_draft=True,
+            vacancy=vacancy, member=request.user, is_draft=True,
         ).count()
 
         deadline       = vacancy.end_date + timedelta(days=21)
         days_remaining = (deadline - timezone.now().date()).days
+
+        # Determine what action the member needs to take next
+        if not entry.acknowledged:
+            next_action = 'acknowledge'
+        elif not entry.coi_declared:
+            next_action = 'declare_coi'
+        elif entry.has_conflict:
+            next_action = 'recused'
+        elif entry.votes_submitted:
+            next_action = 'done'
+        else:
+            next_action = 'vote'
 
         rows.append({
             'entry':           entry,
@@ -5757,6 +5774,9 @@ def committee_dashboard(request):
             'percent':         int(submitted_votes / app_count * 100) if app_count else 0,
             'all_done':        entry.votes_submitted,
             'acknowledged':    entry.acknowledged,
+            'coi_declared':    entry.coi_declared,
+            'has_conflict':    entry.has_conflict,
+            'next_action':     next_action,
             'deadline':        deadline,
             'days_remaining':  days_remaining,
             'deadline_amber':  0 < days_remaining <= 5,
@@ -5779,7 +5799,7 @@ def committee_acknowledge(request, vacancy_id):
         return JsonResponse({'error': 'You are not on this committee.'}, status=403)
 
     if entry.acknowledged:
-        return JsonResponse({'already': True})
+        return JsonResponse({'already': True, 'redirect_url': f'/committee/vacancy/{vacancy_id}/coi/'})
 
     entry.acknowledged    = True
     entry.acknowledged_at = timezone.now()
@@ -5795,10 +5815,154 @@ def committee_acknowledge(request, vacancy_id):
         performed_by_label = _display_name(request.user),
     )
 
-    return JsonResponse({'success': True})
+    return JsonResponse({
+        'success':      True,
+        'redirect_url': f'/committee/vacancy/{vacancy_id}/coi/',
+    })
 
 
-# ── View 3: Review & Vote Screen ─────────────────────────────────────────────
+# ── View 3: COI Declaration (GET + POST) ──────────────────────────────────────
+
+@login_required
+def committee_declare_coi(request, vacancy_id):
+    entry = _committee_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/committee/not_assigned.html', {
+            'page': 'Conflict of Interest Declaration',
+        })
+
+    # Must acknowledge before declaring COI
+    if not entry.acknowledged:
+        return redirect('committee_dashboard')
+
+    # Already declared — skip to appropriate destination
+    if entry.coi_declared:
+        if entry.has_conflict:
+            return render(request, 'recruitment/committee/committee_coi.html', {
+                'page':    'Conflict of Interest Declaration',
+                'entry':   entry,
+                'vacancy': entry.vacancy,
+                'already_declared': True,
+            })
+        return redirect('committee_review', vacancy_id=vacancy_id)
+
+    if request.method == 'POST':
+        decision = request.POST.get('decision', '').strip()  # 'no_conflict' or 'has_conflict'
+        reason   = request.POST.get('conflict_reason', '').strip()
+
+        if decision not in ('no_conflict', 'has_conflict'):
+            return render(request, 'recruitment/committee/committee_coi.html', {
+                'page':    'Conflict of Interest Declaration',
+                'entry':   entry,
+                'vacancy': entry.vacancy,
+                'error':   'Please select one of the options below.',
+            })
+
+        if decision == 'has_conflict' and not reason:
+            return render(request, 'recruitment/committee/committee_coi.html', {
+                'page':    'Conflict of Interest Declaration',
+                'entry':   entry,
+                'vacancy': entry.vacancy,
+                'error':   'You must provide a reason when declaring a conflict of interest.',
+                'decision_pre': 'has_conflict',
+            })
+
+        has_conflict = (decision == 'has_conflict')
+
+        entry.coi_declared         = True
+        entry.has_conflict         = has_conflict
+        entry.conflict_reason      = reason if has_conflict else ''
+        entry.conflict_declared_at = timezone.now()
+        entry.save(update_fields=[
+            'coi_declared', 'has_conflict',
+            'conflict_reason', 'conflict_declared_at',
+        ])
+
+        ShortlistLog.objects.create(
+            vacancy=entry.vacancy,
+            application=None,
+            performed_by=request.user,
+            action='coi_declared',
+            notes=(
+                f'{_display_name(request.user)} declared '
+                + ('a conflict of interest. Reason: ' + reason if has_conflict
+                   else 'no conflict of interest.')
+            ),
+            metadata={
+                'member_id':   str(request.user.pk),
+                'has_conflict': has_conflict,
+                'reason':       reason,
+            },
+            performed_by_label=_display_name(request.user),
+        )
+
+        if has_conflict:
+            # Notify HR by email
+            _notify_hr_coi(entry, reason)
+            return render(request, 'recruitment/committee/committee_coi.html', {
+                'page':         'Conflict of Interest Declaration',
+                'entry':        entry,
+                'vacancy':      entry.vacancy,
+                'just_recused': True,
+            })
+
+        # No conflict — go straight to voting
+        return redirect('committee_review', vacancy_id=vacancy_id)
+
+    # GET
+    return render(request, 'recruitment/committee/committee_coi.html', {
+        'page':    'Conflict of Interest Declaration',
+        'entry':   entry,
+        'vacancy': entry.vacancy,
+    })
+
+
+def _notify_hr_coi(entry, reason):
+    """Send email to HR when a member declares COI."""
+    from django.core.mail import EmailMultiAlternatives
+    from django.conf import settings
+    from django.template.loader import render_to_string
+    from datetime import date
+
+    subject = (
+        f'COI Declaration — {_display_name(entry.member)} | '
+        f'{entry.vacancy.title} [{entry.vacancy.reference_number}]'
+    )
+    message_html = f"""
+        <p>Dear HR,</p>
+        <p><strong>{_display_name(entry.member)}</strong> has declared a
+        <strong>conflict of interest</strong> for the shortlisting committee of
+        <strong>{entry.vacancy.title}</strong> ({entry.vacancy.reference_number}).</p>
+        <p><strong>Reason provided:</strong><br>{reason}</p>
+        <p>This member has been recused and will not participate in voting.
+        Please log in to the portal to review committee composition and
+        appoint a replacement if necessary.</p>
+        <p style="margin-top:1.5rem;color:#8392ab;font-size:0.85rem;">
+            Declared at: {entry.conflict_declared_at.strftime('%d %b %Y, %H:%M')}
+        </p>
+    """
+    try:
+        html_body = render_to_string('emails/email_base.html', {
+            'subject':         subject,
+            'message_content': message_html,
+            'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+            'year':            date.today().year,
+        })
+        hr_email = getattr(settings, 'HR_NOTIFICATION_EMAIL', settings.DEFAULT_FROM_EMAIL)
+        msg = EmailMultiAlternatives(
+            subject=subject,
+            body='A committee member has declared a conflict of interest. Please view this email in HTML.',
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to=[hr_email],
+        )
+        msg.attach_alternative(html_body, 'text/html')
+        msg.send(fail_silently=True)
+    except Exception:
+        pass  # Don't crash the request if email fails
+
+
+
+# ── View 4: Review & Vote Screen ─────────────────────────────────────────────
 
 @login_required
 def committee_review(request, vacancy_id):
@@ -5810,12 +5974,25 @@ def committee_review(request, vacancy_id):
 
     vacancy = entry.vacancy
 
-    # FIX 1: was rendering committee_review.html here — must be acknowledge template
+    # Gate 1: must acknowledge first
     if not entry.acknowledged:
         return render(request, 'recruitment/committee/committee_acknowledge.html', {
             'page':    'Committee Review',
             'entry':   entry,
             'vacancy': vacancy,
+        })
+
+    # Gate 2: must complete COI declaration
+    if not entry.coi_declared:
+        return redirect('committee_declare_coi', vacancy_id=vacancy_id)
+
+    # Gate 3: recused members cannot vote
+    if entry.has_conflict:
+        return render(request, 'recruitment/committee/committee_coi.html', {
+            'page':          'Committee Review',
+            'entry':         entry,
+            'vacancy':       vacancy,
+            'already_declared': True,
         })
 
     if entry.votes_submitted:
@@ -5832,15 +6009,11 @@ def committee_review(request, vacancy_id):
     my_votes = {
         v.application_id: v
         for v in CommitteeVote.objects.filter(
-            vacancy=vacancy,
-            member=request.user,
+            vacancy=vacancy, member=request.user,
         )
     }
 
-    my_submitted_ids = {
-        app_id for app_id, v in my_votes.items()
-        if not v.is_draft
-    }
+    my_submitted_ids = {app_id for app_id, v in my_votes.items() if not v.is_draft}
 
     other_votes_by_app = {}
     if my_submitted_ids:
@@ -5858,7 +6031,6 @@ def committee_review(request, vacancy_id):
         is_submitted = bool(my_vote and not my_vote.is_draft)
         if is_submitted:
             submitted_count += 1
-
         app_rows.append({
             'app':          app,
             'my_vote':      my_vote,
@@ -5867,13 +6039,10 @@ def committee_review(request, vacancy_id):
             'can_vote':     not is_submitted,
         })
 
-    committee_count = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True
-    ).count()
-    threshold = _threshold(committee_count)
-    deadline  = vacancy.end_date + timedelta(days=21)
+    active_count = _active_count(vacancy)
+    threshold    = _threshold(active_count)
+    deadline     = vacancy.end_date + timedelta(days=21)
 
-    # FIX 2: was 'review.html' — must match actual template filename
     return render(request, 'recruitment/committee/committee_review.html', {
         'page':            'Committee Review',
         'entry':           entry,
@@ -5883,11 +6052,12 @@ def committee_review(request, vacancy_id):
         'submitted_count': submitted_count,
         'remaining':       app_count - submitted_count,
         'all_submitted':   submitted_count == app_count,
-        'committee_count': committee_count,
+        'committee_count': active_count,
         'threshold':       threshold,
         'deadline':        deadline,
         'days_remaining':  (deadline - timezone.now().date()).days,
     })
+
 
 
 # ── View 4: Save / Submit Single Vote (POST/AJAX) ────────────────────────────
@@ -5898,6 +6068,9 @@ def committee_vote_save(request, vacancy_id):
     entry = _committee_member_check(request, vacancy_id)
     if not entry:
         return JsonResponse({'error': 'Not authorised.'}, status=403)
+
+    if not entry.coi_declared or entry.has_conflict:
+        return JsonResponse({'error': 'You cannot vote — COI declaration incomplete or recused.'}, status=403)
 
     if entry.votes_submitted:
         return JsonResponse({'error': 'You have already submitted all votes.'}, status=400)
@@ -5928,10 +6101,10 @@ def committee_vote_save(request, vacancy_id):
     now          = timezone.now()
 
     vote, created = CommitteeVote.objects.update_or_create(
-        vacancy     = entry.vacancy,
-        application = application,
-        member      = request.user,
-        defaults    = {
+        vacancy=entry.vacancy,
+        application=application,
+        member=request.user,
+        defaults={
             'approve':      approve_bool,
             'comment':      comment,
             'is_draft':     is_draft,
@@ -5942,17 +6115,17 @@ def committee_vote_save(request, vacancy_id):
 
     if not is_draft:
         ShortlistLog.objects.create(
-            vacancy            = entry.vacancy,
-            application        = application,
-            performed_by       = request.user,
-            action             = 'vote_submitted',
-            notes              = f'{"Approved" if approve_bool else "Disapproved"}: {comment[:120]}',
-            metadata           = {
+            vacancy=entry.vacancy,
+            application=application,
+            performed_by=request.user,
+            action='vote_submitted',
+            notes=f'{"Approved" if approve_bool else "Disapproved"}: {comment[:120]}',
+            metadata={
                 'member_id': str(request.user.pk),
                 'approve':   approve_bool,
                 'app_id':    str(application.pk),
             },
-            performed_by_label = _display_name(request.user),
+            performed_by_label=_display_name(request.user),
         )
 
     revealed_votes = []
@@ -5984,6 +6157,9 @@ def committee_submit_all(request, vacancy_id):
     entry = _committee_member_check(request, vacancy_id)
     if not entry:
         return JsonResponse({'error': 'Not authorised.'}, status=403)
+
+    if not entry.coi_declared or entry.has_conflict:
+        return JsonResponse({'error': 'Cannot submit — recused or COI not declared.'}, status=403)
 
     if entry.votes_submitted:
         return JsonResponse({'error': 'Already submitted.'}, status=400)
@@ -6018,15 +6194,16 @@ def committee_submit_all(request, vacancy_id):
     entry.votes_submitted_at = timezone.now()
     entry.save(update_fields=['votes_submitted', 'votes_submitted_at'])
 
-    total_members = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True
+    # "All done" = every non-recused, active member has submitted
+    total_active = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True, has_conflict=False,
     ).count()
-    done_members = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True, votes_submitted=True
+    done_active = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy, is_active=True, has_conflict=False, votes_submitted=True,
     ).count()
 
     shortlist_generated = False
-    if done_members == total_members:
+    if done_active == total_active and total_active > 0:
         _generate_shortlist(vacancy, request.user)
         shortlist_generated = True
 
@@ -6069,21 +6246,18 @@ def committee_results(request, vacancy_id):
         for r in ShortlistResult.objects.filter(vacancy=vacancy)
     }
 
-    committee_count = ShortlistingCommittee.objects.filter(
-        vacancy=vacancy, is_active=True
-    ).count()
+    active_count = _active_count(vacancy)
     all_done = (
         ShortlistingCommittee.objects.filter(
-            vacancy=vacancy, is_active=True, votes_submitted=True
-        ).count() == committee_count
+            vacancy=vacancy, is_active=True, has_conflict=False, votes_submitted=True
+        ).count() == active_count and active_count > 0
     )
 
     app_rows = []
     for app in applications:
-        votes    = votes_by_app.get(app.id, [])
-        # FIX 3: compare via member object, not member_id, to avoid UUID type mismatch
-        my_vote  = next((v for v in votes if v.member == request.user), None)
-        result   = results_by_app.get(app.id)
+        votes     = votes_by_app.get(app.id, [])
+        my_vote   = next((v for v in votes if v.member == request.user), None)
+        result    = results_by_app.get(app.id)
         approvals = sum(1 for v in votes if v.approve)
 
         app_rows.append({
@@ -6100,9 +6274,136 @@ def committee_results(request, vacancy_id):
         'entry':           entry,
         'vacancy':         vacancy,
         'app_rows':        app_rows,
-        'committee_count': committee_count,
+        'committee_count': active_count,
         'all_done':        all_done,
-        'threshold':       _threshold(committee_count),
+        'threshold':       _threshold(active_count),
+    })
+
+# ── HR Progress view (updated to show COI status) ─────────────────────────────
+
+@login_required
+def hr_committee_progress(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code__in=['final_longlisted', 'shortlisted', 'not_selected'],
+        ).select_related('user', 'status').order_by('application_number')
+    )
+    app_count = len(applications)
+
+    all_committee = list(
+        ShortlistingCommittee.objects.filter(
+            vacancy=vacancy, is_active=True,
+        ).select_related('member').order_by('appointed_at')
+    )
+
+    active_count    = sum(1 for e in all_committee if not e.has_conflict)
+    threshold       = _threshold(active_count)
+    recused_ids_set = {e.member_id for e in all_committee if e.has_conflict}
+
+    member_progress = []
+    for entry in all_committee:
+        if entry.has_conflict:
+            member_progress.append({
+                'entry':           entry,
+                'name':            _display_name(entry.member),
+                'email':           entry.member.email,
+                'acknowledged':    entry.acknowledged,
+                'coi_declared':    entry.coi_declared,
+                'has_conflict':    True,
+                'conflict_reason': entry.conflict_reason,
+                'votes_submitted': False,
+                'submitted_count': 0,
+                'draft_count':     0,
+                'remaining':       0,
+                'percent':         0,
+                'is_recused':      True,
+            })
+            continue
+
+        submitted_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy, member=entry.member, is_draft=False,
+        ).count()
+        draft_votes = CommitteeVote.objects.filter(
+            vacancy=vacancy, member=entry.member, is_draft=True,
+        ).count()
+
+        member_progress.append({
+            'entry':           entry,
+            'name':            _display_name(entry.member),
+            'email':           entry.member.email,
+            'acknowledged':    entry.acknowledged,
+            'coi_declared':    entry.coi_declared,
+            'has_conflict':    False,
+            'conflict_reason': '',
+            'votes_submitted': entry.votes_submitted,
+            'submitted_count': submitted_votes,
+            'draft_count':     draft_votes,
+            'remaining':       app_count - submitted_votes,
+            'percent':         int(submitted_votes / app_count * 100) if app_count else 0,
+            'is_recused':      False,
+        })
+
+    members_done = sum(1 for m in member_progress if not m['is_recused'] and m['votes_submitted'])
+    all_voted    = (members_done == active_count and active_count > 0)
+    recused_count = len(recused_ids_set)
+
+    shortlist_generated = ShortlistResult.objects.filter(vacancy=vacancy).exists()
+
+    if all_voted and not shortlist_generated and active_count > 0:
+        _generate_shortlist(vacancy, request.user)
+        shortlist_generated = True
+
+    all_votes_qs = CommitteeVote.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).exclude(member_id__in=recused_ids_set).select_related('member')
+
+    votes_by_app = {}
+    for v in all_votes_qs:
+        votes_by_app.setdefault(v.application_id, []).append(v)
+
+    results_by_app = {
+        r.application_id: r
+        for r in ShortlistResult.objects.filter(vacancy=vacancy)
+    }
+
+    app_rows = []
+    for app in applications:
+        votes      = votes_by_app.get(app.id, [])
+        approvals  = sum(1 for v in votes if v.approve)
+        rejections = sum(1 for v in votes if not v.approve)
+        result     = results_by_app.get(app.id)
+        app_rows.append({
+            'app':         app,
+            'votes':       votes,
+            'approvals':   approvals,
+            'rejections':  rejections,
+            'voted_count': len(votes),
+            'result':      result,
+        })
+
+    deadline       = vacancy.end_date + timedelta(days=21)
+    days_remaining = (deadline - timezone.now().date()).days
+
+    return render(request, 'recruitment/hr/shortlisting/committee_progress.html', {
+        'page':                'Shortlisting',
+        'vacancy':             vacancy,
+        'app_count':           app_count,
+        'committee':           member_progress,
+        'committee_count':     active_count,
+        'total_committee':     len(all_committee),
+        'recused_count':       recused_count,
+        'threshold':           threshold,
+        'members_done':        members_done,
+        'all_voted':           all_voted,
+        'shortlist_generated': shortlist_generated,
+        'app_rows':            app_rows,
+        'deadline':            deadline,
+        'days_remaining':      days_remaining,
+        'deadline_amber':      0 < days_remaining <= 5,
+        'deadline_red':        days_remaining <= 0,
     })
 
 

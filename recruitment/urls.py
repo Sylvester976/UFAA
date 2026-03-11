@@ -234,4 +234,5 @@ urlpatterns = [
     path('committee/vacancy/<int:vacancy_id>/vote/',     views.committee_vote_save,   name='committee_vote_save'),
     path('committee/vacancy/<int:vacancy_id>/submit/',   views.committee_submit_all,  name='committee_submit_all'),
     path('committee/vacancy/<int:vacancy_id>/results/',  views.committee_results,     name='committee_results'),
+    path('committee/vacancy/<int:vacancy_id>/coi/', views.committee_declare_coi, name='committee_declare_coi'),
 ]

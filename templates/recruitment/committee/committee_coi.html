@@ -1,0 +1,414 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Conflict of Interest Declaration — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy:    #262561;
+    --gold:    #F9E6A1;
+    --gold-dk: #C39545;
+    --green:   #1a7a45;
+    --red:     #c0392b;
+    --amber:   #b7770d;
+}
+a { text-decoration: none !important; }
+
+.page-banner {
+    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+    border-radius: 1rem; padding: 1.25rem 1.5rem;
+    color: #fff; display: flex; align-items: center;
+    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+    margin-bottom: 1.5rem;
+}
+.banner-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); margin: 0; }
+.banner-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
+.banner-ref   {
+    font-family: monospace; font-size: 0.72rem;
+    background: rgba(249,230,161,0.15); color: var(--gold);
+    padding: 0.25rem 0.65rem; border-radius: 0.4rem;
+}
+.back-link { color: rgba(255,255,255,0.65); font-size: 0.78rem;
+             display: flex; align-items: center; gap: 0.35rem; }
+.back-link:hover { color: var(--gold); }
+
+/* Card */
+.coi-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 4px 20px rgba(38,37,97,0.08);
+    padding: 2rem;
+    max-width: 720px;
+    margin: 0 auto;
+}
+.coi-card h5 {
+    font-size: 1rem; font-weight: 800; color: var(--navy);
+    margin-bottom: 0.4rem;
+}
+.coi-subtitle {
+    font-size: 0.82rem; color: #67748e; margin-bottom: 1.75rem;
+    border-bottom: 1px solid #f0f2f8; padding-bottom: 1rem;
+}
+
+/* Step indicator */
+.steps {
+    display: flex; gap: 0; margin-bottom: 2rem;
+}
+.step {
+    flex: 1; text-align: center; font-size: 0.68rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .04em;
+    padding: 0.5rem; position: relative; color: #b0bac9;
+}
+.step::after {
+    content: ''; position: absolute; top: 50%; right: 0;
+    width: 1px; height: 60%; background: #e9ecef;
+    transform: translateY(-50%);
+}
+.step:last-child::after { display: none; }
+.step.done  { color: var(--green); }
+.step.active { color: var(--navy); font-weight: 900; }
+.step-num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px; border-radius: 50%;
+    background: #f0f2f8; font-size: 0.7rem; font-weight: 800;
+    margin-bottom: 0.25rem; margin-right: 0.3rem;
+}
+.step.done  .step-num { background: #d4f5e2; color: var(--green); }
+.step.active .step-num { background: var(--navy); color: var(--gold); }
+
+/* Choice cards */
+.choice-wrapper {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+@media(max-width: 580px) { .choice-wrapper { grid-template-columns: 1fr; } }
+
+.choice-card {
+    border: 2px solid #e0e4ef;
+    border-radius: 0.75rem;
+    padding: 1.25rem 1.25rem 1rem;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    display: flex; flex-direction: column; gap: 0.4rem;
+    user-select: none;
+}
+.choice-card:hover { border-color: #b0bac9; background: #fafbff; }
+.choice-card.selected-no  { border-color: var(--green); background: #f0fdf4; }
+.choice-card.selected-yes { border-color: var(--red);   background: #fff5f5; }
+
+.choice-card input[type="radio"] {
+    position: absolute; top: 1rem; right: 1rem;
+    width: 18px; height: 18px; cursor: pointer;
+    accent-color: var(--navy);
+}
+.choice-icon {
+    font-size: 1.5rem; margin-bottom: 0.25rem;
+}
+.choice-title {
+    font-size: 0.9rem; font-weight: 800; color: var(--navy);
+}
+.choice-desc {
+    font-size: 0.75rem; color: #67748e; line-height: 1.5;
+}
+
+/* Reason box */
+#reason-wrapper {
+    display: none;
+    margin-bottom: 1.25rem;
+    animation: fadeIn 0.2s ease;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: none; } }
+
+#reason-wrapper label {
+    font-size: 0.78rem; font-weight: 700; color: var(--navy);
+    display: block; margin-bottom: 0.4rem;
+}
+#reason-wrapper .required-note {
+    font-size: 0.68rem; color: var(--red); margin-left: 0.3rem;
+}
+#conflict_reason {
+    width: 100%; padding: 0.65rem 0.9rem;
+    border: 1.5px solid #e0e4ef; border-radius: 0.5rem;
+    font-size: 0.82rem; color: #344767; resize: vertical;
+    min-height: 100px; transition: border-color 0.15s;
+    font-family: inherit;
+}
+#conflict_reason:focus { outline: none; border-color: var(--navy); }
+
+.warning-box {
+    background: #fff8e1; border: 1px solid #fde68a;
+    border-radius: 0.6rem; padding: 0.75rem 1rem;
+    font-size: 0.78rem; color: #7d5500;
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    margin-bottom: 1.25rem;
+}
+.warning-box i { flex-shrink: 0; margin-top: 0.15rem; }
+
+/* Error */
+.error-alert {
+    background: #fde8e8; border: 1px solid #f5c6cb;
+    border-radius: 0.6rem; padding: 0.75rem 1rem;
+    font-size: 0.8rem; color: var(--red);
+    display: flex; align-items: center; gap: 0.5rem;
+    margin-bottom: 1.25rem;
+}
+
+/* Submit button */
+.btn-submit {
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    background: var(--navy); color: var(--gold);
+    border: none; border-radius: 0.5rem;
+    padding: 0.65rem 2rem; font-size: 0.85rem; font-weight: 700;
+    cursor: pointer; transition: opacity 0.15s; width: 100%;
+    margin-top: 0.5rem;
+}
+.btn-submit:hover { opacity: 0.88; }
+.btn-submit:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Recused state */
+.recused-banner {
+    background: linear-gradient(135deg, #c0392b, #96281b);
+    border-radius: 0.75rem; padding: 1.5rem;
+    color: #fff; text-align: center; margin-bottom: 1.5rem;
+}
+.recused-banner h5 { color: #fde8e8; font-size: 1rem; margin-bottom: 0.4rem; }
+.recused-banner p  { font-size: 0.82rem; color: rgba(255,255,255,0.85); margin: 0; }
+
+.info-row {
+    background: #f8f9ff; border-radius: 0.5rem;
+    padding: 0.65rem 1rem; font-size: 0.8rem;
+    color: #344767; margin-bottom: 0.5rem;
+    display: flex; gap: 0.5rem; align-items: flex-start;
+}
+.info-row strong { color: var(--navy); flex-shrink: 0; }
+
+/* Success (no conflict) */
+.success-banner {
+    background: linear-gradient(135deg, var(--green), #1a5c38);
+    border-radius: 0.75rem; padding: 1.5rem;
+    color: #fff; text-align: center; margin-bottom: 1.5rem;
+}
+.success-banner h5 { color: #d4f5e2; font-size: 1rem; margin-bottom: 0.4rem; }
+.success-banner p  { font-size: 0.82rem; color: rgba(255,255,255,0.85); margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-balance-scale me-2"></i>Conflict of Interest Declaration
+            </p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'committee_dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="coi-card">
+
+        <!-- Step progress -->
+        <div class="steps">
+            <div class="step done">
+                <span class="step-num"><i class="fas fa-check" style="font-size:.55rem;"></i></span>
+                Appointed
+            </div>
+            <div class="step done">
+                <span class="step-num"><i class="fas fa-check" style="font-size:.55rem;"></i></span>
+                Acknowledged
+            </div>
+            <div class="step {% if entry.coi_declared %}done{% else %}active{% endif %}">
+                <span class="step-num">{% if entry.coi_declared %}<i class="fas fa-check" style="font-size:.55rem;"></i>{% else %}3{% endif %}</span>
+                COI Declaration
+            </div>
+            <div class="step {% if entry.coi_declared and not entry.has_conflict %}active{% endif %}">
+                <span class="step-num">4</span>
+                Vote
+            </div>
+        </div>
+
+        {% if just_recused %}
+        <!-- Recused confirmation screen -->
+        <div class="recused-banner">
+            <h5><i class="fas fa-user-slash me-2"></i>You have been recused</h5>
+            <p>Your conflict of interest has been recorded. HR has been notified.<br>
+               You will not participate in the voting process for this vacancy.</p>
+        </div>
+        <div class="info-row">
+            <strong>Vacancy:</strong> {{ vacancy.title }} &mdash; {{ vacancy.reference_number }}
+        </div>
+        <div class="info-row">
+            <strong>Declared at:</strong> {{ entry.conflict_declared_at|date:"d M Y, H:i" }}
+        </div>
+        <div class="info-row" style="align-items:flex-start;">
+            <strong>Reason:</strong>
+            <span style="color:#67748e;">{{ entry.conflict_reason }}</span>
+        </div>
+        <p style="font-size:0.75rem;color:#b0bac9;text-align:center;margin-top:1.5rem;">
+            If you believe this was declared in error, please contact HR directly.
+        </p>
+        <a href="{% url 'committee_dashboard' %}" class="btn-submit" style="text-decoration:none;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        {% elif already_declared and entry.has_conflict %}
+        <!-- Already recused - return visit -->
+        <div class="recused-banner">
+            <h5><i class="fas fa-user-slash me-2"></i>You are recused from this vacancy</h5>
+            <p>You previously declared a conflict of interest. HR has been notified.<br>
+               You cannot participate in voting.</p>
+        </div>
+        <div class="info-row">
+            <strong>Vacancy:</strong> {{ vacancy.title }} &mdash; {{ vacancy.reference_number }}
+        </div>
+        <div class="info-row">
+            <strong>Declared:</strong> {{ entry.conflict_declared_at|date:"d M Y, H:i" }}
+        </div>
+        <div class="info-row" style="align-items:flex-start;">
+            <strong>Reason:</strong>
+            <span style="color:#67748e;">{{ entry.conflict_reason }}</span>
+        </div>
+        <a href="{% url 'committee_dashboard' %}" class="btn-submit" style="text-decoration:none;margin-top:1rem;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+
+        {% else %}
+        <!-- Declaration form -->
+        <h5>Conflict of Interest Declaration</h5>
+        <p class="coi-subtitle">
+            Before you begin reviewing applications, you are required to declare whether
+            you have any conflict of interest in relation to this vacancy.
+            This declaration is mandatory and will be recorded.
+        </p>
+
+        {% if error %}
+        <div class="error-alert">
+            <i class="fas fa-exclamation-circle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="POST" id="coiForm">
+            {% csrf_token %}
+
+            <div class="choice-wrapper">
+
+                <!-- No conflict -->
+                <label class="choice-card {% if decision_pre == 'no_conflict' %}selected-no{% endif %}" id="card-no" for="no_conflict">
+                    <input type="radio" name="decision" id="no_conflict" value="no_conflict"
+                           {% if decision_pre == 'no_conflict' %}checked{% endif %}>
+                    <div class="choice-icon">✅</div>
+                    <div class="choice-title">No Conflict of Interest</div>
+                    <div class="choice-desc">
+                        I confirm that I have no personal, financial, or professional
+                        interest that could compromise my impartiality in reviewing
+                        applications for this vacancy.
+                    </div>
+                </label>
+
+                <!-- Has conflict -->
+                <label class="choice-card {% if decision_pre == 'has_conflict' %}selected-yes{% endif %}" id="card-yes" for="has_conflict">
+                    <input type="radio" name="decision" id="has_conflict" value="has_conflict"
+                           {% if decision_pre == 'has_conflict' %}checked{% endif %}>
+                    <div class="choice-icon">⚠️</div>
+                    <div class="choice-title">I Declare a Conflict of Interest</div>
+                    <div class="choice-desc">
+                        I have a personal, financial, or professional interest that may
+                        affect my ability to act impartially. I wish to be recused from
+                        this shortlisting committee.
+                    </div>
+                </label>
+
+            </div>
+
+            <!-- Reason box — shown only if conflict selected -->
+            <div id="reason-wrapper">
+                <div class="warning-box">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>
+                        Declaring a conflict will <strong>recuse you</strong> from voting on this vacancy.
+                        Your declaration and reason will be recorded and HR will be notified immediately.
+                        This action cannot be undone.
+                    </span>
+                </div>
+                <label for="conflict_reason">
+                    Reason for declaring a conflict of interest
+                    <span class="required-note">* required</span>
+                </label>
+                <textarea id="conflict_reason" name="conflict_reason"
+                          placeholder="Describe your conflict of interest in detail…"
+                          {% if decision_pre == 'has_conflict' %}autofocus{% endif %}>{{ request.POST.conflict_reason|default:'' }}</textarea>
+            </div>
+
+            <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                <i class="fas fa-check-circle"></i>
+                <span id="btn-label">Select an option above to continue</span>
+            </button>
+        </form>
+        {% endif %}
+
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function () {
+    const cardNo    = document.getElementById('card-no');
+    const cardYes   = document.getElementById('card-yes');
+    const radioNo   = document.getElementById('no_conflict');
+    const radioYes  = document.getElementById('has_conflict');
+    const wrapper   = document.getElementById('reason-wrapper');
+    const textarea  = document.getElementById('conflict_reason');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnLabel  = document.getElementById('btn-label');
+
+    if (!radioNo) return;  // already-declared screens have no form
+
+    function update() {
+        const noSelected  = radioNo.checked;
+        const yesSelected = radioYes.checked;
+
+        // Card highlight
+        cardNo.classList.toggle('selected-no',  noSelected);
+        cardYes.classList.toggle('selected-yes', yesSelected);
+
+        // Show reason box
+        if (yesSelected) {
+            wrapper.style.display = 'block';
+        } else {
+            wrapper.style.display = 'none';
+        }
+
+        // Enable submit
+        if (noSelected) {
+            submitBtn.disabled = false;
+            btnLabel.textContent = 'Confirm — I Have No Conflict of Interest';
+        } else if (yesSelected) {
+            const hasReason = textarea.value.trim().length >= 10;
+            submitBtn.disabled = !hasReason;
+            btnLabel.textContent = hasReason
+                ? 'Submit Conflict of Interest Declaration'
+                : 'Please provide a reason (min. 10 characters)';
+        } else {
+            submitBtn.disabled = true;
+            btnLabel.textContent = 'Select an option above to continue';
+        }
+    }
+
+    radioNo.addEventListener('change', update);
+    radioYes.addEventListener('change', update);
+    textarea.addEventListener('input', update);
+
+    // Restore state on page reload (e.g. validation error)
+    update();
+})();
+</script>
+{% endblock %}
