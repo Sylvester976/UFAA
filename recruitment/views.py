@@ -9,13 +9,13 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.auth.decorators import login_required
 from django.core.mail import EmailMultiAlternatives
+from django.db.models import Prefetch
 from django.http import FileResponse, Http404
 from django.template.loader import render_to_string
 
 from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
 from recruitment.utils import check_and_lock_application
-from django.db.models import Prefetch
 from roles.models import Role
 from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
     PanelistReport, \
@@ -26,8 +26,7 @@ from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, Aca
     EducationLevel, DocumentType, Document
 from .models import (
     ShortlistingCommittee,
-    CommitteeScore,
-    ShortlistConsent,
+    ShortlistResult,
     ShortlistLog,
 )
 from .services import aggregate_shortlist, build_profile_snapshot, is_shortlisting_complete
@@ -42,8 +41,6 @@ def get_logged_in_user(request):
     if not user_id:
         return None
     return JobseekerAccount.objects.filter(id=user_id).first()
-
-
 
 
 def view_jobs(request):
@@ -324,11 +321,12 @@ def profile_view(request):
 def _doc_to_dict(doc):
     """Serialize a Document instance to a JSON-safe dict for the frontend."""
     return {
-        'id':        doc.id,
-        'url':       doc.file.url,
-        'filename':  doc.file.name.split('/')[-1],
+        'id': doc.id,
+        'url': doc.file.url,
+        'filename': doc.file.name.split('/')[-1],
         'type_name': doc.document_type.name,
     }
+
 
 def academic_qualifications_view(request):
     user_id = request.session.get('user_id')
@@ -340,7 +338,7 @@ def academic_qualifications_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
@@ -372,7 +370,7 @@ def academic_qualifications_view(request):
                     return JsonResponse({'status': 'error', 'message': 'Invalid education level.'})
 
                 institution = request.POST.get('institution', '').strip()
-                year        = request.POST.get('year_completed', '').strip()
+                year = request.POST.get('year_completed', '').strip()
 
                 if not institution:
                     return JsonResponse({'status': 'error', 'message': 'Institution is required.'})
@@ -380,20 +378,20 @@ def academic_qualifications_view(request):
                     return JsonResponse({'status': 'error', 'message': 'Year completed is required.'})
 
                 qual.education_level = education_level
-                qual.institution     = institution
-                qual.field_of_study  = request.POST.get('field_of_study', '').strip()
-                qual.year_completed  = year
-                qual.grade           = request.POST.get('grade', '').strip()
-                qual.cert_number     = request.POST.get('cert_number', '').strip()
-                qual.country         = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                qual.institution = institution
+                qual.field_of_study = request.POST.get('field_of_study', '').strip()
+                qual.year_completed = year
+                qual.grade = request.POST.get('grade', '').strip()
+                qual.cert_number = request.POST.get('cert_number', '').strip()
+                qual.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
                 qual.save()
 
-                files     = request.FILES.getlist('edit_files')
+                files = request.FILES.getlist('edit_files')
                 doc_types = request.POST.getlist('edit_doc_types')
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         Document.objects.create(
                             user=user,
@@ -412,17 +410,17 @@ def academic_qualifications_view(request):
                     'status': 'success',
                     'message': 'Qualification updated successfully.',
                     'qual': {
-                        'id':             qual.id,
-                        'level_id':       education_level.id,
-                        'level_name':     education_level.name,
-                        'institution':    qual.institution,
+                        'id': qual.id,
+                        'level_id': education_level.id,
+                        'level_name': education_level.name,
+                        'institution': qual.institution,
                         'field_of_study': qual.field_of_study or '',
                         'year_completed': qual.year_completed,
-                        'grade':          qual.grade or '',
-                        'cert_number':    qual.cert_number or '',
-                        'country':        qual.country,
-                        'doc_count':      len(all_docs),
-                        'docs':           [_doc_to_dict(d) for d in all_docs],
+                        'grade': qual.grade or '',
+                        'cert_number': qual.cert_number or '',
+                        'country': qual.country,
+                        'doc_count': len(all_docs),
+                        'docs': [_doc_to_dict(d) for d in all_docs],
                     }
                 })
 
@@ -444,7 +442,7 @@ def academic_qualifications_view(request):
                     continue
 
                 institution = q.get('institution', '').strip()
-                year        = q.get('year_completed', '')
+                year = q.get('year_completed', '')
                 if not institution or not year:
                     continue
 
@@ -459,13 +457,13 @@ def academic_qualifications_view(request):
                     cert_number=q.get('cert_number', '').strip(),
                 )
 
-                files     = request.FILES.getlist(f'level_files_{idx}')
+                files = request.FILES.getlist(f'level_files_{idx}')
                 doc_types = request.POST.getlist(f'level_doc_types_{idx}')
-                doc_objs  = []
+                doc_objs = []
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         doc = Document.objects.create(
                             user=user,
@@ -477,17 +475,17 @@ def academic_qualifications_view(request):
                         doc_objs.append(doc)
 
                 saved.append({
-                    'id':             qual.id,
-                    'level_id':       education_level.id,
-                    'level_name':     education_level.name,
-                    'institution':    qual.institution,
+                    'id': qual.id,
+                    'level_id': education_level.id,
+                    'level_name': education_level.name,
+                    'institution': qual.institution,
                     'field_of_study': qual.field_of_study or '',
                     'year_completed': qual.year_completed,
-                    'grade':          qual.grade or '',
-                    'cert_number':    qual.cert_number or '',
-                    'country':        qual.country,
-                    'doc_count':      len(doc_objs),
-                    'docs':           [_doc_to_dict(d) for d in doc_objs],
+                    'grade': qual.grade or '',
+                    'cert_number': qual.cert_number or '',
+                    'country': qual.country,
+                    'doc_count': len(doc_objs),
+                    'docs': [_doc_to_dict(d) for d in doc_objs],
                 })
 
             if not saved:
@@ -520,23 +518,24 @@ def academic_qualifications_view(request):
     )
 
     context = {
-        'profile':    profile,
-        'user':       user,
-        'page':       'Academic Qualifications',
-        'education_levels':        EducationLevel.objects.all().order_by('rank'),
-        'document_types':          DocumentType.objects.all(),
+        'profile': profile,
+        'user': user,
+        'page': 'Academic Qualifications',
+        'education_levels': EducationLevel.objects.all().order_by('rank'),
+        'document_types': DocumentType.objects.all(),
         'existing_qualifications': existing_qualifications,
-        'completion':              completion,
-        'has_academic':     existing_qualifications.exists(),
+        'completion': completion,
+        'has_academic': existing_qualifications.exists(),
         'has_professional': user.professional_qualifications.exists()
-            if hasattr(user, 'professional_qualifications') else False,
+        if hasattr(user, 'professional_qualifications') else False,
         'has_work_history': user.work_history.exists()
-            if hasattr(user, 'work_history') else False,
-        'has_additional':   hasattr(user, 'additional_detail'),
-        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        if hasattr(user, 'work_history') else False,
+        'has_additional': hasattr(user, 'additional_detail'),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/academic.html', context)
+
 
 # ── Progress Calculation ─────────────────────────────────────
 def calculate_profile_completion(user):
@@ -605,7 +604,7 @@ def professional_qualifications_view(request):
         request.session.flush()
         return redirect('index')
 
-    profile    = JobSeekerProfile.objects.filter(user=user).first()
+    profile = JobSeekerProfile.objects.filter(user=user).first()
     completion = calculate_profile_completion(user)
 
     if request.method == 'POST':
@@ -647,18 +646,18 @@ def professional_qualifications_view(request):
                 qual.qualification = qualification
                 qual.awarding_body = awarding_body
                 qual.year_obtained = year_obtained
-                qual.expiry_year   = int(expiry_raw) if expiry_raw else None
-                qual.grade         = request.POST.get('grade', '').strip()
-                qual.cert_number   = request.POST.get('cert_number', '').strip()
-                qual.country       = request.POST.get('country', 'Kenya').strip() or 'Kenya'
+                qual.expiry_year = int(expiry_raw) if expiry_raw else None
+                qual.grade = request.POST.get('grade', '').strip()
+                qual.cert_number = request.POST.get('cert_number', '').strip()
+                qual.country = request.POST.get('country', 'Kenya').strip() or 'Kenya'
                 qual.save()
 
-                files     = request.FILES.getlist('edit_files')
+                files = request.FILES.getlist('edit_files')
                 doc_types = request.POST.getlist('edit_doc_types')
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         Document.objects.create(
                             user=user,
@@ -677,16 +676,16 @@ def professional_qualifications_view(request):
                     'status': 'success',
                     'message': 'Qualification updated successfully.',
                     'qual': {
-                        'id':            qual.id,
+                        'id': qual.id,
                         'qualification': qual.qualification,
                         'awarding_body': qual.awarding_body,
                         'year_obtained': qual.year_obtained,
-                        'expiry_year':   qual.expiry_year or '',
-                        'grade':         qual.grade or '',
-                        'cert_number':   qual.cert_number or '',
-                        'country':       qual.country,
-                        'doc_count':     len(all_docs),
-                        'docs':          [_doc_to_dict(d) for d in all_docs],
+                        'expiry_year': qual.expiry_year or '',
+                        'grade': qual.grade or '',
+                        'cert_number': qual.cert_number or '',
+                        'country': qual.country,
+                        'doc_count': len(all_docs),
+                        'docs': [_doc_to_dict(d) for d in all_docs],
                     }
                 })
 
@@ -706,7 +705,7 @@ def professional_qualifications_view(request):
                 qualification = q.get('qualification', '').strip()
                 awarding_body = q.get('awarding_body', '').strip()
                 year_obtained = q.get('year_obtained', '')
-                expiry_raw    = q.get('expiry_year', '')
+                expiry_raw = q.get('expiry_year', '')
 
                 if not qualification or not awarding_body or not year_obtained:
                     continue
@@ -722,13 +721,13 @@ def professional_qualifications_view(request):
                     country=q.get('country', 'Kenya').strip() or 'Kenya',
                 )
 
-                files     = request.FILES.getlist(f'qual_files_{idx}')
+                files = request.FILES.getlist(f'qual_files_{idx}')
                 doc_types = request.POST.getlist(f'qual_doc_types_{idx}')
-                doc_objs  = []
+                doc_objs = []
 
                 for i, file in enumerate(files):
                     doc_type_id = doc_types[i] if i < len(doc_types) else None
-                    doc_type    = DocumentType.objects.filter(id=doc_type_id).first()
+                    doc_type = DocumentType.objects.filter(id=doc_type_id).first()
                     if file and doc_type:
                         doc = Document.objects.create(
                             user=user,
@@ -740,16 +739,16 @@ def professional_qualifications_view(request):
                         doc_objs.append(doc)
 
                 saved.append({
-                    'id':            qual.id,
+                    'id': qual.id,
                     'qualification': qual.qualification,
                     'awarding_body': qual.awarding_body,
                     'year_obtained': qual.year_obtained,
-                    'expiry_year':   qual.expiry_year or '',
-                    'grade':         qual.grade or '',
-                    'cert_number':   qual.cert_number or '',
-                    'country':       qual.country,
-                    'doc_count':     len(doc_objs),
-                    'docs':          [_doc_to_dict(d) for d in doc_objs],
+                    'expiry_year': qual.expiry_year or '',
+                    'grade': qual.grade or '',
+                    'cert_number': qual.cert_number or '',
+                    'country': qual.country,
+                    'doc_count': len(doc_objs),
+                    'docs': [_doc_to_dict(d) for d in doc_objs],
                 })
 
             if not saved:
@@ -781,20 +780,20 @@ def professional_qualifications_view(request):
     )
 
     context = {
-        'profile':    profile,
-        'user':       user,
-        'page':       'Professional Qualifications',
+        'profile': profile,
+        'user': user,
+        'page': 'Professional Qualifications',
         'document_types': DocumentType.objects.all(),
-        'existing':   existing,
+        'existing': existing,
         'completion': completion,
-        'has_academic':     user.academic_qualifications.exists()
-            if hasattr(user, 'academic_qualifications') else False,
+        'has_academic': user.academic_qualifications.exists()
+        if hasattr(user, 'academic_qualifications') else False,
         'has_professional': existing.exists(),
         'has_work_history': user.work_history.exists()
-            if hasattr(user, 'work_history') else False,
-        'has_additional':   hasattr(user, 'additional_detail'),
-        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        if hasattr(user, 'work_history') else False,
+        'has_additional': hasattr(user, 'additional_detail'),
+        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/professional.html', context)
 
@@ -1988,7 +1987,7 @@ def hr_view_applications_json(request, vacancy_id):
         '1': 'application_number',
         '6': 'submitted_at',
         '7': 'status__order',
-        '8': 'longlist_decision',   # ← added
+        '8': 'longlist_decision',  # ← added
     }
     order_col = request.GET.get('order[0][column]', '6')
     order_dir = request.GET.get('order[0][dir]', 'desc')
@@ -2018,9 +2017,9 @@ def hr_view_applications_json(request, vacancy_id):
     for i, app in enumerate(qs, start=start + 1):
         basic = app.snapshot_basic or {}
         # ↓ added: read docs from snapshot — zero extra DB queries
-        academic     = app.snapshot_academic     or []
+        academic = app.snapshot_academic or []
         professional = app.snapshot_professional or []
-        additional   = app.snapshot_additional   or {}
+        additional = app.snapshot_additional or {}
 
         full_name = ' '.join(filter(None, [
             basic.get('first_name', ''),
@@ -2053,11 +2052,11 @@ def hr_view_applications_json(request, vacancy_id):
             'submitted_at': app.submitted_at.strftime('%d %b %Y'),
             'status_code': app.status.code,
             'status_name': app.status.name,
-            'longlist_decision': app.longlist_decision or '',   # ← added
-            'docs': {                                            # ← added
-                'cv_url':            additional.get('cv_url', ''),
-                'cover_letter_url':  additional.get('cover_letter_url', ''),
-                'academic_docs':     academic_docs,
+            'longlist_decision': app.longlist_decision or '',  # ← added
+            'docs': {  # ← added
+                'cv_url': additional.get('cv_url', ''),
+                'cover_letter_url': additional.get('cover_letter_url', ''),
+                'academic_docs': academic_docs,
                 'professional_docs': professional_docs,
             },
             'detail_url': f'/recruitment/hr/application/{app.id}/',
@@ -2940,13 +2939,13 @@ def vacancy_longlisting(request):
 # Stage: Shortlisting
 # ----------------------
 
+# ── vacancy_shortlisting — updated to use CommitteeVote ──────────────────────
+
 @login_required
 @role_required(['hod_hr'])
 def vacancy_shortlisting(request):
     """
     Shortlisting picker — shows vacancies in committee_stage.
-    These are vacancies where longlist has been finalised and
-    committee scoring / consent process is underway.
     """
     vacancies_qs = Vacancy.objects.filter(
         status='committee_stage'
@@ -2955,40 +2954,24 @@ def vacancy_shortlisting(request):
     vacancy_data = []
     for v in vacancies_qs:
         # Final longlisted applications
-        apps = JobApplication.objects.filter(
+        app_count = JobApplication.objects.filter(
             vacancy=v,
             status__code='final_longlisted',
-        )
-        app_count = apps.count()
-
-        # Committee members appointed
-        committee = ShortlistingCommittee.objects.filter(vacancy=v)
-        committee_count = committee.count()
-
-        # How many members have submitted all their scores
-        scored_count = 0
-        if committee_count > 0:
-            for member_entry in committee:
-                member_score_count = CommitteeScore.objects.filter(
-                    vacancy=v,
-                    member=member_entry.member,
-                    submitted=True,
-                ).count()
-                if member_score_count >= app_count:
-                    scored_count += 1
-
-        all_scored = (scored_count == committee_count and committee_count > 0)
-
-        # Consent counts
-        consented_count = ShortlistConsent.objects.filter(
-            vacancy=v,
-            response='consented',
         ).count()
 
-        threshold = (committee_count // 2) + 1 if committee_count > 0 else 0
-        threshold_met = consented_count >= threshold and committee_count > 0
+        # Active committee members
+        committee = ShortlistingCommittee.objects.filter(vacancy=v, is_active=True)
+        committee_count = committee.count()
 
-        # Deadline = end_date + 21 days
+        # How many members have submitted ALL their votes
+        # (votes_submitted flag on ShortlistingCommittee)
+        voted_count = committee.filter(votes_submitted=True).count()
+        all_voted = (voted_count == committee_count and committee_count > 0)
+
+        # Has the shortlist been generated yet?
+        shortlist_generated = ShortlistResult.objects.filter(vacancy=v).exists()
+
+        threshold = _threshold(committee_count)
         deadline = v.end_date + timedelta(days=21)
         days_remaining = (deadline - timezone.now().date()).days
 
@@ -2996,11 +2979,10 @@ def vacancy_shortlisting(request):
             'vacancy': v,
             'app_count': app_count,
             'committee_count': committee_count,
-            'scored_count': scored_count,
-            'all_scored': all_scored,
-            'consented_count': consented_count,
+            'voted_count': voted_count,
+            'all_voted': all_voted,
+            'shortlist_generated': shortlist_generated,
             'threshold': threshold,
-            'threshold_met': threshold_met,
             'deadline': deadline,
             'days_remaining': days_remaining,
         })
@@ -3189,29 +3171,29 @@ def hr_finalize_appointment(request, vacancy_id):
 
 def _build_snapshots(user):
     profile = JobSeekerProfile.objects.filter(user=user).first()
-    detail  = AdditionalDetail.objects.filter(user=user).first()
+    detail = AdditionalDetail.objects.filter(user=user).first()
 
     # ── Basic ──────────────────────────────────────────────────
     snap_basic = {}
     if profile:
         snap_basic = {
-            'salutation':       profile.salutation or '',
-            'surname':          profile.surname or '',
-            'first_name':       profile.first_name or '',
-            'second_name':      profile.second_name or '',
-            'id_no':            profile.id_no or '',
-            'phone_number':     profile.phone_number or '',
-            'date_of_birth':    str(profile.date_of_birth) if profile.date_of_birth else '',
-            'gender':           str(profile.gender) if profile.gender else '',
-            'ethnic_group':     str(profile.ethnic_group) if profile.ethnic_group else '',
-            'home_county':      str(profile.home_county) if profile.home_county else '',
-            'constituency':     str(profile.constituency) if profile.constituency else '',
-            'sub_county':       str(profile.sub_county) if profile.sub_county else '',
-            'ward':             str(profile.ward) if profile.ward else '',
+            'salutation': profile.salutation or '',
+            'surname': profile.surname or '',
+            'first_name': profile.first_name or '',
+            'second_name': profile.second_name or '',
+            'id_no': profile.id_no or '',
+            'phone_number': profile.phone_number or '',
+            'date_of_birth': str(profile.date_of_birth) if profile.date_of_birth else '',
+            'gender': str(profile.gender) if profile.gender else '',
+            'ethnic_group': str(profile.ethnic_group) if profile.ethnic_group else '',
+            'home_county': str(profile.home_county) if profile.home_county else '',
+            'constituency': str(profile.constituency) if profile.constituency else '',
+            'sub_county': str(profile.sub_county) if profile.sub_county else '',
+            'ward': str(profile.ward) if profile.ward else '',
             'disability_status': profile.disability_status or '',
             'disability_other': profile.disability_other or '',
-            'disability_no':    profile.disability_no or '',
-            'employee_number':  profile.employee_number or '',
+            'disability_no': profile.disability_no or '',
+            'employee_number': profile.employee_number or '',
         }
 
     # ── Academic ────────────────────────────────────────────────
@@ -3268,15 +3250,15 @@ def _build_snapshots(user):
     # ── Work ────────────────────────────────────────────────────
     snap_work = [
         {
-            'job_title':       w.job_title or '',
-            'company':         w.company or '',
+            'job_title': w.job_title or '',
+            'company': w.company or '',
             'employment_type': w.employment_type or '',
-            'start_display':   w.start_display,
-            'end_display':     w.end_display if not w.is_current else 'Present',
-            'is_current':      w.is_current,
-            'duties':          w.duties or '',
-            'exit_reason':     w.exit_reason or '',
-            'country':         w.country or '',
+            'start_display': w.start_display,
+            'end_display': w.end_display if not w.is_current else 'Present',
+            'is_current': w.is_current,
+            'duties': w.duties or '',
+            'exit_reason': w.exit_reason or '',
+            'country': w.country or '',
         }
         for w in WorkHistory.objects.filter(user=user).order_by('-start_year', '-start_month')
     ]
@@ -3284,10 +3266,10 @@ def _build_snapshots(user):
     # ── Memberships ─────────────────────────────────────────────
     snap_memberships = [
         {
-            'body_name':     m.body_name or '',
+            'body_name': m.body_name or '',
             'membership_no': m.membership_no or '',
-            'year_joined':   m.year_joined,
-            'expiry_year':   m.expiry_year or '',
+            'year_joined': m.year_joined,
+            'expiry_year': m.expiry_year or '',
         }
         for m in ProfessionalBodyMembership.objects.filter(user=user)
     ]
@@ -3295,11 +3277,11 @@ def _build_snapshots(user):
     # ── Referees ────────────────────────────────────────────────
     snap_referees = [
         {
-            'referee_no':   r.referee_no,
-            'name':         r.name or '',
-            'occupation':   r.occupation or '',
-            'mobile':       r.mobile or '',
-            'email':        r.email or '',
+            'referee_no': r.referee_no,
+            'name': r.name or '',
+            'occupation': r.occupation or '',
+            'mobile': r.mobile or '',
+            'email': r.email or '',
             'period_known': r.period_known or '',
         }
         for r in Referee.objects.filter(user=user).order_by('referee_no')
@@ -3311,10 +3293,10 @@ def _build_snapshots(user):
     snap_documents = [
         {
             'document_type': doc.document_type.name,
-            'unique_ref':    doc.unique_ref,
-            'file_url':      doc.file.url if doc.file else '',
-            'filename':      doc.file.name.split('/')[-1] if doc.file else '',
-            'uploaded_at':   str(doc.uploaded_at),
+            'unique_ref': doc.unique_ref,
+            'file_url': doc.file.url if doc.file else '',
+            'filename': doc.file.name.split('/')[-1] if doc.file else '',
+            'uploaded_at': str(doc.uploaded_at),
         }
         for doc in Document.objects.filter(user=user).select_related('document_type')
     ]
@@ -3323,26 +3305,26 @@ def _build_snapshots(user):
     snap_additional = {}
     if detail:
         snap_additional = {
-            'cv_filename':           detail.cv.name.split('/')[-1] if detail.cv else '',
-            'cv_url':                detail.cv.url if detail.cv else '',          # ← store URL too
+            'cv_filename': detail.cv.name.split('/')[-1] if detail.cv else '',
+            'cv_url': detail.cv.url if detail.cv else '',  # ← store URL too
             'cover_letter_filename': detail.cover_letter.name.split('/')[-1] if detail.cover_letter else '',
-            'cover_letter_url':      detail.cover_letter.url if detail.cover_letter else '',  # ← store URL too
-            'linkedin_url':          detail.linkedin_url or '',
-            'portfolio_url':         detail.portfolio_url or '',
-            'languages':             detail.languages or '',
-            'availability':          detail.availability or '',
-            'expected_salary':       str(detail.expected_salary) if detail.expected_salary else '',
+            'cover_letter_url': detail.cover_letter.url if detail.cover_letter else '',  # ← store URL too
+            'linkedin_url': detail.linkedin_url or '',
+            'portfolio_url': detail.portfolio_url or '',
+            'languages': detail.languages or '',
+            'availability': detail.availability or '',
+            'expected_salary': str(detail.expected_salary) if detail.expected_salary else '',
         }
 
     return {
-        'basic':        snap_basic,
-        'academic':     snap_academic,
+        'basic': snap_basic,
+        'academic': snap_academic,
         'professional': snap_professional,
-        'work':         snap_work,
-        'memberships':  snap_memberships,
-        'referees':     snap_referees,
-        'documents':    snap_documents,    # ← new
-        'additional':   snap_additional,
+        'work': snap_work,
+        'memberships': snap_memberships,
+        'referees': snap_referees,
+        'documents': snap_documents,  # ← new
+        'additional': snap_additional,
     }
 
 
@@ -4649,9 +4631,9 @@ def hr_longlist_finalise(request, vacancy_id):
 
 # ── Helpers ────────────────────────────────────────────────────────────────
 
-def _threshold(n):
-    """Return 50%+1 threshold for committee of size n."""
-    return (n // 2) + 1 if n > 0 else 0
+def _threshold(member_count):
+    """Minimum approvals required: floor(n/2) + 1."""
+    return (member_count // 2) + 1 if member_count > 0 else 0
 
 
 def _display_name(user):
@@ -4664,7 +4646,11 @@ def _display_name(user):
 
 
 def _send_appointment_email(member, vacancy, request):
-    """Email a committee member their appointment notice."""
+    """
+    Email a committee member their appointment notice.
+    Tells them to log in, review the longlist, and submit
+    their approve/disapprove decision on each applicant.
+    """
     try:
         name = _display_name(member)
         deadline = vacancy.end_date + timedelta(days=21)
@@ -4701,14 +4687,19 @@ def _send_appointment_email(member, vacancy, request):
             </tr>
         </table>
         <p>
-            Your task is to <strong>score each shortlisted candidate</strong>
-            (1–100 scale) and then provide your <strong>shortlist picks</strong>
-            (include / exclude with reason).  All scoring must be completed by
-            the deadline above.
+            Your task is to <strong>review each longlisted applicant's dossier</strong>
+            and formally record your decision — <strong>Approve</strong> or
+            <strong>Disapprove</strong> — with a mandatory written comment for
+            each applicant. All decisions must be submitted by the deadline above.
         </p>
         <p>
-            Please log in to the recruitment portal to access your committee
-            dashboard and begin scoring.
+            The shortlist will be automatically generated once every committee
+            member has submitted their decisions. Applicants who receive
+            approval from 50%+1 of the committee will proceed to the shortlist.
+        </p>
+        <p>
+            Please log in to the portal, acknowledge your appointment, and
+            begin reviewing the longlist at your earliest convenience.
         </p>
         <p style="margin-top:1.5rem;">
             <a href="{portal_url}"
@@ -4718,26 +4709,35 @@ def _send_appointment_email(member, vacancy, request):
             </a>
         </p>
         <p style="margin-top:1.5rem;color:#67748e;font-size:0.85rem;">
+            Detailed vote breakdowns and audit records are available in the
+            portal. Email notifications will be sent to applicants only after
+            all decisions have been submitted and the shortlist is generated.
+        </p>
+        <p style="color:#67748e;font-size:0.85rem;">
             If you believe this appointment was made in error, please contact
             the HR office immediately.
         </p>
         """
 
         html_body = render_to_string('emails/email_base.html', {
-            'subject':         f'Committee Appointment — {vacancy.title}',
+            'subject': f'Shortlisting Committee Appointment — {vacancy.title}',
             'message_content': message_html,
-            'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
-            'year':            timezone.now().year,
+            'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+            'year': timezone.now().year,
         })
         msg = EmailMultiAlternatives(
-            subject    = f'Committee Appointment — {vacancy.title} ({vacancy.reference_number})',
-            body       = f'You have been appointed to the shortlisting committee for {vacancy.title}.',
-            from_email = getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
-            to         = [member.email],
+            subject=f'Shortlisting Committee Appointment — {vacancy.title} ({vacancy.reference_number})',
+            body=(
+                f'You have been appointed to the shortlisting committee for {vacancy.title}. '
+                f'Please log in to the portal to review the longlist and submit your decisions.'
+            ),
+            from_email=getattr(settings, 'DEFAULT_FROM_EMAIL', 'noreply@ufaa.go.ke'),
+            to=[member.email],
         )
         msg.attach_alternative(html_body, 'text/html')
         msg.send(fail_silently=False)
         return True
+
     except Exception as e:
         logger.error(f"Appointment email failed to {member.email}: {e}", exc_info=True)
         return False
@@ -4775,17 +4775,17 @@ def hr_appoint_committee(request, vacancy_id):
         ).count()
         can_remove = (scores_done == 0 and not entry.scores_submitted)
         committee_data.append({
-            'entry':       entry,
-            'name':        _display_name(entry.member),
-            'email':       entry.member.email,
+            'entry': entry,
+            'name': _display_name(entry.member),
+            'email': entry.member.email,
             'scores_done': scores_done,
-            'can_remove':  can_remove,
+            'can_remove': can_remove,
         })
 
     committee_count = len(committee_data)
-    threshold       = _threshold(committee_count)
-    deadline        = vacancy.end_date + timedelta(days=21)
-    days_remaining  = (deadline - timezone.now().date()).days
+    threshold = _threshold(committee_count)
+    deadline = vacancy.end_date + timedelta(days=21)
+    days_remaining = (deadline - timezone.now().date()).days
 
     # Consent summary (useful to show even on appoint screen)
     consented_count = ShortlistConsent.objects.filter(
@@ -4803,25 +4803,25 @@ def hr_appoint_committee(request, vacancy_id):
     for u in User.objects.filter(user_type=2, is_active=True).order_by('first_name', 'last_name', 'email'):
         uid = str(u.pk)
         all_staff.append({
-            'id':           uid,
-            'name':         _display_name(u),
-            'email':        u.email,
+            'id': uid,
+            'name': _display_name(u),
+            'email': u.email,
             'on_committee': uid in on_committee_ids,
         })
 
     return render(request, 'recruitment/hr/shortlisting/appoint_committee.html', {
-        'page':             'Shortlisting',
-        'vacancy':          vacancy,
-        'app_count':        app_count,
-        'committee':        committee_data,
-        'committee_count':  committee_count,
-        'threshold':        threshold,
-        'deadline':         deadline,
-        'all_staff':        all_staff,
-        'days_remaining':   days_remaining,
-        'consented_count':  consented_count,
-        'deadline_amber':   0 < days_remaining <= 5,
-        'deadline_red':     days_remaining <= 0,
+        'page': 'Shortlisting',
+        'vacancy': vacancy,
+        'app_count': app_count,
+        'committee': committee_data,
+        'committee_count': committee_count,
+        'threshold': threshold,
+        'deadline': deadline,
+        'all_staff': all_staff,
+        'days_remaining': days_remaining,
+        'consented_count': consented_count,
+        'deadline_amber': 0 < days_remaining <= 5,
+        'deadline_red': days_remaining <= 0,
     })
 
 
@@ -4831,7 +4831,7 @@ def hr_appoint_committee(request, vacancy_id):
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_add(request, vacancy_id):
-    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
     member_id = request.POST.get('member_id', '').strip()
     send_email = request.POST.get('send_email', '1') == '1'
 
@@ -4854,7 +4854,7 @@ def hr_committee_add(request, vacancy_id):
                 member=member,
                 defaults={
                     'appointed_by': request.user,
-                    'is_active':    True,
+                    'is_active': True,
                 },
             )
             if not created:
@@ -4863,19 +4863,19 @@ def hr_committee_add(request, vacancy_id):
                         'error': f'{_display_name(member)} is already on the committee.'
                     }, status=400)
                 # Re-activate
-                entry.is_active    = True
+                entry.is_active = True
                 entry.appointed_by = request.user
                 entry.appointed_at = timezone.now()
                 entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
 
             ShortlistLog.objects.create(
-                vacancy          = vacancy,
-                application      = None,
-                performed_by     = request.user,
-                action           = 'member_appointed',
-                notes            = f'Appointed {_display_name(member)} to committee.',
-                metadata         = {'member_id': str(member.pk), 'member_email': member.email},
-                performed_by_label = _display_name(request.user),
+                vacancy=vacancy,
+                application=None,
+                performed_by=request.user,
+                action='member_appointed',
+                notes=f'Appointed {_display_name(member)} to committee.',
+                metadata={'member_id': str(member.pk), 'member_email': member.email},
+                performed_by_label=_display_name(request.user),
             )
     except Exception as e:
         logger.error(f"Committee add error: {e}", exc_info=True)
@@ -4886,22 +4886,22 @@ def hr_committee_add(request, vacancy_id):
         email_sent = _send_appointment_email(member, vacancy, request)
 
     # Recalculate threshold with new count
-    new_count   = ShortlistingCommittee.objects.filter(
+    new_count = ShortlistingCommittee.objects.filter(
         vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success':       True,
-        'created':       created,
-        'email_sent':    email_sent,
+        'success': True,
+        'created': created,
+        'email_sent': email_sent,
         'member': {
-            'id':             member.pk,
-            'name':           _display_name(member),
-            'email':          member.email,
-            'appointed_at':   entry.appointed_at.strftime('%d %b %Y %H:%M'),
+            'id': member.pk,
+            'name': _display_name(member),
+            'email': member.email,
+            'appointed_at': entry.appointed_at.strftime('%d %b %Y %H:%M'),
         },
-        'committee_count':  new_count,
-        'new_threshold':    new_threshold,
+        'committee_count': new_count,
+        'new_threshold': new_threshold,
     })
 
 
@@ -4911,9 +4911,9 @@ def hr_committee_add(request, vacancy_id):
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_remove(request, vacancy_id):
-    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
     member_id = request.POST.get('member_id', '').strip()
-    reason    = request.POST.get('reason', '').strip()
+    reason = request.POST.get('reason', '').strip()
 
     if not member_id:
         return JsonResponse({'error': 'No member specified.'}, status=400)
@@ -4940,22 +4940,22 @@ def hr_committee_remove(request, vacancy_id):
         entry.is_active = False
         entry.save(update_fields=['is_active'])
         ShortlistLog.objects.create(
-            vacancy            = vacancy,
-            application        = None,
-            performed_by       = request.user,
-            action             = 'member_removed',
-            notes              = reason,
-            metadata           = {'member_id': str(member_id)},
-            performed_by_label = _display_name(request.user),
+            vacancy=vacancy,
+            application=None,
+            performed_by=request.user,
+            action='member_removed',
+            notes=reason,
+            metadata={'member_id': str(member_id)},
+            performed_by_label=_display_name(request.user),
         )
 
-    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_count = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success':         True,
+        'success': True,
         'committee_count': new_count,
-        'new_threshold':   new_threshold,
+        'new_threshold': new_threshold,
     })
 
 
@@ -4975,7 +4975,7 @@ def hr_committee_notify(request, vacancy_id):
     if not members.exists():
         return JsonResponse({'error': 'No committee members to notify.'}, status=400)
 
-    sent_count   = 0
+    sent_count = 0
     failed_count = 0
     for entry in members:
         ok = _send_appointment_email(entry.member, vacancy, request)
@@ -4985,18 +4985,18 @@ def hr_committee_notify(request, vacancy_id):
             failed_count += 1
 
     ShortlistLog.objects.create(
-        vacancy            = vacancy,
-        application        = None,
-        performed_by       = request.user,
-        action             = 'emails_sent',
-        notes              = f'Bulk notification sent to {sent_count} committee member(s).',
-        metadata           = {'sent': sent_count, 'failed': failed_count},
-        performed_by_label = _display_name(request.user),
+        vacancy=vacancy,
+        application=None,
+        performed_by=request.user,
+        action='emails_sent',
+        notes=f'Bulk notification sent to {sent_count} committee member(s).',
+        metadata={'sent': sent_count, 'failed': failed_count},
+        performed_by_label=_display_name(request.user),
     )
 
     return JsonResponse({
-        'success':     True,
-        'sent_count':  sent_count,
+        'success': True,
+        'sent_count': sent_count,
         'failed_count': failed_count,
     })
 
@@ -5012,7 +5012,7 @@ def hr_committee_staff_search(request, vacancy_id):
     Excludes applicants for this vacancy.
     """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
-    q       = request.GET.get('q', '').strip()
+    q = request.GET.get('q', '').strip()
 
     if len(q) < 2:
         return JsonResponse({'results': []})
@@ -5043,9 +5043,9 @@ def hr_committee_staff_search(request, vacancy_id):
     for u in qs:
         name = _display_name(u)
         results.append({
-            'id':                   str(u.pk),  # UUID -> string for JSON
-            'name':                 name,
-            'email':                u.email,
+            'id': str(u.pk),  # UUID -> string for JSON
+            'name': name,
+            'email': u.email,
             'already_on_committee': str(u.pk) in on_committee,
         })
 
