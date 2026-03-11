@@ -115,6 +115,8 @@ class LoginRequiredMiddleware:
         'committee_vote_save',
         'committee_submit_all',
         'committee_results',
+        'committee_declare_coi',
+
 
 
 
