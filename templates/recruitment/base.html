@@ -919,7 +919,7 @@ main.main-content {
 
             
             
-            {% if 'admin' in user_roles %}
+            {% if 'super_admin' in user_roles %}
 
             <!-- Committee -->
                 <li class="nav-item mt-3">
@@ -937,7 +937,7 @@ main.main-content {
             {% endif %}
 
 
-            {% if 'admin' in user_roles %}
+            {% if 'super_admin' in user_roles %}
             
             <!-- System User Dashboards -->
             <li class="nav-item mt-3">
@@ -958,7 +958,7 @@ main.main-content {
             {% endif %}
 
 
-            {% if 'admin' in user_roles %}
+            {% if 'super_admin' in user_roles %}
                 
             <!-- System User Dashboards -->
             <li class="nav-item mt-3">
@@ -985,6 +985,13 @@ main.main-content {
                 </h6>
             </li>
 
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'admin_dashboard' %}active{% endif %}"
+                href="{% url 'admin_dashboard' %}">
+                    <i class="fas fa-cogs me-2"></i>
+                    Admin Dashboard
+                </a>
+            </li>
             {% endif %}
             
             {% block sidebar %}
