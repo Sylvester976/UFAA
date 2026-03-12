@@ -389,9 +389,15 @@ a { text-decoration: none !important; }
                         <strong>{{ row.app.user.first_name }} {{ row.app.user.last_name }}</strong>
                         — full application dossier
                     </span>
-                    <a href="{% url 'hr_view_applications' row.app.id %}" target="_blank">
+                    <a href="/recruitment/hr/application/{{ row.app.id }}/" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Open Dossier
                     </a>
+                    {% comment %}                     
+                    {% for app in applications %}
+                    <a href="{% url 'hr_view_applications' row.app.id %}" target="_blank">
+                        <i class="fas fa-external-link-alt"></i> Open Applicant details
+                    </a>
+                    {% endfor %} {% endcomment %}
                 </div>
 
                 {% if row.is_submitted %}

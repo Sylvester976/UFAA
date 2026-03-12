@@ -1944,7 +1944,7 @@ def move_to_longlisting(request, vacancy_id):
 
 
 @login_required
-@role_required(['hod_hr', 'panelist'])
+@role_required(['hod_hr', 'panelist', 'committee'])
 def hr_view_applications(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
@@ -1969,7 +1969,7 @@ def hr_view_applications(request, vacancy_id):
 
 
 @login_required
-@role_required(['hod_hr', 'panelist'])
+@role_required(['hod_hr', 'panelist', 'committee'])
 def hr_view_applications_json(request, vacancy_id):
     """
     Server-side DataTables JSON endpoint.
@@ -2292,19 +2292,6 @@ def appoint_shortlisting_committee(request, vacancy_id):
     })
 
 
-# @login_required
-# @role_required(['committee'])
-# def shortlisting_dashboard(request):
-#     vacancies = Vacancy.objects.filter(
-#         shortlisting_committee__members=request.user
-#     )
-#
-#     context = {
-#         'page': 'Committee Dashboard',
-#         'vacancies': vacancies
-#     }
-#
-#     return render(request, 'recruitment/committee/dashboard.html', context)
 
 
 @login_required
@@ -2849,7 +2836,7 @@ def ceo_select_candidate(request, vacancy_id, application_id):
 
 
 @login_required
-@role_required(['hod_hr'])
+@role_required(['hod_hr', 'committee', 'panelist'])
 def application_detail(request, application_id):
     application = get_object_or_404(
         JobApplication.objects.select_related(
@@ -5722,6 +5709,7 @@ def _committee_member_check(request, vacancy_id):
 # ── View 1: Committee Member Dashboard ───────────────────────────────────────
 
 @login_required
+@role_required(['committee'])
 def committee_dashboard(request):
     assignments = ShortlistingCommittee.objects.filter(
         member=request.user,
@@ -6055,6 +6043,7 @@ def committee_review(request, vacancy_id):
         'committee_count': active_count,
         'threshold':       threshold,
         'deadline':        deadline,
+        'applications': applications,
         'days_remaining':  (deadline - timezone.now().date()).days,
     })
 
