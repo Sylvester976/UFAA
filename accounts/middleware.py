@@ -64,12 +64,8 @@ class LoginRequiredMiddleware:
         'close_vacancy',
 
         # panelist actions
-        'respond_panel_assignment',
-        'panelist_interview_list',
-        'panelist_score_candidate',
         'submit_shortlist',
-        'panelist_submit_report',
-        'panelist_reports',
+
 
         # HR ranking / selection
         'hr_ranking_view',
@@ -117,15 +113,32 @@ class LoginRequiredMiddleware:
         'committee_results',
         'committee_declare_coi',
 
+        # panel / interview (HR)
+        'hr_interview_setup',
+        'hr_panel_add',
+        'hr_panel_remove',
+        'hr_panel_notify',
+        'hr_panel_staff_search',
+        'hr_criteria_save',
+        'hr_slots_save',
+        'hr_interview_notify',
+        'hr_interview_progress',
+        'hr_interview_results',
+        'vacancy_interviews',
+
+        # panel member portal
+        'panel_dashboard',
+        'panel_acknowledge',
+        'panel_declare_coi',
+        'panel_score',
+        'panel_score_save',
+        'panel_submit_all',
+        'panel_results',
 
 
 
-        # interview templates
-        'template_list',
-        'template_create',
-        'template_detail',
-        'template_edit',
-        'template_delete',
+
+
 
         # sections
         'section_create',

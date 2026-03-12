@@ -344,12 +344,12 @@
                                     </a>
 
                                 {% elif vacancy.status == 'committee_stage' %}
-                                    <a href="{% url 'appoint_panelists' vacancy.id %}" class="act-btn ab-panel">
+                                    <a href="{% url 'hr_interview_setup' vacancy.id %}" class="act-btn ab-panel">
                                         <i class="fas fa-users-cog me-1"></i>Appoint Panel
                                     </a>
 
                                 {% elif vacancy.status == 'shortlisting' %}
-                                    <a href="{% url 'appoint_panelists' vacancy.id %}" class="act-btn ab-panel">
+                                    <a href="{% url 'hr_interview_setup' vacancy.id %}" class="act-btn ab-panel">
                                         <i class="fas fa-users-cog me-1"></i>Manage Panel
                                     </a>
 

@@ -1,0 +1,529 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Interview Scheduling — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy:#262561;--gold:#F9E6A1;--gold-dk:#C39545;--green:#1a7a45;--red:#c0392b;--amber:#b7770d; }
+a { text-decoration:none !important; }
+
+.page-banner {
+    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
+    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
+}
+.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+.banner-ref   { font-family:monospace; font-size:.72rem;
+                background:rgba(249,230,161,.15); color:var(--gold);
+                padding:.25rem .65rem; border-radius:.4rem; }
+.back-link { color:rgba(255,255,255,.65); font-size:.78rem;
+             display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+.section-card { background:#fff; border-radius:.9rem;
+                box-shadow:0 2px 14px rgba(38,37,97,.08);
+                overflow:hidden; margin-bottom:1.25rem; }
+.section-header { padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8;
+                  display:flex; align-items:center; justify-content:space-between; }
+.section-title  { font-size:.82rem; font-weight:800; color:var(--navy);
+                  display:flex; align-items:center; gap:.5rem; margin:0; }
+.section-body   { padding:1.25rem; }
+
+/* Member / slot rows */
+.member-row {
+    display:flex; align-items:center; gap:.75rem;
+    padding:.6rem .85rem; border-radius:.5rem;
+    background:#fafbff; margin-bottom:.4rem;
+}
+.m-avatar { width:32px; height:32px; border-radius:50%;
+            background:linear-gradient(135deg,var(--navy),#4f46e5);
+            color:var(--gold); font-size:.72rem; font-weight:800;
+            display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.m-name  { font-size:.8rem; font-weight:700; color:var(--navy); }
+.m-email { font-size:.68rem; color:#8392ab; }
+.btn-remove { background:none; border:none; color:#dc3545; cursor:pointer;
+              font-size:.75rem; margin-left:auto; padding:.2rem .5rem;
+              border-radius:.3rem; transition:background .15s; }
+.btn-remove:hover { background:#fde8e8; }
+
+/* Staff search */
+.search-wrap { position:relative; margin-bottom:.75rem; }
+.search-input { width:100%; padding:.5rem .85rem; border:1.5px solid #e0e4ef;
+                border-radius:.5rem; font-size:.8rem; color:#344767; }
+.search-input:focus { outline:none; border-color:var(--navy); }
+.search-results { position:absolute; top:100%; left:0; right:0; z-index:100;
+                  background:#fff; border:1px solid #e0e4ef; border-radius:.5rem;
+                  box-shadow:0 4px 16px rgba(38,37,97,.12); max-height:220px;
+                  overflow-y:auto; display:none; }
+.search-result-item { padding:.6rem .85rem; cursor:pointer; font-size:.8rem;
+                      border-bottom:1px solid #f0f2f8; transition:background .1s; }
+.search-result-item:hover { background:#f0f2ff; }
+.search-result-item:last-child { border-bottom:none; }
+.sri-name  { font-weight:700; color:var(--navy); }
+.sri-email { color:#8392ab; font-size:.7rem; }
+
+/* Criteria builder */
+.criterion-row { display:grid; grid-template-columns:1fr 120px 36px;
+                 gap:.5rem; align-items:center; margin-bottom:.4rem; }
+.criterion-row input { padding:.45rem .7rem; border:1.5px solid #e0e4ef;
+                       border-radius:.45rem; font-size:.8rem; color:#344767; }
+.criterion-row input:focus { outline:none; border-color:var(--navy); }
+.btn-del-crit { background:none; border:none; color:#dc3545; cursor:pointer;
+                font-size:.85rem; padding:.2rem .4rem; border-radius:.3rem; }
+.btn-del-crit:hover { background:#fde8e8; }
+.max-total { font-size:.78rem; font-weight:700; color:var(--navy);
+             background:#f0f2f8; padding:.35rem .75rem; border-radius:.4rem; }
+
+/* Slot table */
+.slot-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+.slot-table th { background:#f8f9ff; color:#8392ab; font-size:.62rem;
+                 font-weight:700; text-transform:uppercase; letter-spacing:.05em;
+                 padding:.6rem .9rem; border-bottom:1px solid #f0f2f8; }
+.slot-table td { padding:.55rem .9rem; border-bottom:1px solid #f7f8fc;
+                 vertical-align:middle; }
+.slot-table tr:last-child td { border-bottom:none; }
+.slot-table input[type=date],
+.slot-table input[type=time],
+.slot-table input[type=text] {
+    padding:.35rem .6rem; border:1.5px solid #e0e4ef;
+    border-radius:.4rem; font-size:.78rem; color:#344767;
+    width:100%; box-sizing:border-box; }
+.slot-table input:focus { outline:none; border-color:var(--navy); }
+
+/* Notify buttons */
+.btn-notify {
+    font-size:.78rem; font-weight:700; padding:.45rem 1.1rem;
+    border-radius:.45rem; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:.4rem;
+    transition:opacity .15s; text-decoration:none !important;
+}
+.btn-notify:hover { opacity:.88; }
+.btn-navy   { background:var(--navy);  color:#fff !important; }
+.btn-green  { background:var(--green); color:#fff !important; }
+.btn-amber  { background:var(--amber); color:#fff !important; }
+.btn-outline { background:#fff; border:1.5px solid #d0d7f0 !important; color:var(--navy) !important; }
+
+.chip { font-size:.65rem; font-weight:700; padding:.15rem .55rem;
+        border-radius:99px; white-space:nowrap; }
+.chip-done    { background:#d4f5e2; color:#1a5c38; }
+.chip-pending { background:#fff3cd; color:#7d5500; }
+.chip-no      { background:#f0f2f8; color:#8392ab; }
+
+.toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
+         background:var(--navy); color:#fff; padding:.65rem 1.25rem;
+         border-radius:.5rem; font-size:.8rem; font-weight:600;
+         box-shadow:0 4px 16px rgba(0,0,0,.2);
+         opacity:0; transition:opacity .3s; pointer-events:none; }
+.toast.show { opacity:1; }
+.toast.success { background:var(--green); }
+.toast.error   { background:var(--red); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <p class="banner-title mb-1"><i class="fas fa-calendar-alt me-2"></i>Interview Scheduling</p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'hr_interview_progress' vacancy.id %}" class="btn-notify btn-outline" style="font-size:.74rem;padding:.3rem .85rem;">
+                <i class="fas fa-chart-bar"></i> Progress
+            </a>
+            <a href="{% url 'vacancy_shortlisting' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-5">
+
+            <!-- PANEL COMPOSITION -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-users" style="color:var(--gold-dk);"></i>
+                        Interview Panel
+                    </h6>
+                    <span style="font-size:.72rem;color:#8392ab;">{{ panel_count }} member{{ panel_count|pluralize }}</span>
+                </div>
+                <div class="section-body">
+                    <!-- Search -->
+                    <div class="search-wrap">
+                        <input type="text" id="panelSearch" class="search-input"
+                               placeholder="Search staff by name or email…">
+                        <div class="search-results" id="panelSearchResults"></div>
+                    </div>
+
+                    <!-- Current panel -->
+                    <div id="panelList">
+                        {% for entry in panel %}
+                        <div class="member-row" id="pm-{{ entry.member.pk }}">
+                            <div class="m-avatar">{{ entry.member.first_name|first|upper }}</div>
+                            <div>
+                                <div class="m-name">{{ entry.member.first_name }} {{ entry.member.last_name }}</div>
+                                <div class="m-email">{{ entry.member.email }}</div>
+                            </div>
+                            {% if entry.acknowledged %}
+                                <span class="chip chip-done ms-auto me-2"><i class="fas fa-check me-1"></i>Active</span>
+                            {% else %}
+                                <span class="chip chip-pending ms-auto me-2">Pending</span>
+                            {% endif %}
+                            <button class="btn-remove" onclick="removePanel('{{ entry.member.pk }}', this)">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        {% empty %}
+                        <div id="emptyPanel" style="text-align:center;padding:1.5rem;color:#b0bac9;font-size:.78rem;">
+                            No panel members yet. Search above to add.
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <!-- Notify panel -->
+                    {% if panel_count > 0 and schedule %}
+                    <div class="mt-3 d-flex justify-content-end">
+                        {% if schedule.panel_notified %}
+                        <span class="chip chip-done"><i class="fas fa-check me-1"></i>Panel Notified</span>
+                        {% else %}
+                        <button class="btn-notify btn-navy" onclick="notifyPanel()">
+                            <i class="fas fa-paper-plane"></i> Notify Panel Members
+                        </button>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- SCORING CRITERIA -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-star" style="color:var(--gold-dk);"></i>
+                        Scoring Criteria
+                    </h6>
+                    <span class="max-total">Total: <span id="maxTotal">{{ max_possible }}</span> marks</span>
+                </div>
+                <div class="section-body">
+                    <div id="criteriaList">
+                        {% for c in criteria %}
+                        <div class="criterion-row" data-id="{{ c.id }}">
+                            <input type="text" value="{{ c.name }}" placeholder="Criterion name" class="crit-name">
+                            <input type="number" value="{{ c.max_score }}" placeholder="Max" min="1" class="crit-max">
+                            <button class="btn-del-crit" onclick="removeCriterion(this)"><i class="fas fa-trash"></i></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn-notify btn-outline" onclick="addCriterion()" style="font-size:.74rem;padding:.35rem .85rem;">
+                            <i class="fas fa-plus"></i> Add Criterion
+                        </button>
+                        <button class="btn-notify btn-navy" onclick="saveCriteria()" style="font-size:.74rem;padding:.35rem .85rem;">
+                            <i class="fas fa-save"></i> Save Criteria
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-lg-7">
+
+            <!-- INTERVIEW SCHEDULE & SLOTS -->
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-calendar-check" style="color:var(--gold-dk);"></i>
+                        Interview Slots
+                    </h6>
+                    <span style="font-size:.72rem;color:#8392ab;">
+                        {{ total_shortlisted }} candidate{{ total_shortlisted|pluralize }}
+                        {% if all_slotted %}&nbsp;·&nbsp;<span style="color:var(--green);">All slotted ✓</span>{% endif %}
+                    </span>
+                </div>
+                <div class="section-body">
+
+                    <!-- Venue / Schedule -->
+                    <div class="row g-2 mb-3">
+                        <div class="col-sm-4">
+                            <label style="font-size:.72rem;font-weight:700;color:var(--navy);display:block;margin-bottom:.3rem;">Venue Type</label>
+                            <select id="venueType" class="search-input" style="padding:.45rem .7rem;">
+                                <option value="physical" {% if schedule and schedule.venue_type == 'physical' %}selected{% endif %}>Physical</option>
+                                <option value="online"   {% if schedule and schedule.venue_type == 'online'   %}selected{% endif %}>Online</option>
+                            </select>
+                        </div>
+                        <div class="col-sm-8">
+                            <label style="font-size:.72rem;font-weight:700;color:var(--navy);display:block;margin-bottom:.3rem;">Venue / Meeting Link</label>
+                            <input type="text" id="venueValue" class="search-input"
+                                   value="{{ schedule.venue|default:'' }}"
+                                   placeholder="Address or https://meet.google.com/…">
+                        </div>
+                        <div class="col-12">
+                            <label style="font-size:.72rem;font-weight:700;color:var(--navy);display:block;margin-bottom:.3rem;">Preparatory Instructions <span style="font-weight:400;color:#adb5bd;">(optional)</span></label>
+                            <textarea id="instructions" class="search-input" rows="2"
+                                      placeholder="e.g. Please bring original certificates and a valid ID.">{{ schedule.instructions|default:'' }}</textarea>
+                        </div>
+                    </div>
+
+                    <!-- Slot table -->
+                    <div class="table-responsive">
+                        <table class="slot-table">
+                            <thead>
+                                <tr>
+                                    <th>Candidate</th>
+                                    <th>App No.</th>
+                                    <th>Date</th>
+                                    <th>Time</th>
+                                    <th>Venue Override</th>
+                                    <th style="text-align:center;">Notified</th>
+                                </tr>
+                            </thead>
+                            <tbody id="slotBody">
+                                {% for slot in slots %}
+                                <tr data-app-id="{{ slot.application.id }}">
+                                    <td style="font-weight:600;color:var(--navy);">{{ slot.application.user.name }}</td>
+                                    <td style="font-family:monospace;font-size:.72rem;color:#67748e;">{{ slot.application.application_number }}</td>
+                                    <td><input type="date" class="slot-date" value="{{ slot.interview_date|date:'Y-m-d' }}"></td>
+                                    <td><input type="time" class="slot-time" value="{{ slot.interview_time|time:'H:i' }}"></td>
+                                    <td><input type="text" class="slot-venue" value="{{ slot.venue_override }}" placeholder="(uses default)"></td>
+                                    <td style="text-align:center;">
+                                        {% if slot.notified %}
+                                        <span class="chip chip-done">Sent</span>
+                                        {% else %}
+                                        <span class="chip chip-no">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                {% for app in unslotted %}
+                                <tr data-app-id="{{ app.id }}">
+                                    <td style="font-weight:600;color:var(--navy);">{{ app.user.name }}</td>
+                                    <td style="font-family:monospace;font-size:.72rem;color:#67748e;">{{ app.application_number }}</td>
+                                    <td><input type="date" class="slot-date"></td>
+                                    <td><input type="time" class="slot-time"></td>
+                                    <td><input type="text" class="slot-venue" placeholder="(uses default)"></td>
+                                    <td style="text-align:center;"><span class="chip chip-no">—</span></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="d-flex gap-2 justify-content-between align-items-center mt-3 flex-wrap">
+                        <button class="btn-notify btn-amber" onclick="saveSlots()">
+                            <i class="fas fa-save"></i> Save Slots
+                        </button>
+                        <div class="d-flex gap-2">
+                            {% if can_notify_candidates %}
+                            <button class="btn-notify btn-green" onclick="notifyCandidates()">
+                                <i class="fas fa-envelope"></i> Email All Candidates
+                            </button>
+                            {% elif schedule and schedule.candidates_notified %}
+                            <span class="chip chip-done" style="font-size:.72rem;padding:.3rem .75rem;">
+                                <i class="fas fa-check me-1"></i>Candidates Notified
+                            </span>
+                            {% else %}
+                            <span style="font-size:.72rem;color:#adb5bd;">
+                                <i class="fas fa-info-circle me-1"></i>Save all slots first to enable notifications
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const VACANCY_ID = {{ vacancy.id }};
+
+// ── Toast ──────────────────────────────────────────────────────────────────
+function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3200);
+}
+
+function csrfToken() {
+    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+// ── Panel Search ────────────────────────────────────────────────────────────
+const panelSearch  = document.getElementById('panelSearch');
+const searchResults = document.getElementById('panelSearchResults');
+let searchTimer;
+
+panelSearch.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    const q = panelSearch.value.trim();
+    if (q.length < 2) { searchResults.style.display = 'none'; return; }
+    searchTimer = setTimeout(async () => {
+        const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/search/?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (!data.results.length) { searchResults.style.display = 'none'; return; }
+        searchResults.innerHTML = data.results.map(r => `
+            <div class="search-result-item" onclick="addPanel('${r.id}','${r.name}','${r.email}')">
+                <div class="sri-name">${r.name}</div>
+                <div class="sri-email">${r.email}</div>
+            </div>`).join('');
+        searchResults.style.display = 'block';
+    }, 300);
+});
+document.addEventListener('click', e => {
+    if (!panelSearch.contains(e.target)) searchResults.style.display = 'none';
+});
+
+async function addPanel(userId, name, email) {
+    searchResults.style.display = 'none';
+    panelSearch.value = '';
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/add/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/x-www-form-urlencoded'},
+        body: `user_id=${userId}`,
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    const list  = document.getElementById('panelList');
+    const empty = document.getElementById('emptyPanel');
+    if (empty) empty.remove();
+    list.insertAdjacentHTML('beforeend', `
+        <div class="member-row" id="pm-${userId}">
+            <div class="m-avatar">${name[0].toUpperCase()}</div>
+            <div>
+                <div class="m-name">${name}</div>
+                <div class="m-email">${email}</div>
+            </div>
+            <span class="chip chip-pending ms-auto me-2">Pending</span>
+            <button class="btn-remove" onclick="removePanel('${userId}', this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>`);
+    showToast(`${name} added to panel.`, 'success');
+}
+
+async function removePanel(userId, btn) {
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/remove/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/x-www-form-urlencoded'},
+        body: `user_id=${userId}`,
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    document.getElementById(`pm-${userId}`)?.remove();
+    showToast('Panel member removed.', 'success');
+}
+
+async function notifyPanel() {
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/notify/`, {
+        method:'POST', headers:{'X-CSRFToken': csrfToken()},
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(`${data.sent} panel member(s) notified.`, 'success');
+    setTimeout(() => location.reload(), 1500);
+}
+
+// ── Criteria ──────────────────────────────────────────────────────────────
+function updateMaxTotal() {
+    const total = [...document.querySelectorAll('.crit-max')]
+        .reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+    document.getElementById('maxTotal').textContent = total;
+}
+document.addEventListener('input', e => {
+    if (e.target.classList.contains('crit-max')) updateMaxTotal();
+});
+
+function addCriterion() {
+    const list = document.getElementById('criteriaList');
+    const row  = document.createElement('div');
+    row.className = 'criterion-row';
+    row.innerHTML = `
+        <input type="text" placeholder="Criterion name" class="crit-name">
+        <input type="number" placeholder="Max" min="1" class="crit-max">
+        <button class="btn-del-crit" onclick="removeCriterion(this)"><i class="fas fa-trash"></i></button>
+    `;
+    list.appendChild(row);
+}
+
+function removeCriterion(btn) {
+    btn.closest('.criterion-row').remove();
+    updateMaxTotal();
+}
+
+async function saveCriteria() {
+    const rows    = document.querySelectorAll('.criterion-row');
+    const criteria = [...rows].map((row, i) => ({
+        name:      row.querySelector('.crit-name').value.trim(),
+        max_score: parseInt(row.querySelector('.crit-max').value) || 0,
+        order:     i,
+    })).filter(c => c.name);
+
+    if (!criteria.length) { showToast('Add at least one criterion.', 'error'); return; }
+
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/criteria/save/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/json'},
+        body: JSON.stringify({criteria}),
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast('Criteria saved.', 'success');
+    updateMaxTotal();
+}
+
+// ── Slots ─────────────────────────────────────────────────────────────────
+async function saveSlots() {
+    const venueType   = document.getElementById('venueType').value;
+    const venue       = document.getElementById('venueValue').value.trim();
+    const instructions = document.getElementById('instructions').value.trim();
+
+    if (!venue) { showToast('Please enter a venue or meeting link.', 'error'); return; }
+
+    const rows  = document.querySelectorAll('#slotBody tr');
+    const slots = [...rows].map(row => ({
+        application_id: row.dataset.appId,
+        date:           row.querySelector('.slot-date').value,
+        time:           row.querySelector('.slot-time').value,
+        venue_override: row.querySelector('.slot-venue').value.trim(),
+    })).filter(s => s.date && s.time);
+
+    if (!slots.length) { showToast('Please fill in at least one date and time.', 'error'); return; }
+
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/slots/save/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/json'},
+        body: JSON.stringify({venue_type: venueType, venue, instructions, slots}),
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(`${data.saved} slot(s) saved.`, 'success');
+    setTimeout(() => location.reload(), 1500);
+}
+
+async function notifyCandidates() {
+    const res  = await fetch(`/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`, {
+        method:'POST', headers:{'X-CSRFToken': csrfToken()},
+    });
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(`${data.sent} candidate(s) notified.`, 'success');
+    setTimeout(() => location.reload(), 1500);
+}
+</script>
+{% endblock %}

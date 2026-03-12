@@ -1,6 +1,6 @@
 # recruitment/services.py
 
-from recruitment.models import Application, PanelAssignment, ShortlistVote
+from recruitment.models import Application
 
 
 def build_profile_snapshot(user):
