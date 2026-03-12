@@ -896,16 +896,6 @@ main.main-content {
                         <span class="nav-link-text ms-1">Appointments</span>
                     </a>
                 </li>
-
-                <!-- Interview Templates -->
-                <li class="nav-item">
-                    <a class="nav-link {% if request.resolver_match.url_name == 'template_list' %}active{% endif %}"
-                    href="{% url 'template_list' %}">
-                        <i class="fas fa-file-alt me-1"></i>
-                        <span class="nav-link-text ms-1">Interview Templates</span>
-                    </a>
-                </li>
-
                         
                 <!-- Manage Users -->
                 <li class="nav-item {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
@@ -941,19 +931,17 @@ main.main-content {
             
             <!-- System User Dashboards -->
             <li class="nav-item mt-3">
-                <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-                    Panelist
-                </h6>
-            </li>   
-                 
-            <!-- Panelist / Interview Dashboard -->
-            <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
-                href="{% url 'panelist_dashboard' %}">
-                    <i class="fas fa-comments me-1"></i>
-                    <span class="nav-link-text ms-1">Panelist Dashboard</span>
-                </a>
-            </li>
+                    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+                        Interview Panel
+                    </h6>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link {% if request.resolver_match.url_name == 'panel_dashboard' %}active{% endif %}"
+                       href="{% url 'panel_dashboard' %}">
+                        <i class="fas fa-star me-1"></i>
+                        <span class="nav-link-text ms-1">Panel Dashboard</span>
+                    </a>
+                </li>
 
             {% endif %}
 

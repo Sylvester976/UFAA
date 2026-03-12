@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -12,17 +13,17 @@ from django.core.mail import EmailMultiAlternatives
 from django.db.models import Prefetch
 from django.http import FileResponse, Http404
 from django.template.loader import render_to_string
-from django.urls import reverse
 
 from accounts.models import User, JobseekerAccount
 from core.decorators import role_required
-from recruitment.utils import check_and_lock_application
+# from recruitment.utils import check_and_lock_application
 from roles.models import Role
-from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, InterviewSectionScore, \
-    PanelistReport, \
-    ProfessionalQualification, ShortlistVote, ShortlistingDecision, WorkHistory, \
+from .models import Application, Appointment, CEODecision, Gender, EthnicGroup, InterviewScore, \
+ \
+    ProfessionalQualification, WorkHistory, \
     AdditionalDetail, ProfessionalBodyMembership, Referee, \
-    JobApplicationNotification, VacancyApplicationCounter, CommitteeVote
+    JobApplicationNotification, VacancyApplicationCounter, CommitteeVote, InterviewPanel, InterviewLog, InterviewResult, \
+    InterviewCriterion, InterviewSlot, InterviewSchedule
 from .models import County, Constituency, SubCounty, Ward, JobSeekerProfile, AcademicQualification, \
     EducationLevel, DocumentType, Document
 from .models import (
@@ -1434,25 +1435,7 @@ def hr_dashboard(request):
     return render(request, 'recruitment/hr/dashboard.html', context)
 
 
-@login_required
-@role_required(['panelist'])
-def panelist_dashboard(request):
-    vacancies = Vacancy.objects.filter(
-        panel_assignments__panelist=request.user,
-        status='interviews'
-    ).distinct()
 
-    assignments = PanelAssignment.objects.filter(
-        panelist=request.user
-    ).select_related('vacancy')
-
-    context = {
-        'page': 'Panelist Dashboard',
-        'vacancies': vacancies,
-        'assignments': assignments
-    }
-
-    return render(request, 'recruitment/panelist/dashboard.html', context)
 
 
 @login_required
@@ -1479,100 +1462,7 @@ def officer_dashboard(request):
     return render(request, 'officer/dashboard.html', context)
 
 
-@login_required
-@role_required(['panelist'])
-def respond_panel_assignment(request, assignment_id):
-    assignment = get_object_or_404(
-        PanelAssignment,
-        id=assignment_id,
-        panelist=request.user
-    )
 
-    if request.method == "POST":
-
-        action = request.POST.get("action")
-
-        if action == "accept":
-
-            assignment.status = "accepted"
-            assignment.responded_at = timezone.now()
-            assignment.save()
-
-            messages.success(request, "You have accepted the assignment.")
-
-        elif action == "decline":
-
-            reason = request.POST.get("reason")
-            doc = request.FILES.get("decline_document")
-
-            assignment.status = "declined"
-            assignment.decline_reason = reason
-            assignment.signed_decline_document = doc
-            assignment.responded_at = timezone.now()
-            assignment.save()
-
-            messages.warning(
-                request,
-                "You have declined this assignment. HR has been notified."
-            )
-
-        return redirect("panelist_dashboard")
-
-
-@login_required
-@role_required(['panelist'])
-def panelist_submit_report(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    assignment = PanelAssignment.objects.get(
-        vacancy=vacancy,
-        panelist=request.user
-    )
-
-    interviews_done = InterviewScore.objects.filter(
-        panelist=request.user,
-        application__vacancy=vacancy
-    ).count()
-
-    if request.method == "POST":
-        summary = request.POST.get("summary")
-        recommendations = request.POST.get("recommendations")
-
-        PanelistReport.objects.update_or_create(
-            vacancy=vacancy,
-            panelist=request.user,
-            defaults={
-                "assignment": assignment,
-                "candidates_interviewed": interviews_done,
-                "report_summary": summary,
-                "recommendations": recommendations
-            }
-        )
-
-        messages.success(request, "Report submitted successfully.")
-        return redirect("panelist_dashboard")
-
-    return render(request,
-                  "recruitment/panelist/submit_report.html",
-                  {
-                      "vacancy": vacancy,
-                      "interviews_done": interviews_done
-                  }
-                  )
-
-
-@login_required
-@role_required(['panelist'])
-def panelist_reports(request):
-    reports = PanelistReport.objects.filter(
-        panelist=request.user
-    ).select_related("vacancy")
-
-    context = {
-        'page': 'Panelist Dashboard',
-        'reports': reports
-    }
-    return render(request, "recruitment/panelist/reports.html", context)
 
 
 @login_required
@@ -2166,177 +2056,6 @@ from django.contrib.auth import get_user_model
 User = get_user_model()
 
 
-@login_required
-@role_required(['hod_hr'])
-def appoint_panelists(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    if vacancy.status != 'shortlisting':
-        messages.error(request, "Complete shortlisting first.")
-        return redirect('hr_dashboard')
-
-    # panelists = User.objects.filter(role__name='panelist')
-    panelist_role = get_object_or_404(Role, name='panelist')
-
-    panelists = User.objects.filter(
-        user_type=2,
-        role=panelist_role
-    )
-
-    if request.method == 'POST':
-        selected_panelists = request.POST.getlist('panelists')
-
-        PanelAssignment.objects.filter(vacancy=vacancy).delete()
-
-        for user_id in selected_panelists:
-            PanelAssignment.objects.create(
-                vacancy=vacancy,
-                panelist_id=user_id
-            )
-
-        vacancy.status = 'interviews'
-        vacancy.save()
-
-        messages.success(request, "Panel appointed. Interview stage started.")
-        return redirect('hr_dashboard')
-
-    # Already assigned panelists for this vacancy
-    assigned_panelists = User.objects.filter(
-        panelassignment__vacancy=vacancy
-    )
-
-    return render(request, 'recruitment/hr/appoint_panel.html', {
-        'vacancy': vacancy,
-        'panelists': panelists,
-        'assigned_panelists': assigned_panelists
-    })
-
-
-@login_required
-@role_required(['hod_hr'])
-def appoint_committee(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    vacancy.status = 'shortlisting'
-
-    if vacancy.status != 'shortlisting':
-        messages.error(request, "Complete shortlisting first.")
-        return redirect('hr_dashboard')
-
-    panelists = User.objects.filter(role__name='committee')
-    # panelist_role = get_object_or_404(Role, name='committee')
-
-    # panelists = User.objects.filter(
-    #     user_type=2,
-    #     role=panelist_role
-    # )
-
-    if request.method == 'POST':
-        selected_panelists = request.POST.getlist('committee')
-
-        PanelAssignment.objects.filter(vacancy=vacancy).delete()
-
-        for user_id in selected_panelists:
-            PanelAssignment.objects.create(
-                vacancy=vacancy,
-                panelist_id=user_id
-            )
-
-        vacancy.status = 'interviews'
-        vacancy.save()
-
-        messages.success(request, "Panel appointed. Interview stage started.")
-        return redirect('hr_dashboard')
-
-    # Already assigned panelists for this vacancy
-    assigned_panelists = User.objects.filter(
-        panelassignment__vacancy=vacancy
-    )
-
-    return render(request, 'recruitment/hr/appoint_panel.html', {
-        'vacancy': vacancy,
-        'panelists': panelists,
-        'assigned_panelists': assigned_panelists
-    })
-
-
-@login_required
-@role_required(['hr'])
-def appoint_shortlisting_committee(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    # Get all HR committee members
-    hr_committee_role = get_object_or_404(Role, name='hr_committee')
-    members = User.objects.filter(role=hr_committee_role)
-
-    if request.method == 'POST':
-        # member_ids comes from the multi-select form
-        member_ids = request.POST.getlist('members')
-
-        # Get or create the committee for this vacancy
-        committee, created = ShortlistingCommittee.objects.get_or_create(vacancy=vacancy)
-
-        # Assign selected members
-        committee.members.set(member_ids)
-
-        # Optional: change vacancy status
-        vacancy.status = 'shortlisting'
-        vacancy.save()
-
-        messages.success(request, "Shortlisting committee appointed.")
-        return redirect('hr_dashboard')
-
-    return render(request, 'recruitment/hr/appoint_shortlisting.html', {
-        'vacancy': vacancy,
-        'members': members
-    })
-
-
-# @login_required
-# @role_required(['committee'])
-# def shortlisting_dashboard(request):
-#     vacancies = Vacancy.objects.filter(
-#         shortlisting_committee__members=request.user
-#     )
-#
-#     context = {
-#         'page': 'Committee Dashboard',
-#         'vacancies': vacancies
-#     }
-#
-#     return render(request, 'recruitment/committee/dashboard.html', context)
-
-
-@login_required
-@role_required(['hr_committee'])
-def review_application(request, application_id):
-    application = get_object_or_404(Application, id=application_id)
-
-    committee = application.vacancy.shortlisting_committee
-
-    if request.user not in committee.members.all():
-        messages.error(request, "Unauthorized.")
-        return redirect('shortlisting_dashboard')
-
-    if request.method == 'POST':
-        decision = request.POST.get('decision')
-        comment = request.POST.get('comment')
-
-        ShortlistingDecision.objects.update_or_create(
-            application=application,
-            committee_member=request.user,
-            defaults={
-                'decision': decision,
-                'comment': comment
-            }
-        )
-
-        messages.success(request, "Decision recorded.")
-        return redirect('shortlisting_dashboard')
-
-    return render(request, 'committee/review.html', {
-        'application': application
-    })
 
 
 def evaluate_shortlisting(application):
@@ -2358,143 +2077,7 @@ def evaluate_shortlisting(application):
     application.save()
 
 
-@login_required
-@role_required(['hod_hr'])
-def appointed_committee(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    if vacancy.status != 'shortlisting':
-        messages.error(request, "Complete shortlisting first.")
-        return redirect('vacancy_shortlisting')
-
-    panelist_role = get_object_or_404(Role, name='panelist')
-    panelists = User.objects.filter(user_type=2, role=panelist_role)
-
-    if request.method == 'POST':
-        selected_panelists = request.POST.getlist('panelists')
-        PanelAssignment.objects.filter(vacancy=vacancy).delete()
-        for user_id in selected_panelists:
-            PanelAssignment.objects.create(vacancy=vacancy, panelist_id=user_id)
-        vacancy.status = 'interviews'
-        vacancy.save()
-        messages.success(request, "Panel appointed. Interview stage started.")
-        return redirect('vacancy_interviews')
-
-    assigned_panelists = User.objects.filter(panelassignment__vacancy=vacancy)
-
-    return render(request, 'recruitment/hr/appoint_panel.html', {
-        'vacancy': vacancy,
-        'panelists': panelists,
-        'assigned_panelists': assigned_panelists
-    })
-
-
-@login_required
-@role_required(['hod_hr'])
-def manage_panelists(request):
-    panelist_role = get_object_or_404(Role, name='panelist')
-
-    internal_users = User.objects.filter(user_type=2)
-
-    if request.method == "POST":
-        selected_users = request.POST.getlist("panelists")
-
-        # Remove role from everyone first
-        for user in internal_users:
-            user.role.remove(panelist_role)
-
-        # Assign role to selected users
-        for user_id in selected_users:
-            user = User.objects.get(id=user_id, user_type=2)
-            user.role.add(panelist_role)
-
-        messages.success(request, "Panelist role updated successfully.")
-        return redirect("manage_panelists")
-
-    # Users who already have role
-    current_panelists = internal_users.filter(role=panelist_role)
-
-    return render(request, "hr/manage_panelists.html", {
-        "internal_users": internal_users,
-        "current_panelists": current_panelists
-    })
-
-
-@login_required
-@role_required(['committee'])
-def submit_shortlist(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    if vacancy.status != 'committee_stage':
-        messages.error(request, "Shortlisting is not active.")
-        return redirect('panelist_dashboard')
-
-    assignment = PanelAssignment.objects.filter(
-        vacancy=vacancy,
-        panelist=request.user,
-        committee_type='shortlisting',
-        status='accepted'
-    ).first()
-
-    if not assignment:
-        messages.error(request, "You are not part of this shortlisting committee.")
-        return redirect('panelist_dashboard')
-
-    # Prevent duplicate submission
-    existing_votes = ShortlistVote.objects.filter(
-        vacancy=vacancy,
-        committee_member=request.user
-    )
-
-    if existing_votes.exists():
-        messages.warning(request, "You have already submitted your shortlist.")
-        return redirect('panelist_dashboard')
-
-    applications = Application.objects.filter(
-        vacancy=vacancy,
-        status='submitted'
-    )
-
-    if request.method == 'POST':
-        selected_ids = request.POST.getlist('selected_applications')
-
-        if not selected_ids:
-            messages.error(request, "Select at least one candidate.")
-            return redirect(request.path)
-
-        for app in applications:
-            if str(app.id) in selected_ids:
-                ShortlistVote.objects.create(
-                    vacancy=vacancy,
-                    committee_member=request.user,
-                    application=app
-                )
-
-        # Check if all members submitted
-        if is_shortlisting_complete(vacancy):
-            aggregate_shortlist(vacancy)
-
-        messages.success(request, "Your shortlist has been submitted.")
-        return redirect('panelist_dashboard')
-
-    return render(request, 'recruitment/panelist/shortlist.html', {
-        'vacancy': vacancy,
-        'applications': applications
-    })
-
-
-@login_required
-def vacancy_panelists(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
-
-    panelists = User.objects.filter(
-        panelassignment__vacancy=vacancy
-    )
-
-    return render(request, "recruitment/hr/vacancy_panelists.html", {
-        "vacancy": vacancy,
-        "panelists": panelists
-    })
 
 
 from django.contrib.auth.decorators import login_required
@@ -2541,110 +2124,8 @@ def close_vacancy(request, vacancy_id):
     return redirect('vacancy_list')
 
 
-@login_required
-@role_required(['panelist'])
-def panelist_interview_list(request, vacancy_id):
-    vacancy = get_object_or_404(
-        Vacancy,
-        id=vacancy_id,
-        status='interviews'
-    )
-
-    # Ensure panelist is assigned
-    if not PanelAssignment.objects.filter(
-            vacancy=vacancy,
-            panelist=request.user
-    ).exists():
-        raise PermissionDenied
-
-    applications = Application.objects.filter(
-        vacancy=vacancy,
-        status='shortlisted'
-    ).select_related(
-        "applicant",
-        "applicant__profile",
-        "applicant__additional_detail"
-    ).prefetch_related(
-        "applicant__academic_qualifications",
-        "applicant__work_history",
-        "applicant__professional_qualifications",
-        "applicant__documents",
-        "scores"
-    )
-
-    return render(request, 'recruitment/panelist/interview_list.html', {
-        'vacancy': vacancy,
-        'applications': applications
-    })
 
 
-@login_required
-@role_required(['panelist'])
-def panelist_score_candidate(request, application_id):
-    application = get_object_or_404(Application, id=application_id)
-    vacancy = application.vacancy
-
-    if vacancy.status != 'interviews':
-        messages.error(request, "Interview stage is not active.")
-        return redirect('panelist_dashboard')
-
-    if not PanelAssignment.objects.filter(
-            vacancy=vacancy,
-            panelist=request.user
-    ).exists():
-        raise PermissionDenied
-
-    if application.interview_locked:
-        messages.error(request, "Scoring for this candidate is locked.")
-        return redirect('panelist_interview_list', vacancy_id=vacancy.id)
-
-    template = vacancy.interview_template
-    sections = template.sections.all().order_by("order")
-
-    score_obj, created = InterviewScore.objects.get_or_create(
-        application=application,
-        panelist=request.user,
-        defaults={"template": template}
-    )
-
-    if request.method == 'POST':
-
-        remarks = request.POST.get("remarks")
-        total_score = 0
-
-        for section in sections:
-            value = request.POST.get(f"section_{section.id}", 0)
-            value = float(value)
-
-            total_score += value
-
-            InterviewSectionScore.objects.update_or_create(
-                interview_score=score_obj,
-                section=section,
-                defaults={"score": value}
-            )
-
-        score_obj.total_score = total_score
-        score_obj.remarks = remarks
-        score_obj.save()
-
-        check_and_lock_application(application)
-
-        messages.success(request, "Score saved successfully.")
-
-        return redirect('panelist_interview_list', vacancy_id=vacancy.id)
-
-    existing_scores = {
-        s.section_id: s.score
-        for s in score_obj.section_scores.all()
-    }
-
-    return render(request, 'recruitment/panelist/score_candidate.html', {
-        'application': application,
-        'sections': sections,
-        'existing_scores': existing_scores,
-        'score_obj': score_obj
-    })
 
 
 from django.db.models import Q
@@ -2867,7 +2348,6 @@ def application_detail(request, application_id):
 
 
 from django.contrib.auth.decorators import login_required
-from .models import PanelAssignment
 from core.decorators import role_required
 
 
@@ -2997,16 +2477,6 @@ def vacancy_shortlisting(request):
 # ----------------------
 # Stage: Interviews
 # ----------------------
-@login_required
-@role_required(['hod_hr'])
-def vacancy_interviews(request):
-    vacancies = Vacancy.objects.filter(status='interviews')
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        'vacancies': vacancies
-    }
-    return render(request, 'recruitment/hr/vacancy_interviews.html', context)
 
 
 # ----------------------
@@ -3024,38 +2494,8 @@ def vacancy_appointments(request):
     return render(request, 'recruitment/hr/vacancy_appointments.html', context)
 
 
-# ----------------------
-# Optional: Detailed view to appoint panelists
-# ----------------------
-@login_required
-@role_required(['hod_hr'])
-def appointed_panelists(request, vacancy_id):
-    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
-    if vacancy.status != 'shortlisting':
-        messages.error(request, "Complete shortlisting first.")
-        return redirect('vacancy_shortlisting')
 
-    panelist_role = get_object_or_404(Role, name='panelist')
-    panelists = User.objects.filter(user_type=2, role=panelist_role)
-
-    if request.method == 'POST':
-        selected_panelists = request.POST.getlist('panelists')
-        PanelAssignment.objects.filter(vacancy=vacancy).delete()
-        for user_id in selected_panelists:
-            PanelAssignment.objects.create(vacancy=vacancy, panelist_id=user_id)
-        vacancy.status = 'interviews'
-        vacancy.save()
-        messages.success(request, "Panel appointed. Interview stage started.")
-        return redirect('vacancy_interviews')
-
-    assigned_panelists = User.objects.filter(panelassignment__vacancy=vacancy)
-
-    return render(request, 'recruitment/hr/appoint_panel.html', {
-        'vacancy': vacancy,
-        'panelists': panelists,
-        'assigned_panelists': assigned_panelists
-    })
 
 
 @login_required
@@ -3338,7 +2778,7 @@ def _send_html_email(subject, to_email, message_html):
     html_body = render_to_string('emails/email_base.html', {
         'subject': subject,
         'message_content': message_html,
-        'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+        'logo_url': 'https://ufaa.go.ke//wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
         'year': date.today().year,
     })
     email = EmailMultiAlternatives(
@@ -3764,193 +3204,6 @@ def notification_poll_view(request):
         n['created_at'] = n['created_at'].strftime('%d %b %Y, %H:%M')
 
     return JsonResponse({'unread_count': unread, 'notifications': notifs})
-
-
-from recruitment.models import InterviewTemplate, InterviewSection
-
-
-# --------------------------------
-# LIST TEMPLATES
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def template_list(request):
-    templates = InterviewTemplate.objects.all()
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        "templates": templates
-    }
-    return render(request, "recruitment/hr/interview_templates/template_list.html", context)
-
-
-# --------------------------------
-# CREATE TEMPLATE
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def template_create(request):
-    if request.method == "POST":
-        name = request.POST.get("name")
-        description = request.POST.get("description")
-
-        InterviewTemplate.objects.create(
-            name=name,
-            description=description,
-            created_by=request.user
-        )
-
-        messages.success(request, "Template created successfully")
-
-        return redirect("template_list")
-
-    context = {
-        'page': 'Human Resource Dashboard',
-    }
-    return render(request, "recruitment/hr/interview_templates/template_form.html", context)
-
-
-# --------------------------------
-# TEMPLATE DETAIL
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def template_detail(request, pk):
-    template = get_object_or_404(InterviewTemplate, pk=pk)
-
-    sections = template.sections.all().order_by("order")
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        "template": template,
-        "sections": sections
-    }
-    return render(request, "recruitment/hr/interview_templates/template_detail.html", context)
-
-
-# --------------------------------
-# EDIT TEMPLATE
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def template_edit(request, pk):
-    template = get_object_or_404(InterviewTemplate, pk=pk)
-
-    if request.method == "POST":
-        template.name = request.POST.get("name")
-        template.description = request.POST.get("description")
-        template.save()
-
-        messages.success(request, "Template updated")
-
-        return redirect("template_detail", pk=pk)
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        "template": template
-    }
-    return render(request, "recruitment/hr/interview_templates/template_form.html", context)
-
-
-# --------------------------------
-# DELETE TEMPLATE
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def template_delete(request, pk):
-    template = get_object_or_404(InterviewTemplate, pk=pk)
-
-    template.delete()
-
-    messages.success(request, "Template deleted")
-
-    return redirect("template_list")
-
-
-# --------------------------------
-# CREATE SECTION
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def section_create(request, template_id):
-    template = get_object_or_404(InterviewTemplate, id=template_id)
-
-    if request.method == "POST":
-        name = request.POST.get("name")
-        max_score = request.POST.get("max_score")
-        weight = request.POST.get("weight")
-        order = request.POST.get("order")
-
-        InterviewSection.objects.create(
-            template=template,
-            name=name,
-            max_score=max_score,
-            weight=weight,
-            order=order
-        )
-
-        messages.success(request, "Section added")
-
-        return redirect("template_detail", pk=template.id)
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        "template": template
-    }
-    return render(request, "recruitment/hr/interview_templates/section_form.html", context)
-
-
-# --------------------------------
-# EDIT SECTION
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def section_edit(request, pk):
-    section = get_object_or_404(InterviewSection, pk=pk)
-
-    if request.method == "POST":
-        section.name = request.POST.get("name")
-        section.max_score = request.POST.get("max_score")
-        section.weight = request.POST.get("weight")
-        section.order = request.POST.get("order")
-
-        section.save()
-
-        messages.success(request, "Section updated")
-
-        return redirect("template_detail", pk=section.template.id)
-
-    context = {
-        'page': 'Human Resource Dashboard',
-        "section": section,
-        "template": section.template
-    }
-    return render(request, "recruitment/hr/interview_templates/section_form.html", context)
-
-
-# --------------------------------
-# DELETE SECTION
-# --------------------------------
-
-@login_required
-@role_required(['hod_hr'])
-def section_delete(request, pk):
-    section = get_object_or_404(InterviewSection, pk=pk)
-
-    template_id = section.template.id
-
-    section.delete()
-
-    messages.success(request, "Section deleted")
-
-    return redirect("template_detail", pk=template_id)
 
 
 """
@@ -4645,6 +3898,7 @@ def _display_name(user):
     full = f"{getattr(user, 'first_name', '') or ''} {getattr(user, 'last_name', '') or ''}".strip()
     return full or getattr(user, 'full_name', None) or user.email
 
+
 def _active_count(vacancy):
     """Non-recused active committee members — used for threshold and completion checks."""
     return ShortlistingCommittee.objects.filter(
@@ -4652,6 +3906,7 @@ def _active_count(vacancy):
         is_active=True,
         has_conflict=False,
     ).count()
+
 
 def _recused_member_ids(vacancy):
     return list(
@@ -4789,17 +4044,17 @@ def hr_appoint_committee(request, vacancy_id):
         # Can only remove if they haven't submitted any votes yet
         can_remove = (votes_done == 0 and not entry.votes_submitted)
         committee_data.append({
-            'entry':      entry,
-            'name':       _display_name(entry.member),
-            'email':      entry.member.email,
+            'entry': entry,
+            'name': _display_name(entry.member),
+            'email': entry.member.email,
             'votes_done': votes_done,
             'can_remove': can_remove,
         })
 
     committee_count = len(committee_data)
-    threshold       = _threshold(committee_count)
-    deadline        = vacancy.end_date + timedelta(days=21)
-    days_remaining  = (deadline - timezone.now().date()).days
+    threshold = _threshold(committee_count)
+    deadline = vacancy.end_date + timedelta(days=21)
+    days_remaining = (deadline - timezone.now().date()).days
 
     on_committee_ids = set(
         str(mid) for mid in ShortlistingCommittee.objects.filter(
@@ -4810,24 +4065,24 @@ def hr_appoint_committee(request, vacancy_id):
     for u in User.objects.filter(user_type=2, is_active=True).order_by('first_name', 'last_name', 'email'):
         uid = str(u.pk)
         all_staff.append({
-            'id':           uid,
-            'name':         _display_name(u),
-            'email':        u.email,
+            'id': uid,
+            'name': _display_name(u),
+            'email': u.email,
             'on_committee': uid in on_committee_ids,
         })
 
     return render(request, 'recruitment/hr/shortlisting/appoint_committee.html', {
-        'page':            'Shortlisting',
-        'vacancy':         vacancy,
-        'app_count':       app_count,
-        'committee':       committee_data,
+        'page': 'Shortlisting',
+        'vacancy': vacancy,
+        'app_count': app_count,
+        'committee': committee_data,
         'committee_count': committee_count,
-        'threshold':       threshold,
-        'deadline':        deadline,
-        'all_staff':       all_staff,
-        'days_remaining':  days_remaining,
-        'deadline_amber':  0 < days_remaining <= 5,
-        'deadline_red':    days_remaining <= 0,
+        'threshold': threshold,
+        'deadline': deadline,
+        'all_staff': all_staff,
+        'days_remaining': days_remaining,
+        'deadline_amber': 0 < days_remaining <= 5,
+        'deadline_red': days_remaining <= 0,
     })
 
 
@@ -4840,8 +4095,8 @@ def hr_appoint_committee(request, vacancy_id):
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_add(request, vacancy_id):
-    vacancy    = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
-    member_id  = request.POST.get('member_id', '').strip()
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    member_id = request.POST.get('member_id', '').strip()
     send_email = request.POST.get('send_email', '1') == '1'
 
     if not member_id:
@@ -4869,19 +4124,19 @@ def hr_committee_add(request, vacancy_id):
                     return JsonResponse({
                         'error': f'{_display_name(member)} is already on the committee.'
                     }, status=400)
-                entry.is_active    = True
+                entry.is_active = True
                 entry.appointed_by = request.user
                 entry.appointed_at = timezone.now()
                 entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
 
             ShortlistLog.objects.create(
-                vacancy            = vacancy,
-                application        = None,
-                performed_by       = request.user,
-                action             = 'member_appointed',
-                notes              = f'Appointed {_display_name(member)} to committee.',
-                metadata           = {'member_id': str(member.pk), 'member_email': member.email},
-                performed_by_label = _display_name(request.user),
+                vacancy=vacancy,
+                application=None,
+                performed_by=request.user,
+                action='member_appointed',
+                notes=f'Appointed {_display_name(member)} to committee.',
+                metadata={'member_id': str(member.pk), 'member_email': member.email},
+                performed_by_label=_display_name(request.user),
             )
     except Exception as e:
         logger.error(f"Committee add error: {e}", exc_info=True)
@@ -4891,21 +4146,21 @@ def hr_committee_add(request, vacancy_id):
     if send_email:
         email_sent = _send_appointment_email(member, vacancy, request)
 
-    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_count = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success':         True,
-        'created':         created,
-        'email_sent':      email_sent,
+        'success': True,
+        'created': created,
+        'email_sent': email_sent,
         'member': {
-            'id':           str(member.pk),
-            'name':         _display_name(member),
-            'email':        member.email,
+            'id': str(member.pk),
+            'name': _display_name(member),
+            'email': member.email,
             'appointed_at': entry.appointed_at.strftime('%d %b %Y %H:%M'),
         },
         'committee_count': new_count,
-        'new_threshold':   new_threshold,
+        'new_threshold': new_threshold,
     })
 
 
@@ -4927,7 +4182,7 @@ def hr_shortlist_review(request, vacancy_id):
         vacancy=vacancy, is_active=True
     ).select_related('member')
     committee_count = committee_members.count()
-    threshold       = _threshold(committee_count)
+    threshold = _threshold(committee_count)
 
     all_voted = not committee_members.filter(votes_submitted=False).exists()
 
@@ -4953,14 +4208,14 @@ def hr_shortlist_review(request, vacancy_id):
         status__code__in=['final_longlisted', 'shortlisted', 'not_selected'],
     ).select_related('user', 'status').order_by('application_number')
 
-    shortlisted_count   = 0
-    not_selected_count  = 0
+    shortlisted_count = 0
+    not_selected_count = 0
     app_rows = []
 
     for app in applications:
         result = results_by_app.get(app.id)
-        votes  = votes_by_app.get(app.id, [])
-        approvals  = sum(1 for v in votes if v.approve)
+        votes = votes_by_app.get(app.id, [])
+        approvals = sum(1 for v in votes if v.approve)
         rejections = len(votes) - approvals
 
         if result:
@@ -4970,12 +4225,12 @@ def hr_shortlist_review(request, vacancy_id):
                 not_selected_count += 1
 
         app_rows.append({
-            'app':        app,
-            'result':     result,
-            'votes':      votes,
-            'approvals':  approvals,
+            'app': app,
+            'result': result,
+            'votes': votes,
+            'approvals': approvals,
             'rejections': rejections,
-            'pct':        int(approvals / committee_count * 100) if committee_count else 0,
+            'pct': int(approvals / committee_count * 100) if committee_count else 0,
         })
 
     # Sort: shortlisted first, then by approvals desc
@@ -4994,16 +4249,16 @@ def hr_shortlist_review(request, vacancy_id):
     shortlist_finalised = vacancy.status in ('interview_scheduled', 'shortlisted_final')
 
     return render(request, 'recruitment/hr/shortlisting/shortlist_review.html', {
-        'page':                'Shortlist Review',
-        'vacancy':             vacancy,
-        'committee_count':     committee_count,
-        'threshold':           threshold,
-        'all_voted':           all_voted,
-        'app_rows':            app_rows,
-        'shortlisted_count':   shortlisted_count,
-        'not_selected_count':  not_selected_count,
-        'total_count':         len(app_rows),
-        'override_logs':       override_logs,
+        'page': 'Shortlist Review',
+        'vacancy': vacancy,
+        'committee_count': committee_count,
+        'threshold': threshold,
+        'all_voted': all_voted,
+        'app_rows': app_rows,
+        'shortlisted_count': shortlisted_count,
+        'not_selected_count': not_selected_count,
+        'total_count': len(app_rows),
+        'override_logs': override_logs,
         'shortlist_finalised': shortlist_finalised,
     })
 
@@ -5016,10 +4271,10 @@ def hr_shortlist_override(request, vacancy_id):
     HR overrides a single shortlist result.
     Mandatory justification — immutably logged.
     """
-    vacancy        = get_object_or_404(Vacancy, id=vacancy_id)
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     application_id = request.POST.get('application_id', '').strip()
-    new_decision   = request.POST.get('decision', '').strip()   # 'shortlist' or 'reject'
-    justification  = request.POST.get('justification', '').strip()
+    new_decision = request.POST.get('decision', '').strip()  # 'shortlist' or 'reject'
+    justification = request.POST.get('justification', '').strip()
 
     if not application_id or new_decision not in ('shortlist', 'reject'):
         return JsonResponse({'error': 'Invalid request.'}, status=400)
@@ -5028,13 +4283,13 @@ def hr_shortlist_override(request, vacancy_id):
 
     try:
         application = JobApplication.objects.get(pk=application_id, vacancy=vacancy)
-        result      = ShortlistResult.objects.get(application=application, vacancy=vacancy)
+        result = ShortlistResult.objects.get(application=application, vacancy=vacancy)
     except (JobApplication.DoesNotExist, ShortlistResult.DoesNotExist):
         return JsonResponse({'error': 'Record not found.'}, status=404)
 
     new_shortlisted = (new_decision == 'shortlist')
-    old_decision    = 'shortlisted' if result.shortlisted else 'not_selected'
-    new_label       = 'shortlisted' if new_shortlisted else 'not_selected'
+    old_decision = 'shortlisted' if result.shortlisted else 'not_selected'
+    new_label = 'shortlisted' if new_shortlisted else 'not_selected'
 
     with transaction.atomic():
         result.shortlisted = new_shortlisted
@@ -5048,26 +4303,26 @@ def hr_shortlist_override(request, vacancy_id):
         application.save(update_fields=['status'])
 
         ShortlistLog.objects.create(
-            vacancy            = vacancy,
-            application        = application,
-            performed_by       = request.user,
-            action             = 'override_approved',
-            notes              = (
+            vacancy=vacancy,
+            application=application,
+            performed_by=request.user,
+            action='override_approved',
+            notes=(
                 f'HR override: {old_decision} → {new_label}. '
                 f'Justification: {justification}'
             ),
-            metadata           = {
-                'old_decision':  old_decision,
-                'new_decision':  new_label,
+            metadata={
+                'old_decision': old_decision,
+                'new_decision': new_label,
                 'justification': justification,
             },
-            performed_by_label = _display_name(request.user),
+            performed_by_label=_display_name(request.user),
         )
 
     return JsonResponse({
-        'success':       True,
-        'new_decision':  new_label,
-        'shortlisted':   new_shortlisted,
+        'success': True,
+        'new_decision': new_label,
+        'shortlisted': new_shortlisted,
     })
 
 
@@ -5161,13 +4416,13 @@ def _notify_shortlisted_applicants(vacancy, request):
             _send_html_email(subject, applicant.email, message_html)
 
             ShortlistLog.objects.create(
-                vacancy            = vacancy,
-                application        = app,
-                performed_by       = None,
-                action             = 'applicant_notified',
-                notes              = f'Shortlisted notification sent to {applicant.email}',
-                metadata           = {'email': applicant.email, 'outcome': 'shortlisted'},
-                performed_by_label = 'System',
+                vacancy=vacancy,
+                application=app,
+                performed_by=None,
+                action='applicant_notified',
+                notes=f'Shortlisted notification sent to {applicant.email}',
+                metadata={'email': applicant.email, 'outcome': 'shortlisted'},
+                performed_by_label='System',
             )
             sent_count += 1
 
@@ -5264,13 +4519,13 @@ def _notify_rejected_applicants(vacancy, request):
             _send_html_email(subject, applicant.email, message_html)
 
             ShortlistLog.objects.create(
-                vacancy            = vacancy,
-                application        = app,
-                performed_by       = None,
-                action             = 'applicant_notified',
-                notes              = f'Not-selected notification sent to {applicant.email}',
-                metadata           = {'email': applicant.email, 'outcome': 'not_selected'},
-                performed_by_label = 'System',
+                vacancy=vacancy,
+                application=app,
+                performed_by=None,
+                action='applicant_notified',
+                notes=f'Not-selected notification sent to {applicant.email}',
+                metadata={'email': applicant.email, 'outcome': 'not_selected'},
+                performed_by_label='System',
             )
             sent_count += 1
 
@@ -5304,31 +4559,31 @@ def hr_shortlist_finalise(request, vacancy_id):
         }, status=400)
 
     with transaction.atomic():
-        vacancy.status = 'interview_scheduling'   # ← verify against your pipeline
+        vacancy.status = 'interview_scheduling'  # ← verify against your pipeline
         vacancy.save(update_fields=['status'])
 
         ShortlistLog.objects.create(
-            vacancy            = vacancy,
-            application        = None,
-            performed_by       = request.user,
-            action             = 'emails_sent',
-            notes              = (
+            vacancy=vacancy,
+            application=None,
+            performed_by=request.user,
+            action='emails_sent',
+            notes=(
                 f'Shortlist finalised by {_display_name(request.user)}. '
                 f'{shortlisted_apps.count()} applicant(s) shortlisted.'
             ),
-            metadata           = {'shortlisted_count': shortlisted_apps.count()},
-            performed_by_label = _display_name(request.user),
+            metadata={'shortlisted_count': shortlisted_apps.count()},
+            performed_by_label=_display_name(request.user),
         )
 
     # Outside transaction — a failed email won't roll back the status change
     sent_shortlisted = _notify_shortlisted_applicants(vacancy, request)
-    sent_rejected    = _notify_rejected_applicants(vacancy, request)
+    sent_rejected = _notify_rejected_applicants(vacancy, request)
 
     return JsonResponse({
-        'success':           True,
+        'success': True,
         'shortlisted_count': shortlisted_apps.count(),
-        'emails_sent':       sent_shortlisted + sent_rejected,
-        'redirect_url':      '/recruitment/vacancies/shortlisting/',
+        'emails_sent': sent_shortlisted + sent_rejected,
+        'redirect_url': '/recruitment/vacancies/shortlisting/',
     })
 
 
@@ -5339,9 +4594,9 @@ def hr_shortlist_finalise(request, vacancy_id):
 @role_required(['hod_hr'])
 @require_POST
 def hr_committee_remove(request, vacancy_id):
-    vacancy   = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='committee_stage')
     member_id = request.POST.get('member_id', '').strip()
-    reason    = request.POST.get('reason', '').strip()
+    reason = request.POST.get('reason', '').strip()
 
     if not member_id:
         return JsonResponse({'error': 'No member specified.'}, status=400)
@@ -5368,22 +4623,22 @@ def hr_committee_remove(request, vacancy_id):
         entry.is_active = False
         entry.save(update_fields=['is_active'])
         ShortlistLog.objects.create(
-            vacancy            = vacancy,
-            application        = None,
-            performed_by       = request.user,
-            action             = 'member_removed',
-            notes              = reason,
-            metadata           = {'member_id': str(member_id)},
-            performed_by_label = _display_name(request.user),
+            vacancy=vacancy,
+            application=None,
+            performed_by=request.user,
+            action='member_removed',
+            notes=reason,
+            metadata={'member_id': str(member_id)},
+            performed_by_label=_display_name(request.user),
         )
 
-    new_count     = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_count = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
-        'success':         True,
+        'success': True,
         'committee_count': new_count,
-        'new_threshold':   new_threshold,
+        'new_threshold': new_threshold,
     })
 
 
@@ -5494,19 +4749,19 @@ def _generate_shortlist(vacancy, triggered_by):
     """
     from django.db import transaction
 
-    recused_ids     = _recused_member_ids(vacancy)
-    active_count    = _active_count(vacancy)
-    threshold       = _threshold(active_count)
+    recused_ids = _recused_member_ids(vacancy)
+    active_count = _active_count(vacancy)
+    threshold = _threshold(active_count)
 
     applications = JobApplication.objects.filter(
         vacancy=vacancy,
         status__code='final_longlisted',
     ).select_related('status')
 
-    shortlisted_count     = 0
+    shortlisted_count = 0
     not_shortlisted_count = 0
 
-    shortlisted_status  = JobApplicationStatus.objects.get(code='shortlisted')
+    shortlisted_status = JobApplicationStatus.objects.get(code='shortlisted')
     not_selected_status = JobApplicationStatus.objects.get(code='not_selected')
 
     with transaction.atomic():
@@ -5518,20 +4773,20 @@ def _generate_shortlist(vacancy, triggered_by):
             ).exclude(member_id__in=recused_ids)
 
             approve_count = votes.filter(approve=True).count()
-            reject_count  = votes.filter(approve=False).count()
-            total_votes   = approve_count + reject_count
-            shortlisted   = approve_count >= threshold
+            reject_count = votes.filter(approve=False).count()
+            total_votes = approve_count + reject_count
+            shortlisted = approve_count >= threshold
 
             ShortlistResult.objects.update_or_create(
                 vacancy=vacancy,
                 application=app,
                 defaults={
-                    'total_votes':   total_votes,
+                    'total_votes': total_votes,
                     'approve_count': approve_count,
-                    'reject_count':  reject_count,
-                    'threshold':     threshold,
-                    'shortlisted':   shortlisted,
-                    'computed_at':   timezone.now(),
+                    'reject_count': reject_count,
+                    'threshold': threshold,
+                    'shortlisted': shortlisted,
+                    'computed_at': timezone.now(),
                 },
             )
 
@@ -5546,10 +4801,10 @@ def _generate_shortlist(vacancy, triggered_by):
                 to_status=new_status,
                 changed_by=triggered_by,
                 notes=(
-                    f'{"Shortlisted" if shortlisted else "Not shortlisted"} by committee vote. '
-                    f'Approve: {approve_count}, Reject: {reject_count}, '
-                    f'Threshold: {threshold}/{active_count}.'
-                    + (f' ({len(recused_ids)} member(s) recused due to COI.)' if recused_ids else '')
+                        f'{"Shortlisted" if shortlisted else "Not shortlisted"} by committee vote. '
+                        f'Approve: {approve_count}, Reject: {reject_count}, '
+                        f'Threshold: {threshold}/{active_count}.'
+                        + (f' ({len(recused_ids)} member(s) recused due to COI.)' if recused_ids else '')
                 ),
             )
 
@@ -5563,17 +4818,17 @@ def _generate_shortlist(vacancy, triggered_by):
             performed_by=triggered_by,
             action='all_votes_in',
             notes=(
-                f'Shortlist generated. {shortlisted_count} shortlisted, '
-                f'{not_shortlisted_count} not shortlisted. '
-                f'Threshold: {threshold}/{active_count}.'
-                + (f' {len(recused_ids)} member(s) recused (COI).' if recused_ids else '')
+                    f'Shortlist generated. {shortlisted_count} shortlisted, '
+                    f'{not_shortlisted_count} not shortlisted. '
+                    f'Threshold: {threshold}/{active_count}.'
+                    + (f' {len(recused_ids)} member(s) recused (COI).' if recused_ids else '')
             ),
             metadata={
-                'shortlisted':     shortlisted_count,
+                'shortlisted': shortlisted_count,
                 'not_shortlisted': not_shortlisted_count,
-                'threshold':       threshold,
-                'active_count':    active_count,
-                'recused_count':   len(recused_ids),
+                'threshold': threshold,
+                'active_count': active_count,
+                'recused_count': len(recused_ids),
             },
             performed_by_label=_display_name(triggered_by) if triggered_by else 'System',
         )
@@ -5613,7 +4868,7 @@ def hr_committee_progress(request, vacancy_id):
         ).select_related('member').order_by('appointed_at')
     )
     committee_count = len(committee)
-    threshold       = _threshold(committee_count)
+    threshold = _threshold(committee_count)
 
     # Per-member vote counts
     member_progress = []
@@ -5629,20 +4884,20 @@ def hr_committee_progress(request, vacancy_id):
             is_draft=True,
         ).count()
         member_progress.append({
-            'entry':           entry,
-            'name':            _display_name(entry.member),
-            'email':           entry.member.email,
-            'acknowledged':    entry.acknowledged,
+            'entry': entry,
+            'name': _display_name(entry.member),
+            'email': entry.member.email,
+            'acknowledged': entry.acknowledged,
             'votes_submitted': entry.votes_submitted,
             'submitted_count': submitted_votes,
-            'draft_count':     draft_votes,
-            'remaining':       app_count - submitted_votes,
-            'percent':         int((submitted_votes / app_count * 100)) if app_count else 0,
+            'draft_count': draft_votes,
+            'remaining': app_count - submitted_votes,
+            'percent': int((submitted_votes / app_count * 100)) if app_count else 0,
         })
 
     # Overall completion
-    members_done  = sum(1 for m in member_progress if m['votes_submitted'])
-    all_voted     = (members_done == committee_count and committee_count > 0)
+    members_done = sum(1 for m in member_progress if m['votes_submitted'])
+    all_voted = (members_done == committee_count and committee_count > 0)
 
     # Shortlist already generated?
     shortlist_generated = ShortlistResult.objects.filter(vacancy=vacancy).exists()
@@ -5671,44 +4926,43 @@ def hr_committee_progress(request, vacancy_id):
     }
 
     for app in applications:
-        votes      = votes_by_app.get(app.id, [])
-        approvals  = sum(1 for v in votes if v.approve)
+        votes = votes_by_app.get(app.id, [])
+        approvals = sum(1 for v in votes if v.approve)
         rejections = sum(1 for v in votes if not v.approve)
-        voted_ids  = {v.member_id for v in votes}
-        pending    = [m for m in committee if m.member_id not in voted_ids]
-        result     = results_by_app.get(app.id)
+        voted_ids = {v.member_id for v in votes}
+        pending = [m for m in committee if m.member_id not in voted_ids]
+        result = results_by_app.get(app.id)
 
         app_rows.append({
-            'app':        app,
-            'votes':      votes,
-            'approvals':  approvals,
+            'app': app,
+            'votes': votes,
+            'approvals': approvals,
             'rejections': rejections,
-            'pending':    pending,
+            'pending': pending,
             'voted_count': len(votes),
-            'result':     result,
+            'result': result,
         })
 
     # Deadline
-    deadline       = vacancy.end_date + timedelta(days=21)
+    deadline = vacancy.end_date + timedelta(days=21)
     days_remaining = (deadline - timezone.now().date()).days
 
     return render(request, 'recruitment/hr/shortlisting/committee_progress.html', {
-        'page':                'Shortlisting',
-        'vacancy':             vacancy,
-        'app_count':           app_count,
-        'committee':           member_progress,
-        'committee_count':     committee_count,
-        'threshold':           threshold,
-        'members_done':        members_done,
-        'all_voted':           all_voted,
+        'page': 'Shortlisting',
+        'vacancy': vacancy,
+        'app_count': app_count,
+        'committee': member_progress,
+        'committee_count': committee_count,
+        'threshold': threshold,
+        'members_done': members_done,
+        'all_voted': all_voted,
         'shortlist_generated': shortlist_generated,
-        'app_rows':            app_rows,
-        'deadline':            deadline,
-        'days_remaining':      days_remaining,
-        'deadline_amber':      0 < days_remaining <= 5,
-        'deadline_red':        days_remaining <= 0,
+        'app_rows': app_rows,
+        'deadline': deadline,
+        'days_remaining': days_remaining,
+        'deadline_amber': 0 < days_remaining <= 5,
+        'deadline_red': days_remaining <= 0,
     })
-
 
 
 def _committee_member_check(request, vacancy_id):
@@ -5718,6 +4972,7 @@ def _committee_member_check(request, vacancy_id):
         vacancy_id=vacancy_id,
         is_active=True,
     ).select_related('vacancy').first()
+
 
 # ── View 1: Committee Member Dashboard ───────────────────────────────────────
 
@@ -5730,13 +4985,13 @@ def committee_dashboard(request):
 
     if not assignments.exists():
         return render(request, 'recruitment/committee/committee_dashboard.html', {
-            'page':        'My Committee Assignments',
+            'page': 'My Committee Assignments',
             'assignments': [],
         })
 
     rows = []
     for entry in assignments:
-        vacancy   = entry.vacancy
+        vacancy = entry.vacancy
         app_count = JobApplication.objects.filter(
             vacancy=vacancy,
             status__code='final_longlisted',
@@ -5749,7 +5004,7 @@ def committee_dashboard(request):
             vacancy=vacancy, member=request.user, is_draft=True,
         ).count()
 
-        deadline       = vacancy.end_date + timedelta(days=21)
+        deadline = vacancy.end_date + timedelta(days=21)
         days_remaining = (deadline - timezone.now().date()).days
 
         # Determine what action the member needs to take next
@@ -5765,26 +5020,26 @@ def committee_dashboard(request):
             next_action = 'vote'
 
         rows.append({
-            'entry':           entry,
-            'vacancy':         vacancy,
-            'app_count':       app_count,
+            'entry': entry,
+            'vacancy': vacancy,
+            'app_count': app_count,
             'submitted_votes': submitted_votes,
-            'draft_votes':     draft_votes,
-            'remaining':       app_count - submitted_votes,
-            'percent':         int(submitted_votes / app_count * 100) if app_count else 0,
-            'all_done':        entry.votes_submitted,
-            'acknowledged':    entry.acknowledged,
-            'coi_declared':    entry.coi_declared,
-            'has_conflict':    entry.has_conflict,
-            'next_action':     next_action,
-            'deadline':        deadline,
-            'days_remaining':  days_remaining,
-            'deadline_amber':  0 < days_remaining <= 5,
-            'deadline_red':    days_remaining <= 0,
+            'draft_votes': draft_votes,
+            'remaining': app_count - submitted_votes,
+            'percent': int(submitted_votes / app_count * 100) if app_count else 0,
+            'all_done': entry.votes_submitted,
+            'acknowledged': entry.acknowledged,
+            'coi_declared': entry.coi_declared,
+            'has_conflict': entry.has_conflict,
+            'next_action': next_action,
+            'deadline': deadline,
+            'days_remaining': days_remaining,
+            'deadline_amber': 0 < days_remaining <= 5,
+            'deadline_red': days_remaining <= 0,
         })
 
     return render(request, 'recruitment/committee/committee_dashboard.html', {
-        'page':        'My Committee Assignments',
+        'page': 'My Committee Assignments',
         'assignments': rows,
     })
 
@@ -5801,22 +5056,22 @@ def committee_acknowledge(request, vacancy_id):
     if entry.acknowledged:
         return JsonResponse({'already': True, 'redirect_url': f'/committee/vacancy/{vacancy_id}/coi/'})
 
-    entry.acknowledged    = True
+    entry.acknowledged = True
     entry.acknowledged_at = timezone.now()
     entry.save(update_fields=['acknowledged', 'acknowledged_at'])
 
     ShortlistLog.objects.create(
-        vacancy            = entry.vacancy,
-        application        = None,
-        performed_by       = request.user,
-        action             = 'member_acknowledged',
-        notes              = f'{_display_name(request.user)} acknowledged their appointment.',
-        metadata           = {'member_id': str(request.user.pk)},
-        performed_by_label = _display_name(request.user),
+        vacancy=entry.vacancy,
+        application=None,
+        performed_by=request.user,
+        action='member_acknowledged',
+        notes=f'{_display_name(request.user)} acknowledged their appointment.',
+        metadata={'member_id': str(request.user.pk)},
+        performed_by_label=_display_name(request.user),
     )
 
     return JsonResponse({
-        'success':      True,
+        'success': True,
         'redirect_url': f'/committee/vacancy/{vacancy_id}/coi/',
     })
 
@@ -5839,8 +5094,8 @@ def committee_declare_coi(request, vacancy_id):
     if entry.coi_declared:
         if entry.has_conflict:
             return render(request, 'recruitment/committee/committee_coi.html', {
-                'page':    'Conflict of Interest Declaration',
-                'entry':   entry,
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry,
                 'vacancy': entry.vacancy,
                 'already_declared': True,
             })
@@ -5848,30 +5103,30 @@ def committee_declare_coi(request, vacancy_id):
 
     if request.method == 'POST':
         decision = request.POST.get('decision', '').strip()  # 'no_conflict' or 'has_conflict'
-        reason   = request.POST.get('conflict_reason', '').strip()
+        reason = request.POST.get('conflict_reason', '').strip()
 
         if decision not in ('no_conflict', 'has_conflict'):
             return render(request, 'recruitment/committee/committee_coi.html', {
-                'page':    'Conflict of Interest Declaration',
-                'entry':   entry,
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry,
                 'vacancy': entry.vacancy,
-                'error':   'Please select one of the options below.',
+                'error': 'Please select one of the options below.',
             })
 
         if decision == 'has_conflict' and not reason:
             return render(request, 'recruitment/committee/committee_coi.html', {
-                'page':    'Conflict of Interest Declaration',
-                'entry':   entry,
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry,
                 'vacancy': entry.vacancy,
-                'error':   'You must provide a reason when declaring a conflict of interest.',
+                'error': 'You must provide a reason when declaring a conflict of interest.',
                 'decision_pre': 'has_conflict',
             })
 
         has_conflict = (decision == 'has_conflict')
 
-        entry.coi_declared         = True
-        entry.has_conflict         = has_conflict
-        entry.conflict_reason      = reason if has_conflict else ''
+        entry.coi_declared = True
+        entry.has_conflict = has_conflict
+        entry.conflict_reason = reason if has_conflict else ''
         entry.conflict_declared_at = timezone.now()
         entry.save(update_fields=[
             'coi_declared', 'has_conflict',
@@ -5884,14 +5139,14 @@ def committee_declare_coi(request, vacancy_id):
             performed_by=request.user,
             action='coi_declared',
             notes=(
-                f'{_display_name(request.user)} declared '
-                + ('a conflict of interest. Reason: ' + reason if has_conflict
-                   else 'no conflict of interest.')
+                    f'{_display_name(request.user)} declared '
+                    + ('a conflict of interest. Reason: ' + reason if has_conflict
+                       else 'no conflict of interest.')
             ),
             metadata={
-                'member_id':   str(request.user.pk),
+                'member_id': str(request.user.pk),
                 'has_conflict': has_conflict,
-                'reason':       reason,
+                'reason': reason,
             },
             performed_by_label=_display_name(request.user),
         )
@@ -5900,9 +5155,9 @@ def committee_declare_coi(request, vacancy_id):
             # Notify HR by email
             _notify_hr_coi(entry, reason)
             return render(request, 'recruitment/committee/committee_coi.html', {
-                'page':         'Conflict of Interest Declaration',
-                'entry':        entry,
-                'vacancy':      entry.vacancy,
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry,
+                'vacancy': entry.vacancy,
                 'just_recused': True,
             })
 
@@ -5911,8 +5166,8 @@ def committee_declare_coi(request, vacancy_id):
 
     # GET
     return render(request, 'recruitment/committee/committee_coi.html', {
-        'page':    'Conflict of Interest Declaration',
-        'entry':   entry,
+        'page': 'Conflict of Interest Declaration',
+        'entry': entry,
         'vacancy': entry.vacancy,
     })
 
@@ -5943,10 +5198,10 @@ def _notify_hr_coi(entry, reason):
     """
     try:
         html_body = render_to_string('emails/email_base.html', {
-            'subject':         subject,
+            'subject': subject,
             'message_content': message_html,
-            'logo_url':        'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
-            'year':            date.today().year,
+            'logo_url': 'https://ufaa.go.ke/wp-content/uploads/2022/07/LOGO_RVSD-2-1.png',
+            'year': date.today().year,
         })
         hr_email = getattr(settings, 'HR_NOTIFICATION_EMAIL', settings.DEFAULT_FROM_EMAIL)
         msg = EmailMultiAlternatives(
@@ -5959,7 +5214,6 @@ def _notify_hr_coi(entry, reason):
         msg.send(fail_silently=True)
     except Exception:
         pass  # Don't crash the request if email fails
-
 
 
 # ── View 4: Review & Vote Screen ─────────────────────────────────────────────
@@ -5977,8 +5231,8 @@ def committee_review(request, vacancy_id):
     # Gate 1: must acknowledge first
     if not entry.acknowledged:
         return render(request, 'recruitment/committee/committee_acknowledge.html', {
-            'page':    'Committee Review',
-            'entry':   entry,
+            'page': 'Committee Review',
+            'entry': entry,
             'vacancy': vacancy,
         })
 
@@ -5989,9 +5243,9 @@ def committee_review(request, vacancy_id):
     # Gate 3: recused members cannot vote
     if entry.has_conflict:
         return render(request, 'recruitment/committee/committee_coi.html', {
-            'page':          'Committee Review',
-            'entry':         entry,
-            'vacancy':       vacancy,
+            'page': 'Committee Review',
+            'entry': entry,
+            'vacancy': vacancy,
             'already_declared': True,
         })
 
@@ -6018,46 +5272,45 @@ def committee_review(request, vacancy_id):
     other_votes_by_app = {}
     if my_submitted_ids:
         for ov in CommitteeVote.objects.filter(
-            vacancy=vacancy,
-            application_id__in=my_submitted_ids,
-            is_draft=False,
+                vacancy=vacancy,
+                application_id__in=my_submitted_ids,
+                is_draft=False,
         ).exclude(member=request.user).select_related('member'):
             other_votes_by_app.setdefault(ov.application_id, []).append(ov)
 
     app_rows = []
     submitted_count = 0
     for app in applications:
-        my_vote      = my_votes.get(app.id)
+        my_vote = my_votes.get(app.id)
         is_submitted = bool(my_vote and not my_vote.is_draft)
         if is_submitted:
             submitted_count += 1
         app_rows.append({
-            'app':          app,
-            'my_vote':      my_vote,
+            'app': app,
+            'my_vote': my_vote,
             'is_submitted': is_submitted,
-            'other_votes':  other_votes_by_app.get(app.id, []) if is_submitted else [],
-            'can_vote':     not is_submitted,
+            'other_votes': other_votes_by_app.get(app.id, []) if is_submitted else [],
+            'can_vote': not is_submitted,
         })
 
     active_count = _active_count(vacancy)
-    threshold    = _threshold(active_count)
-    deadline     = vacancy.end_date + timedelta(days=21)
+    threshold = _threshold(active_count)
+    deadline = vacancy.end_date + timedelta(days=21)
 
     return render(request, 'recruitment/committee/committee_review.html', {
-        'page':            'Committee Review',
-        'entry':           entry,
-        'vacancy':         vacancy,
-        'app_rows':        app_rows,
-        'app_count':       app_count,
+        'page': 'Committee Review',
+        'entry': entry,
+        'vacancy': vacancy,
+        'app_rows': app_rows,
+        'app_count': app_count,
         'submitted_count': submitted_count,
-        'remaining':       app_count - submitted_count,
-        'all_submitted':   submitted_count == app_count,
+        'remaining': app_count - submitted_count,
+        'all_submitted': submitted_count == app_count,
         'committee_count': active_count,
-        'threshold':       threshold,
-        'deadline':        deadline,
-        'days_remaining':  (deadline - timezone.now().date()).days,
+        'threshold': threshold,
+        'deadline': deadline,
+        'days_remaining': (deadline - timezone.now().date()).days,
     })
-
 
 
 # ── View 4: Save / Submit Single Vote (POST/AJAX) ────────────────────────────
@@ -6075,10 +5328,10 @@ def committee_vote_save(request, vacancy_id):
     if entry.votes_submitted:
         return JsonResponse({'error': 'You have already submitted all votes.'}, status=400)
 
-    app_id  = request.POST.get('application_id', '').strip()
+    app_id = request.POST.get('application_id', '').strip()
     approve = request.POST.get('approve', '').strip().lower()
     comment = request.POST.get('comment', '').strip()
-    action  = request.POST.get('action', 'draft')
+    action = request.POST.get('action', 'draft')
 
     if not app_id:
         return JsonResponse({'error': 'No application specified.'}, status=400)
@@ -6097,18 +5350,18 @@ def committee_vote_save(request, vacancy_id):
         return JsonResponse({'error': 'Application not found.'}, status=404)
 
     approve_bool = (approve == 'true')
-    is_draft     = (action == 'draft')
-    now          = timezone.now()
+    is_draft = (action == 'draft')
+    now = timezone.now()
 
     vote, created = CommitteeVote.objects.update_or_create(
         vacancy=entry.vacancy,
         application=application,
         member=request.user,
         defaults={
-            'approve':      approve_bool,
-            'comment':      comment,
-            'is_draft':     is_draft,
-            'voted_at':     now,
+            'approve': approve_bool,
+            'comment': comment,
+            'is_draft': is_draft,
+            'voted_at': now,
             'submitted_at': None if is_draft else now,
         },
     )
@@ -6122,8 +5375,8 @@ def committee_vote_save(request, vacancy_id):
             notes=f'{"Approved" if approve_bool else "Disapproved"}: {comment[:120]}',
             metadata={
                 'member_id': str(request.user.pk),
-                'approve':   approve_bool,
-                'app_id':    str(application.pk),
+                'approve': approve_bool,
+                'app_id': str(application.pk),
             },
             performed_by_label=_display_name(request.user),
         )
@@ -6131,20 +5384,20 @@ def committee_vote_save(request, vacancy_id):
     revealed_votes = []
     if not is_draft:
         for ov in CommitteeVote.objects.filter(
-            vacancy=entry.vacancy,
-            application=application,
-            is_draft=False,
+                vacancy=entry.vacancy,
+                application=application,
+                is_draft=False,
         ).exclude(member=request.user).select_related('member'):
             revealed_votes.append({
-                'name':    _display_name(ov.member),
+                'name': _display_name(ov.member),
                 'approve': ov.approve,
                 'comment': ov.comment,
             })
 
     return JsonResponse({
-        'success':        True,
-        'is_draft':       is_draft,
-        'approve':        approve_bool,
+        'success': True,
+        'is_draft': is_draft,
+        'approve': approve_bool,
         'revealed_votes': revealed_votes,
     })
 
@@ -6190,7 +5443,7 @@ def committee_submit_all(request, vacancy_id):
             )
         }, status=400)
 
-    entry.votes_submitted    = True
+    entry.votes_submitted = True
     entry.votes_submitted_at = timezone.now()
     entry.save(update_fields=['votes_submitted', 'votes_submitted_at'])
 
@@ -6208,9 +5461,9 @@ def committee_submit_all(request, vacancy_id):
         shortlist_generated = True
 
     return JsonResponse({
-        'success':             True,
+        'success': True,
         'shortlist_generated': shortlist_generated,
-        'redirect_url':        f'/recruitment/committee/vacancy/{vacancy_id}/results/',
+        'redirect_url': f'/recruitment/committee/vacancy/{vacancy_id}/results/',
     })
 
 
@@ -6248,36 +5501,37 @@ def committee_results(request, vacancy_id):
 
     active_count = _active_count(vacancy)
     all_done = (
-        ShortlistingCommittee.objects.filter(
-            vacancy=vacancy, is_active=True, has_conflict=False, votes_submitted=True
-        ).count() == active_count and active_count > 0
+            ShortlistingCommittee.objects.filter(
+                vacancy=vacancy, is_active=True, has_conflict=False, votes_submitted=True
+            ).count() == active_count and active_count > 0
     )
 
     app_rows = []
     for app in applications:
-        votes     = votes_by_app.get(app.id, [])
-        my_vote   = next((v for v in votes if v.member == request.user), None)
-        result    = results_by_app.get(app.id)
+        votes = votes_by_app.get(app.id, [])
+        my_vote = next((v for v in votes if v.member == request.user), None)
+        result = results_by_app.get(app.id)
         approvals = sum(1 for v in votes if v.approve)
 
         app_rows.append({
-            'app':        app,
-            'votes':      votes,
-            'my_vote':    my_vote,
-            'approvals':  approvals,
+            'app': app,
+            'votes': votes,
+            'my_vote': my_vote,
+            'approvals': approvals,
             'rejections': len(votes) - approvals,
-            'result':     result,
+            'result': result,
         })
 
     return render(request, 'recruitment/committee/committee_results.html', {
-        'page':            'My Votes — Results',
-        'entry':           entry,
-        'vacancy':         vacancy,
-        'app_rows':        app_rows,
+        'page': 'My Votes — Results',
+        'entry': entry,
+        'vacancy': vacancy,
+        'app_rows': app_rows,
         'committee_count': active_count,
-        'all_done':        all_done,
-        'threshold':       _threshold(active_count),
+        'all_done': all_done,
+        'threshold': _threshold(active_count),
     })
+
 
 # ── HR Progress view (updated to show COI status) ─────────────────────────────
 
@@ -6299,27 +5553,27 @@ def hr_committee_progress(request, vacancy_id):
         ).select_related('member').order_by('appointed_at')
     )
 
-    active_count    = sum(1 for e in all_committee if not e.has_conflict)
-    threshold       = _threshold(active_count)
+    active_count = sum(1 for e in all_committee if not e.has_conflict)
+    threshold = _threshold(active_count)
     recused_ids_set = {e.member_id for e in all_committee if e.has_conflict}
 
     member_progress = []
     for entry in all_committee:
         if entry.has_conflict:
             member_progress.append({
-                'entry':           entry,
-                'name':            _display_name(entry.member),
-                'email':           entry.member.email,
-                'acknowledged':    entry.acknowledged,
-                'coi_declared':    entry.coi_declared,
-                'has_conflict':    True,
+                'entry': entry,
+                'name': _display_name(entry.member),
+                'email': entry.member.email,
+                'acknowledged': entry.acknowledged,
+                'coi_declared': entry.coi_declared,
+                'has_conflict': True,
                 'conflict_reason': entry.conflict_reason,
                 'votes_submitted': False,
                 'submitted_count': 0,
-                'draft_count':     0,
-                'remaining':       0,
-                'percent':         0,
-                'is_recused':      True,
+                'draft_count': 0,
+                'remaining': 0,
+                'percent': 0,
+                'is_recused': True,
             })
             continue
 
@@ -6331,23 +5585,23 @@ def hr_committee_progress(request, vacancy_id):
         ).count()
 
         member_progress.append({
-            'entry':           entry,
-            'name':            _display_name(entry.member),
-            'email':           entry.member.email,
-            'acknowledged':    entry.acknowledged,
-            'coi_declared':    entry.coi_declared,
-            'has_conflict':    False,
+            'entry': entry,
+            'name': _display_name(entry.member),
+            'email': entry.member.email,
+            'acknowledged': entry.acknowledged,
+            'coi_declared': entry.coi_declared,
+            'has_conflict': False,
             'conflict_reason': '',
             'votes_submitted': entry.votes_submitted,
             'submitted_count': submitted_votes,
-            'draft_count':     draft_votes,
-            'remaining':       app_count - submitted_votes,
-            'percent':         int(submitted_votes / app_count * 100) if app_count else 0,
-            'is_recused':      False,
+            'draft_count': draft_votes,
+            'remaining': app_count - submitted_votes,
+            'percent': int(submitted_votes / app_count * 100) if app_count else 0,
+            'is_recused': False,
         })
 
     members_done = sum(1 for m in member_progress if not m['is_recused'] and m['votes_submitted'])
-    all_voted    = (members_done == active_count and active_count > 0)
+    all_voted = (members_done == active_count and active_count > 0)
     recused_count = len(recused_ids_set)
 
     shortlist_generated = ShortlistResult.objects.filter(vacancy=vacancy).exists()
@@ -6371,39 +5625,1143 @@ def hr_committee_progress(request, vacancy_id):
 
     app_rows = []
     for app in applications:
-        votes      = votes_by_app.get(app.id, [])
-        approvals  = sum(1 for v in votes if v.approve)
+        votes = votes_by_app.get(app.id, [])
+        approvals = sum(1 for v in votes if v.approve)
         rejections = sum(1 for v in votes if not v.approve)
-        result     = results_by_app.get(app.id)
+        result = results_by_app.get(app.id)
         app_rows.append({
-            'app':         app,
-            'votes':       votes,
-            'approvals':   approvals,
-            'rejections':  rejections,
+            'app': app,
+            'votes': votes,
+            'approvals': approvals,
+            'rejections': rejections,
             'voted_count': len(votes),
-            'result':      result,
+            'result': result,
         })
 
-    deadline       = vacancy.end_date + timedelta(days=21)
+    deadline = vacancy.end_date + timedelta(days=21)
     days_remaining = (deadline - timezone.now().date()).days
 
     return render(request, 'recruitment/hr/shortlisting/committee_progress.html', {
-        'page':                'Shortlisting',
-        'vacancy':             vacancy,
-        'app_count':           app_count,
-        'committee':           member_progress,
-        'committee_count':     active_count,
-        'total_committee':     len(all_committee),
-        'recused_count':       recused_count,
-        'threshold':           threshold,
-        'members_done':        members_done,
-        'all_voted':           all_voted,
+        'page': 'Shortlisting',
+        'vacancy': vacancy,
+        'app_count': app_count,
+        'committee': member_progress,
+        'committee_count': active_count,
+        'total_committee': len(all_committee),
+        'recused_count': recused_count,
+        'threshold': threshold,
+        'members_done': members_done,
+        'all_voted': all_voted,
         'shortlist_generated': shortlist_generated,
-        'app_rows':            app_rows,
-        'deadline':            deadline,
-        'days_remaining':      days_remaining,
-        'deadline_amber':      0 < days_remaining <= 5,
-        'deadline_red':        days_remaining <= 0,
+        'app_rows': app_rows,
+        'deadline': deadline,
+        'days_remaining': days_remaining,
+        'deadline_amber': 0 < days_remaining <= 5,
+        'deadline_red': days_remaining <= 0,
     })
 
+
+# ═════════════════════════════════════════════════════════════════════════════
+# SHARED HELPERS
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _active_panel_count(vacancy):
+    """Non-recused active panel members."""
+    return InterviewPanel.objects.filter(
+        vacancy=vacancy, is_active=True, has_conflict=False,
+    ).count()
+
+def _compute_interview_results(vacancy):
+    """
+    Compute InterviewResult for every shortlisted applicant once all
+    active non-recused panel members have submitted all scores.
+    """
+    from django.db import transaction
+
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+    max_per_member = sum(c.max_score for c in criteria)
+
+    active_members = list(
+        InterviewPanel.objects.filter(
+            vacancy=vacancy, is_active=True, has_conflict=False,
+        )
+    )
+    panel_count = len(active_members)
+    max_possible = Decimal(max_per_member * panel_count)
+
+    recused_ids = list(
+        InterviewPanel.objects.filter(
+            vacancy=vacancy, is_active=True, has_conflict=True,
+        ).values_list('member_id', flat=True)
+    )
+
+    applications = JobApplication.objects.filter(
+        vacancy=vacancy, status__code='shortlisted',
+    )
+
+    results = []
+    with transaction.atomic():
+        for app in applications:
+            submitted_scores = InterviewScore.objects.filter(
+                vacancy=vacancy,
+                application=app,
+                is_draft=False,
+            ).exclude(panel_member_id__in=recused_ids)
+
+            total = sum(s.score for s in submitted_scores) or Decimal('0')
+            pct = (total / max_possible * 100) if max_possible else Decimal('0')
+
+            result, _ = InterviewResult.objects.update_or_create(
+                vacancy=vacancy,
+                application=app,
+                defaults={
+                    'total_score': total,
+                    'max_possible': max_possible,
+                    'percentage': round(pct, 2),
+                    'computed_at': timezone.now(),
+                },
+            )
+            results.append(result)
+
+        # Rank by total descending
+        results.sort(key=lambda r: r.total_score, reverse=True)
+        for i, result in enumerate(results, start=1):
+            result.rank = i
+            result.save(update_fields=['rank'])
+
+        InterviewLog.objects.create(
+            vacancy=vacancy,
+            action='all_scores_in',
+            notes=(
+                f'Interview results computed. {len(results)} candidates ranked. '
+                f'Max possible score: {max_possible}.'
+            ),
+            metadata={
+                'candidate_count': len(results),
+                'max_possible': str(max_possible),
+                'panel_count': panel_count,
+            },
+            performed_by_label='System',
+        )
+
+    return results
+
+
+def _notify_candidate(slot, vacancy):
+    """Email a shortlisted candidate their interview slot details."""
+    applicant = slot.application.user
+    venue_label = 'Online Meeting Link' if slot.schedule.venue_type == 'online' else 'Venue'
+    subject = f'Interview Invitation — {vacancy.title} [{vacancy.reference_number}]'
+    message_html = f"""
+        <p>Dear {applicant.name},</p>
+        <p>We are pleased to invite you for an interview for the position of
+        <strong>{vacancy.title}</strong> ({vacancy.reference_number}).</p>
+
+        <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;width:35%;">Date</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {slot.interview_date.strftime('%A, %d %B %Y')}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;">Time</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {slot.interview_time.strftime('%I:%M %p')}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;">{venue_label}</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {slot.effective_venue()}
+                </td>
+            </tr>
+        </table>
+
+        {'<p><strong>Preparatory Instructions:</strong><br>' + slot.schedule.instructions + '</p>' if slot.schedule.instructions else ''}
+
+        <p>Please ensure you arrive on time with a valid form of identification
+        and copies of your academic and professional certificates.</p>
+        <p>We look forward to meeting you.</p>
+        <p style="margin-top:1.5rem;">Regards,<br>
+        <strong>UFAA Human Resources Department</strong></p>
+    """
+    _send_html_email(subject, applicant.email, message_html)
+
+
+def _notify_panel_member(entry, schedule, vacancy):
+    """Email a panel member their assignment details."""
+    from django.conf import settings as django_settings
+    member = entry.member
+    subject = f'Interview Panel Assignment — {vacancy.title} [{vacancy.reference_number}]'
+
+    slots = InterviewSlot.objects.filter(vacancy=vacancy).select_related('application__user')
+    candidate_rows = ''.join(
+        f'<tr>'
+        f'<td style="padding:0.4rem 0.75rem;border:1px solid #e0e4ef;">{s.application.user.name}</td>'
+        f'<td style="padding:0.4rem 0.75rem;border:1px solid #e0e4ef;">{s.interview_date.strftime("%d %b %Y")}</td>'
+        f'<td style="padding:0.4rem 0.75rem;border:1px solid #e0e4ef;">{s.interview_time.strftime("%I:%M %p")}</td>'
+        f'</tr>'
+        for s in slots
+    )
+
+    portal_url = getattr(django_settings, 'SITE_URL', 'https://ufaa.go.ke') + '/recruitment/panel/dashboard/'
+
+    message_html = f"""
+        <p>Dear {_display_name(member)},</p>
+        <p>You have been appointed to the interview panel for
+        <strong>{vacancy.title}</strong> ({vacancy.reference_number}).</p>
+
+        <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;width:35%;">Venue Type</td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    {schedule.get_venue_type_display()}
+                </td>
+            </tr>
+            <tr>
+                <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                           border:1px solid #e0e4ef;">
+                    {'Location' if schedule.venue_type == 'physical' else 'Meeting Link'}
+                </td>
+                <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">{schedule.venue}</td>
+            </tr>
+        </table>
+
+        <p><strong>Candidates you will interview:</strong></p>
+        <table style="border-collapse:collapse;width:100%;margin:0.5rem 0 1rem;">
+            <thead>
+                <tr style="background:#f8f9ff;">
+                    <th style="padding:0.5rem 0.75rem;border:1px solid #e0e4ef;text-align:left;">Candidate</th>
+                    <th style="padding:0.5rem 0.75rem;border:1px solid #e0e4ef;text-align:left;">Date</th>
+                    <th style="padding:0.5rem 0.75rem;border:1px solid #e0e4ef;text-align:left;">Time</th>
+                </tr>
+            </thead>
+            <tbody>{candidate_rows}</tbody>
+        </table>
+
+        <p>Please log in to the portal to acknowledge your appointment,
+        complete the conflict of interest declaration, and submit your scores
+        after each interview.</p>
+        <p><a href="{portal_url}" style="background:#262561;color:#F9E6A1;
+           padding:0.5rem 1.25rem;border-radius:0.4rem;text-decoration:none;
+           font-weight:600;">Go to Panel Portal</a></p>
+
+        <p style="margin-top:1.5rem;">Regards,<br>
+        <strong>UFAA Human Resources Department</strong></p>
+    """
+    _send_html_email(subject, member.email, message_html)
+
+
+def _notify_hr_panel_coi(entry, reason):
+    from django.conf import settings as django_settings
+    subject = (
+        f'Panel COI Declaration — {_display_name(entry.member)} | '
+        f'{entry.vacancy.title} [{entry.vacancy.reference_number}]'
+    )
+    message_html = f"""
+        <p>Dear HR,</p>
+        <p><strong>{_display_name(entry.member)}</strong> has declared a conflict of interest
+        on the interview panel for <strong>{entry.vacancy.title}</strong>
+        ({entry.vacancy.reference_number}).</p>
+        <p><strong>Reason:</strong><br>{reason}</p>
+        <p>This member has been recused and will not score candidates.
+        Please review the panel composition and appoint a replacement if necessary.</p>
+        <p style="margin-top:1.5rem;color:#8392ab;font-size:0.85rem;">
+            Declared at: {entry.conflict_declared_at.strftime('%d %b %Y, %H:%M')}
+        </p>
+    """
+    try:
+        hr_email = getattr(django_settings, 'HR_NOTIFICATION_EMAIL', django_settings.DEFAULT_FROM_EMAIL)
+        _send_html_email(subject, hr_email, message_html)
+    except Exception:
+        pass
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# HR VIEWS
+# ═════════════════════════════════════════════════════════════════════════════
+@login_required
+@role_required(['hod_hr'])
+def vacancy_interviews(request):
+    """
+    HR pipeline list view — shows all vacancies currently in the interviews stage.
+    Mirrors the pattern of vacancy_shortlisting / vacancy_longlisting.
+    """
+    vacancies = Vacancy.objects.filter(
+        status='interview_scheduling'
+    ).order_by('-created_at')
+
+    # Annotate each vacancy with quick-glance stats
+    vacancy_data = []
+    for v in vacancies:
+        panel_count     = InterviewPanel.objects.filter(vacancy=v, is_active=True).count()
+        panel_done      = InterviewPanel.objects.filter(vacancy=v, is_active=True, scores_submitted=True).count()
+        slot_count      = InterviewSlot.objects.filter(vacancy=v).count()
+        notified_count  = InterviewSlot.objects.filter(vacancy=v, notified=True).count()
+        vacancy_data.append({
+            'vacancy':        v,
+            'panel_count':    panel_count,
+            'panel_done':     panel_done,
+            'slot_count':     slot_count,
+            'notified_count': notified_count,
+        })
+
+    context = {
+        'page':          'Interviews',
+        'vacancy_data':  vacancy_data,
+        'total':         len(vacancy_data),
+    }
+    return render(request, 'recruitment/hr/interview/vacancy_interviews.html', context)
+
+@login_required
+def hr_interview_setup(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    panel = list(
+        InterviewPanel.objects.filter(vacancy=vacancy, is_active=True)
+        .select_related('member').order_by('appointed_at')
+    )
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+    schedule = InterviewSchedule.objects.filter(vacancy=vacancy).first()
+
+    slots = []
+    if schedule:
+        slots = list(
+            InterviewSlot.objects.filter(vacancy=vacancy)
+            .select_related('application__user', 'schedule')
+            .order_by('interview_date', 'interview_time')
+        )
+
+    slotted_app_ids = {s.application_id for s in slots}
+    unslotted = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy, status__code='shortlisted',
+        ).select_related('user').exclude(id__in=slotted_app_ids)
+        .order_by('application_number')
+    )
+
+    total_shortlisted = JobApplication.objects.filter(
+        vacancy=vacancy, status__code='shortlisted',
+    ).count()
+
+    max_possible = sum(c.max_score for c in criteria)
+
+    return render(request, 'recruitment/hr/interview/interview_setup.html', {
+        'page': 'Interview Scheduling',
+        'vacancy': vacancy,
+        'panel': panel,
+        'panel_count': len(panel),
+        'criteria': criteria,
+        'max_possible': max_possible,
+        'schedule': schedule,
+        'slots': slots,
+        'unslotted': unslotted,
+        'total_shortlisted': total_shortlisted,
+        'all_slotted': len(unslotted) == 0 and total_shortlisted > 0,
+        'can_notify_candidates': (
+                schedule is not None and
+                len(unslotted) == 0 and
+                total_shortlisted > 0 and
+                not (schedule.candidates_notified if schedule else False)
+        ),
+        'can_notify_panel': (
+                len(panel) > 0 and
+                schedule is not None and
+                not (schedule.panel_notified if schedule else False)
+        ),
+    })
+
+
+@login_required
+@require_POST
+def hr_panel_add(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    user_id = request.POST.get('user_id', '').strip()
+    if not user_id:
+        return JsonResponse({'error': 'No user selected.'}, status=400)
+
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    try:
+        member = User.objects.get(pk=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'User not found.'}, status=404)
+
+    entry, created = InterviewPanel.objects.get_or_create(
+        vacancy=vacancy, member=member,
+        defaults={
+            'appointed_by': request.user,
+            'is_active': True,
+            'coi_declared': False,
+            'has_conflict': False,
+        },
+    )
+
+    if not created:
+        if entry.is_active:
+            return JsonResponse({'error': f'{_display_name(member)} is already on the panel.'}, status=400)
+        entry.is_active = True
+        entry.appointed_by = request.user
+        entry.appointed_at = timezone.now()
+        entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
+
+    InterviewLog.objects.create(
+        vacancy=vacancy, performed_by=request.user,
+        action='panel_appointed',
+        notes=f'{_display_name(member)} added to interview panel.',
+        metadata={'member_id': str(member.pk)},
+        performed_by_label=_display_name(request.user),
+    )
+
+    return JsonResponse({
+        'success': True,
+        'member': {'id': str(member.pk), 'name': _display_name(member), 'email': member.email},
+    })
+
+
+@login_required
+@require_POST
+def hr_panel_remove(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    user_id = request.POST.get('user_id', '').strip()
+    entry = InterviewPanel.objects.filter(vacancy=vacancy, member_id=user_id, is_active=True).first()
+    if not entry:
+        return JsonResponse({'error': 'Panel member not found.'}, status=404)
+
+    entry.is_active = False
+    entry.save(update_fields=['is_active'])
+
+    InterviewLog.objects.create(
+        vacancy=vacancy, performed_by=request.user,
+        action='panel_removed',
+        notes=f'{_display_name(entry.member)} removed from interview panel.',
+        metadata={'member_id': str(entry.member.pk)},
+        performed_by_label=_display_name(request.user),
+    )
+    return JsonResponse({'success': True})
+
+
+@login_required
+@require_POST
+def hr_panel_notify(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    schedule = get_object_or_404(InterviewSchedule, vacancy=vacancy)
+
+    panel = InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, notified=False).select_related('member')
+    sent = 0
+    errors = []
+    for entry in panel:
+        try:
+            _notify_panel_member(entry, schedule, vacancy)
+            entry.notified = True
+            entry.notified_at = timezone.now()
+            entry.save(update_fields=['notified', 'notified_at'])
+            InterviewLog.objects.create(
+                vacancy=vacancy, performed_by=request.user,
+                action='panel_notified',
+                notes=f'{_display_name(entry.member)} notified of panel assignment.',
+                metadata={'member_id': str(entry.member.pk)},
+                performed_by_label=_display_name(request.user),
+            )
+            sent += 1
+        except Exception as e:
+            errors.append(f'{_display_name(entry.member)}: {e}')
+
+    schedule.panel_notified = True
+    schedule.panel_notified_at = timezone.now()
+    schedule.save(update_fields=['panel_notified', 'panel_notified_at'])
+
+    return JsonResponse({'success': True, 'sent': sent, 'errors': errors})
+
+
+@login_required
+def hr_panel_staff_search(request, vacancy_id):
+    from django.contrib.auth import get_user_model
+    from django.db.models import Q
+    User = get_user_model()
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    q = request.GET.get('q', '').strip()
+
+    if len(q) < 2:
+        return JsonResponse({'results': []})
+
+    existing_ids = InterviewPanel.objects.filter(
+        vacancy=vacancy, is_active=True,
+    ).values_list('member_id', flat=True)
+
+    users = User.objects.filter(is_active=True).exclude(id__in=existing_ids).filter(
+        Q(first_name__icontains=q) | Q(last_name__icontains=q) | Q(email__icontains=q)
+    )[:10]
+
+    return JsonResponse({
+        'results': [{'id': str(u.pk), 'name': _display_name(u), 'email': u.email} for u in users]
+    })
+
+
+@login_required
+@require_POST
+def hr_criteria_save(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    try:
+        payload = json.loads(request.body)
+        criteria = payload.get('criteria', [])
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    if not criteria:
+        return JsonResponse({'error': 'At least one criterion is required.'}, status=400)
+
+    for c in criteria:
+        name = str(c.get('name', '')).strip()
+        max_score = c.get('max_score')
+        if not name:
+            return JsonResponse({'error': 'Each criterion must have a name.'}, status=400)
+        try:
+            if int(max_score) < 1:
+                raise ValueError
+        except (TypeError, ValueError):
+            return JsonResponse({'error': f'Invalid max_score for "{name}".'}, status=400)
+
+    InterviewCriterion.objects.filter(vacancy=vacancy).delete()
+    saved = []
+    for i, c in enumerate(criteria):
+        obj = InterviewCriterion.objects.create(
+            vacancy=vacancy,
+            name=str(c['name']).strip(),
+            max_score=int(c['max_score']),
+            order=i,
+        )
+        saved.append({'id': obj.id, 'name': obj.name, 'max_score': obj.max_score})
+
+    return JsonResponse({'success': True, 'criteria': saved})
+
+
+@login_required
+@require_POST
+def hr_slots_save(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    try:
+        payload = json.loads(request.body)
+    except (json.JSONDecodeError, AttributeError):
+        return JsonResponse({'error': 'Invalid JSON.'}, status=400)
+
+    venue_type = payload.get('venue_type', 'physical')
+    venue = payload.get('venue', '').strip()
+    instructions = payload.get('instructions', '').strip()
+    slots_data = payload.get('slots', [])
+
+    if not venue:
+        return JsonResponse({'error': 'Venue / meeting link is required.'}, status=400)
+    if not slots_data:
+        return JsonResponse({'error': 'At least one slot is required.'}, status=400)
+
+    for s in slots_data:
+        if not s.get('application_id') or not s.get('date') or not s.get('time'):
+            return JsonResponse({'error': 'Each slot needs application_id, date and time.'}, status=400)
+
+    schedule, created = InterviewSchedule.objects.update_or_create(
+        vacancy=vacancy,
+        defaults={
+            'venue_type': venue_type, 'venue': venue,
+            'instructions': instructions, 'created_by': request.user,
+        },
+    )
+
+    InterviewLog.objects.create(
+        vacancy=vacancy, performed_by=request.user,
+        action='schedule_created' if created else 'schedule_updated',
+        notes=f'Interview schedule {"created" if created else "updated"}.',
+        metadata={'venue_type': venue_type},
+        performed_by_label=_display_name(request.user),
+    )
+
+    saved_count = 0
+    errors = []
+    for s in slots_data:
+        try:
+            app = JobApplication.objects.get(
+                pk=s['application_id'], vacancy=vacancy, status__code='shortlisted',
+            )
+            slot, slot_created = InterviewSlot.objects.update_or_create(
+                vacancy=vacancy, application=app,
+                defaults={
+                    'schedule': schedule,
+                    'interview_date': s['date'],
+                    'interview_time': s['time'],
+                    'venue_override': s.get('venue_override', '').strip(),
+                    'notified': False,
+                },
+            )
+            if not slot_created:
+                slot.notified = False
+                slot.notified_at = None
+                slot.save(update_fields=['notified', 'notified_at'])
+
+            InterviewLog.objects.create(
+                vacancy=vacancy, application=app, performed_by=request.user,
+                action='slot_assigned',
+                notes=f'Slot assigned: {s["date"]} {s["time"]}',
+                metadata={'date': s['date'], 'time': s['time'], 'app_id': str(app.pk)},
+                performed_by_label=_display_name(request.user),
+            )
+            saved_count += 1
+        except JobApplication.DoesNotExist:
+            errors.append(f'Application {s["application_id"]} not found or not shortlisted.')
+        except Exception as e:
+            errors.append(str(e))
+
+    return JsonResponse({'success': True, 'saved': saved_count, 'errors': errors})
+
+
+@login_required
+@require_POST
+def hr_interview_notify(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+    schedule = get_object_or_404(InterviewSchedule, vacancy=vacancy)
+
+    slots = InterviewSlot.objects.filter(vacancy=vacancy, notified=False).select_related('application__user',
+                                                                                         'schedule')
+    sent = 0
+    errors = []
+    for slot in slots:
+        try:
+            _notify_candidate(slot, vacancy)
+            slot.notified = True
+            slot.notified_at = timezone.now()
+            slot.save(update_fields=['notified', 'notified_at'])
+            InterviewLog.objects.create(
+                vacancy=vacancy, application=slot.application, performed_by=request.user,
+                action='candidate_notified',
+                notes=f'Interview notification sent to {slot.application.user.email}.',
+                metadata={'app_id': str(slot.application.pk), 'date': str(slot.interview_date),
+                          'time': str(slot.interview_time)},
+                performed_by_label=_display_name(request.user),
+            )
+            sent += 1
+        except Exception as e:
+            errors.append(f'{slot.application.user.email}: {e}')
+
+    schedule.candidates_notified = True
+    schedule.candidates_notified_at = timezone.now()
+    schedule.save(update_fields=['candidates_notified', 'candidates_notified_at'])
+
+    return JsonResponse({'success': True, 'sent': sent, 'errors': errors})
+
+
+@login_required
+def hr_interview_progress(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    panel = list(
+        InterviewPanel.objects.filter(vacancy=vacancy, is_active=True)
+        .select_related('member').order_by('appointed_at')
+    )
+    applications = list(
+        JobApplication.objects.filter(vacancy=vacancy, status__code='shortlisted')
+        .select_related('user').order_by('application_number')
+    )
+    app_count = len(applications)
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+    recused_ids = {e.member_id for e in panel if e.has_conflict}
+    active_count = len([e for e in panel if not e.has_conflict])
+
+    member_progress = []
+    for entry in panel:
+        if entry.has_conflict:
+            member_progress.append({
+                'entry': entry, 'name': _display_name(entry.member),
+                'email': entry.member.email, 'is_recused': True,
+                'has_conflict': True, 'conflict_reason': entry.conflict_reason,
+                'acknowledged': entry.acknowledged, 'coi_declared': entry.coi_declared,
+                'scores_submitted': False, 'submitted_count': 0, 'percent': 0,
+            })
+            continue
+
+        submitted_apps = set()
+        for app in applications:
+            done = InterviewScore.objects.filter(
+                vacancy=vacancy, application=app,
+                panel_member=entry.member, is_draft=False,
+            ).count()
+            if done == len(criteria):
+                submitted_apps.add(app.id)
+
+        pct = int(len(submitted_apps) / app_count * 100) if app_count else 0
+        member_progress.append({
+            'entry': entry, 'name': _display_name(entry.member),
+            'email': entry.member.email, 'is_recused': False,
+            'has_conflict': False, 'conflict_reason': '',
+            'acknowledged': entry.acknowledged, 'coi_declared': entry.coi_declared,
+            'scores_submitted': entry.scores_submitted,
+            'submitted_count': len(submitted_apps), 'percent': pct,
+        })
+
+    members_done = sum(1 for m in member_progress if not m['is_recused'] and m['scores_submitted'])
+    all_scored = (members_done == active_count and active_count > 0)
+    results_exist = InterviewResult.objects.filter(vacancy=vacancy).exists()
+
+    if all_scored and not results_exist:
+        _compute_interview_results(vacancy)
+        results_exist = True
+
+    all_scores_qs = InterviewScore.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).exclude(panel_member_id__in=recused_ids).select_related('panel_member', 'criterion')
+
+    scores_by_app = {}
+    for s in all_scores_qs:
+        scores_by_app.setdefault(s.application_id, []).append(s)
+
+    results_by_app = {r.application_id: r for r in InterviewResult.objects.filter(vacancy=vacancy)}
+
+    app_rows = []
+    for app in applications:
+        scores = scores_by_app.get(app.id, [])
+        total = sum(s.score for s in scores) if scores else 0
+        result = results_by_app.get(app.id)
+        members_scored = len({s.panel_member_id for s in scores
+                              if len([x for x in scores if x.panel_member_id == s.panel_member_id]) == len(criteria)})
+        app_rows.append({'app': app, 'total': total, 'members_scored': members_scored, 'result': result})
+
+    return render(request, 'recruitment/hr/interview/interview_progress.html', {
+        'page': 'Interview Progress', 'vacancy': vacancy,
+        'panel': member_progress, 'active_count': active_count,
+        'recused_count': len(recused_ids), 'members_done': members_done,
+        'all_scored': all_scored, 'app_count': app_count,
+        'criteria': criteria, 'app_rows': app_rows, 'results_exist': results_exist,
+    })
+
+
+@login_required
+def hr_interview_results(request, vacancy_id):
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    results = list(
+        InterviewResult.objects.filter(vacancy=vacancy)
+        .select_related('application__user').order_by('rank')
+    )
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+
+    all_scores = InterviewScore.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).select_related('panel_member', 'criterion')
+
+    scores_map = {}
+    for s in all_scores:
+        scores_map.setdefault(s.application_id, {}).setdefault(
+            s.panel_member_id, {}
+        )[s.criterion_id] = s
+
+    panel_members = list(
+        InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, has_conflict=False)
+        .select_related('member')
+    )
+
+    result_rows = []
+    for r in results:
+        member_totals = []
+        for pm in panel_members:
+            member_scores = scores_map.get(r.application_id, {}).get(pm.member_id, {})
+            subtotal = sum(s.score for s in member_scores.values()) if member_scores else None
+            member_totals.append({'name': _display_name(pm.member), 'total': subtotal, 'scores': member_scores})
+        result_rows.append({
+            'result': r, 'app': r.application,
+            'member_totals': member_totals,
+            'is_top3': r.rank and r.rank <= 3,
+        })
+
+    return render(request, 'recruitment/hr/interview/interview_results.html', {
+        'page': 'Interview Evaluation Summary', 'vacancy': vacancy,
+        'result_rows': result_rows, 'criteria': criteria,
+        'panel_members': panel_members, 'total_candidates': len(results),
+    })
+
+
+# ═════════════════════════════════════════════════════════════════════════════
+# PANEL MEMBER PORTAL VIEWS
+# ═════════════════════════════════════════════════════════════════════════════
+
+def _panel_member_check(request, vacancy_id):
+    """Return the active InterviewPanel entry for this user/vacancy, or None."""
+    return InterviewPanel.objects.filter(
+        member=request.user, vacancy_id=vacancy_id, is_active=True,
+    ).select_related('vacancy').first()
+
+
+@login_required
+def panel_dashboard(request):
+    assignments = InterviewPanel.objects.filter(
+        member=request.user, is_active=True,
+    ).select_related('vacancy').order_by('appointed_at')
+
+    if not assignments.exists():
+        return render(request, 'recruitment/panel/panel_dashboard.html', {
+            'page': 'My Panel Assignments', 'assignments': [],
+        })
+
+    rows = []
+    for entry in assignments:
+        vacancy = entry.vacancy
+        apps = JobApplication.objects.filter(vacancy=vacancy, status__code='shortlisted')
+        app_count = apps.count()
+        crit_count = InterviewCriterion.objects.filter(vacancy=vacancy).count()
+
+        submitted_count = 0
+        for app in apps:
+            done = InterviewScore.objects.filter(
+                vacancy=vacancy, application=app,
+                panel_member=request.user, is_draft=False,
+            ).count()
+            if done == crit_count:
+                submitted_count += 1
+
+        if not entry.acknowledged:
+            next_action = 'acknowledge'
+        elif not entry.coi_declared:
+            next_action = 'declare_coi'
+        elif entry.has_conflict:
+            next_action = 'recused'
+        elif entry.scores_submitted:
+            next_action = 'done'
+        else:
+            next_action = 'score'
+
+        rows.append({
+            'entry': entry, 'vacancy': vacancy,
+            'app_count': app_count, 'submitted_count': submitted_count,
+            'remaining': app_count - submitted_count,
+            'percent': int(submitted_count / app_count * 100) if app_count else 0,
+            'acknowledged': entry.acknowledged, 'coi_declared': entry.coi_declared,
+            'has_conflict': entry.has_conflict, 'next_action': next_action,
+        })
+
+    return render(request, 'recruitment/panel/panel_dashboard.html', {
+        'page': 'My Panel Assignments', 'assignments': rows,
+    })
+
+
+@login_required
+@require_POST
+def panel_acknowledge(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'You are not on this panel.'}, status=403)
+
+    if entry.acknowledged:
+        return JsonResponse({'already': True, 'redirect_url': f'/recruitment/panel/vacancy/{vacancy_id}/coi/'})
+
+    entry.acknowledged = True
+    entry.acknowledged_at = timezone.now()
+    entry.save(update_fields=['acknowledged', 'acknowledged_at'])
+
+    InterviewLog.objects.create(
+        vacancy=entry.vacancy, performed_by=request.user,
+        action='member_acknowledged',
+        notes=f'{_display_name(request.user)} acknowledged panel appointment.',
+        metadata={'member_id': str(request.user.pk)},
+        performed_by_label=_display_name(request.user),
+    )
+    return JsonResponse({'success': True, 'redirect_url': f'/recruitment/panel/vacancy/{vacancy_id}/coi/'})
+
+
+@login_required
+def panel_declare_coi(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/panel/not_assigned.html', {'page': 'Conflict of Interest Declaration'})
+
+    if not entry.acknowledged:
+        return redirect('panel_dashboard')
+
+    if entry.coi_declared:
+        if entry.has_conflict:
+            return render(request, 'recruitment/panel/panel_coi.html', {
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry, 'vacancy': entry.vacancy, 'already_declared': True,
+            })
+        return redirect('panel_score', vacancy_id=vacancy_id)
+
+    if request.method == 'POST':
+        decision = request.POST.get('decision', '').strip()
+        reason = request.POST.get('conflict_reason', '').strip()
+
+        if decision not in ('no_conflict', 'has_conflict'):
+            return render(request, 'recruitment/panel/panel_coi.html', {
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry, 'vacancy': entry.vacancy,
+                'error': 'Please select one of the options below.',
+            })
+
+        if decision == 'has_conflict' and not reason:
+            return render(request, 'recruitment/panel/panel_coi.html', {
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry, 'vacancy': entry.vacancy,
+                'error': 'You must provide a reason when declaring a conflict.',
+                'decision_pre': 'has_conflict',
+            })
+
+        has_conflict = (decision == 'has_conflict')
+        entry.coi_declared = True
+        entry.has_conflict = has_conflict
+        entry.conflict_reason = reason if has_conflict else ''
+        entry.conflict_declared_at = timezone.now()
+        entry.save(update_fields=['coi_declared', 'has_conflict', 'conflict_reason', 'conflict_declared_at'])
+
+        InterviewLog.objects.create(
+            vacancy=entry.vacancy, performed_by=request.user,
+            action='coi_declared',
+            notes=(
+                    f'{_display_name(request.user)} declared '
+                    + ('a conflict of interest. Reason: ' + reason if has_conflict else 'no conflict of interest.')
+            ),
+            metadata={'member_id': str(request.user.pk), 'has_conflict': has_conflict},
+            performed_by_label=_display_name(request.user),
+        )
+
+        if has_conflict:
+            _notify_hr_panel_coi(entry, reason)
+            return render(request, 'recruitment/panel/panel_coi.html', {
+                'page': 'Conflict of Interest Declaration',
+                'entry': entry, 'vacancy': entry.vacancy, 'just_recused': True,
+            })
+
+        return redirect('panel_score', vacancy_id=vacancy_id)
+
+    return render(request, 'recruitment/panel/panel_coi.html', {
+        'page': 'Conflict of Interest Declaration',
+        'entry': entry, 'vacancy': entry.vacancy,
+    })
+
+
+@login_required
+def panel_score(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/panel/not_assigned.html', {'page': 'Interview Scoring'})
+
+    vacancy = entry.vacancy
+
+    if not entry.acknowledged:
+        return render(request, 'recruitment/panel/panel_acknowledge.html', {
+            'page': 'Interview Scoring', 'entry': entry, 'vacancy': vacancy,
+        })
+    if not entry.coi_declared:
+        return redirect('panel_declare_coi', vacancy_id=vacancy_id)
+    if entry.has_conflict:
+        return render(request, 'recruitment/panel/panel_coi.html', {
+            'page': 'Interview Scoring', 'entry': entry,
+            'vacancy': vacancy, 'already_declared': True,
+        })
+    if entry.scores_submitted:
+        return redirect('panel_results', vacancy_id=vacancy_id)
+
+    applications = list(
+        JobApplication.objects.filter(vacancy=vacancy, status__code='shortlisted')
+        .select_related('user').order_by('application_number')
+    )
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+
+    my_scores = {
+        (s.application_id, s.criterion_id): s
+        for s in InterviewScore.objects.filter(vacancy=vacancy, panel_member=request.user)
+    }
+
+    slots_by_app = {s.application_id: s for s in InterviewSlot.objects.filter(vacancy=vacancy)}
+
+    fully_submitted_count = 0
+    app_rows = []
+    for app in applications:
+        criterion_rows = []
+        all_submitted = True
+        any_draft = False
+
+        for c in criteria:
+            score_obj = my_scores.get((app.id, c.id))
+            is_sub = bool(score_obj and not score_obj.is_draft)
+            if not is_sub:
+                all_submitted = False
+            if score_obj and score_obj.is_draft:
+                any_draft = True
+            criterion_rows.append({'criterion': c, 'score_obj': score_obj, 'is_submitted': is_sub})
+
+        if all_submitted:
+            fully_submitted_count += 1
+
+        other_scores = []
+        if all_submitted:
+            other_scores = list(
+                InterviewScore.objects.filter(vacancy=vacancy, application=app, is_draft=False)
+                .exclude(panel_member=request.user)
+                .select_related('panel_member', 'criterion')
+            )
+
+        app_rows.append({
+            'app': app, 'criterion_rows': criterion_rows,
+            'all_submitted': all_submitted, 'any_draft': any_draft,
+            'other_scores': other_scores, 'can_score': not all_submitted,
+            'slot': slots_by_app.get(app.id),
+        })
+
+    app_count = len(applications)
+    return render(request, 'recruitment/panel/panel_score.html', {
+        'page': 'Interview Scoring', 'entry': entry, 'vacancy': vacancy,
+        'schedule': InterviewSchedule.objects.filter(vacancy=vacancy).first(),
+        'app_rows': app_rows, 'app_count': app_count, 'criteria': criteria,
+        'fully_submitted_count': fully_submitted_count,
+        'remaining': app_count - fully_submitted_count,
+        'all_submitted': fully_submitted_count == app_count,
+        'active_count': _active_panel_count(vacancy),
+        'percent': int(fully_submitted_count / app_count * 100) if app_count else 0,
+    })
+
+
+@login_required
+@require_POST
+def panel_score_save(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'Not authorised.'}, status=403)
+    if not entry.coi_declared or entry.has_conflict:
+        return JsonResponse({'error': 'Cannot score — COI not declared or recused.'}, status=403)
+    if entry.scores_submitted:
+        return JsonResponse({'error': 'You have already submitted all scores.'}, status=400)
+
+    app_id = request.POST.get('application_id', '').strip()
+    criterion_id = request.POST.get('criterion_id', '').strip()
+    score_val = request.POST.get('score', '').strip()
+    comment = request.POST.get('comment', '').strip()
+    action = request.POST.get('action', 'draft')
+
+    if not app_id or not criterion_id:
+        return JsonResponse({'error': 'Missing application or criterion.'}, status=400)
+
+    try:
+        score_dec = Decimal(score_val)
+        if score_dec < 0:
+            raise ValueError
+    except (InvalidOperation, ValueError):
+        return JsonResponse({'error': 'Invalid score value.'}, status=400)
+
+    try:
+        application = JobApplication.objects.get(pk=app_id, vacancy_id=vacancy_id, status__code='shortlisted')
+        criterion = InterviewCriterion.objects.get(pk=criterion_id, vacancy_id=vacancy_id)
+    except (JobApplication.DoesNotExist, InterviewCriterion.DoesNotExist):
+        return JsonResponse({'error': 'Application or criterion not found.'}, status=404)
+
+    if score_dec > criterion.max_score:
+        return JsonResponse({'error': f'Score cannot exceed {criterion.max_score} for "{criterion.name}".'}, status=400)
+
+    is_draft = (action == 'draft')
+    now = timezone.now()
+
+    InterviewScore.objects.update_or_create(
+        vacancy=entry.vacancy, application=application,
+        panel_member=request.user, criterion=criterion,
+        defaults={
+            'score': score_dec, 'comment': comment,
+            'is_draft': is_draft, 'scored_at': now,
+            'submitted_at': None if is_draft else now,
+        },
+    )
+
+    if not is_draft:
+        InterviewLog.objects.create(
+            vacancy=entry.vacancy, application=application, performed_by=request.user,
+            action='score_submitted',
+            notes=f'{criterion.name}: {score_dec}/{criterion.max_score}',
+            metadata={'member_id': str(request.user.pk), 'criterion_id': criterion.pk, 'score': str(score_dec)},
+            performed_by_label=_display_name(request.user),
+        )
+
+    return JsonResponse({'success': True, 'is_draft': is_draft, 'score': str(score_dec), 'max': criterion.max_score})
+
+
+@login_required
+@require_POST
+def panel_submit_all(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return JsonResponse({'error': 'Not authorised.'}, status=403)
+    if not entry.coi_declared or entry.has_conflict:
+        return JsonResponse({'error': 'Cannot submit — recused or COI not declared.'}, status=403)
+    if entry.scores_submitted:
+        return JsonResponse({'error': 'Already submitted.'}, status=400)
+
+    vacancy = entry.vacancy
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+
+    applications = JobApplication.objects.filter(vacancy=vacancy, status__code='shortlisted')
+    incomplete = []
+    for app in applications:
+        submitted = InterviewScore.objects.filter(
+            vacancy=vacancy, application=app,
+            panel_member=request.user, is_draft=False,
+        ).count()
+        if submitted < len(criteria):
+            incomplete.append(str(app.application_number))
+
+    if incomplete:
+        return JsonResponse({
+            'error': f'{len(incomplete)} candidate(s) still have incomplete scores. Please submit all criteria for each candidate before finalising.'
+        }, status=400)
+
+    entry.scores_submitted = True
+    entry.scores_submitted_at = timezone.now()
+    entry.save(update_fields=['scores_submitted', 'scores_submitted_at'])
+
+    total_active = InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, has_conflict=False).count()
+    done_active = InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, has_conflict=False,
+                                                scores_submitted=True).count()
+
+    results_generated = False
+    if done_active == total_active and total_active > 0:
+        _compute_interview_results(vacancy)
+        results_generated = True
+
+    return JsonResponse({
+        'success': True, 'results_generated': results_generated,
+        'redirect_url': f'/recruitment/panel/vacancy/{vacancy_id}/results/',
+    })
+
+
+@login_required
+def panel_results(request, vacancy_id):
+    entry = _panel_member_check(request, vacancy_id)
+    if not entry:
+        return render(request, 'recruitment/panel/not_assigned.html', {'page': 'Results'})
+
+    vacancy = entry.vacancy
+    results = list(InterviewResult.objects.filter(vacancy=vacancy).select_related('application__user').order_by('rank'))
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+
+    my_scores = {
+        (s.application_id, s.criterion_id): s
+        for s in InterviewScore.objects.filter(vacancy=vacancy, panel_member=request.user, is_draft=False)
+    }
+
+    app_rows = []
+    for r in results:
+        criterion_scores = [{'criterion': c, 'score_obj': my_scores.get((r.application_id, c.id))} for c in criteria]
+        app_rows.append({
+            'result': r, 'app': r.application,
+            'criterion_scores': criterion_scores,
+            'my_total': sum(s['score_obj'].score for s in criterion_scores if s['score_obj']),
+            'is_top3': r.rank and r.rank <= 3,
+        })
+
+    total_active = InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, has_conflict=False).count()
+    done_active = InterviewPanel.objects.filter(vacancy=vacancy, is_active=True, has_conflict=False,
+                                                scores_submitted=True).count()
+
+    return render(request, 'recruitment/panel/panel_results.html', {
+        'page': 'Interview Results', 'entry': entry, 'vacancy': vacancy,
+        'app_rows': app_rows, 'criteria': criteria,
+        'all_done': done_active == total_active,
+        'my_max': sum(c.max_score for c in criteria),
+    })
 

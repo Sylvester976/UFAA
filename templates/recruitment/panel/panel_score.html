@@ -1,0 +1,429 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Interview Scoring — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy:#262561;--gold:#F9E6A1;--gold-dk:#C39545;--green:#1a7a45;--red:#c0392b;--amber:#b7770d; }
+a { text-decoration:none !important; }
+
+.page-banner {
+    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
+    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
+}
+.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+.banner-ref   { font-family:monospace; font-size:.72rem;
+                background:rgba(249,230,161,.15); color:var(--gold);
+                padding:.25rem .65rem; border-radius:.4rem; }
+.back-link { color:rgba(255,255,255,.65); font-size:.78rem;
+             display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+/* Progress summary */
+.progress-bar-track { height:8px; background:#f0f2f8; border-radius:99px; overflow:hidden; flex:1; }
+.progress-bar-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
+                      border-radius:99px; transition:width .4s; }
+
+/* Candidate cards */
+.candidate-card {
+    background:#fff; border-radius:.9rem;
+    box-shadow:0 2px 14px rgba(38,37,97,.08);
+    overflow:hidden; margin-bottom:1.25rem;
+    border-left:4px solid #e0e4ef; transition:border-color .2s;
+}
+.candidate-card.is-done    { border-left-color:var(--green); }
+.candidate-card.has-draft  { border-left-color:var(--amber); }
+.candidate-card.is-pending { border-left-color:#c7d2fe; }
+
+.card-head {
+    padding:.9rem 1.25rem; border-bottom:1px solid #f0f2f8;
+    display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+}
+.cand-name { font-size:.88rem; font-weight:800; color:var(--navy); }
+.cand-ref  { font-size:.7rem; color:#adb5bd; font-family:monospace; }
+.slot-info { font-size:.72rem; color:#67748e; display:flex; align-items:center; gap:.3rem; }
+
+.status-chip { font-size:.65rem; font-weight:700; padding:.2rem .6rem;
+               border-radius:99px; white-space:nowrap; }
+.sc-done    { background:#d4f5e2; color:#1a5c38; }
+.sc-draft   { background:#fff8e1; color:#7d5500; }
+.sc-pending { background:#f0f2f8; color:#8392ab; }
+
+/* Criteria rows */
+.criteria-grid { padding:1rem 1.25rem; }
+.criterion-score-row {
+    display:grid; grid-template-columns:1fr 180px 120px auto;
+    gap:.75rem; align-items:center;
+    padding:.5rem .6rem; border-radius:.5rem;
+    margin-bottom:.35rem; background:#fafbff;
+    transition:background .15s;
+}
+.criterion-score-row:hover { background:#f0f2ff; }
+.criterion-score-row.submitted { background:#f0fdf4; }
+
+.crit-label { font-size:.8rem; font-weight:700; color:var(--navy); }
+.crit-max   { font-size:.7rem; color:#8392ab; }
+
+.score-input-wrap { display:flex; align-items:center; gap:.4rem; }
+.score-input {
+    width:70px; padding:.35rem .55rem; text-align:center;
+    border:1.5px solid #e0e4ef; border-radius:.4rem;
+    font-size:.85rem; font-weight:700; color:var(--navy);
+    transition:border-color .15s;
+}
+.score-input:focus  { outline:none; border-color:var(--navy); }
+.score-input:disabled { background:#f8f9ff; color:#adb5bd; }
+.score-denom { font-size:.75rem; color:#adb5bd; font-weight:600; }
+
+.comment-input {
+    width:100%; padding:.35rem .55rem;
+    border:1.5px solid #e0e4ef; border-radius:.4rem;
+    font-size:.75rem; color:#344767; resize:none;
+    transition:border-color .15s; font-family:inherit;
+}
+.comment-input:focus  { outline:none; border-color:var(--navy); }
+.comment-input:disabled { background:#f8f9ff; }
+
+.btn-save-score {
+    font-size:.7rem; font-weight:700; padding:.3rem .7rem;
+    border-radius:.4rem; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:.3rem;
+    transition:opacity .15s; white-space:nowrap;
+}
+.btn-save-score:hover { opacity:.85; }
+.bss-draft  { background:#fff3cd; color:#7d5500; }
+.bss-submit { background:var(--green); color:#fff; }
+.bss-done   { background:#d4f5e2; color:#1a5c38; cursor:default; }
+
+/* Card footer with submit-all button */
+.card-footer-inner {
+    padding:.7rem 1.25rem; background:#fafbff;
+    border-top:1px solid #f0f2f8;
+    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
+}
+.btn-submit-cand {
+    font-size:.78rem; font-weight:700; padding:.4rem 1.1rem;
+    border-radius:.45rem; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:.4rem;
+    transition:opacity .15s;
+}
+.btn-submit-cand:hover { opacity:.88; }
+.bsc-green { background:var(--green); color:#fff; }
+.bsc-done  { background:#d4f5e2; color:#1a5c38; cursor:default; }
+
+/* Other members' scores (revealed after submit) */
+.other-scores { padding:.75rem 1.25rem; background:#f8f9ff;
+                border-top:1px solid #f0f2f8; }
+.other-score-header { font-size:.68rem; font-weight:700; color:#8392ab;
+                      text-transform:uppercase; letter-spacing:.05em;
+                      margin-bottom:.5rem; }
+.other-member-row { display:flex; align-items:center; gap:.6rem;
+                    font-size:.75rem; margin-bottom:.25rem; }
+.om-name   { color:#344767; font-weight:600; min-width:140px; }
+.om-total  { color:var(--navy); font-weight:800; }
+.om-max    { color:#adb5bd; }
+
+/* Finalise strip */
+.finalise-strip {
+    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
+    border-radius:.9rem; padding:1.25rem 1.5rem;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem;
+}
+.fs-text  { color:#fff; font-size:.85rem; font-weight:700; }
+.fs-sub   { color:rgba(255,255,255,.7); font-size:.75rem; }
+.btn-finalise {
+    background:var(--gold); color:var(--navy);
+    font-size:.82rem; font-weight:800; padding:.5rem 1.5rem;
+    border-radius:.5rem; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:.4rem;
+    transition:opacity .15s;
+}
+.btn-finalise:hover { opacity:.88; }
+.btn-finalise:disabled { opacity:.45; cursor:not-allowed; }
+
+.toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
+         background:var(--navy); color:#fff; padding:.65rem 1.25rem;
+         border-radius:.5rem; font-size:.8rem; font-weight:600;
+         box-shadow:0 4px 16px rgba(0,0,0,.2);
+         opacity:0; transition:opacity .3s; pointer-events:none; }
+.toast.show    { opacity:1; }
+.toast.success { background:var(--green); }
+.toast.error   { background:var(--red); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <p class="banner-title mb-1"><i class="fas fa-star me-2"></i>Interview Scoring</p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'panel_dashboard' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Progress -->
+    <div class="row g-3 mb-3">
+        <div class="col-lg-8">
+            <div style="background:#fff;border-radius:.85rem;padding:1rem 1.25rem;
+                        box-shadow:0 2px 10px rgba(38,37,97,.07);">
+                <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.4rem;">
+                    <div class="progress-bar-track">
+                        <div class="progress-bar-fill" style="width:{{ percent }}%"></div>
+                    </div>
+                    <span style="font-size:.78rem;font-weight:800;color:var(--navy);min-width:36px;text-align:right;">{{ percent }}%</span>
+                </div>
+                <div style="font-size:.72rem;color:#8392ab;">
+                    <strong style="color:#344767;">{{ fully_submitted_count }}</strong> of
+                    <strong style="color:#344767;">{{ app_count }}</strong> candidates fully scored
+                    {% if remaining %}&nbsp;·&nbsp;<strong style="color:var(--amber);">{{ remaining }} remaining</strong>{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div style="background:#fff;border-radius:.85rem;padding:1rem 1.25rem;
+                        box-shadow:0 2px 10px rgba(38,37,97,.07);text-align:center;">
+                <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;
+                             letter-spacing:.05em;color:#8392ab;margin-bottom:.25rem;">Max Score Per Candidate</div>
+                <div style="font-size:1.4rem;font-weight:900;color:var(--navy);">
+                    {{ active_count }} × {{ criteria|length }} criteria
+                </div>
+                <div style="font-size:.7rem;color:#adb5bd;">
+                    {% for c in criteria %}{{ c.name }} ({{ c.max_score }}){% if not forloop.last %}, {% endif %}{% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Finalise strip (shown when all submitted) -->
+    {% if all_submitted %}
+    <div class="finalise-strip">
+        <div>
+            <div class="fs-text"><i class="fas fa-check-circle me-2"></i>All candidates scored</div>
+            <div class="fs-sub">Submit your scores to complete your panel duties for this vacancy.</div>
+        </div>
+        <button class="btn-finalise" id="finaliseBtn" onclick="submitAll()">
+            <i class="fas fa-paper-plane"></i> Submit All Scores
+        </button>
+    </div>
+    {% endif %}
+
+    <!-- Candidate cards -->
+    {% for row in app_rows %}
+    <div class="candidate-card {% if row.all_submitted %}is-done{% elif row.any_draft %}has-draft{% else %}is-pending{% endif %}"
+         id="cand-card-{{ row.app.id }}">
+
+        <!-- Card header -->
+        <div class="card-head">
+            <div style="flex:1;">
+                <div class="cand-name">{{ row.app.user.name }}</div>
+                <div class="cand-ref">{{ row.app.application_number }}</div>
+            </div>
+            {% if row.slot %}
+            <div class="slot-info">
+                <i class="fas fa-calendar"></i>
+                {{ row.slot.interview_date|date:"d M Y" }}
+                &nbsp;·&nbsp;
+                <i class="fas fa-clock"></i>
+                {{ row.slot.interview_time|time:"H:i" }}
+            </div>
+            {% endif %}
+            {% if row.all_submitted %}
+            <span class="status-chip sc-done"><i class="fas fa-check me-1"></i>Scored</span>
+            {% elif row.any_draft %}
+            <span class="status-chip sc-draft"><i class="fas fa-save me-1"></i>Draft saved</span>
+            {% else %}
+            <span class="status-chip sc-pending">Not started</span>
+            {% endif %}
+        </div>
+
+        <!-- Criteria score rows -->
+        <div class="criteria-grid">
+            {% for cr in row.criterion_rows %}
+            <div class="criterion-score-row {% if cr.is_submitted %}submitted{% endif %}"
+                 id="cr-{{ row.app.id }}-{{ cr.criterion.id }}">
+                <div>
+                    <div class="crit-label">{{ cr.criterion.name }}</div>
+                    <div class="crit-max">max {{ cr.criterion.max_score }} marks</div>
+                </div>
+                <div class="score-input-wrap">
+                    <input type="number" class="score-input"
+                           id="score-{{ row.app.id }}-{{ cr.criterion.id }}"
+                           value="{{ cr.score_obj.score|default:'' }}"
+                           min="0" max="{{ cr.criterion.max_score }}" step="0.5"
+                           {% if cr.is_submitted %}disabled{% endif %}
+                           placeholder="0">
+                    <span class="score-denom">/ {{ cr.criterion.max_score }}</span>
+                </div>
+                <textarea class="comment-input"
+                          id="comment-{{ row.app.id }}-{{ cr.criterion.id }}"
+                          rows="1" placeholder="Comment (optional)"
+                          {% if cr.is_submitted %}disabled{% endif %}>{{ cr.score_obj.comment|default:'' }}</textarea>
+                {% if cr.is_submitted %}
+                <span class="btn-save-score bss-done"><i class="fas fa-check"></i> Saved</span>
+                {% else %}
+                <div style="display:flex;gap:.3rem;flex-direction:column;">
+                    <button class="btn-save-score bss-draft"
+                            onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'draft')">
+                        <i class="fas fa-save"></i> Draft
+                    </button>
+                    <button class="btn-save-score bss-submit"
+                            onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'submit')">
+                        <i class="fas fa-check"></i> Submit
+                    </button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Other members' scores (only after this member has fully submitted) -->
+        {% if row.other_scores %}
+        <div class="other-scores">
+            <div class="other-score-header"><i class="fas fa-users me-1"></i>Other panel members' scores</div>
+            {% regroup row.other_scores by panel_member as member_score_list %}
+            {% for member_group in member_score_list %}
+            <div class="other-member-row">
+                <div class="om-name">{{ member_group.grouper.first_name }} {{ member_group.grouper.last_name }}</div>
+                {% for s in member_group.list %}
+                <span style="font-size:.72rem;color:#67748e;margin-right:.5rem;">
+                    {{ s.criterion.name }}: <strong>{{ s.score }}</strong>/{{ s.criterion.max_score }}
+                </span>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+    {% empty %}
+    <div style="text-align:center;padding:3rem;color:#b0bac9;">
+        <i class="fas fa-users" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
+        No shortlisted candidates found for this vacancy.
+    </div>
+    {% endfor %}
+
+</div>
+
+<div class="toast" id="toast"></div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const VACANCY_ID = {{ vacancy.id }};
+
+function showToast(msg, type='') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className   = 'toast show ' + type;
+    setTimeout(() => { t.className = 'toast'; }, 3200);
+}
+
+function csrfToken() {
+    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+}
+
+async function saveScore(appId, criterionId, action) {
+    const score   = document.getElementById(`score-${appId}-${criterionId}`).value;
+    const comment = document.getElementById(`comment-${appId}-${criterionId}`).value;
+
+    if (score === '' || score === null) {
+        showToast('Please enter a score before saving.', 'error'); return;
+    }
+
+    const body = new URLSearchParams({
+        application_id: appId,
+        criterion_id:   criterionId,
+        score,
+        comment,
+        action,
+    });
+
+    const res  = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/save/`, {
+        method:'POST',
+        headers:{'X-CSRFToken': csrfToken(), 'Content-Type':'application/x-www-form-urlencoded'},
+        body,
+    });
+    const data = await res.json();
+
+    if (data.error) { showToast(data.error, 'error'); return; }
+
+    if (!data.is_draft) {
+        // Mark row as submitted
+        const row = document.getElementById(`cr-${appId}-${criterionId}`);
+        row.classList.add('submitted');
+        row.querySelector('.score-input').disabled   = true;
+        row.querySelector('.comment-input').disabled = true;
+        const btnWrap = row.querySelector('div[style*="flex-direction"]') || row.querySelector('.btn-save-score').parentElement;
+        if (btnWrap) {
+            btnWrap.innerHTML = '<span class="btn-save-score bss-done"><i class="fas fa-check"></i> Saved</span>';
+        }
+        showToast(`${data.score}/${data.max} submitted.`, 'success');
+        checkAllSubmitted(appId);
+    } else {
+        showToast('Draft saved.', '');
+        const card = document.getElementById(`cand-card-${appId}`);
+        card.classList.remove('is-pending');
+        card.classList.add('has-draft');
+    }
+}
+
+function checkAllSubmitted(appId) {
+    const card    = document.getElementById(`cand-card-${appId}`);
+    const pending = card.querySelectorAll('.criterion-score-row:not(.submitted)');
+    if (!pending.length) {
+        card.classList.remove('has-draft', 'is-pending');
+        card.classList.add('is-done');
+        card.querySelector('.status-chip').className = 'status-chip sc-done';
+        card.querySelector('.status-chip').innerHTML = '<i class="fas fa-check me-1"></i>Scored';
+        // Check if all candidates done → show finalise strip
+        const allDone = [...document.querySelectorAll('.candidate-card')].every(
+            c => c.classList.contains('is-done')
+        );
+        if (allDone) {
+            const strip = document.createElement('div');
+            strip.className = 'finalise-strip';
+            strip.innerHTML = `
+                <div>
+                    <div class="fs-text"><i class="fas fa-check-circle me-2"></i>All candidates scored</div>
+                    <div class="fs-sub">Submit your scores to complete your panel duties.</div>
+                </div>
+                <button class="btn-finalise" onclick="submitAll()">
+                    <i class="fas fa-paper-plane"></i> Submit All Scores
+                </button>`;
+            document.querySelector('.container-fluid').insertBefore(
+                strip, document.querySelector('.candidate-card')
+            );
+        }
+    }
+}
+
+async function submitAll() {
+    const btn = document.getElementById('finaliseBtn') || document.querySelector('.btn-finalise');
+    if (btn) btn.disabled = true;
+
+    const res  = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/submit-all/`, {
+        method:'POST', headers:{'X-CSRFToken': csrfToken()},
+    });
+    const data = await res.json();
+
+    if (data.error) {
+        showToast(data.error, 'error');
+        if (btn) btn.disabled = false;
+        return;
+    }
+    showToast('All scores submitted!', 'success');
+    setTimeout(() => { window.location.href = data.redirect_url; }, 1200);
+}
+</script>
+{% endblock %}
