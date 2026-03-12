@@ -281,6 +281,12 @@ a { text-decoration: none !important; }
 
         {% else %}
         <!-- Declaration form -->
+                              
+        {% for app in applications %}
+        <a href="{% url 'hr_view_applications' app.id %}" target="_blank">
+            <i class="fas fa-external-link-alt"></i> View application list
+        </a>
+        {% endfor %} 
         <h5>Conflict of Interest Declaration</h5>
         <p class="coi-subtitle">
             Before you begin reviewing applications, you are required to declare whether

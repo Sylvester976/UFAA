@@ -5897,11 +5897,20 @@ def committee_declare_coi(request, vacancy_id):
         # No conflict — go straight to voting
         return redirect('committee_review', vacancy_id=vacancy_id)
 
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=entry.vacancy,
+            status__code='final_longlisted',
+        ).select_related('user', 'status').order_by('application_number')
+    )
+    app_count = len(applications)
+    
     # GET
     return render(request, 'recruitment/committee/committee_coi.html', {
         'page':    'Conflict of Interest Declaration',
         'entry':   entry,
         'vacancy': entry.vacancy,
+        'applications': applications,
     })
 
 
