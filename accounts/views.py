@@ -614,7 +614,7 @@ def redirect_dashboard(request):
                 return redirect("hr_dashboard")
 
             if role == "committee":
-                return redirect("shortlisting_dashboard")
+                return redirect("committee_dashboard")
 
             if role == "panelist":
                 return redirect("panelist_dashboard")
