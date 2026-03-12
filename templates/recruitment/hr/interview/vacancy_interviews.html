@@ -1,0 +1,191 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}Interviews{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
+        --purple: #5b21b6; --purple-light: #ede9fe;
+    }
+
+    .page-banner {
+        background: linear-gradient(135deg, var(--navy) 0%, #2E3A7A 60%, #3D4FA0 100%);
+        border-radius: .85rem; padding: .9rem 1.5rem;
+        display: flex; align-items: center; justify-content: space-between;
+        flex-wrap: wrap; gap: .75rem; margin-bottom: 1.25rem;
+        box-shadow: 0 6px 20px rgba(38,37,97,.18); position: relative; overflow: hidden;
+    }
+    .page-banner::before {
+        content: ''; position: absolute; top: -40px; right: -40px;
+        width: 180px; height: 180px; border-radius: 50%;
+        background: rgba(249,230,161,.07); pointer-events: none;
+    }
+    .page-banner h5  { color: #fff; font-weight: 800; font-size: 1.05rem; margin: 0; }
+    .page-banner p   { color: rgba(249,230,161,.72); font-size: .78rem; margin: 0; }
+    .banner-count {
+        background: rgba(249,230,161,.15); color: var(--gold);
+        font-size: .75rem; font-weight: 700; padding: .3rem .85rem;
+        border-radius: 2rem;
+    }
+
+    .gold-divider {
+        height: 2px;
+        background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+        border-radius: 2px; opacity: .5; margin: 0 0 1.25rem;
+    }
+
+    /* vacancy card */
+    .iv-card {
+        background: #fff; border-radius: .9rem;
+        box-shadow: 0 2px 14px rgba(38,37,97,.07);
+        border-left: 4px solid var(--purple);
+        transition: transform .2s ease, box-shadow .2s ease;
+        margin-bottom: 1rem;
+    }
+    .iv-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(38,37,97,.13);
+    }
+    .iv-card-body { padding: 1rem 1.25rem; }
+
+    .iv-title { font-size: .9rem; font-weight: 800; color: var(--navy); margin: 0 0 .15rem; }
+    .iv-ref   { font-family: monospace; font-size: .72rem; color: #8392ab; }
+
+    /* stat pills */
+    .stat-row { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: .65rem; }
+    .stat-pill {
+        display: inline-flex; align-items: center; gap: .3rem;
+        font-size: .67rem; font-weight: 700; padding: .2rem .6rem;
+        border-radius: 2rem; white-space: nowrap;
+    }
+    .pill-purple { background: var(--purple-light); color: var(--purple); }
+    .pill-amber  { background: #fef3e2; color: #b7770d; }
+    .pill-green  { background: #d4f5e2; color: #1a7a45; }
+    .pill-grey   { background: #f1f3f9; color: #8392ab; }
+
+    /* progress bar */
+    .prog-wrap { margin-top: .65rem; }
+    .prog-label { font-size: .65rem; color: #8392ab; font-weight: 600; margin-bottom: .2rem; }
+    .prog-bar-outer {
+        height: 5px; border-radius: 3px; background: #f0f2f8; overflow: hidden;
+    }
+    .prog-bar-inner {
+        height: 100%; border-radius: 3px;
+        background: linear-gradient(90deg, var(--purple), #7c3aed);
+        transition: width .4s ease;
+    }
+
+    /* action buttons */
+    .iv-actions { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: .85rem; }
+    .iv-btn {
+        display: inline-flex; align-items: center; gap: .3rem;
+        padding: .28rem .75rem; border-radius: .4rem;
+        font-size: .7rem; font-weight: 700; text-decoration: none;
+        border: 1px solid transparent; transition: all .18s ease;
+    }
+    .iv-btn-setup   { background: var(--purple-light); color: var(--purple); border-color: #d4c5fc; }
+    .iv-btn-setup:hover { background: var(--purple); color: #fff; }
+    .iv-btn-prog    { background: #f1f3f9; color: #344767; border-color: #dee2e6; }
+    .iv-btn-prog:hover { background: var(--navy); color: var(--gold); }
+    .iv-btn-results { background: var(--navy); color: var(--gold); }
+    .iv-btn-results:hover { opacity: .88; }
+
+    .empty-state { text-align: center; padding: 3rem 1rem; }
+    .empty-state i { font-size: 2.5rem; opacity: .1; color: var(--navy); display: block; margin-bottom: .75rem; }
+    .empty-state p { color: #adb5bd; font-size: .85rem; margin: 0; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <h5><i class="fas fa-calendar-alt me-2" style="color:var(--gold-dk);"></i>Interview Scheduling</h5>
+            <p>Vacancies currently in the interviews stage</p>
+        </div>
+        <span class="banner-count">{{ total }} vacanc{{ total|pluralize:"y,ies" }}</span>
+    </div>
+
+    <div class="gold-divider"></div>
+
+    {% if vacancy_data %}
+    <div class="row g-3">
+        {% for item in vacancy_data %}
+        {% with v=item.vacancy %}
+        <div class="col-xl-4 col-md-6 col-12">
+            <div class="iv-card">
+                <div class="iv-card-body">
+
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="iv-title">{{ v.title }}</p>
+                            <span class="iv-ref">{{ v.reference_number }}</span>
+                        </div>
+                        <span class="stat-pill pill-purple" style="margin-top:.1rem;">
+                            <i class="fas fa-circle" style="font-size:.4rem;"></i> Interviews
+                        </span>
+                    </div>
+
+                    <!-- Stats -->
+                    <div class="stat-row">
+                        <span class="stat-pill {% if item.panel_count > 0 %}pill-purple{% else %}pill-grey{% endif %}">
+                            <i class="fas fa-users"></i>
+                            {{ item.panel_count }} panel member{{ item.panel_count|pluralize }}
+                        </span>
+                        <span class="stat-pill {% if item.slot_count > 0 %}pill-amber{% else %}pill-grey{% endif %}">
+                            <i class="fas fa-calendar"></i>
+                            {{ item.slot_count }} slot{{ item.slot_count|pluralize }}
+                        </span>
+                        <span class="stat-pill {% if item.notified_count > 0 %}pill-green{% else %}pill-grey{% endif %}">
+                            <i class="fas fa-envelope"></i>
+                            {{ item.notified_count }} notified
+                        </span>
+                    </div>
+
+                    <!-- Scoring progress -->
+                    {% if item.panel_count > 0 %}
+                    <div class="prog-wrap">
+                        <div class="prog-label">
+                            Panel scoring: {{ item.panel_done }}/{{ item.panel_count }} submitted
+                        </div>
+                        <div class="prog-bar-outer">
+                            <div class="prog-bar-inner"
+                                 style="width:{% if item.panel_count > 0 %}{% widthratio item.panel_done item.panel_count 100 %}{% else %}0{% endif %}%">
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Actions -->
+                    <div class="iv-actions">
+                        <a href="{% url 'hr_interview_setup' v.id %}" class="iv-btn iv-btn-setup">
+                            <i class="fas fa-cog"></i> Setup
+                        </a>
+                        <a href="{% url 'hr_interview_progress' v.id %}" class="iv-btn iv-btn-prog">
+                            <i class="fas fa-chart-bar"></i> Progress
+                        </a>
+                        {% if item.panel_done == item.panel_count and item.panel_count > 0 %}
+                        <a href="{% url 'hr_interview_results' v.id %}" class="iv-btn iv-btn-results">
+                            <i class="fas fa-trophy"></i> Results
+                        </a>
+                        {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endwith %}
+        {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-calendar-alt"></i>
+        <p>No vacancies are currently in the interviews stage.</p>
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}

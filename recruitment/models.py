@@ -209,19 +209,6 @@ class Document(models.Model):
         return self.file.name.split('/')[-1] if self.file else ''
 
 
-class InterviewTemplate(models.Model):
-    name = models.CharField(max_length=255)
-    description = models.TextField(blank=True)
-    created_by = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.SET_NULL,
-        null=True
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
- 
 
 class Vacancy(models.Model):
     TYPE_CHOICES = [
@@ -247,13 +234,7 @@ class Vacancy(models.Model):
         ('approved',             'Approved'),
         ('appointed',            'Appointed'),
     ]
-    interview_template = models.ForeignKey(
-        InterviewTemplate,
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="vacancies"
-    )
+
     title            = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
     description      = models.TextField()
@@ -403,140 +384,6 @@ class Application(models.Model):
         return False
 
 
-class PanelAssignment(models.Model):
-
-    STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('accepted', 'Accepted'),
-        ('declined', 'Declined'),
-    ]
-
-    COMMITTEE_TYPES = [
-        ('shortlisting', 'Shortlisting'),
-        ('interview', 'Interview'),
-    ]
-
-    vacancy = models.ForeignKey(
-        Vacancy,
-        on_delete=models.CASCADE,
-        related_name='panel_assignments'
-    )
-
-    panelist = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-
-    committee_type = models.CharField(
-        max_length=30,
-        choices=COMMITTEE_TYPES,
-        null=True,
-        blank=True
-    )
-
-    status = models.CharField(
-        max_length=20,
-        choices=STATUS_CHOICES,
-        default='pending'
-    )
-
-    decline_reason = models.TextField(blank=True, null=True)
-
-    signed_decline_document = models.FileField(
-        upload_to="panel_declines/",
-        null=True,
-        blank=True
-    )
-
-    responded_at = models.DateTimeField(null=True, blank=True)
-
-    class Meta:
-        unique_together = ('vacancy', 'panelist', 'committee_type')
-    
-
-class PanelistReport(models.Model):
-
-    vacancy = models.ForeignKey(
-        Vacancy,
-        on_delete=models.CASCADE,
-        related_name="panel_reports"
-    )
-
-    panelist = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-
-    assignment = models.ForeignKey(
-        PanelAssignment,
-        on_delete=models.CASCADE, blank=True, null=True
-    )
-
-    candidates_interviewed = models.IntegerField(default=0)
-
-    report_summary = models.TextField()
-
-    recommendations = models.TextField(blank=True)
-
-    submitted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ("vacancy", "panelist")
-
-
-class ShortlistVote(models.Model):
-
-    vacancy = models.ForeignKey(
-        Vacancy,
-        on_delete=models.CASCADE,
-        related_name='shortlist_votes'
-    )
-
-    committee_member = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-
-    application = models.ForeignKey(
-        Application,
-        on_delete=models.CASCADE,
-        related_name='shortlist_votes'
-    )
-
-    voted_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('vacancy', 'committee_member', 'application')
-
-class InterviewScore(models.Model):
-    application = models.ForeignKey(
-        Application,
-        on_delete=models.CASCADE,
-        related_name="scores"
-    )
-
-    panelist = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-
-    template = models.ForeignKey(
-        InterviewTemplate,
-        on_delete=models.PROTECT,  blank=True, null=True
-    )
-
-    total_score = models.DecimalField(
-        max_digits=6,
-        decimal_places=2,
-        default=0
-    )
-
-    remarks = models.TextField(blank=True)
-
-    submitted_at = models.DateTimeField(auto_now_add=True, blank=True, null=True)
-
-    class Meta:
-        unique_together = ('application', 'panelist')
 
 
 class TieBreakDecision(models.Model):
@@ -917,77 +764,8 @@ class VacancyApplicationCounter(models.Model):
     def __str__(self):
         return f"{self.vacancy.reference_number} — {self.last_number} applications"
 
-# class ShortlistingCommittee(models.Model):
-#     vacancy = models.OneToOneField(
-#         Vacancy,
-#         on_delete=models.CASCADE,
-#         related_name='shortlisting_committee'
-#     )
 
-#     members = models.ManyToManyField(
-#         settings.AUTH_USER_MODEL,
-#         related_name='shortlisting_committees'
-#     )
 
-#     created_at = models.DateTimeField(auto_now_add=True)
-    
-   
-class ShortlistingDecision(models.Model):
-    application = models.ForeignKey(
-        Application,
-        on_delete=models.CASCADE,
-        related_name='shortlisting_votes'
-    )
-    committee_member = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE
-    )
-    decision = models.CharField(
-        max_length=10,
-        choices=[
-            ('approve', 'Approve'),
-            ('reject', 'Reject')
-        ]
-    )
-    comment = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        unique_together = ('application', 'committee_member')
-        
-   
-class InterviewSection(models.Model):
-    template = models.ForeignKey(
-        InterviewTemplate,
-        on_delete=models.CASCADE,
-        related_name="sections"
-    )
-    name = models.CharField(max_length=255)
-    max_score = models.DecimalField(max_digits=5, decimal_places=2)
-    weight = models.DecimalField(max_digits=5, decimal_places=2, default=1)
-
-    order = models.PositiveIntegerField(default=0)
-
-    def __str__(self):
-        return f"{self.name} ({self.max_score})"
-    
-class InterviewSectionScore(models.Model):
-
-    interview_score = models.ForeignKey(
-        InterviewScore,
-        on_delete=models.CASCADE,
-        related_name="section_scores"
-    )
-
-    section = models.ForeignKey(
-        InterviewSection,
-        on_delete=models.CASCADE
-    )
-
-    score = models.DecimalField(max_digits=5, decimal_places=2)
-
-    class Meta:
-        unique_together = ("interview_score", "section")
 
 # ─────────────────────────────────────────────────────────────────────────────
 # SHORTLISTING STAGE MODELS
@@ -1137,6 +915,277 @@ class ShortlistLog(models.Model):
     performed_by       = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
         null=True, blank=True, related_name='shortlist_actions',
+    )
+    action             = models.CharField(max_length=50, choices=ACTION_CHOICES)
+    notes              = models.TextField(blank=True)
+    metadata           = models.JSONField(default=dict, blank=True)
+    timestamp          = models.DateTimeField(default=timezone.now)
+    performed_by_label = models.CharField(max_length=200, blank=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"{self.action} on {self.vacancy} at {self.timestamp:%Y-%m-%d %H:%M}"
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# INTERVIEW STAGE MODELS  (M05 + M06)
+# Add these classes to models.py after the shortlisting models.
+# ─────────────────────────────────────────────────────────────────────────────
+
+
+class InterviewPanel(models.Model):
+    """
+    An internal staff member appointed to the interview panel for a vacancy.
+    Mirrors ShortlistingCommittee — same ack + COI + scores_submitted pattern.
+    """
+    vacancy      = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_panel',
+    )
+    member       = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='panel_assignments',
+    )
+    appointed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='panel_appointments_made',
+    )
+    appointed_at = models.DateTimeField(default=timezone.now)
+    is_active    = models.BooleanField(default=True)
+
+    # Step 1 — acknowledge appointment
+    acknowledged     = models.BooleanField(default=False)
+    acknowledged_at  = models.DateTimeField(null=True, blank=True)
+
+    # Step 2 — COI declaration (same as shortlisting)
+    coi_declared         = models.BooleanField(default=False)
+    has_conflict         = models.BooleanField(default=False)
+    conflict_reason      = models.TextField(blank=True)
+    conflict_declared_at = models.DateTimeField(null=True, blank=True)
+
+    # Step 3 — scoring complete
+    scores_submitted    = models.BooleanField(default=False)
+    scores_submitted_at = models.DateTimeField(null=True, blank=True)
+
+    # Panel member notified of assignment
+    notified    = models.BooleanField(default=False)
+    notified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [('vacancy', 'member')]
+
+    def __str__(self):
+        return f"{self.member} on interview panel for {self.vacancy}"
+
+
+class InterviewSchedule(models.Model):
+    """
+    Top-level interview configuration for a vacancy.
+    HR creates this once; individual slots hang off InterviewSlot.
+    """
+    VENUE_TYPE_CHOICES = [
+        ('physical', 'Physical (In-Person)'),
+        ('online',   'Online'),
+    ]
+
+    vacancy      = models.OneToOneField(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_schedule',
+    )
+    venue_type   = models.CharField(max_length=20, choices=VENUE_TYPE_CHOICES, default='physical')
+    venue        = models.TextField(
+        help_text='Physical address OR online meeting link.'
+    )
+    instructions = models.TextField(
+        blank=True,
+        help_text='Any preparatory instructions sent to candidates.',
+    )
+    created_by  = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='interview_schedules_created',
+    )
+    created_at  = models.DateTimeField(default=timezone.now)
+    updated_at  = models.DateTimeField(auto_now=True)
+
+    # Notifications fired?
+    candidates_notified    = models.BooleanField(default=False)
+    candidates_notified_at = models.DateTimeField(null=True, blank=True)
+    panel_notified         = models.BooleanField(default=False)
+    panel_notified_at      = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Interview Schedule — {self.vacancy}"
+
+
+class InterviewSlot(models.Model):
+    """
+    Individual interview slot per shortlisted candidate.
+    HR assigns date + time; system emails the candidate.
+    """
+    vacancy      = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_slots',
+    )
+    application  = models.OneToOneField(
+        'JobApplication', on_delete=models.CASCADE,
+        related_name='interview_slot',
+    )
+    schedule     = models.ForeignKey(
+        InterviewSchedule, on_delete=models.CASCADE,
+        related_name='slots',
+    )
+    interview_date = models.DateField()
+    interview_time = models.TimeField()
+
+    # Per-slot venue override (optional — falls back to schedule venue)
+    venue_override = models.TextField(
+        blank=True,
+        help_text='Leave blank to use the schedule venue/link.',
+    )
+
+    notified    = models.BooleanField(default=False)
+    notified_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['interview_date', 'interview_time']
+
+    def effective_venue(self):
+        return self.venue_override or self.schedule.venue
+
+    def __str__(self):
+        return (
+            f"{self.application} — "
+            f"{self.interview_date} {self.interview_time:%H:%M}"
+        )
+
+
+class InterviewCriterion(models.Model):
+    """
+    A single scoring criterion defined by HR for a vacancy.
+    e.g. "Communication Skills" max 20, "Technical Knowledge" max 40.
+    """
+    vacancy   = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_criteria',
+    )
+    name      = models.CharField(max_length=200)
+    max_score = models.PositiveSmallIntegerField(
+        help_text='Maximum marks available for this criterion.',
+    )
+    order     = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        ordering          = ['order', 'id']
+        unique_together   = [('vacancy', 'name')]
+
+    def __str__(self):
+        return f"{self.name} (/{self.max_score}) — {self.vacancy}"
+
+
+class InterviewScore(models.Model):
+    """
+    One panel member's score for one candidate on one criterion.
+    Blind until submitted — same pattern as CommitteeVote.
+    """
+    vacancy     = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_scores',
+    )
+    application = models.ForeignKey(
+        'JobApplication', on_delete=models.CASCADE,
+        related_name='interview_scores',
+    )
+    panel_member = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='interview_scores_given',
+    )
+    criterion   = models.ForeignKey(
+        InterviewCriterion, on_delete=models.CASCADE,
+        related_name='scores',
+    )
+    score       = models.DecimalField(
+        max_digits=6, decimal_places=2,
+        help_text='Must be between 0 and criterion.max_score.',
+    )
+    comment     = models.TextField(blank=True)
+    is_draft    = models.BooleanField(default=True)
+    scored_at   = models.DateTimeField(default=timezone.now)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        unique_together = [('vacancy', 'application', 'panel_member', 'criterion')]
+        ordering        = ['criterion__order', 'criterion__id']
+
+    def __str__(self):
+        return (
+            f"{self.panel_member} → {self.application} "
+            f"[{self.criterion.name}]: {self.score}/{self.criterion.max_score}"
+        )
+
+
+class InterviewResult(models.Model):
+    """
+    Computed totals for one candidate once all panel members have submitted.
+    Generated by _compute_interview_results() — never written to directly.
+    """
+    vacancy     = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_results',
+    )
+    application = models.OneToOneField(
+        'JobApplication', on_delete=models.CASCADE,
+        related_name='interview_result',
+    )
+    total_score    = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    max_possible   = models.DecimalField(max_digits=8, decimal_places=2, default=0)
+    percentage     = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    rank           = models.PositiveSmallIntegerField(null=True, blank=True)
+    computed_at    = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        unique_together = [('vacancy', 'application')]
+        ordering        = ['rank']
+
+    def __str__(self):
+        return (
+            f"{self.application} — "
+            f"{self.total_score}/{self.max_possible} "
+            f"({self.percentage}%) rank #{self.rank}"
+        )
+
+
+class InterviewLog(models.Model):
+    """
+    Immutable audit trail for every action during the interview stage.
+    """
+    ACTION_CHOICES = [
+        ('panel_appointed',       'Panel Member Appointed'),
+        ('panel_removed',         'Panel Member Removed'),
+        ('panel_notified',        'Panel Member Notified'),
+        ('member_acknowledged',   'Panel Member Acknowledged'),
+        ('coi_declared',          'COI Declared'),
+        ('schedule_created',      'Interview Schedule Created'),
+        ('schedule_updated',      'Interview Schedule Updated'),
+        ('slot_assigned',         'Interview Slot Assigned'),
+        ('candidate_notified',    'Candidate Notified'),
+        ('score_saved',           'Score Saved as Draft'),
+        ('score_submitted',       'Score Submitted'),
+        ('all_scores_in',         'All Scores In — Results Computed'),
+    ]
+
+    vacancy            = models.ForeignKey(
+        'Vacancy', on_delete=models.CASCADE,
+        related_name='interview_logs',
+    )
+    application        = models.ForeignKey(
+        'JobApplication', on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='interview_logs',
+    )
+    performed_by       = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='interview_actions',
     )
     action             = models.CharField(max_length=50, choices=ACTION_CHOICES)
     notes              = models.TextField(blank=True)
