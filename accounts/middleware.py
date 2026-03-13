@@ -34,6 +34,10 @@ class LoginRequiredMiddleware:
         'user_update',
         'user_delete',
         'assign_role',
+        'staff_forgot_password',
+        'staff_reset_password',
+        'staff_do_reset_password',
+        'staff_send_reset_link',
 
         # vacancy management
         'create_vacancy',

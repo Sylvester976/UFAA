@@ -640,66 +640,132 @@ class UserCreateView(SuperAdminRequiredMixin, View):
         return render(request, self.template_name)
 
     def post(self, request):
-        # Basic User fields
+
         email = request.POST.get("email")
-        password = request.POST.get("password")
         first_name = request.POST.get("first_name")
         last_name = request.POST.get("last_name")
         national_id = request.POST.get("national_id")
 
-        # InternalProfile fields
-        date_of_birth = request.POST.get("date_of_birth")
-        gender = request.POST.get("gender")
-        ethnic_group = request.POST.get("ethnic_group")
-        home_county = request.POST.get("home_county")
-        disability_status = request.POST.get("disability_status") == "on"
-        job_group = request.POST.get("job_group")
-        designation = request.POST.get("designation")
-        date_of_appointment = request.POST.get("date_of_appointment")
-
-        # Validation
-        if not email or not password:
-            messages.error(request, "Email and password are required")
+        if not email:
+            messages.error(request, "Email is required")
             return render(request, self.template_name)
 
         try:
-            # Create User
+
             user = User.objects.create_user(
                 email=email,
-                password=password,
+                password=None,
                 first_name=first_name,
                 last_name=last_name,
                 national_id=national_id,
-                user_type=2,  # internal user
+                user_type=2,
                 is_active=True
             )
 
-            # Create InternalProfile
-            # InternalProfile.objects.create(
-            #     user=user,
-            #     national_id=national_id,
-            #     date_of_birth=date_of_birth,
-            #     gender=gender,
-            #     ethnic_group=ethnic_group,
-            #     home_county=home_county,
-            #     disability_status=disability_status,
-            #     job_group=job_group,
-            #     designation=designation,
-            #     date_of_appointment=date_of_appointment
-            # )
-            
-            messages.success(request, "Internal user created successfully")
+            user.password_reset_token = uuid.uuid4()
+            user.password_reset_expires_at = timezone.now() + timedelta(hours=24)
+            user.save()
+
+            reset_url = request.build_absolute_uri(
+                reverse("staff_reset_password", args=[user.password_reset_token])
+            )
+
+            subject = "Your UFAA Recruitment Portal Account"
+
+            html = f"""
+                <p>Dear <strong>{ user.first_name }</strong>,</p>
+
+                <p>An account has been created for you on the
+                <strong>UFAA Recruitment Management System</strong>.</p>
+
+                <p>Please set your password using the link below.</p>
+
+                <div style="text-align:center;margin:2rem 0;">
+                <a href="{ reset_url }"
+                style="background:#262561;color:#F9E6A1;padding:0.75rem 2rem;
+                border-radius:6px;font-weight:600;text-decoration:none;">
+                Set Your Password
+                </a>
+                </div>
+
+                <p>This link will expire in 24 hours.</p>
+
+                <p>
+                Human Resources Department<br>
+                Unclaimed Financial Assets Authority
+                </p>
+            """
+
+            _send_branded_email(user.email, subject, html)
+
+            messages.success(request, "User created. Password setup email sent.")
             return redirect("user_list")
 
         except Exception as e:
             messages.error(request, f"Error creating user: {e}")
             return render(request, self.template_name)
         
+        
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["page"] = "Admin Dashboard"
         return context
 
+def staff_forgot_password(request):
+    return render(request, "accounts/staff_forgot_password.html")
+
+def staff_send_reset_link(request):
+
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Invalid request"})
+
+    email = request.POST.get("email", "").strip().lower()
+
+    if not email:
+        return JsonResponse({
+            "status": "error",
+            "message": "Email is required."
+        })
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse({
+            "status": "success",
+            "message": "If an account exists, a reset link has been sent."
+        })
+
+    user.password_reset_token = uuid.uuid4()
+    user.password_reset_expires_at = timezone.now() + timedelta(hours=1)
+    user.save(update_fields=["password_reset_token","password_reset_expires_at"])
+
+    reset_url = request.build_absolute_uri(
+        reverse("staff_reset_password", args=[user.password_reset_token])
+    )
+
+    html = f"""
+    <p>Dear <strong>{user.first_name}</strong>,</p>
+
+    <p>You requested to reset your password for the
+    <strong>UFAA Recruitment System</strong>.</p>
+
+    <div style="text-align:center;margin:2rem 0;">
+        <a href="{reset_url}"
+           style="background:#003366;color:white;padding:10px 22px;
+           border-radius:6px;text-decoration:none;font-weight:600;">
+           Reset Password
+        </a>
+    </div>
+
+    <p>This link will expire in 1 hour.</p>
+    """
+
+    _send_branded_email(user.email, "Reset Your Password", html)
+
+    return JsonResponse({
+        "status": "success",
+        "message": "If an account exists, a reset link has been sent."
+    })
 
 @method_decorator(role_required(["admin", "hod_hr"]), name="dispatch")
 class UserListView(ListView):
@@ -804,3 +870,69 @@ def protected_dashboard(request):
 @permission_required("view_dashboard")
 def test_dashbord(request):
     return render(request, 'accounts/test_dashbord.html')
+
+
+def staff_reset_password(request, token):
+
+    try:
+        user = User.objects.get(password_reset_token=token)
+    except User.DoesNotExist:
+        return render(request, "accounts/staff_reset_password.html", {
+            "valid": False,
+            "error": "Invalid or expired reset link."
+        })
+
+    if timezone.now() > user.password_reset_expires_at:
+        return render(request, "accounts/staff_reset_password.html", {
+            "valid": False,
+            "error": "Reset link expired."
+        })
+
+    return render(request, "accounts/staff_reset_password.html", {
+        "valid": True,
+        "token": str(token)
+    })
+    
+def staff_do_reset_password(request):
+
+        
+    if request.method != "POST":
+        return JsonResponse({"status": "error", "message": "Invalid request"})
+
+    token = request.POST.get("token")
+    password = request.POST.get("password")
+    confirm = request.POST.get("confirm_password")
+
+    if password != confirm:
+        return JsonResponse({
+            "status": "error",
+            "message": "Passwords do not match."
+        })
+
+    try:
+        user = User.objects.get(password_reset_token=uuid.UUID(token))
+    except (User.DoesNotExist, ValueError):
+        return JsonResponse({
+            "status": "error",
+            "message": "Invalid reset token."
+        })
+
+    if timezone.now() > user.password_reset_expires_at:
+        return JsonResponse({
+            "status": "error",
+            "message": "Reset link expired."
+        })
+
+    user.set_password(password)
+
+    # invalidate token
+    user.password_reset_token = uuid.uuid4()
+    user.password_reset_expires_at = timezone.now()
+
+    user.save()
+
+    return JsonResponse({
+        "status": "success",
+        "message": "Password set successfully. You may now login."
+    })
+    

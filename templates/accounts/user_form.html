@@ -54,21 +54,6 @@
 
 </div>
 
-<div class="mb-3">
-<label>National ID</label>
-<input type="text"
-       name="national_id"
-       class="form-control"
-       value="{{ user_obj.national_id|default_if_none:'' }}">
-</div>
-
-<div class="mb-3">
-<label>Password</label>
-<input type="password"
-       name="password"
-       class="form-control"
-       required>
-</div>
 
 <button type="submit" class="btn btn-brand">
 <i class="fas fa-save me-1"></i>
