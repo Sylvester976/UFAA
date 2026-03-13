@@ -26,7 +26,7 @@
 {% csrf_token %}
 
 <div class="mb-3">
-<label>Email</label>
+<label>Email (Ensure the email is valid to receive password setup via email)</label>
 <input type="email"
        name="email"
        class="form-control"
@@ -54,13 +54,13 @@
 
 </div>
 
-<div class="mb-3">
+{% comment %} <div class="mb-3">
 <label>Password (For new accounts leave blank user will receive password setup via email)</label>
 <input type="password"
        name="password"
        class="form-control"
        required>
-</div>
+</div> {% endcomment %}
 
 <button type="submit" class="btn btn-brand">
 <i class="fas fa-save me-1"></i>
