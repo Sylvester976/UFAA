@@ -31,8 +31,13 @@ urlpatterns = [
 
     path("test/", views.test_dashbord, name="test_dashbord"),
 
-    path("dashboard/",
-         views.redirect_dashboard,
-         name="redirect_dashboard"
-         ),
+    path("dashboard/", views.redirect_dashboard, name="redirect_dashboard"),
+    
+    path( "staff/set-password/<uuid:token>/", views.staff_reset_password, name="staff_reset_password"),
+
+    path("staff/set-password/", views.staff_do_reset_password, name="staff_do_reset_password"),
+    
+    path("staff/forgot-password/", views.staff_forgot_password, name="staff_forgot_password"),
+
+    path("staff/send-reset-link/", views.staff_send_reset_link, name="staff_send_reset_link"),
 ]
