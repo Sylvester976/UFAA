@@ -5962,6 +5962,34 @@ def hr_interview_setup(request, vacancy_id):
 
     max_possible = sum(c.max_score for c in criteria)
 
+    # ── Build all_staff for the panel picker ──────────────────────────────
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    # Exclude anyone who has applied for this vacancy
+    applicant_ids = set(
+        JobApplication.objects.filter(vacancy=vacancy)
+        .values_list('user_id', flat=True)
+    )
+    panel_ids = {entry.member_id for entry in panel}
+
+    all_staff = []
+    for u in User.objects.exclude(id__in=applicant_ids).order_by('first_name', 'last_name', 'email'):
+        full_name = (getattr(u, 'name', None) or '').strip() or u.email
+        dept = getattr(u, 'department', None)
+        if hasattr(dept, 'name'):
+            dept = dept.name
+        elif not isinstance(dept, str):
+            dept = ''
+        all_staff.append({
+            'id': u.pk,
+            'name': full_name,
+            'email': u.email,
+            'department': dept,
+            'already_on_panel': u.pk in panel_ids,
+        })
+    # ─────────────────────────────────────────────────────────────────────
+
     return render(request, 'recruitment/hr/interview/interview_setup.html', {
         'page': 'Interview Scheduling',
         'vacancy': vacancy,
@@ -5985,14 +6013,94 @@ def hr_interview_setup(request, vacancy_id):
                 schedule is not None and
                 not (schedule.panel_notified if schedule else False)
         ),
+        'all_staff': all_staff,  # ← required by the panel picker
     })
 
+
+def _notify_panel_appointment(member, vacancy, request):
+    """
+    Simple 'You have been appointed to the panel' email.
+    Does NOT require a schedule / slots to exist yet.
+    Called immediately when HR adds a panel member.
+    """
+    try:
+        from django.conf import settings as django_settings
+        name = _display_name(member)
+        portal_url = getattr(django_settings, 'SITE_URL', '') + '/recruitment/panel/dashboard/'
+
+        message_html = f"""
+            <p>Dear <strong>{name}</strong>,</p>
+            <p>
+                You have been appointed as a member of the
+                <strong>Interview Panel</strong> for the following vacancy:
+            </p>
+            <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;width:35%;">Position</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                        {vacancy.title}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Reference</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;
+                               font-family:monospace;">
+                        {vacancy.reference_number}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Department</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                        {getattr(vacancy, 'department', '') or 'UFAA'}
+                    </td>
+                </tr>
+            </table>
+            <p>
+                Your role on this panel is to <strong>score each shortlisted candidate</strong>
+                against the defined assessment criteria, and to complete a
+                conflict of interest declaration before scoring begins.
+            </p>
+            <p>
+                Interview schedule details (venue, dates, and candidate slots)
+                will be communicated to you shortly. You will receive a second
+                email once the full schedule is confirmed.
+            </p>
+            <p style="margin-top:1.5rem;">
+                <a href="{portal_url}"
+                   style="background:#262561;color:#F9E6A1;padding:0.65rem 1.5rem;
+                          border-radius:0.4rem;text-decoration:none;font-weight:600;">
+                    Go to Panel Portal
+                </a>
+            </p>
+            <p style="margin-top:1.5rem;color:#67748e;font-size:0.85rem;">
+                If you believe this appointment was made in error, please
+                contact the HR office immediately.
+            </p>
+            <p>Regards,<br><strong>UFAA Human Resources Department</strong></p>
+        """
+        _send_html_email(
+            subject=f'Interview Panel Appointment — {vacancy.title} [{vacancy.reference_number}]',
+            to_email=member.email,
+            message_html=message_html,
+        )
+        return True
+    except Exception as e:
+        logger.error(f'Panel appointment email failed to {member.email}: {e}', exc_info=True)
+        return False
+
+
+# ── Replace hr_panel_add with this ──────────────────────────────────────────
 
 @login_required
 @require_POST
 def hr_panel_add(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     user_id = request.POST.get('user_id', '').strip()
+    send_email = request.POST.get('send_email', '1') == '1'
+
     if not user_id:
         return JsonResponse({'error': 'No user selected.'}, status=400)
 
@@ -6015,7 +6123,11 @@ def hr_panel_add(request, vacancy_id):
 
     if not created:
         if entry.is_active:
-            return JsonResponse({'error': f'{_display_name(member)} is already on the panel.'}, status=400)
+            return JsonResponse(
+                {'error': f'{_display_name(member)} is already on the panel.'},
+                status=400
+            )
+        # Re-activate a previously removed member
         entry.is_active = True
         entry.appointed_by = request.user
         entry.appointed_at = timezone.now()
@@ -6029,9 +6141,18 @@ def hr_panel_add(request, vacancy_id):
         performed_by_label=_display_name(request.user),
     )
 
+    email_sent = False
+    if send_email:
+        email_sent = _notify_panel_appointment(member, vacancy, request)
+
     return JsonResponse({
         'success': True,
-        'member': {'id': str(member.pk), 'name': _display_name(member), 'email': member.email},
+        'email_sent': email_sent,
+        'member': {
+            'id': str(member.pk),
+            'name': _display_name(member),
+            'email': member.email,
+        },
     })
 
 
