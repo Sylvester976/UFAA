@@ -604,7 +604,7 @@ def login_view(request):
             if not user.is_active:
                 messages.error(
                     request,
-                    "Your account is not activated. Please contact the system administrator or Human Resource."
+                    "Your account is not activated. Please contact the System Administrator or the Human Resource."
                 )
                 return redirect("login")
 
