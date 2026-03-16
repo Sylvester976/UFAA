@@ -1157,7 +1157,6 @@ def memberships_view(request):
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
         'has_memberships': existing.exists(),
         'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
         'has_referees': Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/membership.html', context)
@@ -1189,29 +1188,39 @@ def referee_view(request):
 
     if request.method == 'POST':
         try:
-            # ── Collect both referees first ───────────────────
+            # ── Collect both referees first ───────────────────────────
             refs_data = {}
             for no in [1, 2]:
+                import re as _re
+                raw_mobile = request.POST.get(f'ref{no}_mobile', '').strip()
+                mobile     = _re.sub(r'[\s\-]', '', raw_mobile)
                 refs_data[no] = {
-                    'name': request.POST.get(f'ref{no}_name', '').strip(),
-                    'occupation': request.POST.get(f'ref{no}_occupation', '').strip(),
-                    'mobile': request.POST.get(f'ref{no}_mobile', '').strip(),
-                    'email': request.POST.get(f'ref{no}_email', '').strip(),
+                    'name':         request.POST.get(f'ref{no}_name', '').strip(),
+                    'occupation':   request.POST.get(f'ref{no}_occupation', '').strip(),
+                    'organization': request.POST.get(f'ref{no}_organization', '').strip(),
+                    'mobile':       mobile,
+                    'email':        request.POST.get(f'ref{no}_email', '').strip(),
                     'period_known': request.POST.get(f'ref{no}_period_known', '').strip(),
                 }
 
-            # ── Validate BOTH before saving EITHER ───────────
+            # ── Validate BOTH before saving EITHER ───────────────────
             for no in [1, 2]:
                 d = refs_data[no]
-                if not all([d['name'], d['occupation'], d['mobile'],
-                            d['email'], d['period_known']]):
+                if not all([d['name'], d['occupation'], d['organization'],
+                            d['mobile'], d['email'], d['period_known']]):
                     return JsonResponse({
                         'status': 'error',
                         'message': f'All fields for Referee {no} are required. '
                                    f'Both referees must be complete before saving.'
                     })
+                if len(d['mobile']) < 10:
+                    return JsonResponse({'status': 'error',
+                        'message': f'Referee {no}: Mobile number is too short. Minimum 10 digits.'})
+                if len(d['mobile']) > 13:
+                    return JsonResponse({'status': 'error',
+                        'message': f'Referee {no}: Mobile number is too long. Maximum 13 characters.'})
 
-            # ── Both valid — now save ─────────────────────────
+            # ── Both valid — now save ─────────────────────────────────
             saved = []
             for no in [1, 2]:
                 d = refs_data[no]
@@ -1219,59 +1228,58 @@ def referee_view(request):
                     user=user,
                     referee_no=no,
                     defaults={
-                        'name': d['name'],
-                        'occupation': d['occupation'],
-                        'mobile': d['mobile'],
-                        'email': d['email'],
+                        'name':         d['name'],
+                        'occupation':   d['occupation'],
+                        'organization': d['organization'],
+                        'mobile':       d['mobile'],
+                        'email':        d['email'],
                         'period_known': d['period_known'],
                     }
                 )
                 saved.append(_referee_to_dict(referee))
 
             return JsonResponse({
-                'status': 'success',
-                'message': 'Referee details saved successfully.',
+                'status':     'success',
+                'message':    'Referee details saved successfully.',
                 'completion': calculate_profile_completion(user),
-                'saved': saved,
+                'saved':      saved,
             })
 
         except Exception as e:
             return JsonResponse({'status': 'error',
                                  'message': f'Something went wrong: {str(e)}'})
 
-    # ── GET ───────────────────────────────────────────────────
+    # ── GET ───────────────────────────────────────────────────────────
     ref1 = Referee.objects.filter(user=user, referee_no=1).first()
     ref2 = Referee.objects.filter(user=user, referee_no=2).first()
 
-    period_choices = Referee.PERIOD_CHOICES
-
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Referees',
-        'ref1': ref1,
-        'ref2': ref2,
-        'period_choices': period_choices,
-        'completion': completion,
-        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'profile':          profile,
+        'user':             user,
+        'page':             'Referees',
+        'ref1':             ref1,
+        'ref2':             ref2,
+        'period_choices':   Referee.PERIOD_CHOICES,
+        'completion':       completion,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees': Referee.objects.filter(user=user).count() >= 2,
-        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
+        'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
     }
     return render(request, 'Jobseekers/referee.html', context)
 
 
 def _referee_to_dict(ref):
-    """Serialise a Referee for JSON responses."""
     return {
-        'id': ref.id,
-        'referee_no': ref.referee_no,
-        'name': ref.name,
-        'occupation': ref.occupation,
-        'mobile': ref.mobile,
-        'email': ref.email,
+        'id':           ref.id,
+        'referee_no':   ref.referee_no,
+        'name':         ref.name,
+        'occupation':   ref.occupation,
+        'organization': ref.organization,
+        'mobile':       ref.mobile,
+        'email':        ref.email,
         'period_known': ref.period_known,
     }
 

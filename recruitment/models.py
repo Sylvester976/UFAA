@@ -568,6 +568,7 @@ class Referee(models.Model):
     occupation   = models.CharField(max_length=255)
     mobile       = models.CharField(max_length=20)
     email        = models.EmailField()
+    organization = models.CharField(max_length=255, blank=False, default='')
     period_known = models.CharField(max_length=50, choices=PERIOD_CHOICES)
     created_at   = models.DateTimeField(auto_now_add=True)
     updated_at   = models.DateTimeField(auto_now=True)
