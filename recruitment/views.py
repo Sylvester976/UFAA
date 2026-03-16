@@ -218,102 +218,113 @@ def profile_view(request):
 
     if request.method == 'POST':
         try:
-            salutation = request.POST.get('salutation', '').strip()
-            surname = request.POST.get('surname', '').strip()
-            first_name = request.POST.get('first_name', '').strip()
-            second_name = request.POST.get('second_name', '').strip()
-            id_no = request.POST.get('id_no', '').strip()
-            date_of_birth = request.POST.get('date_of_birth') or None
-            gender_id = request.POST.get('gender') or None
-            ethnic_group_id = request.POST.get('ethnic_group') or None
-            home_county_id = request.POST.get('home_county') or None
-            constituency_id = request.POST.get('constituency') or None
-            sub_county_id = request.POST.get('sub_county') or None
-            ward_id = request.POST.get('ward') or None
+            salutation        = request.POST.get('salutation', '').strip()
+            surname           = request.POST.get('surname', '').strip()
+            first_name        = request.POST.get('first_name', '').strip()
+            second_name       = request.POST.get('second_name', '').strip()
+            id_no             = request.POST.get('id_no', '').strip()
+            date_of_birth     = request.POST.get('date_of_birth') or None
+            gender_id         = request.POST.get('gender') or None
+            ethnic_group_id   = request.POST.get('ethnic_group') or None
+            home_county_id    = request.POST.get('home_county') or None
+            constituency_id   = request.POST.get('constituency') or None
+            sub_county_id     = request.POST.get('sub_county') or None
+            ward_id           = request.POST.get('ward') or None
             disability_status = request.POST.get('disability_status', '').strip()
-            disability_other = request.POST.get('disability_other', '').strip()
-            disability_no = request.POST.get('disability_no', '').strip()
-            is_employee = request.POST.get('is_employee') == 'true'
-            employee_number = request.POST.get('employee_number', '').strip()
-            phone_number = request.POST.get('phone_number', '').strip()
+            disability_other  = request.POST.get('disability_other', '').strip()
+            disability_no     = request.POST.get('disability_no', '').strip()
+            is_employee       = request.POST.get('is_employee') == 'true'
+            employee_number   = request.POST.get('employee_number', '').strip()
 
-            # ── Validations ───────────────────────────────────
+            # ── Phone: strip spaces/dashes, enforce 10–13 chars ──────
+            phone_raw    = request.POST.get('phone_number', '').strip()
+            phone_number = re.sub(r'[\s\-]', '', phone_raw)
+
+            # ── Validations ───────────────────────────────────────────
             if not first_name:
-                return JsonResponse({'status': 'error',
-                                     'message': 'First name is required.'})
+                return JsonResponse({'status': 'error', 'message': 'First name is required.'})
             if not surname:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Surname is required.'})
+                return JsonResponse({'status': 'error', 'message': 'Surname is required.'})
             if not id_no:
-                return JsonResponse({'status': 'error',
-                                     'message': 'ID number is required.'})
+                return JsonResponse({'status': 'error', 'message': 'ID number is required.'})
             if not date_of_birth:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Date of birth is required.'})
+                return JsonResponse({'status': 'error', 'message': 'Date of birth is required.'})
             if not phone_number:
+                return JsonResponse({'status': 'error', 'message': 'Phone number is required.'})
+            if len(phone_number) < 10:
                 return JsonResponse({'status': 'error',
-                                     'message': 'Phone number is required.'})
+                                     'message': 'Phone number is too short. Minimum 10 digits (e.g. 0712345678).'})
+            if len(phone_number) > 13:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Phone number is too long. Maximum 13 characters (e.g. +254712345678).'})
             if is_employee and not employee_number:
                 return JsonResponse({'status': 'error',
                                      'message': 'Please enter your UFAA employee number.'})
+            if is_employee and employee_number:
+                from recruitment.models import UFAAStaffNumber
+                if not UFAAStaffNumber.objects.filter(staff_number=employee_number, is_active=True).exists():
+                    return JsonResponse({'status': 'error',
+                                         'message': (
+                                             f'Employee number "{employee_number}" was not found in the '
+                                             'UFAA staff register. Please check the number and try again, '
+                                             'or contact HR if you believe this is an error.'
+                                         )})
             if disability_status == 'Other' and not disability_other:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Please describe your disability.'})
+                return JsonResponse({'status': 'error', 'message': 'Please describe your disability.'})
 
             # Disability no — clear if no disability
             has_disability = disability_status not in ('', 'None')
 
-            # ── Save profile ──────────────────────────────────
-            profile.salutation = salutation
-            profile.surname = surname
-            profile.first_name = first_name
-            profile.second_name = second_name
-            profile.email = user.email
-            profile.id_no = id_no
-            profile.date_of_birth = date_of_birth
-            profile.gender_id = gender_id
-            profile.ethnic_group_id = ethnic_group_id
-            profile.home_county_id = home_county_id
-            profile.constituency_id = constituency_id
-            profile.sub_county_id = sub_county_id
-            profile.ward_id = ward_id
+            # ── Save profile ──────────────────────────────────────────
+            profile.salutation       = salutation
+            profile.surname          = surname
+            profile.first_name       = first_name
+            profile.second_name      = second_name
+            profile.email            = user.email
+            profile.id_no            = id_no
+            profile.date_of_birth    = date_of_birth
+            profile.gender_id        = gender_id
+            profile.ethnic_group_id  = ethnic_group_id
+            profile.home_county_id   = home_county_id
+            profile.constituency_id  = constituency_id
+            profile.sub_county_id    = sub_county_id
+            profile.ward_id          = ward_id
             profile.disability_status = disability_status
-            profile.disability_other = disability_other if disability_status == 'Other' else ''
-            profile.disability_no = disability_no if has_disability else ''
-            profile.employee_number = employee_number if is_employee else ''
-            profile.phone_number = phone_number
+            profile.disability_other  = disability_other if disability_status == 'Other' else ''
+            profile.disability_no     = disability_no if has_disability else ''
+            profile.employee_number   = employee_number if is_employee else ''
+            profile.phone_number      = phone_number
             profile.save()
 
             # Save is_employee on account
             JobseekerAccount.objects.filter(id=user.id).update(is_employee=is_employee)
 
             return JsonResponse({
-                'status': 'success',
-                'message': 'Profile saved successfully.',
+                'status':     'success',
+                'message':    'Profile saved successfully.',
                 'completion': calculate_profile_completion(user),
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Profile',
-        'counties': County.objects.all(),
-        'constituencies': Constituency.objects.all(),
-        'sub_counties': SubCounty.objects.all(),
-        'wards': Ward.objects.all(),
-        'genders': Gender.objects.all(),
-        'ethnic_groups': EthnicGroup.objects.all(),
-        'completion': completion,
-        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'profile':          profile,
+        'user':             user,
+        'page':             'Profile',
+        'counties':         County.objects.all(),
+        'constituencies':   Constituency.objects.all(),
+        'sub_counties':     SubCounty.objects.all(),
+        'wards':            Ward.objects.all(),
+        'genders':          Gender.objects.all(),
+        'ethnic_groups':    EthnicGroup.objects.all(),
+        'completion':       completion,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+        'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/profile.html', context)
 
@@ -1320,9 +1331,6 @@ def additional_details_view(request):
             # ── Server-side validation ────────────────────────────────
             if not availability:
                 return JsonResponse({'status': 'error', 'message': 'Please select your availability.'})
-
-            if not salary_raw:
-                return JsonResponse({'status': 'error', 'message': 'Expected salary is required.'})
 
             # Cover letter required if not already saved
             has_cover_letter = (detail and detail.cover_letter) or cover_letter_file
@@ -2551,10 +2559,11 @@ def _application_ready(user):
 
     if not detail or not detail.cv:
         issues.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
+    if not detail or not detail.cover_letter:
+        issues.append({'label': 'Upload your cover letter', 'url': 'additional_details', 'icon': 'fa-file-alt'})
     if not detail or not detail.availability:
         issues.append({'label': 'Set your availability', 'url': 'additional_details', 'icon': 'fa-calendar-check'})
-    if not detail or not detail.expected_salary:
-        issues.append({'label': 'Enter your expected salary', 'url': 'additional_details', 'icon': 'fa-money-bill'})
+
 
     return len(issues) == 0, issues
 
@@ -5967,6 +5976,34 @@ def hr_interview_setup(request, vacancy_id):
 
     max_possible = sum(c.max_score for c in criteria)
 
+    # ── Build all_staff for the panel picker ──────────────────────────────
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+
+    # Exclude anyone who has applied for this vacancy
+    applicant_ids = set(
+        JobApplication.objects.filter(vacancy=vacancy)
+        .values_list('user_id', flat=True)
+    )
+    panel_ids = {entry.member_id for entry in panel}
+
+    all_staff = []
+    for u in User.objects.exclude(id__in=applicant_ids).order_by('first_name', 'last_name', 'email'):
+        full_name = (getattr(u, 'name', None) or '').strip() or u.email
+        dept = getattr(u, 'department', None)
+        if hasattr(dept, 'name'):
+            dept = dept.name
+        elif not isinstance(dept, str):
+            dept = ''
+        all_staff.append({
+            'id': u.pk,
+            'name': full_name,
+            'email': u.email,
+            'department': dept,
+            'already_on_panel': u.pk in panel_ids,
+        })
+    # ─────────────────────────────────────────────────────────────────────
+
     return render(request, 'recruitment/hr/interview/interview_setup.html', {
         'page': 'Interview Scheduling',
         'vacancy': vacancy,
@@ -5990,14 +6027,94 @@ def hr_interview_setup(request, vacancy_id):
                 schedule is not None and
                 not (schedule.panel_notified if schedule else False)
         ),
+        'all_staff': all_staff,  # ← required by the panel picker
     })
 
+
+def _notify_panel_appointment(member, vacancy, request):
+    """
+    Simple 'You have been appointed to the panel' email.
+    Does NOT require a schedule / slots to exist yet.
+    Called immediately when HR adds a panel member.
+    """
+    try:
+        from django.conf import settings as django_settings
+        name = _display_name(member)
+        portal_url = getattr(django_settings, 'SITE_URL', '') + '/recruitment/panel/dashboard/'
+
+        message_html = f"""
+            <p>Dear <strong>{name}</strong>,</p>
+            <p>
+                You have been appointed as a member of the
+                <strong>Interview Panel</strong> for the following vacancy:
+            </p>
+            <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;width:35%;">Position</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                        {vacancy.title}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Reference</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;
+                               font-family:monospace;">
+                        {vacancy.reference_number}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Department</td>
+                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                        {getattr(vacancy, 'department', '') or 'UFAA'}
+                    </td>
+                </tr>
+            </table>
+            <p>
+                Your role on this panel is to <strong>score each shortlisted candidate</strong>
+                against the defined assessment criteria, and to complete a
+                conflict of interest declaration before scoring begins.
+            </p>
+            <p>
+                Interview schedule details (venue, dates, and candidate slots)
+                will be communicated to you shortly. You will receive a second
+                email once the full schedule is confirmed.
+            </p>
+            <p style="margin-top:1.5rem;">
+                <a href="{portal_url}"
+                   style="background:#262561;color:#F9E6A1;padding:0.65rem 1.5rem;
+                          border-radius:0.4rem;text-decoration:none;font-weight:600;">
+                    Go to Panel Portal
+                </a>
+            </p>
+            <p style="margin-top:1.5rem;color:#67748e;font-size:0.85rem;">
+                If you believe this appointment was made in error, please
+                contact the HR office immediately.
+            </p>
+            <p>Regards,<br><strong>UFAA Human Resources Department</strong></p>
+        """
+        _send_html_email(
+            subject=f'Interview Panel Appointment — {vacancy.title} [{vacancy.reference_number}]',
+            to_email=member.email,
+            message_html=message_html,
+        )
+        return True
+    except Exception as e:
+        logger.error(f'Panel appointment email failed to {member.email}: {e}', exc_info=True)
+        return False
+
+
+# ── Replace hr_panel_add with this ──────────────────────────────────────────
 
 @login_required
 @require_POST
 def hr_panel_add(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     user_id = request.POST.get('user_id', '').strip()
+    send_email = request.POST.get('send_email', '1') == '1'
+
     if not user_id:
         return JsonResponse({'error': 'No user selected.'}, status=400)
 
@@ -6020,7 +6137,11 @@ def hr_panel_add(request, vacancy_id):
 
     if not created:
         if entry.is_active:
-            return JsonResponse({'error': f'{_display_name(member)} is already on the panel.'}, status=400)
+            return JsonResponse(
+                {'error': f'{_display_name(member)} is already on the panel.'},
+                status=400
+            )
+        # Re-activate a previously removed member
         entry.is_active = True
         entry.appointed_by = request.user
         entry.appointed_at = timezone.now()
@@ -6034,9 +6155,18 @@ def hr_panel_add(request, vacancy_id):
         performed_by_label=_display_name(request.user),
     )
 
+    email_sent = False
+    if send_email:
+        email_sent = _notify_panel_appointment(member, vacancy, request)
+
     return JsonResponse({
         'success': True,
-        'member': {'id': str(member.pk), 'name': _display_name(member), 'email': member.email},
+        'email_sent': email_sent,
+        'member': {
+            'id': str(member.pk),
+            'name': _display_name(member),
+            'email': member.email,
+        },
     })
 
 
