@@ -356,7 +356,8 @@ def academic_qualifications_view(request):
                 qual.delete()
                 return JsonResponse({'status': 'success', 'message': 'Qualification deleted successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
+                logger.exception("Error while deleting academic qualification for user %s", user_id)
+                return JsonResponse({'status': 'error', 'message': 'An error occurred while deleting the qualification.'})
 
         # ── EDIT ─────────────────────────────────────────────
         if action == 'edit':
@@ -427,7 +428,8 @@ def academic_qualifications_view(request):
                 })
 
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': f'Error: {str(e)}'})
+                logger.exception("Error while editing academic qualification for user %s", user_id)
+                return JsonResponse({'status': 'error', 'message': 'An error occurred while updating the qualification.'})
 
         # ── SAVE NEW ─────────────────────────────────────────
         try:
