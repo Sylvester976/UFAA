@@ -38,6 +38,8 @@ class LoginRequiredMiddleware:
         'staff_reset_password',
         'staff_do_reset_password',
         'staff_send_reset_link',
+        'user_activate',
+        'user_deactivate',
 
         # vacancy management
         'create_vacancy',

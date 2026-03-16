@@ -54,6 +54,7 @@
                                 <th>Name</th>
                                 <th>Email</th>
                                 <th>Roles</th>
+                                <th>Status</th>
                                 <th class="text-end pe-3">Actions</th>
                             </tr>
                         </thead>
@@ -88,21 +89,58 @@
                                 {% endif %}
                             </td>
 
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="vacancy-status vacancy-status-open">
+                                        Active
+                                    </span>
+                                {% else %}
+                                    <span class="vacancy-status vacancy-status-closed">
+                                        Inactive
+                                    </span>
+                                {% endif %}
+                            </td>
+
                             <td class="text-end pe-3">
                                 <div class="vacancy-actions">
 
-                                    <a href="{% url 'assign_role' user.id %}"
-                                       class="btn-shortlisting">
+                                    <a href="{% url 'assign_role' user.id %}" class="btn-shortlisting">
                                         <i class="fas fa-user-tag me-1"></i> Assign
                                     </a>
 
-                                    <a href="{% url 'user_update' user.pk %}"
-                                       class="btn-draft">
+                                    <a href="{% url 'user_update' user.pk %}" class="btn-draft">
                                         <i class="fas fa-edit me-1"></i> Edit
                                     </a>
 
-                                    <a href="{% url 'user_delete' user.id %}"
-                                       class="btn-closed">
+                                    {% if user.is_active %}
+
+                                    <a href="#"
+                                       class="btn-closed open-user-modal"
+                                       data-url="{% url 'user_deactivate' user.id %}"
+                                       data-action="Deactivate"
+                                       data-name="{{ user.first_name }} {{ user.last_name }}"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#userActionModal">
+
+                                        <i class="fas fa-user-slash me-1"></i> Deactivate
+                                    </a>
+
+                                    {% else %}
+
+                                    <a href="#"
+                                       class="btn-shortlisting open-user-modal"
+                                       data-url="{% url 'user_activate' user.id %}"
+                                       data-action="Activate"
+                                       data-name="{{ user.first_name }} {{ user.last_name }}"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#userActionModal">
+
+                                        <i class="fas fa-user-check me-1"></i> Activate
+                                    </a>
+
+                                    {% endif %}
+
+                                    <a href="{% url 'user_delete' user.id %}" class="btn-closed">
                                         <i class="fas fa-trash me-1"></i> Delete
                                     </a>
 
@@ -114,7 +152,7 @@
                         {% empty %}
 
                         <tr>
-                            <td colspan="4">
+                            <td colspan="5">
 
                                 <div class="empty-state">
                                     <i class="fas fa-users-slash"></i>
@@ -142,5 +180,69 @@
     </div>
 
 </div>
+
+
+<!-- USER ACTION MODAL -->
+<div class="modal fade" id="userActionModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
+          Confirm Action
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <div class="modal-body text-center">
+
+        <p class="mb-1">Are you sure you want to</p>
+
+        <h5 id="modalActionText" style="color:#003366;"></h5>
+
+      </div>
+
+      <div class="modal-footer justify-content-center">
+
+        <button type="button"
+                class="btn btn-secondary"
+                data-bs-dismiss="modal">
+            Cancel
+        </button>
+
+        <a id="confirmUserAction"
+           href="#"
+           class="btn btn-danger">
+           Confirm
+        </a>
+
+      </div>
+
+    </div>
+  </div>
+</div>
+
+
+<script>
+
+document.querySelectorAll(".open-user-modal").forEach(button => {
+
+    button.addEventListener("click", function(){
+
+        const url = this.dataset.url
+        const action = this.dataset.action
+        const name = this.dataset.name
+
+        document.getElementById("confirmUserAction").href = url
+
+        document.getElementById("modalActionText").innerText =
+            action + " account for " + name + "?"
+
+    })
+
+})
+
+</script>
 
 {% endblock %}
