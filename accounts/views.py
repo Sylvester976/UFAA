@@ -234,9 +234,12 @@ def save_user_account(request):
             msg = 'Duplicate entry detected.'
         return JsonResponse({'status': 'error', 'message': msg})
 
-    except Exception as e:
-        return JsonResponse({'status': 'error', 'message': f'Error occurred: {e}'})
-
+    except Exception:
+        logger.exception("Unexpected error during user registration")
+        return JsonResponse({
+            'status': 'error',
+            'message': 'An unexpected error occurred while processing your registration. Please try again later.'
+        })
 
 
 # ── Rate limiting constants ────────────────────────────────────────────────
