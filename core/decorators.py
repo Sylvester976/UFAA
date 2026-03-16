@@ -35,7 +35,7 @@ def role_required(allowed_roles):
             # Not authenticated
             if not user.is_authenticated:
                 messages.error(request, "You must be logged in to access this page.")
-                return redirect('/login/')
+                return redirect('/staff/')
 
 
             # Superuser bypass

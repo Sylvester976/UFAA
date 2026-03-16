@@ -1,5 +1,6 @@
 from django.shortcuts import redirect
 from django.urls import resolve
+from django.conf import settings
 
 class LoginRequiredMiddleware:
     PUBLIC_VIEWS = {
@@ -169,8 +170,16 @@ class LoginRequiredMiddleware:
 
     def __call__(self, request):
 
-        # Always allow admin
+        # Allow admin
         if request.path.startswith('/admin/'):
+            return self.get_response(request)
+
+        # Allow static files
+        if request.path.startswith(settings.STATIC_URL):
+            return self.get_response(request)
+
+        # Allow media files
+        if request.path.startswith(settings.MEDIA_URL):
             return self.get_response(request)
 
         try:
@@ -178,11 +187,11 @@ class LoginRequiredMiddleware:
         except:
             current_view = None
 
-        # If public view → allow
+        # Allow public views
         if current_view in self.PUBLIC_VIEWS:
             return self.get_response(request)
 
-        # Otherwise require login
+        # Require login
         if not request.session.get('user_id'):
             return redirect('/login/')
 
