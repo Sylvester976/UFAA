@@ -2742,6 +2742,7 @@ def _build_snapshots(user):
             'occupation': r.occupation or '',
             'mobile': r.mobile or '',
             'email': r.email or '',
+            'organization':r.organization or '',
             'period_known': r.period_known or '',
         }
         for r in Referee.objects.filter(user=user).order_by('referee_no')
