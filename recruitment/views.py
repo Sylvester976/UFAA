@@ -1414,7 +1414,9 @@ def additional_details_view(request):
 
 @login_required
 def hr_dashboard(request):
-    user_roles = request.user.role.values_list('name', flat=True)
+
+    user = request.user
+    user_roles = user.role.values_list('name', flat=True)
 
     vacancies = Vacancy.objects.annotate(
         applications_count=Count('applications')
@@ -1423,6 +1425,7 @@ def hr_dashboard(request):
     vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
 
     context = {
+        'user': user,
         'user_roles': user_roles,
         'vacancies_ready': vacancies_ready,
         'vacancies': vacancies,
