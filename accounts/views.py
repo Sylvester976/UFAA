@@ -579,19 +579,40 @@ def send_verification_email(request, user):
 # Setup for RBAC
 
 def login_view(request):
+
     if request.method == "POST":
+
         email = request.POST.get("email")
         password = request.POST.get("password")
 
         user = authenticate(request, email=email, password=password)
 
         if user:
+
+            # Check email verification
+            # if not user.is_verified:
+            #     messages.warning(
+            #         request,
+            #         "Your account has not been verified. Please check your email for the verification link."
+            #     )
+            #     return redirect("login")
+
+            # Check activation
+            if not user.is_active:
+                messages.error(
+                    request,
+                    "Your account is not activated. Please contact the system administrator or Human Resource."
+                )
+                return redirect("login")
+
+            # If everything is ok
             login(request, user)
-            # return HttpResponse("Logged in successfully")
-            return redirect('redirect_dashboard')
+            return redirect("redirect_dashboard")
+
+        else:
+            messages.error(request, "Invalid email or password.")
 
     return render(request, "roles/login.html")
-
 
 from django.contrib.auth.decorators import login_required
 
@@ -936,3 +957,28 @@ def staff_do_reset_password(request):
         "message": "Password set successfully. You may now login."
     })
     
+
+def user_activate(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    user.is_active = True
+    user.save()
+
+    messages.success(request, "User activated successfully")
+
+    return redirect("user_list")
+
+
+def user_deactivate(request, user_id):
+    user = get_object_or_404(User, id=user_id)
+
+    if request.user == user:
+        messages.error(request, "You cannot deactivate your own account.")
+        return redirect("user_list")
+
+    user.is_active = False
+    user.save()
+
+    messages.success(request, "User deactivated successfully")
+
+    return redirect("user_list")

@@ -40,4 +40,8 @@ urlpatterns = [
     path("staff/forgot-password/", views.staff_forgot_password, name="staff_forgot_password"),
 
     path("staff/send-reset-link/", views.staff_send_reset_link, name="staff_send_reset_link"),
+    
+    path("users/<uuid:user_id>/activate/", views.user_activate, name="user_activate"),
+    
+    path("users/<uuid:user_id>/deactivate/", views.user_deactivate, name="user_deactivate"),
 ]
