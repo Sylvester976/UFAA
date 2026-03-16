@@ -51,6 +51,10 @@ class User(AbstractBaseUser):
     is_employee = models.BooleanField(default=False)
 
     user_type = models.PositiveSmallIntegerField(choices=USER_TYPE_CHOICES, default=1)
+    must_change_password = models.BooleanField(default=False)
+        # Password setup / reset
+    password_reset_token = models.UUIDField(null=True, blank=True, unique=True)
+    password_reset_expires_at = models.DateTimeField(null=True, blank=True)
 
     is_active = models.BooleanField(default=True)
     is_superadmin = models.BooleanField(default=False)
