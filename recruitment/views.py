@@ -6256,8 +6256,17 @@ def hr_interview_notify(request, vacancy_id):
                 performed_by_label=_display_name(request.user),
             )
             sent += 1
-        except Exception as e:
-            errors.append(f'{slot.application.user.email}: {e}')
+        except Exception:
+            logger.exception(
+                "Failed to send interview notification",
+                extra={
+                    "vacancy_id": vacancy.id,
+                    "slot_id": slot.id,
+                    "application_id": slot.application_id,
+                    "candidate_email": slot.application.user.email,
+                },
+            )
+            errors.append(f'{slot.application.user.email}: failed to send notification')
 
     schedule.candidates_notified = True
     schedule.candidates_notified_at = timezone.now()
