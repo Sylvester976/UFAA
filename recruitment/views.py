@@ -1319,9 +1319,6 @@ def additional_details_view(request):
             if not availability:
                 return JsonResponse({'status': 'error', 'message': 'Please select your availability.'})
 
-            if not salary_raw:
-                return JsonResponse({'status': 'error', 'message': 'Expected salary is required.'})
-
             # Cover letter required if not already saved
             has_cover_letter = (detail and detail.cover_letter) or cover_letter_file
             if not has_cover_letter:
