@@ -2,6 +2,94 @@
 {% load static %}
 {% block extra_css %}
     <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
+    <style>
+        /* ── Form state indicator ───────────────────────────── */
+        .form-state-bar {
+            display:flex; align-items:center; gap:.6rem;
+            padding:.6rem 1rem; border-radius:.6rem;
+            font-size:.78rem; font-weight:600;
+            margin-bottom:1rem; transition:all .3s;
+        }
+        .fsb-empty   { background:#f8f9fa; color:#8392ab; border:1px dashed #dee2e6; }
+        .fsb-filling { background:#fff8e1; color:#7d5500; border:1px solid #ffc107; }
+        .fsb-ready   { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+
+        /* ── Doc type row — prominent ───────────────────────── */
+        .doc-upload-section {
+            background:linear-gradient(135deg,#f0f4ff,#f8f9ff);
+            border:1.5px solid #c7d2fe; border-radius:.75rem;
+            padding:1rem 1.1rem; margin-bottom:.5rem;
+        }
+        .doc-upload-title {
+            font-size:.8rem; font-weight:700; color:#3730a3;
+            display:flex; align-items:center; gap:.4rem;
+            margin-bottom:.6rem;
+        }
+
+        .doc-file-card {
+            background:#fff; border:1.5px solid #e0e7ff;
+            border-radius:.55rem; padding:.65rem .85rem;
+            margin-bottom:.5rem; display:flex;
+            align-items:flex-start; gap:.75rem; flex-wrap:wrap;
+        }
+        .doc-file-card.has-type { border-color:#6ee7b7; background:#f0fdf4; }
+        .doc-file-card.needs-type { border-color:#fbbf24; background:#fffbeb; }
+
+        .doc-file-info { flex:1; min-width:0; }
+        .doc-file-name { font-size:.8rem; font-weight:600; color:#1e293b;
+                         overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .doc-file-size { font-size:.7rem; color:#94a3b8; }
+
+        .doc-type-select-wrap { flex-shrink:0; min-width:160px; }
+        .doc-type-label {
+            font-size:.67rem; font-weight:700; text-transform:uppercase;
+            letter-spacing:.04em; color:#6366f1; margin-bottom:.2rem;
+        }
+        .doc-type-select {
+            padding:.32rem .6rem; border:1.5px solid #c7d2fe;
+            border-radius:.4rem; font-size:.78rem; font-weight:600;
+            color:#1e293b; background:#fff; width:100%;
+        }
+        .doc-type-select:focus { outline:none; border-color:#6366f1; }
+        .doc-type-select.selected { border-color:#059669; color:#065f46; }
+
+        .doc-remove-btn {
+            background:none; border:none; color:#f87171;
+            cursor:pointer; padding:.2rem; font-size:.85rem;
+            flex-shrink:0; margin-top:.1rem;
+        }
+        .doc-remove-btn:hover { color:#dc2626; }
+
+        .type-required-pill {
+            display:inline-flex; align-items:center; gap:.25rem;
+            background:#fef3c7; color:#92400e; font-size:.65rem;
+            font-weight:700; padding:.1rem .45rem; border-radius:99px;
+            margin-left:.4rem;
+        }
+
+        /* ── Save button states ─────────────────────────────── */
+        .btn-save-qual {
+            background:linear-gradient(135deg,#1D255B,#2d3899);
+            color:#F9E6A1; border:none; border-radius:.6rem;
+            font-size:.82rem; font-weight:700; padding:.5rem 1.4rem;
+            cursor:pointer; display:inline-flex; align-items:center; gap:.4rem;
+            transition:all .2s; box-shadow:0 2px 8px rgba(29,37,91,.25);
+        }
+        .btn-save-qual:hover { transform:translateY(-1px);
+                               box-shadow:0 4px 14px rgba(29,37,91,.3); }
+        .btn-save-qual:disabled { background:#e2e8f0; color:#94a3b8;
+                                  cursor:not-allowed; transform:none; box-shadow:none; }
+
+        /* ── Saved table improvements ───────────────────────── */
+        .saved-row-new { animation:rowFadeIn .5s ease-out; }
+        @keyframes rowFadeIn {
+            from { background:#d1fae5; }
+            to   { background:transparent; }
+        }
+
+        /* ── Next button guard ──────────────────────────────── */
+        .next-btn-wrap { position:relative; display:inline-block; }
+    </style>
 {% endblock %}
 
 {% block content %}
@@ -19,8 +107,8 @@
                 {% elif completion >= 60 %}bg-gradient-info
                 {% elif completion >= 30 %}bg-gradient-warning
                 {% else %}bg-gradient-danger{% endif %}">
-                <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
-            </span>
+                    <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
+                </span>
             </div>
 
             <!-- Progress Bar -->
@@ -53,56 +141,49 @@
                     <a class="nav-link" href="{% url 'profile' %}">
                         <i class="fas fa-user me-1"></i>
                         <span class="d-none d-sm-inline">Basic Details</span>
-                        {% if completion >= 40 %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link active" href="{% url 'academic_qualifications' %}">
                         <i class="fas fa-graduation-cap me-1"></i>
                         <span class="d-none d-sm-inline">Academic</span>
-                        {% if has_academic %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'professional_qualifications' %}">
                         <i class="fas fa-certificate me-1"></i>
                         <span class="d-none d-sm-inline">Professional</span>
-                        {% if has_professional %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'work_history' %}">
                         <i class="fas fa-briefcase me-1"></i>
                         <span class="d-none d-sm-inline">Work History</span>
-                        {% if has_work_history %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'memberships' %}">
                         <i class="fas fa-users me-1"></i>
                         <span class="d-none d-sm-inline">Memberships</span>
-                        {% if has_memberships %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_memberships %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'referees' %}">
                         <i class="fas fa-user-tie me-1"></i>
                         <span class="d-none d-sm-inline">Referees</span>
-                        {% if has_referees %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_referees %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'additional_details' %}">
                         <i class="fas fa-info-circle me-1"></i>
                         <span class="d-none d-sm-inline">Additional</span>
-                        {% if has_additional %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
+                        {% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
             </ul>
@@ -112,24 +193,31 @@
                 <div class="card-body p-3 p-md-4">
 
                     <h6 class="font-weight-bolder mb-1">Step 2: Academic Qualifications</h6>
-                    <p class="text-sm text-secondary mb-4">
-                        Select an education level, fill in the details and attach relevant documents including transcripts where relevant. You can add
-                        multiple levels.
+                    <p class="text-secondary mb-4">
+                        Fill in the form below and click <strong>Save Qualification</strong>.
+                        Start with your highest level of education. You can add as many as needed.
                     </p>
 
-                    <!-- ── Add Level Form ── -->
+                    <!-- ── Form state bar ── -->
+                    <div class="form-state-bar fsb-empty" id="formStateBar">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="formStateMsg">Select an education level to begin</span>
+                    </div>
+
+                    <!-- ── Add Qualification Form ── -->
                     <div class="acad-add-card mb-4">
                         <div class="acad-add-header">
-                            <i class="fas fa-plus-circle me-2"></i> Add Education Level
+                            <i class="fas fa-graduation-cap me-2"></i> Qualification Details
                         </div>
                         <div class="acad-add-body">
 
                             <div class="row g-3 mb-3">
+                                <!-- Education Level -->
                                 <div class="col-12 col-md-6">
                                     <label class="form-label text-sm font-weight-bold">
                                         Education Level <span class="text-danger">*</span>
                                     </label>
-                                    <select id="levelSelect" class="form-control">
+                                    <select id="levelSelect" class="form-control" onchange="onLevelChange(this)">
                                         <option value="">Select education level</option>
                                         {% for level in education_levels %}
                                             <option value="{{ level.id }}"
@@ -152,11 +240,13 @@
                                             Institution / School <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" id="f_institution" class="form-control"
-                                               placeholder="Enter institution name">
+                                               placeholder="Enter institution name"
+                                               oninput="updateFormState()">
                                     </div>
                                     <div class="col-12 col-md-6">
-                                        <label class="form-label text-sm font-weight-bold">Field of Study /
-                                            Course</label>
+                                        <label class="form-label text-sm font-weight-bold">
+                                            Field of Study / Course
+                                        </label>
                                         <input type="text" id="f_field_of_study" class="form-control"
                                                placeholder="e.g. Computer Science, Business Administration">
                                     </div>
@@ -164,7 +254,8 @@
                                         <label class="form-label text-sm font-weight-bold">
                                             Year Completed <span class="text-danger">*</span>
                                         </label>
-                                        <select id="f_year_completed" class="form-control">
+                                        <select id="f_year_completed" class="form-control"
+                                                onchange="updateFormState()">
                                             <option value="">Year</option>
                                         </select>
                                     </div>
@@ -185,80 +276,82 @@
                                     </div>
                                 </div>
 
-                                <!-- Attachments -->
-                                <div class="mb-3">
-                                    <label class="form-label text-sm font-weight-bold">
-                                        <i class="fas fa-paperclip me-1"></i> Attachments for this level
-                                    </label>
-                                    <p class="text-secondary mb-2" style="font-size:0.76rem;">
-                                        PDF, PNG, JPG or JPEG only — max 2MB each
-                                    </p>
+                                <!-- ── Document Upload — prominent section ── -->
+                                <div class="doc-upload-section">
+                                    <div class="doc-upload-title">
+                                        <i class="fas fa-paperclip"></i>
+                                        Supporting Documents
+                                        <span style="font-size:.72rem;font-weight:400;color:#6366f1;">
+                                            (PDF, PNG, JPG — max 2MB each)
+                                        </span>
+                                        <span class="type-required-pill">
+                                            <i class="fas fa-tag"></i> Select type for each file
+                                        </span>
+                                    </div>
+
                                     <div id="levelDropZone" class="drop-zone-sm">
                                         <i class="fas fa-cloud-upload-alt me-2 text-info"></i>
                                         <span class="text-sm">Drag & drop or</span>
                                         <label for="levelFileInput"
                                                class="btn btn-outline-info btn-xs ms-2 mb-0"
                                                style="cursor:pointer; font-size:0.75rem; padding:0.2rem 0.6rem;">
-                                            Browse
+                                            Browse Files
                                         </label>
                                         <input type="file" id="levelFileInput" multiple
                                                accept=".pdf,.png,.jpg,.jpeg" style="display:none;">
                                     </div>
+
                                     <div id="levelFileList" class="mt-2"></div>
                                 </div>
 
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-outline-info btn-sm"
-                                            onclick="addLevelToList()">
-                                        <i class="fas fa-plus me-1"></i> Add to List
+                                <!-- Save button -->
+                                <div class="d-flex justify-content-end mt-2">
+                                    <button type="button" class="btn-save-qual" id="saveQualBtn"
+                                            onclick="saveQualification()" disabled>
+                                        <i class="fas fa-save"></i> Save Qualification
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- ── Pending Levels ── -->
-                    <div id="pendingContainer" style="display:none;" class="mb-4">
-                        <div class="d-flex align-items-center justify-content-between mb-2 flex-wrap gap-2">
-                            <h6 class="font-weight-bolder mb-0 text-sm">
-                                <i class="fas fa-list me-2 text-info"></i>Levels Ready to Save
-                            </h6>
-                            <span id="pendingCount" class="badge bg-gradient-info px-2 py-1"></span>
-                        </div>
-                        <div id="pendingList"></div>
-                        <div class="d-flex justify-content-end mt-3">
-                            <button type="button" class="btn btn-outline-info btn-sm"
-                                    onclick="saveAllQualifications()">
-                                <i class="fas fa-save me-1"></i> Save All
-                            </button>
-                        </div>
-                    </div>
-
                     <!-- ── Saved Qualifications Table ── -->
                     <div class="mt-2" id="savedSection"
                          style="{% if not existing_qualifications %}display:none;{% endif %}">
-                        <h6 class="font-weight-bolder mb-3">
-                            <i class="fas fa-history me-2 text-success"></i>Saved Qualifications
-                        </h6>
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                            <h6 class="font-weight-bolder mb-0">
+                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                Saved Qualifications
+                                <span class="badge bg-gradient-success ms-1 px-2 py-1"
+                                      style="font-size:0.7rem;" id="savedCount">
+                                    {{ existing_qualifications|length }}
+                                </span>
+                            </h6>
+                            <small class="text-secondary" style="font-size:0.73rem;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                These have been saved — you can edit or delete them below
+                            </small>
+                        </div>
                         <div class="table-responsive">
                             <table class="table table-sm align-middle" id="savedTable">
                                 <thead class="table-light">
-                                <tr>
-                                    <th style="min-width:120px;">Level</th>
-                                    <th style="min-width:130px;">Institution</th>
-                                    <th class="d-none d-md-table-cell">Field</th>
-                                    <th class="d-none d-sm-table-cell">Year</th>
-                                    <th class="d-none d-md-table-cell">Grade</th>
-                                    <th class="d-none d-md-table-cell">Country</th>
-                                    <th style="min-width:160px;">Docs</th>
-                                    <th>Action</th>
-                                </tr>
+                                    <tr>
+                                        <th style="min-width:120px;">Level</th>
+                                        <th style="min-width:130px;">Institution</th>
+                                        <th class="d-none d-md-table-cell">Field</th>
+                                        <th class="d-none d-sm-table-cell">Year</th>
+                                        <th class="d-none d-md-table-cell">Grade</th>
+                                        <th class="d-none d-md-table-cell">Country</th>
+                                        <th style="min-width:160px;">Docs</th>
+                                        <th>Action</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="savedTableBody">
-                                {% for q in existing_qualifications %}
+                                    {% for q in existing_qualifications %}
                                     <tr id="row_{{ q.id }}">
                                         <td>
-                                            <span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">
+                                            <span class="badge bg-gradient-info"
+                                                  style="font-size:0.7rem; white-space:normal;">
                                                 {{ q.education_level.name }}
                                             </span>
                                         </td>
@@ -269,75 +362,71 @@
                                         <td class="d-none d-md-table-cell text-sm">{{ q.country }}</td>
                                         <td style="min-width:160px;">
                                             {% with docs=q.documents.all %}
-                                            {% if docs %}
-                                                {% for doc in docs %}
-                                                <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
-                                                    <a href="{{ doc.file.url }}" target="_blank" rel="noopener"
-                                                       class="text-info d-inline-block text-truncate"
-                                                       style="max-width:120px; font-size:0.71rem;"
-                                                       title="{{ doc.file.name }}">
-                                                        {% if doc.file.name|slice:"-3:" == "pdf" %}
-                                                            <i class="fas fa-file-pdf text-danger me-1"></i>
-                                                        {% else %}
-                                                            <i class="fas fa-file-image text-info me-1"></i>
-                                                        {% endif %}
-                                                        {{ doc.document_type.name }}
-                                                    </a>
-                                                    <button type="button"
-                                                            class="btn btn-link p-0 text-danger"
-                                                            style="font-size:0.65rem; line-height:1;"
-                                                            title="Delete this file"
-                                                            onclick="deleteDocument({{ doc.id }}, '{{ doc.document_type.name|escapejs }}')">
-                                                        <i class="fas fa-times-circle"></i>
-                                                    </button>
-                                                </div>
-                                                {% endfor %}
-                                            {% else %}
-                                                <span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>
-                                            {% endif %}
+                                                {% if docs %}
+                                                    {% for doc in docs %}
+                                                        <div class="d-flex align-items-center gap-1 mb-1"
+                                                             style="flex-wrap:nowrap;">
+                                                            <a href="{{ doc.file.url }}" target="_blank"
+                                                               rel="noopener"
+                                                               class="text-info d-inline-block text-truncate"
+                                                               style="max-width:120px; font-size:0.71rem;"
+                                                               title="{{ doc.file.name }}">
+                                                                {% if doc.file.name|slice:"-3:" == "pdf" %}
+                                                                    <i class="fas fa-file-pdf text-danger me-1"></i>
+                                                                {% else %}
+                                                                    <i class="fas fa-file-image text-info me-1"></i>
+                                                                {% endif %}
+                                                                {{ doc.document_type.name }}
+                                                            </a>
+                                                            <button type="button"
+                                                                    class="btn btn-link p-0 text-danger"
+                                                                    style="font-size:0.65rem; line-height:1;"
+                                                                    onclick="deleteDocument({{ doc.id }}, '{{ doc.document_type.name|escapejs }}')">
+                                                                <i class="fas fa-times-circle"></i>
+                                                            </button>
+                                                        </div>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <span class="text-secondary"
+                                                          style="font-size:0.72rem; font-style:italic;">No files</span>
+                                                {% endif %}
                                             {% endwith %}
                                         </td>
                                         <td>
                                             <div class="d-flex gap-1">
-                                                <button type="button"
-                                                        class="btn btn-outline-info btn-xs"
-                                                        title="Edit"
+                                                <button type="button" class="btn btn-outline-info btn-xs"
                                                         onclick="editQualification(
-                                                                {{ q.id }},
-                                                                {{ q.education_level.id }},
-                                                                '{{ q.institution|escapejs }}',
-                                                                '{{ q.field_of_study|default:''|escapejs }}',
-                                                                '{{ q.year_completed }}',
-                                                                '{{ q.grade|default:''|escapejs }}',
-                                                                '{{ q.cert_number|default:''|escapejs }}',
-                                                                '{{ q.country|escapejs }}'
-                                                                )">
+                                                            {{ q.id }},{{ q.education_level.id }},
+                                                            '{{ q.institution|escapejs }}',
+                                                            '{{ q.field_of_study|default:''|escapejs }}',
+                                                            '{{ q.year_completed }}',
+                                                            '{{ q.grade|default:''|escapejs }}',
+                                                            '{{ q.cert_number|default:''|escapejs }}',
+                                                            '{{ q.country|escapejs }}')">
                                                     <i class="fas fa-edit"></i>
                                                 </button>
-                                                <button type="button"
-                                                        class="btn btn-outline-danger btn-xs"
-                                                        title="Delete"
+                                                <button type="button" class="btn btn-outline-danger btn-xs"
                                                         onclick="deleteQualification({{ q.id }}, '{{ q.education_level.name|escapejs }}')">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             </div>
                                         </td>
                                     </tr>
-                                {% endfor %}
+                                    {% endfor %}
                                 </tbody>
                             </table>
                         </div>
                     </div>
 
-                    <!-- ── Action Buttons ── -->
+                    <!-- ── Nav Buttons ── -->
                     <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
                         <a href="{% url 'profile' %}" class="btn btn-outline-secondary btn-sm mb-0">
                             <i class="fas fa-arrow-left me-1"></i> Back
                         </a>
-                        <a href="{% url 'professional_qualifications' %}"
-                           class="btn btn-outline-success btn-sm mb-0 text-decoration-none">
+                        <button type="button" class="btn btn-outline-success btn-sm mb-0"
+                                onclick="goNext()">
                             Next <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
+                        </button>
                     </div>
 
                 </div>
@@ -372,13 +461,11 @@
                             <label class="form-label text-sm font-weight-bold">
                                 Institution / School <span class="text-danger">*</span>
                             </label>
-                            <input type="text" id="edit_institution" class="form-control"
-                                   placeholder="Institution name">
+                            <input type="text" id="edit_institution" class="form-control">
                         </div>
                         <div class="col-12 col-md-6">
-                            <label class="form-label text-sm font-weight-bold">Field of Study / Course</label>
-                            <input type="text" id="edit_field_of_study" class="form-control"
-                                   placeholder="e.g. Computer Science">
+                            <label class="form-label text-sm font-weight-bold">Field of Study</label>
+                            <input type="text" id="edit_field_of_study" class="form-control">
                         </div>
                         <div class="col-6 col-md-3">
                             <label class="form-label text-sm font-weight-bold">
@@ -387,30 +474,26 @@
                             <select id="edit_year_completed" class="form-control"></select>
                         </div>
                         <div class="col-6 col-md-3">
-                            <label class="form-label text-sm font-weight-bold">Grade / Result</label>
-                            <input type="text" id="edit_grade" class="form-control"
-                                   placeholder="e.g. First Class">
+                            <label class="form-label text-sm font-weight-bold">Grade</label>
+                            <input type="text" id="edit_grade" class="form-control">
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">Certificate Number</label>
-                            <input type="text" id="edit_cert_number" class="form-control"
-                                   placeholder="Index / Cert no.">
+                            <input type="text" id="edit_cert_number" class="form-control">
                         </div>
                         <div class="col-12 col-md-6">
                             <label class="form-label text-sm font-weight-bold">Country</label>
-                            <input type="text" id="edit_country" class="form-control"
-                                   placeholder="Country of study">
+                            <input type="text" id="edit_country" class="form-control">
                         </div>
                     </div>
 
-                    <!-- Additional docs in edit -->
-                    <div class="mt-4">
-                        <label class="form-label text-sm font-weight-bold">
-                            <i class="fas fa-paperclip me-1"></i> Add More Documents
-                        </label>
-                        <p class="text-secondary mb-2" style="font-size:0.76rem;">
-                            PDF, PNG, JPG or JPEG only — max 2MB each
-                        </p>
+                    <div class="doc-upload-section mt-4">
+                        <div class="doc-upload-title">
+                            <i class="fas fa-paperclip"></i> Add More Documents
+                            <span class="type-required-pill">
+                                <i class="fas fa-tag"></i> Select type for each file
+                            </span>
+                        </div>
                         <div id="editDropZone" class="drop-zone-sm">
                             <i class="fas fa-cloud-upload-alt me-2 text-info"></i>
                             <span class="text-sm">Drag & drop or</span>
@@ -425,533 +508,494 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-outline-secondary btn-sm"
-                            data-bs-dismiss="modal">Cancel
-                    </button>
-                    <button type="button" class="btn btn-outline-info btn-sm"
-                            onclick="submitEdit()">
+                            data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="submitEdit()">
                         <i class="fas fa-save me-1"></i> Update
                     </button>
                 </div>
             </div>
         </div>
     </div>
-
 {% endblock %}
 
 {% block extra_js %}
-    <script>
-        // ── Data from Django ─────────────────────────────────────────
-        const educationLevels = [
-            {% for level in education_levels %}
-                {
-                    id: {{ level.id }},
-                    name: "{{ level.name }}",
-                    rank: {{ level.rank }},
-                    higher: {{ level.is_higher_education|yesno:'true,false' }},
-                    foreign: {{ level.is_foreign|yesno:'true,false' }},
-                },
-            {% endfor %}
-        ];
+<script>
+// ── Data ──────────────────────────────────────────────────────
+const educationLevels = [
+    {% for level in education_levels %}
+    { id:{{ level.id }}, name:"{{ level.name }}", rank:{{ level.rank }},
+      higher:{{ level.is_higher_education|yesno:'true,false' }},
+      foreign:{{ level.is_foreign|yesno:'true,false' }} },
+    {% endfor %}
+];
+const docTypes = [
+    {% for dtype in document_types %}
+    { id:{{ dtype.id }}, name:"{{ dtype.name }}" },
+    {% endfor %}
+];
+const CSRF = '{{ csrf_token }}';
+const ALLOWED_EXT = ['.pdf','.png','.jpg','.jpeg'];
+const MAX_SIZE = 2 * 1024 * 1024;
 
-        const docTypes = [
-            {% for dtype in document_types %}
-                {id: {{ dtype.id }}, name: "{{ dtype.name }}"},
-            {% endfor %}
-        ];
+let levelFiles = [];
+let editFiles  = [];
 
-        // ── State ────────────────────────────────────────────────────
-        let pendingLevels = [];
-        let levelFiles = [];
-        let editFiles = [];
-        const ALLOWED_EXT = ['.pdf', '.png', '.jpg', '.jpeg'];
-        const MAX_SIZE = 2 * 1024 * 1024;
-        const CSRF = '{{ csrf_token }}';
+// ── Helpers ───────────────────────────────────────────────────
+function fileIcon(name) {
+    return name.split('.').pop().toLowerCase() === 'pdf'
+        ? '<i class="fas fa-file-pdf" style="color:#ef4444;font-size:1.1rem;flex-shrink:0;"></i>'
+        : '<i class="fas fa-file-image" style="color:#6366f1;font-size:1.1rem;flex-shrink:0;"></i>';
+}
+function fileSize(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+}
+function docTypeOptions() {
+    return '<option value="">— Select document type —</option>'
+         + docTypes.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+}
+function validateFile(file, list) {
+    const ext = '.' + file.name.split('.').pop().toLowerCase();
+    if (!ALLOWED_EXT.includes(ext)) {
+        Swal.fire({ icon:'error', title:'Invalid File Type',
+            text:`"${file.name}" — only PDF, PNG, JPG, JPEG allowed.`,
+            position:'center', scrollbarPadding:false, heightAuto:false }); return false;
+    }
+    if (file.size > MAX_SIZE) {
+        Swal.fire({ icon:'error', title:'File Too Large',
+            text:`"${file.name}" exceeds 2MB.`,
+            position:'center', scrollbarPadding:false, heightAuto:false }); return false;
+    }
+    if (list.some(f => f.file.name===file.name && f.file.size===file.size)) {
+        Swal.fire({ icon:'warning', title:'Duplicate',
+            text:`"${file.name}" already added.`,
+            position:'center', scrollbarPadding:false, heightAuto:false }); return false;
+    }
+    return true;
+}
 
-        // ── Shared Helpers ───────────────────────────────────────────
-        function fileIcon(filename) {
-            return filename.split('.').pop().toLowerCase() === 'pdf'
-                ? '<i class="fas fa-file-pdf file-icon pdf"></i>'
-                : '<i class="fas fa-file-image file-icon image"></i>';
-        }
-
-        function fileSize(bytes) {
-            if (bytes < 1024) return bytes + ' B';
-            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
-        }
-
-        function docTypeOptions() {
-            return `<option value="">Doc type</option>` +
-                docTypes.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
-        }
-
-        function validateFile(file, existingList) {
-            const ext = '.' + file.name.split('.').pop().toLowerCase();
-            if (!ALLOWED_EXT.includes(ext)) {
-                Swal.fire({
-                    icon: 'error', title: 'Invalid File Type',
-                    text: `"${file.name}" — only PDF, PNG, JPG, JPEG allowed.`,
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
-                return false;
-            }
-            if (file.size > MAX_SIZE) {
-                Swal.fire({
-                    icon: 'error', title: 'File Too Large',
-                    text: `"${file.name}" exceeds 2MB. Please compress and retry.`,
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
-                return false;
-            }
-            if (existingList.some(f => f.file.name === file.name && f.file.size === file.size)) {
-                Swal.fire({
-                    icon: 'warning', title: 'Duplicate',
-                    text: `"${file.name}" already added.`,
-                    position: 'center', scrollbarPadding: false, heightAuto: false
-                });
-                return false;
-            }
-            return true;
-        }
-
-        function buildFileRow(file, fileId, onChangeFn, onRemoveFn) {
-            const el = document.createElement('div');
-            el.className = 'file-item';
-            el.id = fileId;
-            el.innerHTML = `
+function buildFileCard(file, fileId, onChangeFn, onRemoveFn) {
+    const el = document.createElement('div');
+    el.className = 'doc-file-card needs-type';
+    el.id = fileId;
+    el.innerHTML = `
         ${fileIcon(file.name)}
-        <div class="file-info">
-            <div class="file-name">${file.name}</div>
-            <div class="file-meta">${fileSize(file.size)}</div>
+        <div class="doc-file-info">
+            <div class="doc-file-name">${file.name}</div>
+            <div class="doc-file-size">${fileSize(file.size)}</div>
         </div>
-        <div class="file-doctype">
-            <select class="form-control"
-                    onchange="${onChangeFn}('${fileId}', this.value)">
+        <div class="doc-type-select-wrap">
+            <div class="doc-type-label"><i class="fas fa-tag me-1"></i>Document Type <span style="color:#dc2626;">*</span></div>
+            <select class="doc-type-select" onchange="${onChangeFn}('${fileId}', this.value, this)">
                 ${docTypeOptions()}
             </select>
         </div>
-        <button type="button" class="remove-btn"
-                onclick="${onRemoveFn}('${fileId}')">
-            <i class="fas fa-times"></i>
+        <button type="button" class="doc-remove-btn" onclick="${onRemoveFn}('${fileId}')">
+            <i class="fas fa-times-circle"></i>
         </button>`;
-            return el;
+    return el;
+}
+
+// ── Form state bar ────────────────────────────────────────────
+function updateFormState() {
+    const bar  = document.getElementById('formStateBar');
+    const msg  = document.getElementById('formStateMsg');
+    const btn  = document.getElementById('saveQualBtn');
+    const lvl  = document.getElementById('levelSelect').value;
+    const inst = document.getElementById('f_institution')?.value.trim();
+    const yr   = document.getElementById('f_year_completed')?.value;
+
+    if (!lvl) {
+        bar.className = 'form-state-bar fsb-empty';
+        msg.textContent = 'Select an education level to begin';
+        btn.disabled = true; return;
+    }
+    if (!inst || !yr) {
+        bar.className = 'form-state-bar fsb-filling';
+        const missing = [];
+        if (!inst) missing.push('Institution');
+        if (!yr)   missing.push('Year Completed');
+        msg.textContent = 'Still needed: ' + missing.join(', ');
+        btn.disabled = true; return;
+    }
+    // Check all files have a doc type
+    const missingType = levelFiles.some(f => !f.docTypeId);
+    if (missingType) {
+        bar.className = 'form-state-bar fsb-filling';
+        msg.textContent = 'Please select a document type for each uploaded file';
+        btn.disabled = true; return;
+    }
+    bar.className = 'form-state-bar fsb-ready';
+    msg.innerHTML = '<i class="fas fa-check-circle me-1"></i>Ready to save — click Save Qualification';
+    btn.disabled = false;
+}
+
+// ── Level select ──────────────────────────────────────────────
+function onLevelChange(sel) {
+    const fields = document.getElementById('levelFields');
+    if (sel.value) {
+        fields.style.display = 'block';
+        document.getElementById('f_institution').value   = '';
+        document.getElementById('f_field_of_study').value = '';
+        document.getElementById('f_grade').value          = '';
+        document.getElementById('f_cert_number').value    = '';
+        document.getElementById('f_country').value        = 'Kenya';
+        levelFiles = [];
+        document.getElementById('levelFileList').innerHTML = '';
+        populateYears('f_year_completed', null);
+    } else {
+        fields.style.display = 'none';
+    }
+    updateFormState();
+}
+
+// ── Year populator ────────────────────────────────────────────
+function populateYears(elId, selected) {
+    const sel = document.getElementById(elId);
+    const cur = new Date().getFullYear();
+    sel.innerHTML = '<option value="">Year</option>';
+    for (let y = cur; y >= 1960; y--)
+        sel.innerHTML += `<option value="${y}" ${y==selected?'selected':''}>${y}</option>`;
+}
+populateYears('f_year_completed', null);
+
+// ── Level file handling ───────────────────────────────────────
+const levelDropZone  = document.getElementById('levelDropZone');
+const levelFileInput = document.getElementById('levelFileInput');
+levelDropZone.addEventListener('dragover', e => { e.preventDefault(); levelDropZone.classList.add('dragover'); });
+levelDropZone.addEventListener('dragleave', () => levelDropZone.classList.remove('dragover'));
+levelDropZone.addEventListener('drop', e => { e.preventDefault(); levelDropZone.classList.remove('dragover'); handleLevelFiles(Array.from(e.dataTransfer.files)); });
+levelDropZone.addEventListener('click', e => { if (e.target.tagName!=='LABEL'&&e.target.tagName!=='INPUT') levelFileInput.click(); });
+levelFileInput.addEventListener('change', function() { handleLevelFiles(Array.from(this.files)); this.value=''; });
+
+function handleLevelFiles(files) {
+    files.forEach(file => {
+        if (!validateFile(file, levelFiles)) return;
+        const fileId = 'lf_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+        levelFiles.push({ file, fileId, docTypeId:'' });
+        document.getElementById('levelFileList')
+            .appendChild(buildFileCard(file, fileId, 'updateLevelFileType', 'removeLevelFile'));
+        updateFormState();
+    });
+}
+function updateLevelFileType(fileId, value, sel) {
+    const f = levelFiles.find(f => f.fileId===fileId);
+    if (f) { f.docTypeId = value; }
+    const card = document.getElementById(fileId);
+    if (card) {
+        card.classList.toggle('has-type', !!value);
+        card.classList.toggle('needs-type', !value);
+        if (sel) sel.classList.toggle('selected', !!value);
+    }
+    updateFormState();
+}
+function removeLevelFile(fileId) {
+    levelFiles = levelFiles.filter(f => f.fileId!==fileId);
+    document.getElementById(fileId)?.remove();
+    updateFormState();
+}
+
+// ── Save qualification (single, immediate) ────────────────────
+function saveQualification() {
+    const levelId   = document.getElementById('levelSelect').value;
+    const institution = document.getElementById('f_institution').value.trim();
+    const year      = document.getElementById('f_year_completed').value;
+
+    if (!levelId || !institution || !year) { updateFormState(); return; }
+    for (const f of levelFiles) {
+        if (!f.docTypeId) { updateFormState(); return; }
+    }
+
+    const btn = document.getElementById('saveQualBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving…';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action', 'save');
+    formData.append('level_count', 1);
+    formData.append('qualifications', JSON.stringify([{
+        education_level: parseInt(levelId),
+        institution,
+        field_of_study: document.getElementById('f_field_of_study').value.trim(),
+        year_completed: year,
+        grade:          document.getElementById('f_grade').value.trim(),
+        cert_number:    document.getElementById('f_cert_number').value.trim(),
+        country:        document.getElementById('f_country').value.trim() || 'Kenya',
+    }]));
+    levelFiles.forEach(f => {
+        formData.append('level_files_0', f.file);
+        formData.append('level_doc_types_0', f.docTypeId);
+    });
+
+    fetch("{% url 'academic_qualifications' %}", {
+        method:'POST', headers:{'X-CSRFToken':CSRF}, body:formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.status === 'success' && data.saved?.length) {
+            const q = data.saved[0];
+            const tbody = document.getElementById('savedTableBody');
+            const tr = document.createElement('tr');
+            tr.id = `row_${q.id}`;
+            tr.className = 'saved-row-new';
+            tr.innerHTML = buildTableRow(q);
+            tbody.appendChild(tr);
+            document.getElementById('savedSection').style.display = 'block';
+
+            // Update count badge
+            const badge = document.getElementById('savedCount');
+            badge.textContent = parseInt(badge.textContent||0) + 1;
+
+            // Reset form
+            document.getElementById('levelSelect').value = '';
+            document.getElementById('levelFields').style.display = 'none';
+            levelFiles = [];
+            document.getElementById('levelFileList').innerHTML = '';
+
+            // Reset state bar
+            const bar = document.getElementById('formStateBar');
+            bar.className = 'form-state-bar fsb-empty';
+            document.getElementById('formStateMsg').textContent = 'Select an education level to begin';
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Qualification';
+
+            Swal.fire({
+                icon:'success', title:'Saved!',
+                html:`<strong>${q.level_name}</strong> at ${q.institution} has been saved.<br>
+                      <small class="text-secondary">You can add another qualification or click Next to continue.</small>`,
+                confirmButtonText:'OK',
+                position:'center', scrollbarPadding:false, heightAuto:false,
+            });
+        } else {
+            Swal.fire({ icon:'error', title:'Save Failed',
+                text: data.message || 'Something went wrong.',
+                position:'center', scrollbarPadding:false, heightAuto:false });
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Qualification';
         }
+    })
+    .catch(() => {
+        Swal.fire({ icon:'error', title:'System Error',
+            text:'Something went wrong. Please try again.',
+            position:'center', scrollbarPadding:false, heightAuto:false });
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-save"></i> Save Qualification';
+    });
+}
 
-        // ── Build Table Row (JS — after AJAX save/edit) ──────────────
-        function buildTableRow(q) {
-            const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+// ── Next guard ────────────────────────────────────────────────
+function goNext() {
+    const hasUnsaved = document.getElementById('levelSelect').value !== ''
+                    && document.getElementById('f_institution').value.trim() !== '';
+    if (hasUnsaved) {
+        Swal.fire({
+            icon:'warning', title:'Unsaved Qualification',
+            html:'You have details entered but not yet saved.<br>'
+               + 'Click <strong>Save Qualification</strong> before continuing, or discard and go next.',
+            showCancelButton:true,
+            confirmButtonText:'<i class="fas fa-arrow-right me-1"></i> Discard & Go Next',
+            cancelButtonText:'<i class="fas fa-save me-1"></i> Go Back & Save',
+            confirmButtonColor:'#64748b',
+            cancelButtonColor:'#1D255B',
+            position:'center', scrollbarPadding:false, heightAuto:false,
+        }).then(r => { if (r.isConfirmed) window.location.href="{% url 'professional_qualifications' %}"; });
+    } else {
+        window.location.href = "{% url 'professional_qualifications' %}";
+    }
+}
 
-            let docsHtml = '';
-            if (q.docs && q.docs.length > 0) {
-                q.docs.forEach(doc => {
-                    const isPdf = doc.filename.toLowerCase().endsWith('.pdf');
-                    docsHtml += `
-                        <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
-                            <a href="${doc.url}" target="_blank" rel="noopener"
-                               class="text-info d-inline-block text-truncate"
-                               style="max-width:120px; font-size:0.71rem;"
-                               title="${doc.filename}">
-                                <i class="fas fa-file-${isPdf ? 'pdf text-danger' : 'image text-info'} me-1"></i>
-                                ${doc.type_name}
-                            </a>
-                            <button type="button" class="btn btn-link p-0 text-danger"
-                                    style="font-size:0.65rem; line-height:1;"
-                                    title="Delete this file"
-                                    onclick="deleteDocument(${doc.id}, '${doc.type_name.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-times-circle"></i>
-                            </button>
-                        </div>`;
-                });
-            } else {
-                docsHtml = '<span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>';
-            }
-
-            return `
-        <td><span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">${q.level_name}</span></td>
+// ── Build table row HTML ──────────────────────────────────────
+function buildTableRow(q) {
+    const esc = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+    let docsHtml = '';
+    if (q.docs?.length) {
+        q.docs.forEach(doc => {
+            const isPdf = doc.filename.toLowerCase().endsWith('.pdf');
+            docsHtml += `
+                <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                    <a href="${doc.url}" target="_blank" rel="noopener"
+                       class="text-info d-inline-block text-truncate"
+                       style="max-width:120px;font-size:0.71rem;" title="${doc.filename}">
+                        <i class="fas fa-file-${isPdf?'pdf text-danger':'image text-info'} me-1"></i>
+                        ${doc.type_name}
+                    </a>
+                    <button type="button" class="btn btn-link p-0 text-danger"
+                            style="font-size:0.65rem;line-height:1;"
+                            onclick="deleteDocument(${doc.id},'${doc.type_name.replace(/'/g,"\\'")}')">
+                        <i class="fas fa-times-circle"></i>
+                    </button>
+                </div>`;
+        });
+    } else {
+        docsHtml = '<span class="text-secondary" style="font-size:0.72rem;font-style:italic;">No files</span>';
+    }
+    return `
+        <td><span class="badge bg-gradient-info" style="font-size:0.7rem;white-space:normal;">${q.level_name}</span></td>
         <td class="text-sm">${q.institution}</td>
-        <td class="d-none d-md-table-cell text-sm">${q.field_of_study || '—'}</td>
+        <td class="d-none d-md-table-cell text-sm">${q.field_of_study||'—'}</td>
         <td class="d-none d-sm-table-cell text-sm">${q.year_completed}</td>
-        <td class="d-none d-md-table-cell text-sm">${q.grade || '—'}</td>
+        <td class="d-none d-md-table-cell text-sm">${q.grade||'—'}</td>
         <td class="d-none d-md-table-cell text-sm">${q.country}</td>
         <td style="min-width:160px;">${docsHtml}</td>
         <td>
             <div class="d-flex gap-1">
-                <button type="button" class="btn btn-outline-info btn-xs" title="Edit"
-                        onclick="editQualification(
-                            ${q.id}, ${q.level_id},
-                            '${esc(q.institution)}', '${esc(q.field_of_study)}',
-                            '${q.year_completed}', '${esc(q.grade)}',
-                            '${esc(q.cert_number)}', '${esc(q.country)}'
-                        )">
+                <button type="button" class="btn btn-outline-info btn-xs"
+                        onclick="editQualification(${q.id},${q.level_id},
+                            '${esc(q.institution)}','${esc(q.field_of_study)}',
+                            '${q.year_completed}','${esc(q.grade)}',
+                            '${esc(q.cert_number)}','${esc(q.country)}')">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button type="button" class="btn btn-outline-danger btn-xs" title="Delete"
-                        onclick="deleteQualification(${q.id}, '${esc(q.level_name)}')">
+                <button type="button" class="btn btn-outline-danger btn-xs"
+                        onclick="deleteQualification(${q.id},'${esc(q.level_name)}')">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
         </td>`;
+}
+
+// ── Edit ──────────────────────────────────────────────────────
+function editQualification(id, levelId, institution, fieldOfStudy, year, grade, certNumber, country) {
+    document.getElementById('edit_qual_id').value     = id;
+    document.getElementById('edit_level').value       = levelId;
+    document.getElementById('edit_institution').value = institution;
+    document.getElementById('edit_field_of_study').value = fieldOfStudy;
+    document.getElementById('edit_grade').value       = grade;
+    document.getElementById('edit_cert_number').value = certNumber;
+    document.getElementById('edit_country').value     = country;
+    populateYears('edit_year_completed', year);
+    editFiles = [];
+    document.getElementById('editFileList').innerHTML = '';
+    new bootstrap.Modal(document.getElementById('editModal')).show();
+}
+
+const editDropZone  = document.getElementById('editDropZone');
+const editFileInput = document.getElementById('editFileInput');
+editDropZone.addEventListener('dragover', e => { e.preventDefault(); editDropZone.classList.add('dragover'); });
+editDropZone.addEventListener('dragleave', () => editDropZone.classList.remove('dragover'));
+editDropZone.addEventListener('drop', e => { e.preventDefault(); editDropZone.classList.remove('dragover'); handleEditFiles(Array.from(e.dataTransfer.files)); });
+editDropZone.addEventListener('click', e => { if (e.target.tagName!=='LABEL'&&e.target.tagName!=='INPUT') editFileInput.click(); });
+editFileInput.addEventListener('change', function() { handleEditFiles(Array.from(this.files)); this.value=''; });
+
+function handleEditFiles(files) {
+    files.forEach(file => {
+        if (!validateFile(file, editFiles)) return;
+        const fileId = 'ef_' + Date.now() + '_' + Math.random().toString(36).substr(2,5);
+        editFiles.push({ file, fileId, docTypeId:'' });
+        document.getElementById('editFileList')
+            .appendChild(buildFileCard(file, fileId, 'updateEditFileType', 'removeEditFile'));
+    });
+}
+function updateEditFileType(fileId, value, sel) {
+    const f = editFiles.find(f => f.fileId===fileId);
+    if (f) f.docTypeId = value;
+    const card = document.getElementById(fileId);
+    if (card) { card.classList.toggle('has-type', !!value); card.classList.toggle('needs-type', !value); }
+    if (sel) sel.classList.toggle('selected', !!value);
+}
+function removeEditFile(fileId) {
+    editFiles = editFiles.filter(f => f.fileId!==fileId);
+    document.getElementById(fileId)?.remove();
+}
+
+function submitEdit() {
+    const qualId      = document.getElementById('edit_qual_id').value;
+    const institution = document.getElementById('edit_institution').value.trim();
+    const year        = document.getElementById('edit_year_completed').value;
+    if (!institution) { Swal.fire({ icon:'error', title:'Required', text:'Institution is required.', position:'center', scrollbarPadding:false, heightAuto:false }); return; }
+    if (!year)        { Swal.fire({ icon:'error', title:'Required', text:'Year completed is required.', position:'center', scrollbarPadding:false, heightAuto:false }); return; }
+    for (const f of editFiles) {
+        if (!f.docTypeId) { Swal.fire({ icon:'warning', title:'Document Type Required', text:`Please select a document type for "${f.file.name}".`, position:'center', scrollbarPadding:false, heightAuto:false }); return; }
+    }
+
+    Swal.fire({ title:'Updating…', icon:'info', allowOutsideClick:false, showConfirmButton:false, position:'center', scrollbarPadding:false, didOpen:()=>Swal.showLoading() });
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', CSRF);
+    formData.append('action', 'edit');
+    formData.append('qual_id', qualId);
+    formData.append('education_level', document.getElementById('edit_level').value);
+    formData.append('institution', institution);
+    formData.append('field_of_study', document.getElementById('edit_field_of_study').value.trim());
+    formData.append('year_completed', year);
+    formData.append('grade', document.getElementById('edit_grade').value.trim());
+    formData.append('cert_number', document.getElementById('edit_cert_number').value.trim());
+    formData.append('country', document.getElementById('edit_country').value.trim() || 'Kenya');
+    editFiles.forEach(f => { formData.append('edit_files', f.file); formData.append('edit_doc_types', f.docTypeId); });
+
+    fetch("{% url 'academic_qualifications' %}", { method:'POST', headers:{'X-CSRFToken':CSRF}, body:formData })
+    .then(r => r.json())
+    .then(data => {
+        Swal.close();
+        if (data.status === 'success') {
+            const row = document.getElementById(`row_${qualId}`);
+            if (row && data.qual) row.innerHTML = buildTableRow(data.qual);
+            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            Swal.fire({ icon:'success', title:'Updated!', text:data.message, timer:1800, showConfirmButton:false, position:'center', scrollbarPadding:false, heightAuto:false });
+        } else {
+            Swal.fire({ icon:'error', title:'Update Failed', text:data.message, position:'center', scrollbarPadding:false, heightAuto:false });
         }
+    })
+    .catch(() => { Swal.close(); Swal.fire({ icon:'error', title:'System Error', text:'Something went wrong.', position:'center', scrollbarPadding:false, heightAuto:false }); });
+}
 
-        // ── Year Populator ───────────────────────────────────────────
-        function populateYears(elId, selected) {
-            const sel = document.getElementById(elId);
-            const cur = new Date().getFullYear();
-            sel.innerHTML = '<option value="">Year</option>';
-            for (let y = cur; y >= 1960; y--) {
-                sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
-            }
-        }
-
-        populateYears('f_year_completed', null);
-
-        // ── Level Select Change ──────────────────────────────────────
-        document.getElementById('levelSelect').addEventListener('change', function () {
-            const fields = document.getElementById('levelFields');
-            if (this.value) {
-                fields.style.display = 'block';
-                document.getElementById('f_institution').value = '';
-                document.getElementById('f_field_of_study').value = '';
-                document.getElementById('f_year_completed').value = '';
-                document.getElementById('f_grade').value = '';
-                document.getElementById('f_cert_number').value = '';
-                document.getElementById('f_country').value = 'Kenya';
-                levelFiles = [];
-                document.getElementById('levelFileList').innerHTML = '';
+// ── Delete qualification ──────────────────────────────────────
+function deleteQualification(qualId, levelName) {
+    Swal.fire({
+        icon:'warning', title:'Delete Qualification',
+        html:`Delete <strong>${levelName}</strong>?<br><small class="text-secondary">This cannot be undone.</small>`,
+        showCancelButton:true, confirmButtonText:'<i class="fas fa-trash me-1"></i> Yes, Delete',
+        cancelButtonText:'Cancel', confirmButtonColor:'#ef4444', cancelButtonColor:'#8392ab',
+        position:'center', scrollbarPadding:false, heightAuto:false,
+    }).then(r => {
+        if (!r.isConfirmed) return;
+        Swal.fire({ title:'Deleting…', icon:'info', allowOutsideClick:false, showConfirmButton:false, position:'center', scrollbarPadding:false, didOpen:()=>Swal.showLoading() });
+        const fd = new FormData();
+        fd.append('csrfmiddlewaretoken', CSRF); fd.append('action','delete'); fd.append('qual_id', qualId);
+        fetch("{% url 'academic_qualifications' %}", { method:'POST', headers:{'X-CSRFToken':CSRF}, body:fd })
+        .then(r => r.json())
+        .then(data => {
+            Swal.close();
+            if (data.status === 'success') {
+                document.getElementById(`row_${qualId}`)?.remove();
+                const badge = document.getElementById('savedCount');
+                const newCount = Math.max(0, parseInt(badge.textContent||0) - 1);
+                badge.textContent = newCount;
+                if (!document.querySelectorAll('#savedTableBody tr').length)
+                    document.getElementById('savedSection').style.display = 'none';
+                Swal.fire({ icon:'success', title:'Deleted', timer:1500, showConfirmButton:false, position:'center', scrollbarPadding:false, heightAuto:false });
             } else {
-                fields.style.display = 'none';
+                Swal.fire({ icon:'error', title:'Failed', text:data.message, position:'center', scrollbarPadding:false, heightAuto:false });
+            }
+        })
+        .catch(() => { Swal.close(); Swal.fire({ icon:'error', title:'System Error', text:'Something went wrong.', position:'center', scrollbarPadding:false, heightAuto:false }); });
+    });
+}
+
+// ── Delete document ───────────────────────────────────────────
+function deleteDocument(docId, typeName) {
+    Swal.fire({
+        icon:'warning', title:'Remove File?',
+        html:`Remove <strong>${typeName}</strong>?<br><small class="text-secondary">Permanently deleted.</small>`,
+        showCancelButton:true, confirmButtonText:'<i class="fas fa-trash me-1"></i> Delete',
+        cancelButtonText:'Cancel', confirmButtonColor:'#ef4444', cancelButtonColor:'#8392ab',
+        position:'center', scrollbarPadding:false, heightAuto:false,
+    }).then(r => {
+        if (!r.isConfirmed) return;
+        const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF);
+        fetch(`/profile/document/${docId}/delete/`, { method:'POST', body:fd })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                document.querySelector(`button[onclick*="deleteDocument(${docId},"]`)?.closest('div.d-flex')?.remove();
+                Swal.fire({ icon:'success', title:'Removed', timer:1200, showConfirmButton:false, position:'center', scrollbarPadding:false, heightAuto:false });
+            } else {
+                Swal.fire({ icon:'error', title:'Failed', text:data.message, position:'center', scrollbarPadding:false, heightAuto:false });
             }
         });
-
-        // ── Level Drop Zone ──────────────────────────────────────────
-        const levelDropZone = document.getElementById('levelDropZone');
-        const levelFileInput = document.getElementById('levelFileInput');
-
-        levelDropZone.addEventListener('dragover', e => { e.preventDefault(); levelDropZone.classList.add('dragover'); });
-        levelDropZone.addEventListener('dragleave', () => levelDropZone.classList.remove('dragover'));
-        levelDropZone.addEventListener('drop', function (e) {
-            e.preventDefault();
-            levelDropZone.classList.remove('dragover');
-            handleLevelFiles(Array.from(e.dataTransfer.files));
-        });
-        levelDropZone.addEventListener('click', function (e) {
-            if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') levelFileInput.click();
-        });
-        levelFileInput.addEventListener('change', function () {
-            handleLevelFiles(Array.from(this.files));
-            this.value = '';
-        });
-
-        function handleLevelFiles(files) {
-            files.forEach(file => {
-                if (!validateFile(file, levelFiles)) return;
-                const fileId = 'lf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-                levelFiles.push({file, fileId, docTypeId: ''});
-                document.getElementById('levelFileList')
-                    .appendChild(buildFileRow(file, fileId, 'updateLevelFileType', 'removeLevelFile'));
-            });
-        }
-
-        function updateLevelFileType(fileId, value) {
-            const f = levelFiles.find(f => f.fileId === fileId);
-            if (f) f.docTypeId = value;
-        }
-
-        function removeLevelFile(fileId) {
-            levelFiles = levelFiles.filter(f => f.fileId !== fileId);
-            document.getElementById(fileId)?.remove();
-        }
-
-        // ── Add Level to Pending ─────────────────────────────────────
-        function addLevelToList() {
-            const select = document.getElementById('levelSelect');
-            const levelId = parseInt(select.value);
-            const levelName = select.options[select.selectedIndex]?.text || '';
-            const institution = document.getElementById('f_institution').value.trim();
-            const yearComp = document.getElementById('f_year_completed').value;
-
-            if (!levelId) {
-                Swal.fire({ icon: 'warning', title: 'Select a Level', text: 'Please select an education level.', position: 'center', scrollbarPadding: false, heightAuto: false });
-                return;
-            }
-            if (pendingLevels.find(p => p.levelId === levelId)) {
-                Swal.fire({ icon: 'warning', title: 'Already Added', text: `${levelName} is already in your list.`, position: 'center', scrollbarPadding: false, heightAuto: false });
-                return;
-            }
-            if (!institution) {
-                Swal.fire({ icon: 'error', title: 'Institution Required', text: 'Please enter the institution name.', position: 'center', scrollbarPadding: false, heightAuto: false });
-                return;
-            }
-            if (!yearComp) {
-                Swal.fire({ icon: 'error', title: 'Year Required', text: 'Please select the year completed.', position: 'center', scrollbarPadding: false, heightAuto: false });
-                return;
-            }
-            for (const f of levelFiles) {
-                if (!f.docTypeId) {
-                    Swal.fire({ icon: 'warning', title: 'Document Type Required', text: `Please select a document type for "${f.file.name}".`, position: 'center', scrollbarPadding: false, heightAuto: false });
-                    return;
-                }
-            }
-
-            const level = educationLevels.find(l => l.id === levelId);
-            pendingLevels.push({
-                levelId,
-                levelName: levelName.replace(' (Foreign)', ''),
-                level,
-                fields: {
-                    institution,
-                    field_of_study: document.getElementById('f_field_of_study').value.trim(),
-                    year_completed: yearComp,
-                    grade: document.getElementById('f_grade').value.trim(),
-                    cert_number: document.getElementById('f_cert_number').value.trim(),
-                    country: document.getElementById('f_country').value.trim() || 'Kenya',
-                },
-                files: [...levelFiles],
-            });
-
-            select.value = '';
-            document.getElementById('levelFields').style.display = 'none';
-            levelFiles = [];
-            document.getElementById('levelFileList').innerHTML = '';
-            renderPendingList();
-        }
-
-        // ── Render Pending List ──────────────────────────────────────
-        function renderPendingList() {
-            const container = document.getElementById('pendingContainer');
-            const list = document.getElementById('pendingList');
-            const countEl = document.getElementById('pendingCount');
-
-            if (pendingLevels.length === 0) { container.style.display = 'none'; return; }
-
-            container.style.display = 'block';
-            countEl.textContent = `${pendingLevels.length} level(s)`;
-            list.innerHTML = '';
-
-            pendingLevels.forEach((p, idx) => {
-                const level = p.level || {};
-                const fileInfo = p.files.length > 0
-                    ? `<span class="badge bg-gradient-secondary ms-2" style="font-size:0.68rem;">${p.files.length} file(s)</span>`
-                    : '';
-
-                list.innerHTML += `
-            <div class="pending-item" id="pending_${idx}">
-                <div class="d-flex align-items-start justify-content-between gap-2 flex-wrap">
-                    <div class="flex-grow-1">
-                        <div class="d-flex align-items-center gap-2 flex-wrap mb-1">
-                            <span class="badge bg-gradient-info px-2 py-1" style="font-size:0.75rem;">
-                                <i class="fas fa-graduation-cap me-1"></i>${p.levelName}
-                            </span>
-                            ${level.higher ? '<span class="badge bg-gradient-dark px-2 py-1" style="font-size:0.65rem;">Higher Ed</span>' : ''}
-                            ${level.foreign ? '<span class="badge bg-gradient-warning px-2 py-1" style="font-size:0.65rem;">Foreign</span>' : ''}
-                            ${fileInfo}
-                        </div>
-                        <div class="text-sm text-secondary">
-                            <strong>${p.fields.institution}</strong>
-                            ${p.fields.field_of_study ? ' · ' + p.fields.field_of_study : ''}
-                            · ${p.fields.year_completed}
-                            ${p.fields.grade ? ' · ' + p.fields.grade : ''}
-                        </div>
-                    </div>
-                    <button type="button" class="btn btn-outline-danger btn-xs pending-remove-btn" onclick="removePending(${idx})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>`;
-            });
-        }
-
-        function removePending(idx) {
-            pendingLevels.splice(idx, 1);
-            renderPendingList();
-        }
-
-        // ── Save All ─────────────────────────────────────────────────
-        function saveAllQualifications() {
-            if (pendingLevels.length === 0) return;
-
-            Swal.fire({ title: 'Saving...', text: 'Please wait.', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
-
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', CSRF);
-            formData.append('action', 'save');
-            formData.append('qualifications', JSON.stringify(pendingLevels.map(p => ({education_level: p.levelId, ...p.fields}))));
-            formData.append('level_count', pendingLevels.length);
-
-            pendingLevels.forEach((p, idx) => {
-                p.files.forEach(f => {
-                    formData.append(`level_files_${idx}`, f.file);
-                    formData.append(`level_doc_types_${idx}`, f.docTypeId);
-                });
-            });
-
-            fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
-                .then(res => res.json())
-                .then(data => {
-                    Swal.close();
-                    if (data.status === 'success') {
-                        Swal.fire({ icon: 'success', title: 'Saved!', text: data.message, confirmButtonText: 'OK', position: 'center', scrollbarPadding: false, heightAuto: false })
-                            .then(() => {
-                                if (data.saved) {
-                                    const tbody = document.getElementById('savedTableBody');
-                                    data.saved.forEach(q => {
-                                        const existing = document.getElementById(`row_${q.id}`);
-                                        if (existing) existing.remove();
-                                        const tr = document.createElement('tr');
-                                        tr.id = `row_${q.id}`;
-                                        tr.innerHTML = buildTableRow(q);
-                                        tbody.appendChild(tr);
-                                    });
-                                    document.getElementById('savedSection').style.display = 'block';
-                                }
-                                pendingLevels = [];
-                                renderPendingList();
-                            });
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Save Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
-                    }
-                })
-                .catch(() => {
-                    Swal.close();
-                    Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong. Please try again.', position: 'center', scrollbarPadding: false, heightAuto: false });
-                });
-        }
-
-        // ── Edit Qualification ───────────────────────────────────────
-        function editQualification(id, levelId, institution, fieldOfStudy, year, grade, certNumber, country) {
-            document.getElementById('edit_qual_id').value = id;
-            document.getElementById('edit_level').value = levelId;
-            document.getElementById('edit_institution').value = institution;
-            document.getElementById('edit_field_of_study').value = fieldOfStudy;
-            document.getElementById('edit_grade').value = grade;
-            document.getElementById('edit_cert_number').value = certNumber;
-            document.getElementById('edit_country').value = country;
-            populateYears('edit_year_completed', year);
-            editFiles = [];
-            document.getElementById('editFileList').innerHTML = '';
-            new bootstrap.Modal(document.getElementById('editModal')).show();
-        }
-
-        const editDropZone = document.getElementById('editDropZone');
-        const editFileInput = document.getElementById('editFileInput');
-
-        editDropZone.addEventListener('dragover', e => { e.preventDefault(); editDropZone.classList.add('dragover'); });
-        editDropZone.addEventListener('dragleave', () => editDropZone.classList.remove('dragover'));
-        editDropZone.addEventListener('drop', function (e) { e.preventDefault(); editDropZone.classList.remove('dragover'); handleEditFiles(Array.from(e.dataTransfer.files)); });
-        editDropZone.addEventListener('click', function (e) { if (e.target.tagName !== 'LABEL' && e.target.tagName !== 'INPUT') editFileInput.click(); });
-        editFileInput.addEventListener('change', function () { handleEditFiles(Array.from(this.files)); this.value = ''; });
-
-        function handleEditFiles(files) {
-            files.forEach(file => {
-                if (!validateFile(file, editFiles)) return;
-                const fileId = 'ef_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
-                editFiles.push({file, fileId, docTypeId: ''});
-                document.getElementById('editFileList').appendChild(buildFileRow(file, fileId, 'updateEditFileType', 'removeEditFile'));
-            });
-        }
-
-        function updateEditFileType(fileId, value) { const f = editFiles.find(f => f.fileId === fileId); if (f) f.docTypeId = value; }
-        function removeEditFile(fileId) { editFiles = editFiles.filter(f => f.fileId !== fileId); document.getElementById(fileId)?.remove(); }
-
-        function submitEdit() {
-            const qualId = document.getElementById('edit_qual_id').value;
-            const institution = document.getElementById('edit_institution').value.trim();
-            const year = document.getElementById('edit_year_completed').value;
-
-            if (!institution) { Swal.fire({ icon: 'error', title: 'Institution Required', text: 'Please enter the institution name.', position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
-            if (!year) { Swal.fire({ icon: 'error', title: 'Year Required', text: 'Please select the year completed.', position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
-            for (const f of editFiles) {
-                if (!f.docTypeId) { Swal.fire({ icon: 'warning', title: 'Document Type Required', text: `Please select a document type for "${f.file.name}".`, position: 'center', scrollbarPadding: false, heightAuto: false }); return; }
-            }
-
-            Swal.fire({ title: 'Updating...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
-
-            const formData = new FormData();
-            formData.append('csrfmiddlewaretoken', CSRF);
-            formData.append('action', 'edit');
-            formData.append('qual_id', qualId);
-            formData.append('education_level', document.getElementById('edit_level').value);
-            formData.append('institution', institution);
-            formData.append('field_of_study', document.getElementById('edit_field_of_study').value.trim());
-            formData.append('year_completed', year);
-            formData.append('grade', document.getElementById('edit_grade').value.trim());
-            formData.append('cert_number', document.getElementById('edit_cert_number').value.trim());
-            formData.append('country', document.getElementById('edit_country').value.trim() || 'Kenya');
-            editFiles.forEach(f => { formData.append('edit_files', f.file); formData.append('edit_doc_types', f.docTypeId); });
-
-            fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
-                .then(res => res.json())
-                .then(data => {
-                    Swal.close();
-                    if (data.status === 'success') {
-                        const row = document.getElementById(`row_${qualId}`);
-                        if (row && data.qual) row.innerHTML = buildTableRow(data.qual);
-                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-                        Swal.fire({ icon: 'success', title: 'Updated!', text: data.message, timer: 1800, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
-                    } else {
-                        Swal.fire({ icon: 'error', title: 'Update Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
-                    }
-                })
-                .catch(() => { Swal.close(); Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong. Please try again.', position: 'center', scrollbarPadding: false, heightAuto: false }); });
-        }
-
-        // ── Delete Qualification ─────────────────────────────────────
-        function deleteQualification(qualId, levelName) {
-            Swal.fire({
-                icon: 'warning', title: 'Delete Qualification',
-                html: `Are you sure you want to delete <strong>${levelName}</strong>?<br><small class="text-secondary">This cannot be undone.</small>`,
-                showCancelButton: true, confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
-                cancelButtonText: 'Cancel', confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
-                position: 'center', scrollbarPadding: false, heightAuto: false,
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                Swal.fire({ title: 'Deleting...', icon: 'info', allowOutsideClick: false, showConfirmButton: false, position: 'center', scrollbarPadding: false, didOpen: () => Swal.showLoading() });
-
-                const formData = new FormData();
-                formData.append('csrfmiddlewaretoken', CSRF);
-                formData.append('action', 'delete');
-                formData.append('qual_id', qualId);
-
-                fetch("{% url 'academic_qualifications' %}", { method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData })
-                    .then(res => res.json())
-                    .then(data => {
-                        Swal.close();
-                        if (data.status === 'success') {
-                            document.getElementById(`row_${qualId}`)?.remove();
-                            if (document.querySelectorAll('#savedTableBody tr').length === 0) document.getElementById('savedSection').style.display = 'none';
-                            Swal.fire({ icon: 'success', title: 'Deleted', text: 'Qualification removed successfully.', timer: 1500, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Delete Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
-                        }
-                    })
-                    .catch(() => { Swal.close(); Swal.fire({ icon: 'error', title: 'System Error', text: 'Something went wrong.', position: 'center', scrollbarPadding: false, heightAuto: false }); });
-            });
-        }
-
-        // ── Delete Individual Document ───────────────────────────────
-        function deleteDocument(docId, typeName) {
-            Swal.fire({
-                icon: 'warning', title: 'Remove File?',
-                html: `Remove <strong>${typeName}</strong>?<br><small class="text-secondary">This file will be permanently deleted.</small>`,
-                showCancelButton: true, confirmButtonText: '<i class="fas fa-trash me-1"></i> Delete',
-                cancelButtonText: 'Cancel', confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
-                position: 'center', scrollbarPadding: false, heightAuto: false,
-            }).then(result => {
-                if (!result.isConfirmed) return;
-                const fd = new FormData();
-                fd.append('csrfmiddlewaretoken', CSRF);
-                fetch(`/profile/document/${docId}/delete/`, { method: 'POST', body: fd })
-                    .then(r => r.json())
-                    .then(data => {
-                        if (data.status === 'success') {
-                            const btn = document.querySelector(`button[onclick*="deleteDocument(${docId},"]`);
-                            if (btn) btn.closest('div.d-flex').remove();
-                            Swal.fire({ icon: 'success', title: 'Removed', timer: 1200, showConfirmButton: false, position: 'center', scrollbarPadding: false, heightAuto: false });
-                        } else {
-                            Swal.fire({ icon: 'error', title: 'Failed', text: data.message, position: 'center', scrollbarPadding: false, heightAuto: false });
-                        }
-                    });
-            });
-        }
-    </script>
+    });
+}
+</script>
 {% endblock %}

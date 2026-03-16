@@ -246,7 +246,8 @@
                                 {% for q in existing %}
                                     <tr id="row_{{ q.id }}">
                                         <td>
-                                            <span class="badge bg-gradient-info" style="font-size:0.7rem; white-space:normal;">
+                                            <span class="badge bg-gradient-info"
+                                                  style="font-size:0.7rem; white-space:normal;">
                                                 {{ q.qualification }}
                                             </span>
                                         </td>
@@ -254,7 +255,8 @@
                                         <td class="d-none d-sm-table-cell text-sm">{{ q.year_obtained }}</td>
                                         <td class="d-none d-md-table-cell text-sm">
                                             {% if q.expiry_year %}
-                                                <span class="badge bg-gradient-warning" style="font-size:0.65rem;">{{ q.expiry_year }}</span>
+                                                <span class="badge bg-gradient-warning"
+                                                      style="font-size:0.65rem;">{{ q.expiry_year }}</span>
                                             {% else %}—{% endif %}
                                         </td>
                                         <td class="d-none d-md-table-cell text-sm">{{ q.grade|default:'—' }}</td>
@@ -263,7 +265,8 @@
                                             {% with docs=q.documents.all %}
                                                 {% if docs %}
                                                     {% for doc in docs %}
-                                                        <div class="d-flex align-items-center gap-1 mb-1" style="flex-wrap:nowrap;">
+                                                        <div class="d-flex align-items-center gap-1 mb-1"
+                                                             style="flex-wrap:nowrap;">
                                                             <a href="{{ doc.file.url }}" target="_blank" rel="noopener"
                                                                class="text-info d-inline-block text-truncate"
                                                                style="max-width:120px; font-size:0.71rem;"
@@ -285,7 +288,8 @@
                                                         </div>
                                                     {% endfor %}
                                                 {% else %}
-                                                    <span class="text-secondary" style="font-size:0.72rem; font-style:italic;">No files</span>
+                                                    <span class="text-secondary"
+                                                          style="font-size:0.72rem; font-style:italic;">No files</span>
                                                 {% endif %}
                                             {% endwith %}
                                         </td>

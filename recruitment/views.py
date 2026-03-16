@@ -218,102 +218,113 @@ def profile_view(request):
 
     if request.method == 'POST':
         try:
-            salutation = request.POST.get('salutation', '').strip()
-            surname = request.POST.get('surname', '').strip()
-            first_name = request.POST.get('first_name', '').strip()
-            second_name = request.POST.get('second_name', '').strip()
-            id_no = request.POST.get('id_no', '').strip()
-            date_of_birth = request.POST.get('date_of_birth') or None
-            gender_id = request.POST.get('gender') or None
-            ethnic_group_id = request.POST.get('ethnic_group') or None
-            home_county_id = request.POST.get('home_county') or None
-            constituency_id = request.POST.get('constituency') or None
-            sub_county_id = request.POST.get('sub_county') or None
-            ward_id = request.POST.get('ward') or None
+            salutation        = request.POST.get('salutation', '').strip()
+            surname           = request.POST.get('surname', '').strip()
+            first_name        = request.POST.get('first_name', '').strip()
+            second_name       = request.POST.get('second_name', '').strip()
+            id_no             = request.POST.get('id_no', '').strip()
+            date_of_birth     = request.POST.get('date_of_birth') or None
+            gender_id         = request.POST.get('gender') or None
+            ethnic_group_id   = request.POST.get('ethnic_group') or None
+            home_county_id    = request.POST.get('home_county') or None
+            constituency_id   = request.POST.get('constituency') or None
+            sub_county_id     = request.POST.get('sub_county') or None
+            ward_id           = request.POST.get('ward') or None
             disability_status = request.POST.get('disability_status', '').strip()
-            disability_other = request.POST.get('disability_other', '').strip()
-            disability_no = request.POST.get('disability_no', '').strip()
-            is_employee = request.POST.get('is_employee') == 'true'
-            employee_number = request.POST.get('employee_number', '').strip()
-            phone_number = request.POST.get('phone_number', '').strip()
+            disability_other  = request.POST.get('disability_other', '').strip()
+            disability_no     = request.POST.get('disability_no', '').strip()
+            is_employee       = request.POST.get('is_employee') == 'true'
+            employee_number   = request.POST.get('employee_number', '').strip()
 
-            # ── Validations ───────────────────────────────────
+            # ── Phone: strip spaces/dashes, enforce 10–13 chars ──────
+            phone_raw    = request.POST.get('phone_number', '').strip()
+            phone_number = re.sub(r'[\s\-]', '', phone_raw)
+
+            # ── Validations ───────────────────────────────────────────
             if not first_name:
-                return JsonResponse({'status': 'error',
-                                     'message': 'First name is required.'})
+                return JsonResponse({'status': 'error', 'message': 'First name is required.'})
             if not surname:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Surname is required.'})
+                return JsonResponse({'status': 'error', 'message': 'Surname is required.'})
             if not id_no:
-                return JsonResponse({'status': 'error',
-                                     'message': 'ID number is required.'})
+                return JsonResponse({'status': 'error', 'message': 'ID number is required.'})
             if not date_of_birth:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Date of birth is required.'})
+                return JsonResponse({'status': 'error', 'message': 'Date of birth is required.'})
             if not phone_number:
+                return JsonResponse({'status': 'error', 'message': 'Phone number is required.'})
+            if len(phone_number) < 10:
                 return JsonResponse({'status': 'error',
-                                     'message': 'Phone number is required.'})
+                                     'message': 'Phone number is too short. Minimum 10 digits (e.g. 0712345678).'})
+            if len(phone_number) > 13:
+                return JsonResponse({'status': 'error',
+                                     'message': 'Phone number is too long. Maximum 13 characters (e.g. +254712345678).'})
             if is_employee and not employee_number:
                 return JsonResponse({'status': 'error',
                                      'message': 'Please enter your UFAA employee number.'})
+            if is_employee and employee_number:
+                from recruitment.models import UFAAStaffNumber
+                if not UFAAStaffNumber.objects.filter(staff_number=employee_number, is_active=True).exists():
+                    return JsonResponse({'status': 'error',
+                                         'message': (
+                                             f'Employee number "{employee_number}" was not found in the '
+                                             'UFAA staff register. Please check the number and try again, '
+                                             'or contact HR if you believe this is an error.'
+                                         )})
             if disability_status == 'Other' and not disability_other:
-                return JsonResponse({'status': 'error',
-                                     'message': 'Please describe your disability.'})
+                return JsonResponse({'status': 'error', 'message': 'Please describe your disability.'})
 
             # Disability no — clear if no disability
             has_disability = disability_status not in ('', 'None')
 
-            # ── Save profile ──────────────────────────────────
-            profile.salutation = salutation
-            profile.surname = surname
-            profile.first_name = first_name
-            profile.second_name = second_name
-            profile.email = user.email
-            profile.id_no = id_no
-            profile.date_of_birth = date_of_birth
-            profile.gender_id = gender_id
-            profile.ethnic_group_id = ethnic_group_id
-            profile.home_county_id = home_county_id
-            profile.constituency_id = constituency_id
-            profile.sub_county_id = sub_county_id
-            profile.ward_id = ward_id
+            # ── Save profile ──────────────────────────────────────────
+            profile.salutation       = salutation
+            profile.surname          = surname
+            profile.first_name       = first_name
+            profile.second_name      = second_name
+            profile.email            = user.email
+            profile.id_no            = id_no
+            profile.date_of_birth    = date_of_birth
+            profile.gender_id        = gender_id
+            profile.ethnic_group_id  = ethnic_group_id
+            profile.home_county_id   = home_county_id
+            profile.constituency_id  = constituency_id
+            profile.sub_county_id    = sub_county_id
+            profile.ward_id          = ward_id
             profile.disability_status = disability_status
-            profile.disability_other = disability_other if disability_status == 'Other' else ''
-            profile.disability_no = disability_no if has_disability else ''
-            profile.employee_number = employee_number if is_employee else ''
-            profile.phone_number = phone_number
+            profile.disability_other  = disability_other if disability_status == 'Other' else ''
+            profile.disability_no     = disability_no if has_disability else ''
+            profile.employee_number   = employee_number if is_employee else ''
+            profile.phone_number      = phone_number
             profile.save()
 
             # Save is_employee on account
             JobseekerAccount.objects.filter(id=user.id).update(is_employee=is_employee)
 
             return JsonResponse({
-                'status': 'success',
-                'message': 'Profile saved successfully.',
+                'status':     'success',
+                'message':    'Profile saved successfully.',
                 'completion': calculate_profile_completion(user),
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
 
     context = {
-        'profile': profile,
-        'user': user,
-        'page': 'Profile',
-        'counties': County.objects.all(),
-        'constituencies': Constituency.objects.all(),
-        'sub_counties': SubCounty.objects.all(),
-        'wards': Ward.objects.all(),
-        'genders': Gender.objects.all(),
-        'ethnic_groups': EthnicGroup.objects.all(),
-        'completion': completion,
-        'has_academic': AcademicQualification.objects.filter(user=user).exists(),
+        'profile':          profile,
+        'user':             user,
+        'page':             'Profile',
+        'counties':         County.objects.all(),
+        'constituencies':   Constituency.objects.all(),
+        'sub_counties':     SubCounty.objects.all(),
+        'wards':            Ward.objects.all(),
+        'genders':          Gender.objects.all(),
+        'ethnic_groups':    EthnicGroup.objects.all(),
+        'completion':       completion,
+        'has_academic':     AcademicQualification.objects.filter(user=user).exists(),
         'has_professional': ProfessionalQualification.objects.filter(user=user).exists(),
         'has_work_history': WorkHistory.objects.filter(user=user).exists(),
-        'has_additional': AdditionalDetail.objects.filter(user=user).exists(),
-        'has_memberships': ProfessionalBodyMembership.objects.filter(user=user).exists(),
-        'has_referees': Referee.objects.filter(user=user).count() >= 2,
+        'has_additional':   AdditionalDetail.objects.filter(user=user).exists(),
+        'has_memberships':  ProfessionalBodyMembership.objects.filter(user=user).exists(),
+        'has_referees':     Referee.objects.filter(user=user).count() >= 2,
     }
     return render(request, 'Jobseekers/profile.html', context)
 
@@ -2545,10 +2556,11 @@ def _application_ready(user):
 
     if not detail or not detail.cv:
         issues.append({'label': 'Upload your CV', 'url': 'additional_details', 'icon': 'fa-file-pdf'})
+    if not detail or not detail.cover_letter:
+        issues.append({'label': 'Upload your cover letter', 'url': 'additional_details', 'icon': 'fa-file-alt'})
     if not detail or not detail.availability:
         issues.append({'label': 'Set your availability', 'url': 'additional_details', 'icon': 'fa-calendar-check'})
-    if not detail or not detail.expected_salary:
-        issues.append({'label': 'Enter your expected salary', 'url': 'additional_details', 'icon': 'fa-money-bill'})
+
 
     return len(issues) == 0, issues
 

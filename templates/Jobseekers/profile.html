@@ -83,20 +83,18 @@
                 </li>
                 <!-- Memberships tab — enable when url is ready -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'memberships' %}">
+                    <a class="nav-link disabled" href="#"
+                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
                         <i class="fas fa-users me-1"></i>
                         <span class="d-none d-sm-inline">Memberships</span>
-                        {% if has_memberships %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <!-- Referees tab — enable when url is ready -->
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'referees' %}">
+                    <a class="nav-link disabled" href="#"
+                       title="Coming soon" style="opacity:0.45; cursor:not-allowed;">
                         <i class="fas fa-user-tie me-1"></i>
                         <span class="d-none d-sm-inline">Referees</span>
-                        {% if has_referees %}
-                            <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}
                     </a>
                 </li>
                 <li class="nav-item">
@@ -150,9 +148,14 @@
                                     </span>
                                         <input type="tel" name="phone_number" id="phone_number"
                                                class="form-control"
-                                               placeholder="e.g. 0712 345 678"
+                                               placeholder="e.g. 0712345678 or +254712345678"
+                                               maxlength="13"
+                                               minlength="10"
                                                value="{{ profile.phone_number|default:'' }}">
                                     </div>
+                                    <small class="text-secondary d-block mt-1" style="font-size:0.72rem;">
+                                        <i class="fas fa-info-circle me-1"></i>10 digits local · 13 with +254
+                                    </small>
                                 </div>
 
                                 <!-- Salutation -->
@@ -420,9 +423,12 @@
                                     </span>
                                         <input type="text" name="employee_number" id="employee_number"
                                                class="form-control"
-                                               placeholder="Enter your employee number"
+                                               placeholder="e.g. 2017041"
+                                               oninput="checkEmployeeNumber(this.value)"
                                                value="{{ profile.employee_number|default:'' }}">
                                     </div>
+                                    <small id="empNumFeedback"
+                                           style="font-size:0.72rem;display:none;margin-top:0.25rem;"></small>
                                 </div>
 
                             </div>
@@ -456,6 +462,38 @@
 {% block extra_js %}
     <script>
         const CSRF = '{{ csrf_token }}';
+
+        // ── Employee Number live check ────────────────────────────────
+        const VALID_STAFF_NOS = new Set([
+            '2025043', '20150007', '2017041', '2015008', '20150009',
+            '2015014', '2015019', '2015020', '2015022', '2017037',
+            '2017038', '2017039', '2015015', '2015024', '2017031',
+            '2017034', '2017035', '2017036', '2017026', '2015012',
+            '2015018', '2017030', '2017032', '2015011', '2015023',
+            '2017033', '2017027'
+        ]);
+
+        function checkEmployeeNumber(val) {
+            const fb = document.getElementById('empNumFeedback');
+            if (!val) {
+                fb.style.display = 'none';
+                return;
+            }
+            if (VALID_STAFF_NOS.has(val.trim())) {
+                fb.style.display = 'block';
+                fb.innerHTML = '<i class="fas fa-check-circle me-1" style="color:#1a7a45;"></i>'
+                    + '<span style="color:#1a7a45;">Valid UFAA staff number</span>';
+            } else {
+                fb.style.display = 'block';
+                fb.innerHTML = '<i class="fas fa-times-circle me-1" style="color:#c0392b;"></i>'
+                    + '<span style="color:#c0392b;">Number not found in UFAA staff register</span>';
+            }
+        }
+
+        // Run on page load if value already filled
+        document.addEventListener('DOMContentLoaded', () => {
+            checkEmployeeNumber(document.getElementById('employee_number').value);
+        });
 
         // ── Disability Fields Toggle ──────────────────────────────────
         // Called whenever disability select changes
@@ -587,6 +625,21 @@
                 return Swal.fire({
                     icon: 'error', title: 'Required',
                     text: 'Phone number is required.',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            const phoneClean = fields.phone_number.replace(/[\s\-]/g, '');
+            if (phoneClean.length < 10) {
+                return Swal.fire({
+                    icon: 'error', title: 'Too Short',
+                    text: 'Phone number must be at least 10 digits (e.g. 0712345678).',
+                    position: 'center', scrollbarPadding: false, heightAuto: false
+                });
+            }
+            if (phoneClean.length > 13) {
+                return Swal.fire({
+                    icon: 'error', title: 'Too Long',
+                    text: 'Phone number cannot exceed 13 characters (e.g. +254712345678).',
                     position: 'center', scrollbarPadding: false, heightAuto: false
                 });
             }

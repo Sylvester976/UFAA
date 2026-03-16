@@ -378,6 +378,13 @@
                                             <span class="vd-label"><i class="fas fa-tag me-1"></i>Type</span>
                                             <span class="vd-value">{{ vacancy.get_vacancy_type_display }}</span>
                                         </div>
+                                        {% if vacancy.grade_category %}
+                                            <div class="vd-item">
+                                                <span class="vd-label"><i
+                                                        class="fas fa-layer-group me-1"></i>Grade</span>
+                                                <span class="vd-value">{{ vacancy.grade_category }}</span>
+                                            </div>
+                                        {% endif %}
                                         <div class="vd-item">
                                             <span class="vd-label"><i class="fas fa-calendar-alt me-1"></i>Opening Date</span>
                                             <span class="vd-value">{{ vacancy.start_date|date:"d M Y" }}</span>
@@ -541,6 +548,15 @@
                         </div>
                     </div>
                     <div class="snap-row">
+                        <div class="snap-icon"><i class="fas fa-file-alt"></i></div>
+                        <div>
+                            <div class="snap-lbl">Cover Letter</div>
+                            <div class="snap-val">{% if detail and detail.cover_letter %}<span style="color:#065f46;"><i
+                                    class="fas fa-check-circle me-1"></i>Uploaded</span>{% else %}
+                                <span style="color:#dc3545;">Not uploaded</span>{% endif %}</div>
+                        </div>
+                    </div>
+                    <div class="snap-row">
                         <div class="snap-icon"><i class="fas fa-calendar-check"></i></div>
                         <div>
                             <div class="snap-lbl">Availability</div>
@@ -551,9 +567,11 @@
                     <div class="snap-row">
                         <div class="snap-icon"><i class="fas fa-money-bill-wave"></i></div>
                         <div>
-                            <div class="snap-lbl">Expected Salary</div>
+                            <div class="snap-lbl">Expected Salary <span
+                                    style="font-weight:400;opacity:.7;">(optional)</span></div>
                             <div class="snap-val">{% if detail and detail.expected_salary %}KES
-                                {{ detail.expected_salary|floatformat:'0' }}{% else %}—{% endif %}</div>
+                                {{ detail.expected_salary|floatformat:'0' }}{% else %}
+                                <span style="color:#adb5bd;">Not specified</span>{% endif %}</div>
                         </div>
                     </div>
                     <div class="final-warning">

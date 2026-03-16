@@ -490,6 +490,9 @@ class AdditionalDetail(models.Model):
         ('1 Month Notice', '1 Month Notice'),
         ('2 Months Notice', '2 Months Notice'),
         ('3 Months Notice', '3 Months Notice'),
+        ('4 Months Notice', '4 Months Notice'),
+        ('5 Months Notice', '5 Months Notice'),
+        ('6 Months Notice', '6 Months Notice'),
         ('Not Available', 'Not Available'),
     ]
 
@@ -1198,3 +1201,21 @@ class InterviewLog(models.Model):
 
     def __str__(self):
         return f"{self.action} on {self.vacancy} at {self.timestamp:%Y-%m-%d %H:%M}"
+
+
+class UFAAStaffNumber(models.Model):
+    """
+    Authorised UFAA staff/payroll numbers.
+    Used to verify self-declared UFAA employees during profile setup.
+    """
+    staff_number = models.CharField(max_length=20, unique=True)
+    name = models.CharField(max_length=200, blank=True)  # as on payroll — for reference only
+    is_active = models.BooleanField(default=True)
+
+    class Meta:
+        verbose_name = 'UFAA Staff Number'
+        verbose_name_plural = 'UFAA Staff Numbers'
+        ordering = ['staff_number']
+
+    def __str__(self):
+        return f"{self.staff_number} — {self.name}"
