@@ -982,6 +982,8 @@
                                         <div class="ref-card">
                                             <div class="ref-name">{{ ref.name|default:"—" }}</div>
                                             <div class="ref-title">{{ ref.occupation|default:"—" }}</div>
+                                            <div class="ref-title">{{ ref.organization|default:"—" }}</div>
+
                                             {% if ref.mobile %}
                                                 <div class="ref-meta"><i class="fas fa-phone"
                                                                          style="font-size:.65rem;color:#adb5bd;"></i> {{ ref.mobile }}

@@ -682,6 +682,11 @@ a { text-decoration:none !important; }
                     <span class="chip chip-done" style="font-size:.72rem;padding:.3rem .75rem;">
                         <i class="fas fa-check me-1"></i>Candidates Notified
                     </span>
+                    <button class="btn-act btn-outline" onclick="resendCandidates()"
+                            style="font-size:.72rem;padding:.3rem .85rem;"
+                            title="Use after rescheduling to resend updated slot details">
+                        <i class="fas fa-redo"></i> Resend
+                    </button>
                     {% else %}
                     <span style="font-size:.72rem;color:#adb5bd;">
                         <i class="fas fa-info-circle me-1"></i>
@@ -995,6 +1000,18 @@ async function notifyCandidates() {
     const data = await res.json();
     if (data.error) { showToast(data.error, 'error'); return; }
     showToast(`${data.sent} candidate(s) notified.`, 'success');
+    setTimeout(() => location.reload(), 1500);
+}
+
+async function resendCandidates() {
+    if (!confirm('Resend updated interview details to all candidates whose slots have changed?')) return;
+    const res  = await fetch(
+        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`,
+        { method: 'POST', headers: { 'X-CSRFToken': csrfToken() } }
+    );
+    const data = await res.json();
+    if (data.error) { showToast(data.error, 'error'); return; }
+    showToast(`${data.sent} candidate(s) notified with updated details.`, 'success');
     setTimeout(() => location.reload(), 1500);
 }
 </script>

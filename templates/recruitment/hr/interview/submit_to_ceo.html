@@ -1,0 +1,325 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Submit to CEO — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy:#262561; --navy-lt:#1a1f5c; --gold:#F9E6A1; --gold-dk:#C39545; --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
+a { text-decoration:none !important; }
+
+.page-banner { background:linear-gradient(135deg,var(--navy),var(--navy-lt)); border-radius:1rem; padding:1.25rem 1.5rem; color:#fff; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem; }
+.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+.banner-ref   { font-family:monospace; font-size:.72rem; background:rgba(249,230,161,.15); color:var(--gold); padding:.25rem .65rem; border-radius:.4rem; }
+.back-link    { color:rgba(255,255,255,.65); font-size:.78rem; display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+.section-card { background:#fff; border-radius:.9rem; box-shadow:0 2px 14px rgba(38,37,97,.08); overflow:hidden; margin-bottom:1.25rem; }
+.section-header { padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:.5rem; }
+.section-title { font-size:.82rem; font-weight:800; color:var(--navy); display:flex; align-items:center; gap:.5rem; margin:0; }
+
+/* rank table */
+.rank-table { width:100%; border-collapse:collapse; font-size:.8rem; }
+.rank-table th { background:#f8f9ff; color:#8392ab; font-size:.62rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:.6rem .9rem; border-bottom:1px solid #f0f2f8; }
+.rank-table td { padding:.6rem .9rem; border-bottom:1px solid #f7f8fc; vertical-align:middle; }
+.rank-table tr:last-child td { border-bottom:none; }
+.rank-table tr:hover td { background:#fafbff; }
+
+.rank-badge { display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:50%; font-size:.62rem; font-weight:800; }
+.r1 { background:#ffd700; color:#6d4c00; }
+.r2 { background:#c0c0c0; color:#3a3a3a; }
+.r3 { background:#cd7f32; color:#fff; }
+.rx { background:#f0f2f8; color:#8392ab; }
+
+.score-bar-wrap { display:flex; align-items:center; gap:.5rem; }
+.score-bar-bg   { flex:1; height:6px; background:#f0f2f8; border-radius:99px; overflow:hidden; max-width:100px; }
+.score-bar-fill { height:100%; border-radius:99px; background:linear-gradient(90deg,var(--navy),#4f46e5); }
+.score-pct { font-size:.7rem; font-weight:700; color:var(--navy); }
+
+.checkbox-select { width:16px; height:16px; accent-color:var(--navy); cursor:pointer; }
+tr.row-selected td { background:#f0f4ff !important; }
+
+.chip { font-size:.63rem; font-weight:700; padding:.2rem .55rem; border-radius:99px; }
+.chip-green  { background:#d4f5e2; color:#1a5c38; }
+.chip-amber  { background:#fff3cd; color:var(--amber); }
+.chip-muted  { background:#f0f2f8; color:#8392ab; }
+
+.error-box { background:#fde8e8; border-left:4px solid var(--red); border-radius:0 .45rem .45rem 0; padding:.7rem 1rem; font-size:.8rem; color:var(--red); font-weight:600; margin-bottom:1rem; display:flex; align-items:center; gap:.5rem; }
+
+#overrideBox { display:none; background:#fffbf0; border:1.5px solid #ffe082; border-radius:.6rem; padding:1rem 1.25rem; margin-top:.85rem; }
+
+.btn-act { font-size:.8rem; font-weight:700; padding:.5rem 1.25rem; border-radius:.45rem; border:none; cursor:pointer; display:inline-flex; align-items:center; gap:.4rem; transition:opacity .15s; }
+.btn-act:hover    { opacity:.88; }
+.btn-act:disabled { opacity:.4; cursor:not-allowed; }
+.btn-navy   { background:var(--navy); color:#fff; }
+.btn-outline { background:#fff; border:1.5px solid #d0d7f0; color:var(--navy); }
+
+.selection-panel { position:sticky; top:1rem; }
+.sel-counter { font-size:1.6rem; font-weight:800; color:var(--navy); line-height:1; }
+.sel-limit   { font-size:.72rem; color:#8392ab; }
+.sel-name    { font-size:.78rem; font-weight:600; color:var(--navy); display:flex; align-items:center; gap:.4rem; padding:.3rem 0; border-bottom:1px solid #f0f2f8; }
+.sel-name:last-child { border-bottom:none; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+  <!-- Banner -->
+  <div class="page-banner">
+    <div>
+      <p class="banner-title mb-1">
+        <i class="fas fa-paper-plane me-2"></i>Submit to CEO
+      </p>
+      <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <span class="banner-ref">{{ vacancy.reference_number }}</span>
+      <a href="{% url 'hr_interview_results' vacancy.id %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Results
+      </a>
+    </div>
+  </div>
+
+  <!-- Error -->
+  {% if error %}
+  <div class="error-box"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+  {% endif %}
+
+  <form method="POST" id="submitForm">
+    {% csrf_token %}
+    <div class="row g-3">
+
+      <!-- ── Main: Ranked table ── -->
+      <div class="col-lg-8">
+
+        <div class="section-card">
+          <div class="section-header">
+            <h6 class="section-title">
+              <i class="fas fa-trophy" style="color:var(--gold-dk);"></i>
+              Ranked Interview Results
+              <span style="font-size:.72rem;font-weight:400;color:#8392ab;">
+                — select up to {{ top_n }} for CEO review
+              </span>
+            </h6>
+            <span class="chip chip-muted">{{ total_candidates }} candidate{{ total_candidates|pluralize }}</span>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table class="rank-table">
+              <thead>
+                <tr>
+                  <th style="width:40px;">Select</th>
+                  <th style="width:46px;">Rank</th>
+                  <th>Candidate</th>
+                  <th>Score</th>
+                  {% for c in criteria %}
+                  <th style="white-space:nowrap;">{{ c.name }}</th>
+                  {% endfor %}
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for row in result_rows %}
+                {% with b=row.app.snapshot_basic %}
+                <tr id="tr-{{ row.app.id }}"
+                    onclick="toggleRow('{{ row.app.id }}')"
+                    style="cursor:pointer;">
+                  <td onclick="event.stopPropagation();">
+                    <input type="checkbox"
+                           name="selected_ids"
+                           value="{{ row.app.id }}"
+                           id="chk-{{ row.app.id }}"
+                           class="checkbox-select"
+                           onchange="onCheck('{{ row.app.id }}','{{ row.full_name|escapejs }}',{{ row.rank|default:'null' }})"
+                           {% if row.is_top3 and forloop.counter <= top_n %}{% endif %}>
+                  </td>
+                  <td>
+                    <span class="rank-badge {% if row.rank == 1 %}r1{% elif row.rank == 2 %}r2{% elif row.rank == 3 %}r3{% else %}rx{% endif %}">
+                      {{ row.rank|default:'?' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div style="font-weight:700;color:var(--navy);font-size:.82rem;">
+                      {{ row.full_name }}
+                    </div>
+                    <div style="font-size:.7rem;color:#8392ab;">
+                      {{ row.app.application_number }} · {{ b.id_no|default:'—' }}
+                    </div>
+                  </td>
+                  <td>
+                    <div class="score-bar-wrap">
+                      <div class="score-bar-bg">
+                        <div class="score-bar-fill" style="width:{{ row.result.percentage }}%;"></div>
+                      </div>
+                      <span class="score-pct">{{ row.result.percentage }}%</span>
+                    </div>
+                    <div style="font-size:.68rem;color:#8392ab;margin-top:.15rem;">
+                      {{ row.result.total_score }} / {{ row.result.max_possible }}
+                    </div>
+                  </td>
+                  {% for c in criteria %}
+                  <td style="text-align:center;font-weight:700;font-size:.8rem;color:var(--navy);">
+                    {{ row.crit_totals|default:'—' }}
+                  </td>
+                  {% endfor %}
+                  <td>
+                    {% if row.is_top3 %}
+                      <span class="chip chip-green">Top {{ top_n }}</span>
+                    {% else %}
+                      <span class="chip chip-amber">Override required</span>
+                    {% endif %}
+                  </td>
+                </tr>
+                {% endwith %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Override reason (shown if non-top-3 selected) -->
+        <div id="overrideBox" class="section-card">
+          <div style="padding:1rem 1.25rem;">
+            <label style="font-size:.8rem;font-weight:700;color:var(--amber);">
+              <i class="fas fa-edit me-1"></i>
+              Override Justification <span style="color:var(--red);">*</span>
+            </label>
+            <p style="font-size:.72rem;color:#8392ab;margin:.25rem 0 .5rem;">
+              One or more of your selections is outside the ranked top {{ top_n }}.
+              A written justification is required and will be permanently logged.
+            </p>
+            <textarea name="override_reason" rows="3"
+                      style="width:100%;padding:.6rem .85rem;border:1.5px solid #ffe082;
+                             border-radius:.5rem;font-size:.8rem;color:#344767;
+                             box-sizing:border-box;resize:vertical;"
+                      placeholder="State the specific reason for overriding the ranked results…"></textarea>
+          </div>
+        </div>
+
+      </div><!-- /col-lg-8 -->
+
+      <!-- ── Right: Selection summary ── -->
+      <div class="col-lg-4">
+        <div class="section-card selection-panel">
+          <div class="section-header">
+            <h6 class="section-title">
+              <i class="fas fa-list-check" style="color:var(--green);"></i>
+              Your Selection
+            </h6>
+          </div>
+          <div style="padding:.9rem 1.1rem;">
+            <div style="display:flex;align-items:baseline;gap:.5rem;margin-bottom:.25rem;">
+              <span class="sel-counter" id="selCount">0</span>
+              <span class="sel-limit">/ 3 maximum</span>
+            </div>
+            <div id="selList" style="margin:.6rem 0;">
+              <div id="selEmpty" style="font-size:.78rem;color:#b0bac9;padding:.5rem 0;">
+                No candidates selected yet
+              </div>
+            </div>
+            <div style="font-size:.72rem;color:#8392ab;border-top:1px solid #f0f2f8;
+                        padding-top:.6rem;margin-top:.5rem;">
+              <i class="fas fa-info-circle me-1" style="color:var(--gold-dk);"></i>
+              Tick the checkbox on each row to select. Top {{ top_n }} are
+              pre-recommended. Override is allowed with justification.
+            </div>
+          </div>
+          <div style="padding:.75rem 1.1rem;border-top:1px solid #f0f2f8;">
+            <button type="submit" class="btn-act btn-navy w-100" id="submitBtn" disabled>
+              <i class="fas fa-paper-plane"></i> Submit to CEO
+            </button>
+            <a href="{% url 'hr_interview_results' vacancy.id %}"
+               class="btn-act btn-outline w-100 mt-2"
+               style="justify-content:center;">
+              <i class="fas fa-arrow-left"></i> Back to Results
+            </a>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /row -->
+  </form>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const TOP_N     = {{ top_n }};
+const TOP3_IDS  = new Set([{% for row in result_rows %}{% if row.is_top3 %}'{{ row.app.id }}',{% endif %}{% endfor %}]);
+let   selected  = {};   // {appId: {name, rank}}
+
+function onCheck(appId, name, rank) {
+  const chk = document.getElementById('chk-' + appId);
+  const tr  = document.getElementById('tr-' + appId);
+
+  if (chk.checked) {
+    if (Object.keys(selected).length >= 3) {
+      chk.checked = false;
+      alert('You may select a maximum of 3 candidates.');
+      return;
+    }
+    selected[appId] = { name, rank };
+    tr.classList.add('row-selected');
+  } else {
+    delete selected[appId];
+    tr.classList.remove('row-selected');
+  }
+  updateSummary();
+}
+
+function toggleRow(appId) {
+  const chk = document.getElementById('chk-' + appId);
+  chk.checked = !chk.checked;
+  onCheck(appId,
+    chk.closest('tr').querySelector('div[style*="font-weight:700"]')?.textContent?.trim() || '',
+    null);
+}
+
+function updateSummary() {
+  const count   = Object.keys(selected).length;
+  const hasOverride = Object.keys(selected).some(id => !TOP3_IDS.has(id));
+
+  document.getElementById('selCount').textContent = count;
+  document.getElementById('submitBtn').disabled   = count === 0;
+  document.getElementById('overrideBox').style.display = hasOverride ? '' : 'none';
+
+  const listEl  = document.getElementById('selList');
+  const emptyEl = document.getElementById('selEmpty');
+
+  if (count === 0) {
+    emptyEl.style.display = '';
+    // remove previous items
+    listEl.querySelectorAll('.sel-name').forEach(e => e.remove());
+  } else {
+    emptyEl.style.display = 'none';
+    listEl.querySelectorAll('.sel-name').forEach(e => e.remove());
+    Object.entries(selected).forEach(([id, d]) => {
+      const isOvr = !TOP3_IDS.has(id);
+      const div   = document.createElement('div');
+      div.className = 'sel-name';
+      div.innerHTML = `
+        <i class="fas fa-${isOvr ? 'exclamation-triangle' : 'check-circle'}"
+           style="color:${isOvr ? 'var(--amber)' : 'var(--green)'};font-size:.75rem;flex-shrink:0;"></i>
+        <span>${d.name}${d.rank ? ' (Rank ' + d.rank + ')' : ''}</span>
+        ${isOvr ? '<span class="chip chip-amber ms-auto">Override</span>' : ''}
+      `;
+      listEl.appendChild(div);
+    });
+  }
+}
+
+// Validate override reason on submit
+document.getElementById('submitForm').addEventListener('submit', function(e) {
+  const hasOverride = Object.keys(selected).some(id => !TOP3_IDS.has(id));
+  if (hasOverride) {
+    const reason = document.querySelector('textarea[name=override_reason]')?.value.trim();
+    if (!reason) {
+      e.preventDefault();
+      document.querySelector('textarea[name=override_reason]').focus();
+      alert('Please enter an override justification before submitting.');
+    }
+  }
+});
+</script>
+{% endblock %}

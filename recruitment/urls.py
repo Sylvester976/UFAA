@@ -164,28 +164,43 @@ urlpatterns = [
     path('committee/vacancy/<int:vacancy_id>/results/', views.committee_results, name='committee_results'),
     path('committee/vacancy/<int:vacancy_id>/coi/', views.committee_declare_coi, name='committee_declare_coi'),
 
-    # ── HR interview URLs ──────────────────────────────────────────────────────────────────
-    path('hr/vacancy/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
-    path('hr/vacancy/<int:vacancy_id>/interview/', views.hr_interview_setup, name='hr_interview_setup'),
-    path('hr/vacancy/<int:vacancy_id>/interview/panel/add/', views.hr_panel_add, name='hr_panel_add'),
-    path('hr/vacancy/<int:vacancy_id>/interview/panel/remove/', views.hr_panel_remove, name='hr_panel_remove'),
-    path('hr/vacancy/<int:vacancy_id>/interview/panel/notify/', views.hr_panel_notify, name='hr_panel_notify'),
-    path('hr/vacancy/<int:vacancy_id>/interview/panel/search/', views.hr_panel_staff_search,
-         name='hr_panel_staff_search'),
-    path('hr/vacancy/<int:vacancy_id>/interview/criteria/save/', views.hr_criteria_save, name='hr_criteria_save'),
-    path('hr/vacancy/<int:vacancy_id>/interview/slots/save/', views.hr_slots_save, name='hr_slots_save'),
-    path('hr/vacancy/<int:vacancy_id>/interview/notify/', views.hr_interview_notify, name='hr_interview_notify'),
-    path('hr/vacancy/<int:vacancy_id>/interview/progress/', views.hr_interview_progress, name='hr_interview_progress'),
-    path('hr/vacancy/<int:vacancy_id>/interview/results/', views.hr_interview_results, name='hr_interview_results'),
+    # ─────────────────────────────────────────────────────────────────────────────
+    # INTERVIEW STAGE VIEWS  (M05 + M06)
+    #
+    # ── HR URLs ──────────────────────────────────────────────────────────────────
+      path('hr/vacancy/interviews/', views.vacancy_interviews, name='vacancy_interviews'),
+      path('hr/vacancy/<int:vacancy_id>/interview/',               views.hr_interview_setup,      name='hr_interview_setup'),
+      path('hr/vacancy/<int:vacancy_id>/interview/panel/add/',     views.hr_panel_add,            name='hr_panel_add'),
+      path('hr/vacancy/<int:vacancy_id>/interview/panel/remove/',  views.hr_panel_remove,         name='hr_panel_remove'),
+      path('hr/vacancy/<int:vacancy_id>/interview/panel/notify/',  views.hr_panel_notify,         name='hr_panel_notify'),
+      path('hr/vacancy/<int:vacancy_id>/interview/panel/search/',  views.hr_panel_staff_search,   name='hr_panel_staff_search'),
+      path('hr/vacancy/<int:vacancy_id>/interview/criteria/save/', views.hr_criteria_save,        name='hr_criteria_save'),
+      path('hr/vacancy/<int:vacancy_id>/interview/slots/save/',    views.hr_slots_save,           name='hr_slots_save'),
+      path('hr/vacancy/<int:vacancy_id>/interview/notify/',        views.hr_interview_notify,     name='hr_interview_notify'),
+      path('hr/vacancy/<int:vacancy_id>/interview/progress/',      views.hr_interview_progress,   name='hr_interview_progress'),
+      path('hr/vacancy/<int:vacancy_id>/interview/results/',       views.hr_interview_results,    name='hr_interview_results'),
 
     # ── Panel member URLs ─────────────────────────────────────────────────────────
-    path('panel/dashboard/', views.panel_dashboard, name='panel_dashboard'),
-    path('panel/vacancy/<int:vacancy_id>/acknowledge/', views.panel_acknowledge, name='panel_acknowledge'),
-    path('panel/vacancy/<int:vacancy_id>/coi/', views.panel_declare_coi, name='panel_declare_coi'),
-    path('panel/vacancy/<int:vacancy_id>/score/', views.panel_score, name='panel_score'),
-    path('panel/vacancy/<int:vacancy_id>/score/save/', views.panel_score_save, name='panel_score_save'),
-    path('panel/vacancy/<int:vacancy_id>/score/submit-all/', views.panel_submit_all, name='panel_submit_all'),
-    path('panel/vacancy/<int:vacancy_id>/results/', views.panel_results, name='panel_results'),
+      path('panel/dashboard/',                                     views.panel_dashboard,         name='panel_dashboard'),
+      path('panel/vacancy/<int:vacancy_id>/acknowledge/',          views.panel_acknowledge,       name='panel_acknowledge'),
+      path('panel/vacancy/<int:vacancy_id>/coi/',                  views.panel_declare_coi,       name='panel_declare_coi'),
+      path('panel/vacancy/<int:vacancy_id>/score/',                views.panel_score,             name='panel_score'),
+      path('panel/vacancy/<int:vacancy_id>/score/save/',           views.panel_score_save,        name='panel_score_save'),
+      path('panel/vacancy/<int:vacancy_id>/score/submit-all/',     views.panel_submit_all,        name='panel_submit_all'),
+      path('panel/vacancy/<int:vacancy_id>/results/',              views.panel_results,           name='panel_results'),
     # ─────────────────────────────────────────────────────────────────────────────
+
+    path('hr/vacancy/<int:vacancy_id>/submit-to-ceo/',
+         views.hr_submit_to_ceo, name='hr_submit_to_ceo'),
+    path('ceo/dashboard/',
+         views.ceo_dashboard, name='ceo_dashboard'),
+    path('ceo/vacancy/<int:vacancy_id>/review/',
+         views.ceo_vacancy_review, name='ceo_vacancy_review'),
+    path('ceo/vacancy/<int:vacancy_id>/select/',
+         views.ceo_make_selection, name='ceo_make_selection'),
+    path('hr/vacancy/<int:vacancy_id>/appoint/',
+         views.hr_issue_appointment, name='hr_issue_appointment'),
+    path('hr/appointments/',
+         views.hr_appointments_list, name='hr_appointments_list'),
 
 ]

@@ -1,0 +1,196 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Appointments{% endblock %}
+
+{% block extra_css %}
+<style>
+:root { --navy:#262561; --navy-lt:#1a1f5c; --gold:#F9E6A1; --gold-dk:#C39545; --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
+a { text-decoration:none !important; }
+
+.page-banner {
+  background:linear-gradient(135deg,var(--navy),var(--navy-lt));
+  border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
+}
+.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.65); margin:.15rem 0 0; }
+
+.section-card {
+  background:#fff; border-radius:.9rem;
+  box-shadow:0 2px 14px rgba(38,37,97,.08);
+  overflow:hidden; margin-bottom:1.25rem;
+}
+.section-header {
+  padding:.9rem 1.25rem; border-bottom:1px solid #f0f2f8;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem;
+}
+.section-title {
+  font-size:.85rem; font-weight:800; color:var(--navy);
+  display:flex; align-items:center; gap:.5rem; margin:0;
+}
+
+/* ── Appointment cards ── */
+.appt-grid {
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(320px,1fr));
+  gap:1rem; padding:1.1rem 1.25rem;
+}
+.appt-card {
+  border:2px solid #e8ecf4; border-radius:.8rem;
+  padding:1.15rem 1.2rem; position:relative; overflow:hidden;
+  transition:border-color .15s, box-shadow .15s;
+}
+.appt-card:hover { border-color:var(--navy); box-shadow:0 4px 18px rgba(38,37,97,.1); }
+.appt-card::before {
+  content:''; position:absolute; top:0; left:0;
+  width:4px; height:100%;
+  background:linear-gradient(180deg,var(--green),#22c55e);
+}
+
+.ac-vacancy   { font-size:.88rem; font-weight:700; color:var(--navy); margin:0 0 .15rem; }
+.ac-ref       { font-family:monospace; font-size:.7rem; color:#8392ab; }
+.ac-divider   { border:none; border-top:1px solid #f0f2f8; margin:.75rem 0; }
+
+/* winner box */
+.winner-box {
+  background:#f0f9f4; border:1px solid #a8dfbe;
+  border-radius:.55rem; padding:.65rem .9rem;
+  display:flex; align-items:center; gap:.75rem;
+  margin-bottom:.75rem;
+}
+.winner-avatar {
+  width:36px; height:36px; border-radius:50%; flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#22c55e);
+  color:#fff; font-size:.8rem; font-weight:800;
+  display:flex; align-items:center; justify-content:center;
+}
+.winner-name  { font-size:.82rem; font-weight:700; color:#1a5c38; }
+.winner-meta  { font-size:.7rem; color:#52906b; }
+
+.ac-meta { display:flex; gap:.5rem; flex-wrap:wrap; margin:.5rem 0 .85rem; }
+.chip    { font-size:.62rem; font-weight:700; padding:.18rem .55rem; border-radius:99px; }
+.chip-green  { background:#d4f5e2; color:#1a5c38; }
+.chip-navy   { background:rgba(38,37,97,.1); color:var(--navy); }
+.chip-amber  { background:#fff3cd; color:var(--amber); }
+
+.btn-appoint {
+  display:flex; align-items:center; justify-content:center; gap:.4rem;
+  background:var(--green); color:#fff;
+  font-size:.78rem; font-weight:700;
+  padding:.5rem 1.1rem; border-radius:.45rem;
+  border:none; cursor:pointer; transition:opacity .15s;
+  width:100%; text-decoration:none;
+}
+.btn-appoint:hover { opacity:.88; color:#fff; }
+
+/* empty */
+.empty-state { text-align:center; padding:3rem 1rem; color:#b0bac9; }
+.empty-state i { font-size:2.2rem; display:block; margin-bottom:.75rem; color:#d0d5e8; }
+.empty-state p { font-size:.82rem; margin:0; }
+
+/* no winner warning */
+.no-winner-box {
+  background:#fde8e8; border:1px solid #f5c6c6;
+  border-radius:.45rem; padding:.55rem .85rem;
+  font-size:.75rem; color:var(--red); font-weight:600;
+  margin-bottom:.75rem;
+  display:flex; align-items:center; gap:.4rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+  <!-- Banner -->
+  <div class="page-banner">
+    <div>
+      <p class="banner-title mb-0">
+        <i class="fas fa-user-check me-2"></i>Appointments
+      </p>
+      <p class="banner-sub">Issue formal appointments to CEO-approved candidates</p>
+    </div>
+    <a href="{% url 'hr_dashboard' %}"
+       style="color:rgba(255,255,255,.65);font-size:.78rem;
+              display:flex;align-items:center;gap:.35rem;">
+      <i class="fas fa-arrow-left"></i> Dashboard
+    </a>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header">
+      <h6 class="section-title">
+        <i class="fas fa-envelope-open-text" style="color:var(--gold-dk);"></i>
+        Vacancies Ready for Appointment
+      </h6>
+      <span class="chip chip-navy">{{ vacancy_data|length }} pending</span>
+    </div>
+
+    {% if vacancy_data %}
+    <div class="appt-grid">
+      {% for item in vacancy_data %}
+      <div class="appt-card">
+
+        <p class="ac-vacancy">{{ item.vacancy.title }}</p>
+        <p class="ac-ref">{{ item.vacancy.reference_number }}</p>
+
+        <div class="ac-meta">
+          <span class="chip chip-navy">
+            <i class="fas fa-layer-group me-1"></i>{{ item.vacancy.get_grade_category_display }}
+          </span>
+          <span class="chip chip-green">
+            <i class="fas fa-check me-1"></i>CEO Approved
+          </span>
+        </div>
+
+        <hr class="ac-divider">
+
+        {% if item.winner %}
+          {% with b=item.winner.snapshot_basic %}
+          {% with full_name=b.first_name|add:" "|add:b.surname %}
+          <div class="winner-box">
+            <div class="winner-avatar">{{ b.first_name|first|upper }}</div>
+            <div>
+              <div class="winner-name">
+                {{ b.first_name }} {{ b.second_name|default:'' }} {{ b.surname }}
+              </div>
+              <div class="winner-meta">
+                {{ item.winner.application_number }} &nbsp;·&nbsp; {{ b.id_no|default:'—' }}
+              </div>
+              <div class="winner-meta">{{ item.winner.user.email }}</div>
+            </div>
+          </div>
+          {% endwith %}
+          {% endwith %}
+
+          <a href="{% url 'hr_issue_appointment' item.vacancy.id %}"
+             class="btn-appoint">
+            <i class="fas fa-paper-plane"></i> Issue Appointment
+          </a>
+
+        {% else %}
+          <div class="no-winner-box">
+            <i class="fas fa-exclamation-circle"></i>
+            No CEO-selected candidate found. Please contact the CEO.
+          </div>
+        {% endif %}
+
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <i class="fas fa-inbox"></i>
+      <p>No vacancies are currently awaiting appointment issuance.<br>
+         <span style="font-size:.75rem;">
+           Check back once the CEO has reviewed and approved candidates.
+         </span>
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
