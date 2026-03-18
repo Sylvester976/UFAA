@@ -25,6 +25,41 @@ a { text-decoration:none !important; }
                 display:flex; align-items:center; gap:.35rem; }
 .back-link:hover { color:var(--gold); }
 
+/* ── Action bar ── */
+.action-bar {
+    border-radius:.85rem; padding:1rem 1.5rem; margin-bottom:1.25rem;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem;
+}
+.action-bar.ready    { background:linear-gradient(135deg,#1a7a45,#22a05a); }
+.action-bar.pending  { background:#fff3cd; border:1px solid #ffe082; }
+.action-bar.approved { background:#d4f5e2; border:1px solid #82d6a8; }
+.ab-icon {
+    width:42px; height:42px; border-radius:50%; flex-shrink:0;
+    background:rgba(255,255,255,.18);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.1rem; color:#fff;
+}
+.ab-icon.dark { background:rgba(38,37,97,.1); color:var(--navy); }
+.ab-title { font-size:.88rem; font-weight:700; color:#fff; margin:0; }
+.ab-title.dark { color:#7d5500; }
+.ab-title.green-dark { color:#1a5c38; }
+.ab-sub   { font-size:.74rem; color:rgba(255,255,255,.78); margin:.1rem 0 0; }
+.ab-sub.dark  { color:#8a6500; }
+.ab-sub.green-dark { color:#52906b; }
+.btn-ceo {
+    background:#fff; color:var(--green); font-size:.82rem; font-weight:700;
+    padding:.55rem 1.25rem; border-radius:.45rem; border:none; cursor:pointer;
+    display:inline-flex; align-items:center; gap:.45rem;
+    text-decoration:none; white-space:nowrap;
+    box-shadow:0 2px 8px rgba(0,0,0,.1); transition:opacity .15s;
+}
+.btn-ceo:hover { opacity:.88; color:var(--green); }
+.btn-link-small {
+    font-size:.75rem; font-weight:700; text-decoration:underline !important;
+    margin-left:auto;
+}
+
 /* ── Summary stats ── */
 .stat-card {
     background:#fff; border-radius:.85rem;
@@ -66,7 +101,6 @@ a { text-decoration:none !important; }
 .results-table tr:hover td { background:#fafbff; }
 .results-table tr.top3:hover td { background:#fef9e7; }
 
-/* Rank badge */
 .rank-badge {
     width:28px; height:28px; border-radius:50%; flex-shrink:0;
     display:inline-flex; align-items:center; justify-content:center;
@@ -81,13 +115,9 @@ a { text-decoration:none !important; }
         border-radius:99px; white-space:nowrap; }
 .chip-gold { background:#fff8dc; color:#7d5500; border:1px solid #ffe69c; }
 
-/* Per-member score columns */
-.member-score {
-    text-align:center; font-weight:700; color:var(--navy);
-}
+.member-score { text-align:center; font-weight:700; color:var(--navy); }
 .member-score.empty { color:#adb5bd; font-weight:400; }
 
-/* Score bar */
 .score-bar-wrap { display:flex; align-items:center; gap:.5rem; }
 .score-bar-track { height:6px; background:#f0f2f8; border-radius:99px;
                    overflow:hidden; width:80px; flex-shrink:0; }
@@ -123,9 +153,7 @@ a { text-decoration:none !important; }
 .crit-row:last-child { border-bottom:none; }
 .crit-label { flex:1; min-width:120px; color:#344767; font-weight:500; }
 
-.member-score-cell {
-    min-width:70px; text-align:center;
-}
+.member-score-cell { min-width:70px; text-align:center; }
 .member-score-cell .val { font-weight:700; color:var(--navy); }
 .member-score-cell .max { font-size:.68rem; color:#adb5bd; }
 </style>
@@ -152,6 +180,60 @@ a { text-decoration:none !important; }
             </a>
         </div>
     </div>
+
+    <!-- ── Action bar — context-aware ── -->
+    {% if vacancy.status == 'interviews' %}
+    <div class="action-bar ready">
+        <div class="d-flex align-items-center gap-3">
+            <div class="ab-icon"><i class="fas fa-check-double"></i></div>
+            <div>
+                <p class="ab-title mb-0">All scores submitted — ready for CEO review</p>
+                <p class="ab-sub mb-0">
+                    Review the rankings below, then select up to 3 candidates to submit.
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'hr_submit_to_ceo' vacancy.id %}" class="btn-ceo">
+            <i class="fas fa-paper-plane"></i> Submit to CEO
+        </a>
+    </div>
+
+    {% elif vacancy.status == 'ceo_review' %}
+    <div class="action-bar pending">
+        <div class="d-flex align-items-center gap-3">
+            <div class="ab-icon dark"><i class="fas fa-hourglass-half"></i></div>
+            <div>
+                <p class="ab-title dark mb-0">Submitted — awaiting CEO selection</p>
+                <p class="ab-sub dark mb-0">
+                    The CEO has been notified and will make their selection shortly.
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'ceo_dashboard' %}"
+           class="btn-link-small" style="color:#7d5500;">
+            View CEO Dashboard →
+        </a>
+    </div>
+
+    {% elif vacancy.status == 'ceo_approved' %}
+    <div class="action-bar approved">
+        <div class="d-flex align-items-center gap-3">
+            <div class="ab-icon dark" style="background:rgba(26,122,69,.1);color:var(--green);">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div>
+                <p class="ab-title green-dark mb-0">CEO selection complete</p>
+                <p class="ab-sub green-dark mb-0">
+                    Proceed to issue the formal appointment letter.
+                </p>
+            </div>
+        </div>
+        <a href="{% url 'hr_appointments_list' %}"
+           class="btn-link-small" style="color:#1a5c38;">
+            Go to Appointments →
+        </a>
+    </div>
+    {% endif %}
 
     <!-- Summary stats -->
     <div class="d-flex gap-3 flex-wrap mb-3">
@@ -292,7 +374,6 @@ a { text-decoration:none !important; }
         </div>
 
         <div class="bc-body">
-            <!-- Header row -->
             <div class="crit-row" style="font-size:.65rem;font-weight:700;
                  text-transform:uppercase;letter-spacing:.05em;color:#8392ab;padding-bottom:.5rem;">
                 <span class="crit-label">Criterion</span>
@@ -308,20 +389,18 @@ a { text-decoration:none !important; }
                     <span style="font-size:.67rem;color:#adb5bd;"> / {{ c.max_score }}</span>
                 </span>
                 {% for mt in row.member_totals %}
-                    {% with score=mt.scores|default_if_none:'' %}
-                    <div class="member-score-cell">
-                        {% if mt.scores %}
-                            {% for cid, s in mt.scores.items %}
-                                {% if cid == c.id %}
-                                    <span class="val">{{ s.score }}</span>
-                                    <span class="max"> /{{ c.max_score }}</span>
-                                {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span style="color:#adb5bd;">—</span>
-                        {% endif %}
-                    </div>
-                    {% endwith %}
+                <div class="member-score-cell">
+                    {% if mt.scores %}
+                        {% for cid, s in mt.scores.items %}
+                            {% if cid == c.id %}
+                                <span class="val">{{ s.score }}</span>
+                                <span class="max"> /{{ c.max_score }}</span>
+                            {% endif %}
+                        {% endfor %}
+                    {% else %}
+                        <span style="color:#adb5bd;">—</span>
+                    {% endif %}
+                </div>
                 {% endfor %}
             </div>
             {% endfor %}

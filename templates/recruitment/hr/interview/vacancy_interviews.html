@@ -6,6 +6,7 @@
     :root {
         --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
         --purple: #5b21b6; --purple-light: #ede9fe;
+        --green: #1a7a45; --amber: #b7770d;
     }
 
     .page-banner {
@@ -42,6 +43,9 @@
         transition: transform .2s ease, box-shadow .2s ease;
         margin-bottom: 1rem;
     }
+    .iv-card.scoring-done {
+        border-left-color: var(--green);
+    }
     .iv-card:hover {
         transform: translateY(-2px);
         box-shadow: 0 8px 24px rgba(38,37,97,.13);
@@ -59,8 +63,8 @@
         border-radius: 2rem; white-space: nowrap;
     }
     .pill-purple { background: var(--purple-light); color: var(--purple); }
-    .pill-amber  { background: #fef3e2; color: #b7770d; }
-    .pill-green  { background: #d4f5e2; color: #1a7a45; }
+    .pill-amber  { background: #fef3e2; color: var(--amber); }
+    .pill-green  { background: #d4f5e2; color: var(--green); }
     .pill-grey   { background: #f1f3f9; color: #8392ab; }
 
     /* progress bar */
@@ -73,6 +77,18 @@
         height: 100%; border-radius: 3px;
         background: linear-gradient(90deg, var(--purple), #7c3aed);
         transition: width .4s ease;
+    }
+    .prog-bar-inner.done {
+        background: linear-gradient(90deg, var(--green), #22c55e);
+    }
+
+    /* scoring-complete banner inside card */
+    .scoring-complete-pill {
+        background: #d4f5e2; border: 1px solid #82d6a8;
+        border-radius: .4rem; padding: .35rem .7rem;
+        font-size: .7rem; font-weight: 700; color: var(--green);
+        display: flex; align-items: center; gap: .35rem;
+        margin-top: .65rem;
     }
 
     /* action buttons */
@@ -88,7 +104,12 @@
     .iv-btn-prog    { background: #f1f3f9; color: #344767; border-color: #dee2e6; }
     .iv-btn-prog:hover { background: var(--navy); color: var(--gold); }
     .iv-btn-results { background: var(--navy); color: var(--gold); }
-    .iv-btn-results:hover { opacity: .88; }
+    .iv-btn-results:hover { opacity: .88; color: var(--gold); }
+    .iv-btn-ceo {
+        background: var(--green); color: #fff; border-color: var(--green);
+        flex: 1; justify-content: center;
+    }
+    .iv-btn-ceo:hover { opacity: .88; color: #fff; }
 
     .empty-state { text-align: center; padding: 3rem 1rem; }
     .empty-state i { font-size: 2.5rem; opacity: .1; color: var(--navy); display: block; margin-bottom: .75rem; }
@@ -115,7 +136,7 @@
         {% for item in vacancy_data %}
         {% with v=item.vacancy %}
         <div class="col-xl-4 col-md-6 col-12">
-            <div class="iv-card">
+            <div class="iv-card {% if item.scoring_complete %}scoring-done{% endif %}">
                 <div class="iv-card-body">
 
                     <div class="d-flex justify-content-between align-items-start">
@@ -123,9 +144,15 @@
                             <p class="iv-title">{{ v.title }}</p>
                             <span class="iv-ref">{{ v.reference_number }}</span>
                         </div>
+                        {% if item.scoring_complete %}
+                        <span class="stat-pill pill-green" style="margin-top:.1rem;">
+                            <i class="fas fa-check-circle" style="font-size:.55rem;"></i> Ready for CEO
+                        </span>
+                        {% else %}
                         <span class="stat-pill pill-purple" style="margin-top:.1rem;">
                             <i class="fas fa-circle" style="font-size:.4rem;"></i> Interviews
                         </span>
+                        {% endif %}
                     </div>
 
                     <!-- Stats -->
@@ -145,31 +172,54 @@
                     </div>
 
                     <!-- Scoring progress -->
-                    {% if item.panel_count > 0 %}
+                    {% if item.panel_active > 0 %}
                     <div class="prog-wrap">
                         <div class="prog-label">
-                            Panel scoring: {{ item.panel_done }}/{{ item.panel_count }} submitted
+                            Panel scoring: {{ item.panel_done }}/{{ item.panel_active }} submitted
                         </div>
                         <div class="prog-bar-outer">
-                            <div class="prog-bar-inner"
-                                 style="width:{% if item.panel_count > 0 %}{% widthratio item.panel_done item.panel_count 100 %}{% else %}0{% endif %}%">
+                            <div class="prog-bar-inner {% if item.scoring_complete %}done{% endif %}"
+                                 style="width:{% widthratio item.panel_done item.panel_active 100 %}%">
                             </div>
                         </div>
                     </div>
                     {% endif %}
 
+                    <!-- Scoring complete notice -->
+                    {% if item.scoring_complete %}
+                    <div class="scoring-complete-pill">
+                        <i class="fas fa-check-double"></i>
+                        All scores submitted — ready to submit to CEO
+                    </div>
+                    {% endif %}
+
                     <!-- Actions -->
                     <div class="iv-actions">
-                        <a href="{% url 'hr_interview_setup' v.id %}" class="iv-btn iv-btn-setup">
-                            <i class="fas fa-cog"></i> Setup
-                        </a>
-                        <a href="{% url 'hr_interview_progress' v.id %}" class="iv-btn iv-btn-prog">
-                            <i class="fas fa-chart-bar"></i> Progress
-                        </a>
-                        {% if item.panel_done == item.panel_count and item.panel_count > 0 %}
-                        <a href="{% url 'hr_interview_results' v.id %}" class="iv-btn iv-btn-results">
-                            <i class="fas fa-trophy"></i> Results
-                        </a>
+                        {% if item.scoring_complete %}
+                            {# ── Scoring done: primary CTA is Submit to CEO via results ── #}
+                            <a href="{% url 'hr_interview_results' v.id %}"
+                               class="iv-btn iv-btn-ceo">
+                                <i class="fas fa-paper-plane"></i> View Rankings &amp; Submit to CEO
+                            </a>
+                            <a href="{% url 'hr_interview_setup' v.id %}" class="iv-btn iv-btn-setup">
+                                <i class="fas fa-cog"></i>
+                            </a>
+                            <a href="{% url 'hr_interview_progress' v.id %}" class="iv-btn iv-btn-prog">
+                                <i class="fas fa-chart-bar"></i>
+                            </a>
+                        {% else %}
+                            {# ── Still in progress ── #}
+                            <a href="{% url 'hr_interview_setup' v.id %}" class="iv-btn iv-btn-setup">
+                                <i class="fas fa-cog"></i> Setup
+                            </a>
+                            <a href="{% url 'hr_interview_progress' v.id %}" class="iv-btn iv-btn-prog">
+                                <i class="fas fa-chart-bar"></i> Progress
+                            </a>
+                            {% if item.results_exist %}
+                            <a href="{% url 'hr_interview_results' v.id %}" class="iv-btn iv-btn-results">
+                                <i class="fas fa-trophy"></i> Results
+                            </a>
+                            {% endif %}
                         {% endif %}
                     </div>
 
