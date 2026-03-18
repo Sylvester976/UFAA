@@ -1432,23 +1432,30 @@ def additional_details_view(request):
 
 @login_required
 def hr_dashboard(request):
-
     user = request.user
     user_roles = user.role.values_list('name', flat=True)
 
-    vacancies = Vacancy.objects.annotate(
-        applications_count=Count('applications')
-    )
+    vacancies = Vacancy.objects.exclude(status='draft').annotate(
+        applications_count=Count('jobapplication')
+    ).order_by('-created_at')
 
-    vacancies_ready = Vacancy.objects.filter(status='ceo_approved')
+    # Build vacancies_ready with winner info for the appointments table
+    ceo_approved_vacancies = Vacancy.objects.filter(status='ceo_approved')
+    vacancies_ready = []
+    for v in ceo_approved_vacancies:
+        winner = JobApplication.objects.filter(
+            vacancy=v, status__code='ceo_selected',
+        ).select_related('user').first()
+        vacancies_ready.append({'vacancy': v, 'winner': winner})
 
     context = {
         'user': user,
         'user_roles': user_roles,
-        'vacancies_ready': vacancies_ready,
         'vacancies': vacancies,
+        'vacancies_ready': vacancies_ready,
         'open_vacancies_count': Vacancy.objects.filter(status='open').count(),
-        'pending_ceo_count': Vacancy.objects.filter(status='pending_ceo_approval').count(),
+        'pending_ceo_count': Vacancy.objects.filter(status='ceo_review').count(),
+        'pending_appointments_count': Vacancy.objects.filter(status='ceo_approved').count(),
         'appointed_count': Vacancy.objects.filter(status='appointed').count(),
         'page': 'HR Dashboard',
     }
