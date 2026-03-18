@@ -155,20 +155,26 @@
                             </p>
 
                             <!-- Buttons -->
-                            <div class="mt-auto">
+                            <div class="mt-auto d-flex gap-2">
                                 {% if vacancy.advert_pdf %}
                                     <a href="{% url 'download_vacancy_pdf' vacancy.id %}" 
-                                    class="btn btn-primary px-4 mb-2 w-100"
+                                    class="btn btn-outline-primary flex-fill"
+                                    style="border-color:#003366; color:#003366;">
+                                        PDF
+                                    </a>
+
+                                    <a href="{% url 'vacancy_detail' vacancy.id %}" 
+                                    class="btn btn-primary flex-fill"
                                     style="background-color:#003366; border-color:#003366;">
-                                        Download PDF
+                                        Details
+                                    </a>
+                                {% else %}
+                                    <a href="{% url 'vacancy_detail' vacancy.id %}" 
+                                    class="btn btn-primary w-100"
+                                    style="background-color:#003366; border-color:#003366;">
+                                        View Details
                                     </a>
                                 {% endif %}
-
-                                <a href="{% url 'vacancy_detail' vacancy.id %}" 
-                                class="btn btn-primary px-4 w-100"
-                                style="background-color:#003366; border-color:#003366;">
-                                    View Details
-                                </a>
                             </div>
 
                         </div>
