@@ -2220,17 +2220,7 @@ def select_top_three(request, vacancy_id):
         return redirect('hr_dashboard')
 
 
-@login_required
-@role_required(['ceo'])
-def ceo_dashboard(request):
-    vacancies = Vacancy.objects.filter(status='ceo_review')
 
-    context = {
-        'page': 'CEO Dashboard',
-        'pending_approval_count': vacancies.count(),
-        'vacancies': vacancies
-    }
-    return render(request, 'recruitment/ceo/dashboard.html', context)
 
 
 @login_required
@@ -5705,13 +5695,30 @@ def _active_panel_count(vacancy):
         vacancy=vacancy, is_active=True, has_conflict=False,
     ).count()
 
+def _get_job_status(code: str):
+    """Safe fetch of a JobApplicationStatus row."""
+    try:
+        return JobApplicationStatus.objects.get(code=code)
+    except JobApplicationStatus.DoesNotExist:
+        logger.error(f"JobApplicationStatus code='{code}' not found. Run the data migration.")
+        return None
+
+
 def _compute_interview_results(vacancy):
     """
-    Compute InterviewResult for every shortlisted applicant once all
-    active non-recused panel members have submitted all scores.
-    """
-    from django.db import transaction
+    Called once all active, non-recused panel members have submitted all scores.
 
+    Steps
+    -----
+    1. Aggregate scores per candidate (excluding recused panel members).
+    2. Create / update InterviewResult rows with total, percentage, rank.
+    3. Bulk-update every scored application to 'interviewed' status.
+    4. If vacancy is still in 'interview_scheduling', advance it to 'interviews'
+       so HR knows scoring is complete and they can submit to CEO.
+    5. Write one InterviewLog audit record.
+
+    Returns list of InterviewResult objects ordered by rank.
+    """
     criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
     max_per_member = sum(c.max_score for c in criteria)
 
@@ -5729,11 +5736,17 @@ def _compute_interview_results(vacancy):
         ).values_list('member_id', flat=True)
     )
 
-    applications = JobApplication.objects.filter(
-        vacancy=vacancy, status__code='shortlisted',
+    applications = list(
+        JobApplication.objects.filter(
+            vacancy=vacancy, status__code='shortlisted',
+        ).select_related('status')
     )
 
+    # Status objects — fetched once
+    interviewed_status = _get_job_status('interviewed')
+
     results = []
+
     with transaction.atomic():
         for app in applications:
             submitted_scores = InterviewScore.objects.filter(
@@ -5757,23 +5770,56 @@ def _compute_interview_results(vacancy):
             )
             results.append(result)
 
-        # Rank by total descending
+        # ── Rank ────────────────────────────────────────────────────────────
         results.sort(key=lambda r: r.total_score, reverse=True)
         for i, result in enumerate(results, start=1):
             result.rank = i
             result.save(update_fields=['rank'])
 
+        # ── Update statuses → 'interviewed' ─────────────────────────────────
+        if interviewed_status:
+            for app in applications:
+                old_status = app.status
+                if old_status.code == 'interviewed':
+                    continue  # already done (idempotent)
+                app.status = interviewed_status
+                app.save(update_fields=['status'])
+                JobApplicationStatusLog.objects.create(
+                    application=app,
+                    from_status=old_status,
+                    to_status=interviewed_status,
+                    changed_by=None,
+                    notes=(
+                        f'Interview scoring complete — all {panel_count} active panel '
+                        f'member(s) submitted scores. Candidate ranked #{next(r.rank for r in results if r.application_id == app.id)}.'
+                    ),
+                )
+        else:
+            logger.warning(
+                "_compute_interview_results: 'interviewed' status missing — "
+                "application statuses NOT updated. Run the data migration."
+            )
+
+        # ── Advance vacancy: interview_scheduling → interviews ───────────────
+        if vacancy.status == 'interview_scheduling':
+            vacancy.status = 'interviews'
+            vacancy.save(update_fields=['status'])
+
+        # ── Audit log ────────────────────────────────────────────────────────
         InterviewLog.objects.create(
             vacancy=vacancy,
             action='all_scores_in',
             notes=(
                 f'Interview results computed. {len(results)} candidates ranked. '
-                f'Max possible score: {max_possible}.'
+                f'Max possible: {max_possible}. '
+                f'All candidates updated to "interviewed" status. '
+                f'Vacancy advanced to "interviews" stage.'
             ),
             metadata={
                 'candidate_count': len(results),
                 'max_possible': str(max_possible),
                 'panel_count': panel_count,
+                'recused_count': len(recused_ids),
             },
             performed_by_label='System',
         )
@@ -5984,7 +6030,6 @@ def hr_interview_setup(request, vacancy_id):
     ).count()
 
     max_possible = sum(c.max_score for c in criteria)
-
     # ── Build all_staff for the panel picker ──────────────────────────────
     from django.contrib.auth import get_user_model
     User = get_user_model()
@@ -6011,7 +6056,6 @@ def hr_interview_setup(request, vacancy_id):
             'department': dept,
             'already_on_panel': u.pk in panel_ids,
         })
-    # ─────────────────────────────────────────────────────────────────────
 
     return render(request, 'recruitment/hr/interview/interview_setup.html', {
         'page': 'Interview Scheduling',
@@ -6036,15 +6080,14 @@ def hr_interview_setup(request, vacancy_id):
                 schedule is not None and
                 not (schedule.panel_notified if schedule else False)
         ),
-        'all_staff': all_staff,  # ← required by the panel picker
+        'all_staff': all_staff,
     })
 
 
-def _notify_panel_appointment(member, vacancy, request):
+def _notify_panel_appointment(member, vacancy):
     """
-    Simple 'You have been appointed to the panel' email.
-    Does NOT require a schedule / slots to exist yet.
-    Called immediately when HR adds a panel member.
+    Immediate 'You have been appointed' email sent when HR adds a panel member.
+    Does NOT require a schedule or slots to exist yet.
     """
     try:
         from django.conf import settings as django_settings
@@ -6053,54 +6096,39 @@ def _notify_panel_appointment(member, vacancy, request):
 
         message_html = f"""
             <p>Dear <strong>{name}</strong>,</p>
-            <p>
-                You have been appointed as a member of the
-                <strong>Interview Panel</strong> for the following vacancy:
-            </p>
+            <p>You have been appointed as a member of the
+            <strong>Interview Panel</strong> for the following vacancy:</p>
             <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
                 <tr>
-                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
                                border:1px solid #e0e4ef;width:35%;">Position</td>
-                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;">
                         {vacancy.title}
                     </td>
                 </tr>
                 <tr>
-                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
                                border:1px solid #e0e4ef;">Reference</td>
-                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;
                                font-family:monospace;">
                         {vacancy.reference_number}
                     </td>
                 </tr>
-                <tr>
-                    <td style="padding:0.5rem 1rem;background:#f8f9ff;font-weight:600;
-                               border:1px solid #e0e4ef;">Department</td>
-                    <td style="padding:0.5rem 1rem;border:1px solid #e0e4ef;">
-                        {getattr(vacancy, 'department', '') or 'UFAA'}
-                    </td>
-                </tr>
             </table>
-            <p>
-                Your role on this panel is to <strong>score each shortlisted candidate</strong>
-                against the defined assessment criteria, and to complete a
-                conflict of interest declaration before scoring begins.
-            </p>
-            <p>
-                Interview schedule details (venue, dates, and candidate slots)
-                will be communicated to you shortly. You will receive a second
-                email once the full schedule is confirmed.
-            </p>
+            <p>Your role is to <strong>score each shortlisted candidate</strong>
+            against the defined assessment criteria and complete a conflict of
+            interest declaration before scoring begins.</p>
+            <p>Interview schedule details will be sent to you separately once confirmed.</p>
             <p style="margin-top:1.5rem;">
                 <a href="{portal_url}"
-                   style="background:#262561;color:#F9E6A1;padding:0.65rem 1.5rem;
-                          border-radius:0.4rem;text-decoration:none;font-weight:600;">
+                   style="background:#262561;color:#F9E6A1;padding:.65rem 1.5rem;
+                          border-radius:.4rem;text-decoration:none;font-weight:600;">
                     Go to Panel Portal
                 </a>
             </p>
-            <p style="margin-top:1.5rem;color:#67748e;font-size:0.85rem;">
-                If you believe this appointment was made in error, please
-                contact the HR office immediately.
+            <p style="margin-top:1.5rem;color:#67748e;font-size:.85rem;">
+                If you believe this appointment was made in error please contact
+                the HR office immediately.
             </p>
             <p>Regards,<br><strong>UFAA Human Resources Department</strong></p>
         """
@@ -6115,15 +6143,9 @@ def _notify_panel_appointment(member, vacancy, request):
         return False
 
 
-# ── Replace hr_panel_add with this ──────────────────────────────────────────
-
-@login_required
-@require_POST
 def hr_panel_add(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     user_id = request.POST.get('user_id', '').strip()
-    send_email = request.POST.get('send_email', '1') == '1'
-
     if not user_id:
         return JsonResponse({'error': 'No user selected.'}, status=400)
 
@@ -6146,11 +6168,7 @@ def hr_panel_add(request, vacancy_id):
 
     if not created:
         if entry.is_active:
-            return JsonResponse(
-                {'error': f'{_display_name(member)} is already on the panel.'},
-                status=400
-            )
-        # Re-activate a previously removed member
+            return JsonResponse({'error': f'{_display_name(member)} is already on the panel.'}, status=400)
         entry.is_active = True
         entry.appointed_by = request.user
         entry.appointed_at = timezone.now()
@@ -6164,18 +6182,12 @@ def hr_panel_add(request, vacancy_id):
         performed_by_label=_display_name(request.user),
     )
 
-    email_sent = False
-    if send_email:
-        email_sent = _notify_panel_appointment(member, vacancy, request)
+    email_sent = _notify_panel_appointment(member, vacancy)
 
     return JsonResponse({
         'success': True,
         'email_sent': email_sent,
-        'member': {
-            'id': str(member.pk),
-            'name': _display_name(member),
-            'email': member.email,
-        },
+        'member': {'id': str(member.pk), 'name': _display_name(member), 'email': member.email},
     })
 
 
@@ -6356,6 +6368,11 @@ def hr_slots_save(request, vacancy_id):
                 slot.notified = False
                 slot.notified_at = None
                 slot.save(update_fields=['notified', 'notified_at'])
+                # Reset schedule-level flag so "Email All" button reappears
+                if schedule.candidates_notified:
+                    schedule.candidates_notified = False
+                    schedule.candidates_notified_at = None
+                    schedule.save(update_fields=['candidates_notified', 'candidates_notified_at'])
 
             InterviewLog.objects.create(
                 vacancy=vacancy, application=app, performed_by=request.user,
@@ -6398,17 +6415,8 @@ def hr_interview_notify(request, vacancy_id):
                 performed_by_label=_display_name(request.user),
             )
             sent += 1
-        except Exception:
-            logger.exception(
-                "Failed to send interview notification",
-                extra={
-                    "vacancy_id": vacancy.id,
-                    "slot_id": slot.id,
-                    "application_id": slot.application_id,
-                    "candidate_email": slot.application.user.email,
-                },
-            )
-            errors.append(f'{slot.application.user.email}: failed to send notification')
+        except Exception as e:
+            errors.append(f'{slot.application.user.email}: {e}')
 
     schedule.candidates_notified = True
     schedule.candidates_notified_at = timezone.now()
@@ -6928,4 +6936,673 @@ def panel_results(request, vacancy_id):
         'all_done': done_active == total_active,
         'my_max': sum(c.max_score for c in criteria),
     })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 2. HR SUBMIT TO CEO
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['hod_hr'])
+def hr_submit_to_ceo(request, vacancy_id):
+    """
+    HR reviews ranked interview results and selects up to 3 candidates for
+    CEO review. An override (selecting below rank 3) requires a written reason.
+    Advances vacancy status → 'ceo_review'.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status not in ('interview_scheduling', 'interviews'):
+        messages.error(request, "Vacancy is not at the interviews stage.")
+        return redirect('hr_dashboard')
+
+    # Ensure results exist
+    results = list(
+        InterviewResult.objects.filter(vacancy=vacancy)
+        .select_related('application__user', 'application__status')
+        .order_by('rank')
+    )
+
+    if not results:
+        messages.error(
+            request,
+            "No interview results found. Ensure all panel members have submitted scores."
+        )
+        return redirect('hr_interview_results', vacancy_id=vacancy_id)
+
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+    panel_members = list(
+        InterviewPanel.objects.filter(
+            vacancy=vacancy, is_active=True, has_conflict=False,
+        ).select_related('member')
+    )
+
+    # Per-candidate score breakdown (for display)
+    all_scores = InterviewScore.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).select_related('panel_member', 'criterion')
+
+    scores_map = {}
+    for s in all_scores:
+        scores_map.setdefault(s.application_id, {}).setdefault(
+            s.panel_member_id, {}
+        )[s.criterion_id] = s
+
+    result_rows = []
+    for r in results:
+        member_totals = []
+        for pm in panel_members:
+            member_scores = scores_map.get(r.application_id, {}).get(pm.member_id, {})
+            subtotal = sum(s.score for s in member_scores.values()) if member_scores else None
+            member_totals.append({'name': _display_name(pm.member), 'total': subtotal})
+        b = r.application.snapshot_basic or {}
+        full_name = ' '.join(filter(None, [
+            b.get('first_name', ''), b.get('second_name', ''), b.get('surname', ''),
+        ])) or r.application.user.email
+        result_rows.append({
+            'result': r,
+            'app': r.application,
+            'full_name': full_name,
+            'member_totals': member_totals,
+            'is_top3': r.rank and r.rank <= 3,
+        })
+
+    total_candidates = len(result_rows)
+    top_n = min(3, total_candidates)
+
+    if request.method == 'POST':
+        selected_ids = request.POST.getlist('selected_ids')
+        override_reason = request.POST.get('override_reason', '').strip()
+
+        # ── Validation ───────────────────────────────────────────────────────
+        if not selected_ids:
+            return render(request, 'recruitment/hr/interview/submit_to_ceo.html', {
+                'page': 'Submit to CEO', 'vacancy': vacancy,
+                'result_rows': result_rows, 'top_n': top_n,
+                'criteria': criteria, 'panel_members': panel_members,
+                'total_candidates': total_candidates,
+                'error': 'Please select at least one candidate.',
+            })
+
+        if len(selected_ids) > 3:
+            return render(request, 'recruitment/hr/interview/submit_to_ceo.html', {
+                'page': 'Submit to CEO', 'vacancy': vacancy,
+                'result_rows': result_rows, 'top_n': top_n,
+                'criteria': criteria, 'panel_members': panel_members,
+                'total_candidates': total_candidates,
+                'error': 'You may select a maximum of 3 candidates for CEO review.',
+            })
+
+        top3_app_ids = {str(r.app.id) for r in result_rows if r['is_top3']}
+        has_override = any(sid not in top3_app_ids for sid in selected_ids)
+
+        if has_override and not override_reason:
+            return render(request, 'recruitment/hr/interview/submit_to_ceo.html', {
+                'page': 'Submit to CEO', 'vacancy': vacancy,
+                'result_rows': result_rows, 'top_n': top_n,
+                'criteria': criteria, 'panel_members': panel_members,
+                'total_candidates': total_candidates,
+                'error': 'A written reason is required when selecting a candidate outside the top 3.',
+            })
+
+        # ── Status objects ───────────────────────────────────────────────────
+        top_candidate_status = _get_job_status('top_candidate')
+        interviewed_status = _get_job_status('interviewed')
+
+        if not top_candidate_status:
+            messages.error(
+                request,
+                "System error: 'top_candidate' application status not found. "
+                "Run: python manage.py seed_application_statuses"
+            )
+            return redirect('hr_interview_results', vacancy_id=vacancy_id)
+
+        with transaction.atomic():
+            # Reset any previous top_candidate selections for this vacancy
+            prev_top = JobApplication.objects.filter(
+                vacancy=vacancy, status__code='top_candidate'
+            )
+            for app in prev_top:
+                old = app.status
+                app.status = interviewed_status
+                app.save(update_fields=['status'])
+                JobApplicationStatusLog.objects.create(
+                    application=app, from_status=old, to_status=interviewed_status,
+                    changed_by=request.user,
+                    notes='Top-candidate selection cleared (re-submission to CEO).',
+                )
+
+            # Mark selected apps as top_candidate
+            for app_id in selected_ids:
+                try:
+                    app = JobApplication.objects.select_related('status').get(
+                        pk=app_id, vacancy=vacancy
+                    )
+                    old_status = app.status
+                    app.status = top_candidate_status
+                    app.save(update_fields=['status'])
+
+                    is_override = app_id not in top3_app_ids
+                    try:
+                        rank = InterviewResult.objects.get(vacancy=vacancy, application=app).rank
+                    except InterviewResult.DoesNotExist:
+                        rank = '?'
+
+                    JobApplicationStatusLog.objects.create(
+                        application=app,
+                        from_status=old_status,
+                        to_status=top_candidate_status,
+                        changed_by=request.user,
+                        notes=(
+                                f'Selected for CEO review (rank #{rank}). '
+                                + (f'Override — reason: {override_reason}' if is_override
+                                   else 'Within top 3 ranked candidates.')
+                        ),
+                    )
+                    InterviewLog.objects.create(
+                        vacancy=vacancy, application=app,
+                        performed_by=request.user,
+                        action='top_candidate_selected',
+                        notes=(
+                                f'Selected for CEO review. Rank #{rank}.'
+                                + (f' Override: {override_reason}' if is_override else '')
+                        ),
+                        metadata={
+                            'app_id': str(app.pk),
+                            'rank': rank,
+                            'is_override': is_override,
+                            'override_reason': override_reason,
+                        },
+                        performed_by_label=_display_name(request.user),
+                    )
+
+                except JobApplication.DoesNotExist:
+                    logger.warning(f"hr_submit_to_ceo: app {app_id} not found for vacancy {vacancy_id}")
+
+            # Advance vacancy → ceo_review
+            vacancy.status = 'ceo_review'
+            vacancy.save(update_fields=['status'])
+
+            InterviewLog.objects.create(
+                vacancy=vacancy,
+                performed_by=request.user,
+                action='submitted_to_ceo',
+                notes=(
+                        f'{len(selected_ids)} candidate(s) submitted to CEO for review.'
+                        + (f' Override applied — {override_reason}' if has_override else '')
+                ),
+                metadata={
+                    'selected_ids': selected_ids,
+                    'has_override': has_override,
+                    'override_reason': override_reason,
+                },
+                performed_by_label=_display_name(request.user),
+            )
+
+        messages.success(
+            request,
+            f"{len(selected_ids)} candidate(s) submitted to CEO for review. "
+            f"Vacancy is now in CEO Review stage."
+        )
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/interview/submit_to_ceo.html', {
+        'page': 'Submit to CEO',
+        'vacancy': vacancy,
+        'result_rows': result_rows,
+        'top_n': top_n,
+        'total_candidates': total_candidates,
+        'criteria': criteria,
+        'panel_members': panel_members,
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 3. CEO DASHBOARD (replacement — uses JobApplication)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['ceo'])
+def ceo_dashboard(request):
+    """
+    CEO landing page. Shows all vacancies currently awaiting CEO selection.
+    Also shows vacancies CEO has already actioned (ceo_approved) for reference.
+    """
+    pending = Vacancy.objects.filter(status='ceo_review').order_by('-created_at')
+    actioned = Vacancy.objects.filter(status='ceo_approved').order_by('-created_at')[:10]
+
+    pending_data = []
+    for v in pending:
+        candidates = JobApplication.objects.filter(
+            vacancy=v, status__code='top_candidate'
+        ).count()
+        pending_data.append({'vacancy': v, 'candidate_count': candidates})
+
+    return render(request, 'recruitment/ceo/ceo_dashboard.html', {
+        'page': 'CEO Dashboard',
+        'pending_data': pending_data,
+        'actioned': actioned,
+        'pending_count': len(pending_data),
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 4. CEO VACANCY REVIEW
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['ceo'])
+def ceo_vacancy_review(request, vacancy_id):
+    """
+    CEO sees the top candidates presented by HR, with full score breakdowns.
+    They can also see all other interviewed candidates if they wish to override.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status not in ('ceo_review', 'ceo_approved'):
+        messages.error(request, "This vacancy is not currently in CEO review stage.")
+        return redirect('ceo_dashboard')
+
+    # Top candidates submitted by HR
+    top_apps = list(
+        JobApplication.objects
+        .filter(vacancy=vacancy, status__code='top_candidate')
+        .select_related('user', 'status')
+    )
+
+    # All interviewed candidates (for override selection)
+    all_interviewed = list(
+        JobApplication.objects
+        .filter(vacancy=vacancy, status__code__in=['interviewed', 'top_candidate', 'not_selected'])
+        .select_related('user', 'status')
+    )
+
+    criteria = list(InterviewCriterion.objects.filter(vacancy=vacancy))
+    panel_count = InterviewPanel.objects.filter(
+        vacancy=vacancy, is_active=True, has_conflict=False,
+    ).count()
+
+    # Results (scores) keyed by application id
+    results_by_app = {
+        r.application_id: r
+        for r in InterviewResult.objects.filter(vacancy=vacancy)
+    }
+
+    all_scores = InterviewScore.objects.filter(
+        vacancy=vacancy, is_draft=False,
+    ).select_related('panel_member', 'criterion')
+
+    scores_map = {}
+    for s in all_scores:
+        scores_map.setdefault(s.application_id, {}).setdefault(
+            s.panel_member_id, {}
+        )[s.criterion_id] = s
+
+    def _build_row(app):
+        b = app.snapshot_basic or {}
+        full_name = ' '.join(filter(None, [
+            b.get('first_name', ''), b.get('second_name', ''), b.get('surname', ''),
+        ])) or app.user.email
+        result = results_by_app.get(app.id)
+        member_scores_data = scores_map.get(app.id, {})
+        crit_totals = {}
+        for pm_id, crit_dict in member_scores_data.items():
+            for crit_id, score_obj in crit_dict.items():
+                crit_totals[crit_id] = crit_totals.get(crit_id, Decimal('0')) + score_obj.score
+        return {
+            'app': app,
+            'full_name': full_name,
+            'id_no': b.get('id_no', '—'),
+            'result': result,
+            'rank': result.rank if result else None,
+            'total': result.total_score if result else Decimal('0'),
+            'pct': result.percentage if result else Decimal('0'),
+            'crit_totals': crit_totals,
+            'is_top': app.status.code == 'top_candidate',
+        }
+
+    top_rows = sorted(
+        [_build_row(a) for a in top_apps],
+        key=lambda r: r['rank'] or 999,
+    )
+    all_rows = sorted(
+        [_build_row(a) for a in all_interviewed],
+        key=lambda r: r['rank'] or 999,
+    )
+
+    # Check if CEO has already made a selection
+    already_selected = JobApplication.objects.filter(
+        vacancy=vacancy, status__code='ceo_selected'
+    ).select_related('user').first()
+
+    return render(request, 'recruitment/ceo/ceo_vacancy_review.html', {
+        'page': 'CEO Review',
+        'vacancy': vacancy,
+        'top_rows': top_rows,
+        'all_rows': all_rows,
+        'criteria': criteria,
+        'panel_count': panel_count,
+        'already_selected': already_selected,
+        'can_select': vacancy.status == 'ceo_review',
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 5. CEO MAKE SELECTION (POST)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['ceo'])
+@require_POST
+def ceo_make_selection(request, vacancy_id):
+    """
+    CEO selects one candidate.
+
+    Rules
+    -----
+    - If selected candidate was NOT in the top_candidate list → override;
+      override_reason is mandatory.
+    - Winner status: ceo_selected
+    - All other interviewed/top_candidate apps: not_selected
+    - Vacancy: ceo_approved
+    - Full audit trail in JobApplicationStatusLog + InterviewLog
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='ceo_review')
+
+    selected_id = request.POST.get('selected_id', '').strip()
+    override_reason = request.POST.get('override_reason', '').strip()
+
+    if not selected_id:
+        return JsonResponse({'error': 'No candidate selected.'}, status=400)
+
+    try:
+        selected_app = JobApplication.objects.select_related('status').get(
+            pk=selected_id, vacancy=vacancy
+        )
+    except JobApplication.DoesNotExist:
+        return JsonResponse({'error': 'Application not found.'}, status=404)
+
+    is_override = (selected_app.status.code != 'top_candidate')
+
+    if is_override and not override_reason:
+        return JsonResponse(
+            {'error': 'A written reason is required when selecting a candidate outside the HR-recommended list.'},
+            status=400,
+        )
+
+    # Status objects
+    ceo_selected_status = _get_job_status('ceo_selected')
+    not_selected_status = _get_job_status('not_selected')
+
+    if not ceo_selected_status or not not_selected_status:
+        return JsonResponse(
+            {'error': "System error: missing status codes. Run seed_application_statuses."},
+            status=500,
+        )
+
+    b = selected_app.snapshot_basic or {}
+    winner_name = ' '.join(filter(None, [
+        b.get('first_name', ''), b.get('surname', ''),
+    ])) or selected_app.user.email
+
+    try:
+        rank = InterviewResult.objects.get(vacancy=vacancy, application=selected_app).rank
+    except InterviewResult.DoesNotExist:
+        rank = '?'
+
+    with transaction.atomic():
+        # All apps that were in the running → not_selected (except winner)
+        other_apps = JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code__in=['top_candidate', 'interviewed'],
+        ).exclude(pk=selected_id).select_related('status')
+
+        for app in other_apps:
+            old = app.status
+            app.status = not_selected_status
+            app.save(update_fields=['status'])
+            JobApplicationStatusLog.objects.create(
+                application=app, from_status=old, to_status=not_selected_status,
+                changed_by=request.user,
+                notes=f'Not selected by CEO. Successful candidate: {winner_name}.',
+            )
+
+        # Mark winner
+        old_status = selected_app.status
+        selected_app.status = ceo_selected_status
+        selected_app.save(update_fields=['status'])
+
+        JobApplicationStatusLog.objects.create(
+            application=selected_app,
+            from_status=old_status,
+            to_status=ceo_selected_status,
+            changed_by=request.user,
+            notes=(
+                    f'Selected by CEO (rank #{rank}).'
+                    + (f' Override — reason: {override_reason}' if is_override else '')
+            ),
+        )
+
+        # Advance vacancy
+        vacancy.status = 'ceo_approved'
+        vacancy.save(update_fields=['status'])
+
+        InterviewLog.objects.create(
+            vacancy=vacancy,
+            application=selected_app,
+            performed_by=request.user,
+            action='ceo_selection_made',
+            notes=(
+                    f'CEO selected {winner_name} (rank #{rank}).'
+                    + (f' Override: {override_reason}' if is_override else ' From HR-recommended list.')
+            ),
+            metadata={
+                'selected_app_id': str(selected_app.pk),
+                'selected_name': winner_name,
+                'rank': rank,
+                'is_override': is_override,
+                'override_reason': override_reason,
+                'not_selected_count': other_apps.count(),
+            },
+            performed_by_label=_display_name(request.user),
+        )
+
+    return JsonResponse({
+        'success': True,
+        'winner': winner_name,
+        'is_override': is_override,
+        'redirect_url': '/recruitment/ceo/dashboard/',
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 6. HR APPOINTMENTS LIST
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['hod_hr'])
+def hr_appointments_list(request):
+    """
+    HR sees all vacancies in 'ceo_approved' stage, ready for appointment issuance.
+    """
+    vacancies = Vacancy.objects.filter(status='ceo_approved').order_by('-created_at')
+
+    vacancy_data = []
+    for v in vacancies:
+        winner = JobApplication.objects.filter(
+            vacancy=v, status__code='ceo_selected',
+        ).select_related('user').first()
+        vacancy_data.append({'vacancy': v, 'winner': winner})
+
+    return render(request, 'recruitment/hr/appointment/appointments_list.html', {
+        'page': 'Appointments',
+        'vacancy_data': vacancy_data,
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# 7. HR ISSUE APPOINTMENT (GET preview + POST confirm)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+@login_required
+@role_required(['hod_hr'])
+def hr_issue_appointment(request, vacancy_id):
+    """
+    HR reviews the CEO-selected candidate and formally issues the appointment.
+
+    GET  → Preview screen with candidate details + confirmation button.
+    POST → Marks candidate as 'appointed', sends notification email,
+           updates vacancy → 'appointed'.
+    """
+    vacancy = get_object_or_404(Vacancy, id=vacancy_id)
+
+    if vacancy.status != 'ceo_approved':
+        messages.error(request, "This vacancy is not in the CEO-approved stage.")
+        return redirect('hr_appointments_list')
+
+    winner = JobApplication.objects.filter(
+        vacancy=vacancy, status__code='ceo_selected',
+    ).select_related('user', 'status').first()
+
+    if not winner:
+        messages.error(
+            request,
+            "No CEO-selected candidate found for this vacancy. "
+            "Please contact the CEO to confirm their selection."
+        )
+        return redirect('hr_appointments_list')
+
+    b = winner.snapshot_basic or {}
+    winner_name = ' '.join(filter(None, [
+        b.get('first_name', ''), b.get('second_name', ''), b.get('surname', ''),
+    ])) or winner.user.email
+
+    try:
+        result = InterviewResult.objects.get(vacancy=vacancy, application=winner)
+    except InterviewResult.DoesNotExist:
+        result = None
+
+    if request.method == 'POST':
+        appointed_status = _get_job_status('appointed')
+        if not appointed_status:
+            messages.error(
+                request,
+                "System error: 'appointed' status not found. Run seed_application_statuses."
+            )
+            return redirect('hr_appointments_list')
+
+        with transaction.atomic():
+            old_status = winner.status
+            winner.status = appointed_status
+            winner.save(update_fields=['status'])
+
+            JobApplicationStatusLog.objects.create(
+                application=winner,
+                from_status=old_status,
+                to_status=appointed_status,
+                changed_by=request.user,
+                notes=f'Appointment issued by HR ({_display_name(request.user)}).',
+            )
+
+            vacancy.status = 'appointed'
+            vacancy.save(update_fields=['status'])
+
+            InterviewLog.objects.create(
+                vacancy=vacancy,
+                application=winner,
+                performed_by=request.user,
+                action='appointment_issued',
+                notes=f'Appointment issued to {winner_name}.',
+                metadata={'app_id': str(winner.pk), 'winner_name': winner_name},
+                performed_by_label=_display_name(request.user),
+            )
+
+        # Send appointment email (outside transaction)
+        _send_appointment_email_v2(winner, vacancy, winner_name)
+
+        messages.success(
+            request,
+            f"Appointment issued to {winner_name}. "
+            f"A notification email has been sent to {winner.user.email}."
+        )
+        return redirect('hr_dashboard')
+
+    return render(request, 'recruitment/hr/appointment/issue_appointment.html', {
+        'page': 'Issue Appointment',
+        'vacancy': vacancy,
+        'winner': winner,
+        'winner_name': winner_name,
+        'result': result,
+        'basic': b,
+        'additional': winner.snapshot_additional or {},
+        'academic': winner.snapshot_academic or [],
+        'referees': winner.snapshot_referees or [],
+    })
+
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# HELPER — appointment email (new version for JobApplication flow)
+# ═══════════════════════════════════════════════════════════════════════════════
+
+def _send_appointment_email_v2(application, vacancy, winner_name):
+    """
+    Send appointment congratulations email to the appointed candidate.
+    Uses the existing _send_html_email helper already in views.py.
+    """
+    try:
+        site_url = __import__('django.conf', fromlist=['settings']).settings.SITE_URL
+    except Exception:
+        site_url = 'https://portal.ufaa.go.ke'
+
+    subject = f'Appointment Notification — {vacancy.title} | UFAA'
+
+    message_html = f"""
+        <p>Dear <strong>{winner_name}</strong>,</p>
+
+        <p>We are delighted to inform you that, following the completion of the
+        competitive recruitment process for the position of
+        <strong>{vacancy.title}</strong>
+        (Reference: <strong>{vacancy.reference_number}</strong>),
+        you have been <strong>successfully appointed</strong> to this role.</p>
+
+        <div style="background:#f0f4ff;border-left:4px solid #262561;
+                    border-radius:0 .5rem .5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
+            <div style="font-size:.68rem;font-weight:700;color:#8392ab;
+                        text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">
+                Application Reference
+            </div>
+            <div style="font-size:.9rem;font-weight:700;color:#262561;">
+                {application.application_number}
+            </div>
+        </div>
+
+        <p>The UFAA Human Resources Department will contact you shortly with
+        your formal appointment letter, reporting date, and onboarding details.
+        Please ensure your contact information on the portal is current.</p>
+
+        <p>
+            <a href="{site_url}/recruitment/job-status/"
+               style="background:#262561;color:#F9E6A1;padding:.6rem 1.4rem;
+                      border-radius:.4rem;text-decoration:none;font-weight:600;
+                      font-size:.85rem;display:inline-block;">
+                View Your Application Status
+            </a>
+        </p>
+
+        <p style="margin-top:1.5rem;">
+            Congratulations and welcome to the UFAA team.<br><br>
+            <strong>UFAA Human Resources Department</strong><br>
+            <span style="color:#67748e;font-size:.82rem;">
+                Unclaimed Financial Assets Authority
+            </span>
+        </p>
+    """
+
+    try:
+        _send_html_email(subject, application.user.email, message_html)
+    except Exception as e:
+        logger.error(
+            f'Appointment email failed for {application.user.email}: {e}',
+            exc_info=True,
+        )
 

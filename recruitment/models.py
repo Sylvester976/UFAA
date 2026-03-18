@@ -222,18 +222,20 @@ class Vacancy(models.Model):
     ]
 
     STATUS_CHOICES = [
-        ('draft',                'Draft'),
-        ('open',                 'Open'),
-        ('closed',               'Closed'),               # ← ADDED: HR closes after deadline
-        ('longlisting',          'Longlisting'),
-        ('committee_stage',      'Committee Appointed'),
-        ('shortlisting',         'Shortlisting Stage'),
-        ('interviews',           'Interviews'),
-        ('top_three_selected',   'Top Three Selected'),
-        ('pending_ceo_approval', 'Pending CEO Approval'),
-        ('approved',             'Approved'),
-        ('appointed',            'Appointed'),
+        ('draft', 'Draft'),
+        ('open', 'Open'),
+        ('closed', 'Closed'),
+        ('longlisting', 'Longlisting'),
+        ('committee_stage', 'Committee Stage'),
+        ('shortlisting', 'Shortlisting Stage'),
+        ('interview_scheduling', 'Interview Scheduling'),  # ← NEW
+        ('interviews', 'Interviews Complete'),  # ← NEW (was 'interviews')
+        ('ceo_review', 'CEO Review'),  # ← NEW
+        ('ceo_approved', 'CEO Approved'),  # ← NEW
+        ('appointed', 'Appointed'),
     ]
+
+
 
     title            = models.CharField(max_length=255)
     reference_number = models.CharField(max_length=100, unique=True)
@@ -674,6 +676,10 @@ class LonglistReviewLog(models.Model):
         ('note_added',       'Added Note'),
         ('decision_changed', 'Decision Changed'),
         ('system_screening', 'System Auto-Screening'),
+        ('top_candidate_selected', 'Top Candidate Selected by HR'),
+        ('submitted_to_ceo', 'Submitted to CEO for Review'),
+        ('ceo_selection_made', 'CEO Selection Made'),
+        ('appointment_issued', 'Appointment Issued by HR'),
     ]
 
     vacancy     = models.ForeignKey(Vacancy, on_delete=models.CASCADE, related_name='longlist_logs')

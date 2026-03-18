@@ -1,0 +1,653 @@
+{% extends "recruitment/ceo/base_ceo.html" %}
+{% block title %}CEO Review — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+  --navy:#262561; --navy-lt:#1a1f5c; --gold:#F9E6A1; --gold-dk:#C39545;
+  --green:#1a7a45; --red:#c0392b; --amber:#b7770d;
+}
+a { text-decoration:none !important; }
+
+/* ── Banner ── */
+.page-banner {
+  background:linear-gradient(135deg,var(--navy) 0%,var(--navy-lt) 100%);
+  border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
+}
+.banner-title  { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub    { font-size:.78rem;  color:rgba(255,255,255,.7); margin:0; }
+.banner-ref    { font-family:monospace; font-size:.72rem;
+                 background:rgba(249,230,161,.15); color:var(--gold);
+                 padding:.25rem .65rem; border-radius:.4rem; }
+.back-link     { color:rgba(255,255,255,.65); font-size:.78rem;
+                 display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+/* ── Section card ── */
+.section-card {
+  background:#fff; border-radius:.9rem;
+  box-shadow:0 2px 14px rgba(38,37,97,.08);
+  overflow:hidden; margin-bottom:1.25rem;
+}
+.section-header {
+  padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8;
+  display:flex; align-items:center; justify-content:space-between;
+  flex-wrap:wrap; gap:.5rem;
+}
+.section-title {
+  font-size:.82rem; font-weight:800; color:var(--navy);
+  display:flex; align-items:center; gap:.5rem; margin:0;
+}
+
+/* ── Candidate card ── */
+.candidate-card {
+  border:2px solid #e8ecf4; border-radius:.75rem;
+  padding:1.1rem 1.25rem; margin-bottom:.85rem;
+  position:relative; transition:border-color .15s, box-shadow .15s;
+  cursor:pointer;
+}
+.candidate-card:hover { border-color:var(--navy); box-shadow:0 2px 12px rgba(38,37,97,.1); }
+.candidate-card.selected {
+  border-color:var(--navy);
+  background:linear-gradient(135deg,rgba(38,37,97,.04),rgba(38,37,97,.01));
+}
+.candidate-card.override-card { border-color:#e0e4ef; }
+.candidate-card.override-card:hover { border-color:var(--amber); }
+.candidate-card.override-card.selected { border-color:var(--amber); background:#fffbf0; }
+
+/* rank badge */
+.rank-badge {
+  position:absolute; top:-.6rem; left:1rem;
+  font-size:.6rem; font-weight:800; text-transform:uppercase;
+  letter-spacing:.07em; padding:.18rem .65rem; border-radius:99px;
+}
+.rank-badge.r1  { background:#ffd700; color:#6d4c00; }
+.rank-badge.r2  { background:#c0c0c0; color:#3a3a3a; }
+.rank-badge.r3  { background:#cd7f32; color:#fff; }
+.rank-badge.rx  { background:#f0f2f8; color:#8392ab; }
+.rank-badge.ovr { background:#fff3cd; color:var(--amber); border:1px solid #ffe082; }
+
+/* radio custom */
+.radio-wrap { display:flex; align-items:flex-start; gap:.75rem; }
+.radio-wrap input[type=radio] { display:none; }
+.radio-dot {
+  width:20px; height:20px; border-radius:50%;
+  border:2px solid #c9d2e8; flex-shrink:0; margin-top:.15rem;
+  display:flex; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.candidate-card.selected .radio-dot {
+  border-color:var(--navy); background:var(--navy);
+}
+.candidate-card.override-card.selected .radio-dot {
+  border-color:var(--amber); background:var(--amber);
+}
+.radio-dot::after {
+  content:''; width:8px; height:8px; border-radius:50%;
+  background:#fff; display:none;
+}
+.candidate-card.selected .radio-dot::after { display:block; }
+
+/* score bar */
+.score-bar-wrap { display:flex; align-items:center; gap:.5rem; margin:.4rem 0; }
+.score-bar-bg {
+  flex:1; height:6px; background:#f0f2f8; border-radius:99px; overflow:hidden;
+}
+.score-bar-fill {
+  height:100%; border-radius:99px;
+  background:linear-gradient(90deg,var(--navy),#4f46e5);
+  transition:width .5s ease;
+}
+.score-pct { font-size:.72rem; font-weight:700; color:var(--navy); min-width:36px; text-align:right; }
+
+/* criterion breakdown */
+.crit-grid {
+  display:grid; gap:.3rem; margin-top:.65rem;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+}
+.crit-item {
+  background:#f8f9ff; border-radius:.45rem; padding:.4rem .7rem;
+  font-size:.7rem;
+}
+.crit-label { color:#8392ab; font-weight:600; margin-bottom:.1rem; }
+.crit-score { font-weight:800; color:var(--navy); }
+
+/* chips */
+.chip { font-size:.63rem; font-weight:700; padding:.18rem .55rem;
+        border-radius:99px; white-space:nowrap; }
+.chip-top    { background:#d4f5e2; color:#1a5c38; }
+.chip-amber  { background:#fff3cd; color:var(--amber); }
+.chip-muted  { background:#f0f2f8; color:#8392ab; }
+
+/* override reason box */
+#overrideBox {
+  display:none;
+  background:#fffbf0; border:1.5px solid #ffe082;
+  border-radius:.6rem; padding:1rem 1.25rem; margin-top:.85rem;
+}
+
+/* buttons */
+.btn-act {
+  font-size:.8rem; font-weight:700; padding:.5rem 1.25rem;
+  border-radius:.45rem; border:none; cursor:pointer;
+  display:inline-flex; align-items:center; gap:.4rem;
+  transition:opacity .15s;
+}
+.btn-act:hover     { opacity:.88; }
+.btn-act:disabled  { opacity:.4; cursor:not-allowed; }
+.btn-navy          { background:var(--navy); color:#fff; }
+.btn-amber-solid   { background:var(--amber); color:#fff; }
+.btn-outline {
+  background:#fff; border:1.5px solid #d0d7f0;
+  color:var(--navy);
+}
+
+/* already-selected banner */
+.already-banner {
+  background:#d4f5e2; border:1px solid #82d6a8;
+  border-radius:.65rem; padding:.85rem 1.1rem;
+  display:flex; align-items:center; gap:.75rem;
+  font-size:.82rem; font-weight:600; color:#1a5c38;
+  margin-bottom:1.25rem;
+}
+
+/* toast */
+.toast-wrap {
+  position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
+  display:flex; flex-direction:column; gap:.4rem; pointer-events:none;
+}
+.toast-msg {
+  background:var(--navy); color:#fff;
+  padding:.65rem 1.2rem; border-radius:.5rem;
+  font-size:.8rem; font-weight:600;
+  box-shadow:0 4px 16px rgba(0,0,0,.2);
+  display:flex; align-items:center; gap:.5rem;
+  animation:slideUp .2s ease-out; pointer-events:auto;
+}
+.toast-msg.success { background:var(--green); }
+.toast-msg.error   { background:var(--red); }
+@keyframes slideUp {
+  from { transform:translateY(12px); opacity:0; }
+  to   { transform:translateY(0); opacity:1; }
+}
+
+/* accordion toggle for override list */
+.toggle-link {
+  font-size:.75rem; font-weight:700; color:var(--navy);
+  cursor:pointer; display:flex; align-items:center; gap:.35rem;
+  user-select:none;
+}
+.toggle-link:hover { color:var(--gold-dk); }
+#overrideList { display:none; margin-top:.85rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+  <!-- Banner -->
+  <div class="page-banner">
+    <div>
+      <p class="banner-title mb-1">
+        <i class="fas fa-user-check me-2"></i>CEO Candidate Review
+      </p>
+      <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+    </div>
+    <div class="d-flex align-items-center gap-3 flex-wrap">
+      <span class="banner-ref">{{ vacancy.reference_number }}</span>
+      <a href="{% url 'ceo_dashboard' %}" class="back-link">
+        <i class="fas fa-arrow-left"></i> Dashboard
+      </a>
+    </div>
+  </div>
+
+  <!-- Already selected banner -->
+  {% if already_selected %}
+  {% with b=already_selected.snapshot_basic %}
+  <div class="already-banner">
+    <i class="fas fa-check-circle" style="font-size:1.3rem;"></i>
+    <div>
+      Selection recorded:
+      <strong>
+        {{ b.first_name }} {{ b.surname }}
+        ({{ already_selected.application_number }})
+      </strong>
+      — awaiting HR appointment issuance.
+    </div>
+  </div>
+  {% endwith %}
+  {% endif %}
+
+  <div class="row g-3">
+
+    <!-- ── Left: Main selection area ─────────────────────────── -->
+    <div class="col-lg-8">
+
+      <!-- HR Recommended -->
+      <div class="section-card">
+        <div class="section-header">
+          <h6 class="section-title">
+            <i class="fas fa-star" style="color:var(--gold-dk);"></i>
+            HR-Recommended Candidates
+            <span style="font-size:.7rem;font-weight:400;color:#8392ab;">
+              ({{ top_rows|length }} candidate{{ top_rows|length|pluralize }})
+            </span>
+          </h6>
+          <span class="chip chip-top">From Interview Ranking</span>
+        </div>
+        <div style="padding:1.1rem 1.25rem;">
+          {% for row in top_rows %}
+          {% with b=row.app.snapshot_basic %}
+          {% with full_name=row.full_name %}
+          <div class="candidate-card"
+               id="card-{{ row.app.id }}"
+               onclick="selectCandidate('{{ row.app.id }}', false)">
+
+            <!-- rank badge -->
+            <span class="rank-badge
+              {% if row.rank == 1 %}r1{% elif row.rank == 2 %}r2{% elif row.rank == 3 %}r3{% else %}rx{% endif %}">
+              {% if row.rank == 1 %}🥇 Rank 1
+              {% elif row.rank == 2 %}🥈 Rank 2
+              {% elif row.rank == 3 %}🥉 Rank 3
+              {% else %}Rank {{ row.rank }}{% endif %}
+            </span>
+
+            <div class="radio-wrap mt-2">
+              <input type="radio" name="selected_id" value="{{ row.app.id }}" id="r-{{ row.app.id }}">
+              <div class="radio-dot"></div>
+              <div class="flex-grow-1">
+                <div style="font-size:.88rem;font-weight:700;color:var(--navy);">
+                  {{ full_name }}
+                </div>
+                <div style="font-size:.72rem;color:#8392ab;">
+                  {{ row.app.application_number }} &nbsp;·&nbsp; {{ b.id_no|default:'—' }}
+                </div>
+
+                <!-- Score bar -->
+                <div class="score-bar-wrap mt-2">
+                  <div class="score-bar-bg">
+                    <div class="score-bar-fill" style="width:{{ row.pct }}%;"></div>
+                  </div>
+                  <span class="score-pct">{{ row.pct }}%</span>
+                  <span style="font-size:.72rem;color:#8392ab;">
+                    {{ row.total }}/{{ row.result.max_possible }}
+                  </span>
+                </div>
+
+                <!-- Per-criterion totals -->
+                {% if criteria %}
+                <div class="crit-grid">
+                  {% for c in criteria %}
+                  <div class="crit-item">
+                    <div class="crit-label">{{ c.name }}</div>
+                    <div class="crit-score">
+                      {{ row.crit_totals|default_if_none:0 }}/{{ c.max_score }}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+          {% endwith %}
+          {% empty %}
+          <div style="text-align:center;padding:2rem;color:#b0bac9;font-size:.82rem;">
+            <i class="fas fa-user-slash"
+               style="font-size:1.8rem;display:block;margin-bottom:.5rem;color:#d0d5e8;"></i>
+            No candidates have been submitted by HR yet.
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Override: other interviewed candidates -->
+      {% if all_rows %}
+      <div class="section-card">
+        <div class="section-header">
+          <h6 class="section-title">
+            <i class="fas fa-exclamation-triangle" style="color:var(--amber);"></i>
+            Override Selection
+            <span style="font-size:.7rem;font-weight:400;color:#8392ab;">
+              (all other interviewed candidates)
+            </span>
+          </h6>
+          <span class="toggle-link" onclick="toggleOverrideList()">
+            <i class="fas fa-chevron-down" id="overrideChev"></i>
+            Show / Hide
+          </span>
+        </div>
+        <div id="overrideList" style="padding:0 1.25rem 1.1rem;">
+          <div style="font-size:.74rem;color:#7d5500;background:#fff3cd;
+                      border-radius:.4rem;padding:.6rem .85rem;margin-bottom:.85rem;">
+            <i class="fas fa-info-circle me-1"></i>
+            Selecting a candidate outside the HR-recommended list is an
+            <strong>override</strong> and requires a written justification,
+            which is permanently logged.
+          </div>
+          {% for row in all_rows %}
+          {% if not row.is_top %}
+          {% with b=row.app.snapshot_basic %}
+          <div class="candidate-card override-card"
+               id="card-{{ row.app.id }}"
+               onclick="selectCandidate('{{ row.app.id }}', true)">
+            <span class="rank-badge ovr">Override · Rank {{ row.rank|default:'?' }}</span>
+            <div class="radio-wrap mt-2">
+              <input type="radio" name="selected_id" value="{{ row.app.id }}" id="r-{{ row.app.id }}">
+              <div class="radio-dot"></div>
+              <div class="flex-grow-1">
+                <div style="font-size:.88rem;font-weight:700;color:var(--navy);">
+                  {{ row.full_name }}
+                </div>
+                <div style="font-size:.72rem;color:#8392ab;">
+                  {{ row.app.application_number }} &nbsp;·&nbsp; {{ b.id_no|default:'—' }}
+                </div>
+                <div class="score-bar-wrap mt-2">
+                  <div class="score-bar-bg">
+                    <div class="score-bar-fill"
+                         style="width:{{ row.pct }}%;background:linear-gradient(90deg,var(--amber),#e6a817);"></div>
+                  </div>
+                  <span class="score-pct" style="color:var(--amber);">{{ row.pct }}%</span>
+                  <span style="font-size:.72rem;color:#8392ab;">
+                    {{ row.total }}/{{ row.result.max_possible }}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          {% endwith %}
+          {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Override reason (shown only when override selected) -->
+      <div id="overrideBox" class="section-card">
+        <div style="padding:1rem 1.25rem;">
+          <label style="font-size:.8rem;font-weight:700;color:var(--amber);">
+            <i class="fas fa-edit me-1"></i>Override Justification
+            <span style="color:#c0392b;"> *</span>
+          </label>
+          <textarea id="overrideReason" rows="3"
+                    style="width:100%;margin-top:.5rem;padding:.6rem .85rem;
+                           border:1.5px solid #ffe082;border-radius:.5rem;
+                           font-size:.8rem;color:#344767;box-sizing:border-box;resize:vertical;"
+                    placeholder="State the specific reason for overriding the HR recommendation..."></textarea>
+          <p style="font-size:.7rem;color:#8392ab;margin:.35rem 0 0;">
+            This justification is permanently recorded in the recruitment audit log.
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /col-lg-8 -->
+
+    <!-- ── Right: Summary + Action ───────────────────────────── -->
+    <div class="col-lg-4">
+
+      <!-- Vacancy info -->
+      <div class="section-card">
+        <div class="section-header">
+          <h6 class="section-title">
+            <i class="fas fa-briefcase" style="color:var(--gold-dk);"></i>
+            Position Details
+          </h6>
+        </div>
+        <div style="padding:.85rem 1.1rem;font-size:.8rem;color:#344767;">
+          <div style="display:grid;gap:.5rem;">
+            <div>
+              <div style="font-size:.62rem;color:#8392ab;text-transform:uppercase;
+                          letter-spacing:.05em;font-weight:700;">Position</div>
+              <div style="font-weight:700;color:var(--navy);">{{ vacancy.title }}</div>
+            </div>
+            <div>
+              <div style="font-size:.62rem;color:#8392ab;text-transform:uppercase;
+                          letter-spacing:.05em;font-weight:700;">Reference</div>
+              <div style="font-family:monospace;">{{ vacancy.reference_number }}</div>
+            </div>
+            <div>
+              <div style="font-size:.62rem;color:#8392ab;text-transform:uppercase;
+                          letter-spacing:.05em;font-weight:700;">Grade</div>
+              <div>{{ vacancy.grade_category }}</div>
+            </div>
+            <div>
+              <div style="font-size:.62rem;color:#8392ab;text-transform:uppercase;
+                          letter-spacing:.05em;font-weight:700;">Candidates Presented</div>
+              <div><strong>{{ top_rows|length }}</strong> by HR</div>
+            </div>
+            <div>
+              <div style="font-size:.62rem;color:#8392ab;text-transform:uppercase;
+                          letter-spacing:.05em;font-weight:700;">Panel Members</div>
+              <div>{{ panel_count }} member{{ panel_count|pluralize }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Selection summary + confirm button -->
+      <div class="section-card">
+        <div class="section-header">
+          <h6 class="section-title">
+            <i class="fas fa-check-circle" style="color:var(--green);"></i>
+            Your Selection
+          </h6>
+        </div>
+        <div style="padding:.9rem 1.1rem;">
+          <div id="noSelectionMsg"
+               style="font-size:.8rem;color:#b0bac9;text-align:center;
+                      padding:1rem 0;">
+            <i class="fas fa-hand-pointer"
+               style="font-size:1.4rem;display:block;margin-bottom:.4rem;"></i>
+            Select a candidate on the left
+          </div>
+          <div id="selectionSummary" style="display:none;">
+            <div style="font-size:.7rem;color:#8392ab;text-transform:uppercase;
+                        font-weight:700;letter-spacing:.04em;margin-bottom:.3rem;">
+              Selected Candidate
+            </div>
+            <div id="summaryName"
+                 style="font-size:.92rem;font-weight:700;color:var(--navy);"></div>
+            <div id="summaryRef"
+                 style="font-size:.72rem;color:#8392ab;margin-bottom:.5rem;"></div>
+            <div id="summaryScore"
+                 style="font-size:.8rem;font-weight:600;color:var(--navy);"></div>
+            <div id="overrideWarning"
+                 style="display:none;margin-top:.6rem;font-size:.72rem;
+                        color:var(--amber);font-weight:600;">
+              <i class="fas fa-exclamation-triangle me-1"></i>
+              Override — justification required above
+            </div>
+          </div>
+
+          <button class="btn-act btn-navy w-100 mt-3"
+                  id="confirmBtn"
+                  disabled
+                  onclick="confirmSelection()">
+            <i class="fas fa-check"></i> Confirm Selection
+          </button>
+          <p style="font-size:.68rem;color:#adb5bd;text-align:center;
+                    margin:.5rem 0 0;">
+            This action is permanent and logged.
+          </p>
+        </div>
+      </div>
+
+    </div><!-- /col-lg-4 -->
+  </div>
+
+</div><!-- /container -->
+
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- Confirmation modal -->
+<div class="modal fade" id="confirmModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:.8rem;border:none;">
+      <div class="modal-header"
+           style="background:var(--navy);border-radius:.8rem .8rem 0 0;
+                  padding:1rem 1.25rem;">
+        <h5 class="modal-title" style="color:var(--gold);font-size:.9rem;font-weight:700;">
+          <i class="fas fa-user-check me-2"></i>Confirm CEO Selection
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" style="padding:1.25rem;">
+        <p style="font-size:.85rem;color:#344767;margin:0;">
+          You are about to select <strong id="modalName"></strong> as the
+          appointed candidate for <strong>{{ vacancy.title }}</strong>.
+        </p>
+        <div id="modalOverrideNote"
+             style="display:none;margin-top:.75rem;background:#fff3cd;
+                    border-radius:.4rem;padding:.6rem .85rem;
+                    font-size:.78rem;color:#7d5500;">
+          <i class="fas fa-exclamation-triangle me-1"></i>
+          This is an <strong>override</strong> of the HR recommendation.
+          Your justification will be permanently logged.
+        </div>
+        <p style="font-size:.78rem;color:#8392ab;margin:.85rem 0 0;">
+          This action cannot be undone. The selection will be sent to HR
+          for appointment issuance.
+        </p>
+      </div>
+      <div class="modal-footer" style="padding:.85rem 1.25rem;gap:.5rem;">
+        <button class="btn-act btn-outline" data-bs-dismiss="modal">Cancel</button>
+        <button class="btn-act btn-navy" onclick="submitSelection()" id="modalConfirmBtn">
+          <i class="fas fa-check"></i> Yes, Confirm
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+const VACANCY_ID   = {{ vacancy.id }};
+const CAN_SELECT   = {{ can_select|yesno:'true,false' }};
+
+let selectedId     = null;
+let isOverride     = false;
+
+// candidate data for display — injected server-side
+const CANDIDATES = {
+  {% for row in top_rows %}
+  "{{ row.app.id }}": {
+    name:  "{{ row.full_name|escapejs }}",
+    ref:   "{{ row.app.application_number }}",
+    score: "{{ row.total }} / {{ row.result.max_possible }} ({{ row.pct }}%)",
+    rank:  {{ row.rank|default:'null' }},
+  },
+  {% endfor %}
+  {% for row in all_rows %}
+  {% if not row.is_top %}
+  "{{ row.app.id }}": {
+    name:  "{{ row.full_name|escapejs }}",
+    ref:   "{{ row.app.application_number }}",
+    score: "{{ row.total }} / {{ row.result.max_possible }} ({{ row.pct }}%)",
+    rank:  {{ row.rank|default:'null' }},
+  },
+  {% endif %}
+  {% endfor %}
+};
+
+function selectCandidate(appId, override) {
+  if (!CAN_SELECT) return;
+
+  selectedId = appId;
+  isOverride = override;
+
+  // Update card states
+  document.querySelectorAll('.candidate-card').forEach(c => c.classList.remove('selected'));
+  document.getElementById('card-' + appId)?.classList.add('selected');
+
+  // Summary panel
+  const data = CANDIDATES[appId];
+  if (data) {
+    document.getElementById('noSelectionMsg').style.display  = 'none';
+    document.getElementById('selectionSummary').style.display = '';
+    document.getElementById('summaryName').textContent  = data.name;
+    document.getElementById('summaryRef').textContent   = data.ref;
+    document.getElementById('summaryScore').textContent = 'Score: ' + data.score;
+    document.getElementById('overrideWarning').style.display = override ? '' : 'none';
+  }
+
+  // Override reason box
+  document.getElementById('overrideBox').style.display = override ? '' : 'none';
+
+  // Confirm button
+  document.getElementById('confirmBtn').disabled = !CAN_SELECT;
+}
+
+function confirmSelection() {
+  if (!selectedId) return;
+  const reason = document.getElementById('overrideReason')?.value.trim();
+  if (isOverride && !reason) {
+    showToast('Please enter an override justification.', 'error');
+    return;
+  }
+  const data = CANDIDATES[selectedId];
+  document.getElementById('modalName').textContent = data?.name || '';
+  document.getElementById('modalOverrideNote').style.display = isOverride ? '' : 'none';
+  new bootstrap.Modal(document.getElementById('confirmModal')).show();
+}
+
+async function submitSelection() {
+  document.getElementById('modalConfirmBtn').disabled = true;
+  const reason = document.getElementById('overrideReason')?.value.trim() || '';
+
+  const body = new URLSearchParams({
+    selected_id: selectedId,
+    override_reason: reason,
+  });
+
+  try {
+    const res  = await fetch(
+      `/recruitment/ceo/vacancy/${VACANCY_ID}/select/`,
+      {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body.toString(),
+      }
+    );
+    const data = await res.json();
+    bootstrap.Modal.getInstance(document.getElementById('confirmModal')).hide();
+
+    if (data.error) {
+      showToast(data.error, 'error');
+      document.getElementById('modalConfirmBtn').disabled = false;
+      return;
+    }
+    showToast(`${data.winner} selected. Redirecting…`, 'success');
+    setTimeout(() => { window.location.href = data.redirect_url; }, 1800);
+
+  } catch (e) {
+    showToast('Network error. Please try again.', 'error');
+    document.getElementById('modalConfirmBtn').disabled = false;
+  }
+}
+
+function toggleOverrideList() {
+  const el   = document.getElementById('overrideList');
+  const chev = document.getElementById('overrideChev');
+  const open = el.style.display !== 'block';
+  el.style.display   = open ? 'block' : 'none';
+  chev.className     = open ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+}
+
+function showToast(msg, type = '') {
+  const el  = document.createElement('div');
+  el.className = 'toast-msg ' + type;
+  const icon = type === 'success' ? 'check-circle'
+             : type === 'error'   ? 'times-circle' : 'info-circle';
+  el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+  document.getElementById('toastWrap').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+</script>
+{% endblock %}

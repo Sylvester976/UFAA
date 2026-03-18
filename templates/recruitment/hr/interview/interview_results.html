@@ -1,0 +1,333 @@
+{% extends "recruitment/hr/base_hr.html" %}
+{% block title %}Interview Results — {{ vacancy.title }}{% endblock %}
+
+{% block extra_css %}
+<style>
+:root {
+    --navy:#262561; --navy-lt:#1a1f5c;
+    --gold:#F9E6A1; --gold-dk:#C39545;
+    --green:#1a7a45; --red:#c0392b; --amber:#b7770d;
+}
+a { text-decoration:none !important; }
+
+.page-banner {
+    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-lt) 100%);
+    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
+}
+.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
+.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+.banner-ref   { font-family:monospace; font-size:.72rem;
+                background:rgba(249,230,161,.15); color:var(--gold);
+                padding:.25rem .65rem; border-radius:.4rem; }
+.back-link    { color:rgba(255,255,255,.65); font-size:.78rem;
+                display:flex; align-items:center; gap:.35rem; }
+.back-link:hover { color:var(--gold); }
+
+/* ── Summary stats ── */
+.stat-card {
+    background:#fff; border-radius:.85rem;
+    box-shadow:0 2px 10px rgba(38,37,97,.07);
+    padding:.9rem 1.1rem; text-align:center; flex:1; min-width:130px;
+}
+.stat-val   { font-size:1.4rem; font-weight:900; color:var(--navy); }
+.stat-label { font-size:.7rem; color:#8392ab; margin-top:.1rem; }
+
+/* ── Section card ── */
+.section-card {
+    background:#fff; border-radius:.9rem;
+    box-shadow:0 2px 14px rgba(38,37,97,.08);
+    overflow:hidden; margin-bottom:1.25rem;
+}
+.section-header {
+    padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8;
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:.5rem;
+}
+.section-title {
+    font-size:.82rem; font-weight:800; color:var(--navy);
+    display:flex; align-items:center; gap:.5rem; margin:0;
+}
+
+/* ── Results table ── */
+.results-table { width:100%; border-collapse:collapse; font-size:.78rem; }
+.results-table th {
+    background:#f8f9ff; color:#8392ab; font-size:.62rem; font-weight:700;
+    text-transform:uppercase; letter-spacing:.05em;
+    padding:.65rem .9rem; border-bottom:1px solid #f0f2f8;
+    white-space:nowrap;
+}
+.results-table td {
+    padding:.6rem .9rem; border-bottom:1px solid #f7f8fc; vertical-align:middle;
+}
+.results-table tr:last-child td { border-bottom:none; }
+.results-table tr.top3 td { background:#fefdf7; }
+.results-table tr:hover td { background:#fafbff; }
+.results-table tr.top3:hover td { background:#fef9e7; }
+
+/* Rank badge */
+.rank-badge {
+    width:28px; height:28px; border-radius:50%; flex-shrink:0;
+    display:inline-flex; align-items:center; justify-content:center;
+    font-size:.75rem; font-weight:800;
+}
+.rank-1 { background:linear-gradient(135deg,#f9e6a1,#c39545); color:#5c3d00; }
+.rank-2 { background:linear-gradient(135deg,#e0e0e0,#9e9e9e); color:#3d3d3d; }
+.rank-3 { background:linear-gradient(135deg,#ffccbc,#bf360c); color:#fff; }
+.rank-n { background:#f0f2f8; color:#8392ab; }
+
+.chip { font-size:.63rem; font-weight:700; padding:.15rem .5rem;
+        border-radius:99px; white-space:nowrap; }
+.chip-gold { background:#fff8dc; color:#7d5500; border:1px solid #ffe69c; }
+
+/* Per-member score columns */
+.member-score {
+    text-align:center; font-weight:700; color:var(--navy);
+}
+.member-score.empty { color:#adb5bd; font-weight:400; }
+
+/* Score bar */
+.score-bar-wrap { display:flex; align-items:center; gap:.5rem; }
+.score-bar-track { height:6px; background:#f0f2f8; border-radius:99px;
+                   overflow:hidden; width:80px; flex-shrink:0; }
+.score-bar-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
+                   border-radius:99px; }
+.score-num  { font-weight:800; color:var(--navy); min-width:32px; text-align:right; }
+.score-pct  { font-size:.68rem; color:#8392ab; min-width:38px; }
+
+/* ── Criteria breakdown cards ── */
+.breakdown-card {
+    background:#fff; border-radius:.9rem;
+    box-shadow:0 2px 14px rgba(38,37,97,.08);
+    overflow:hidden; margin-bottom:1rem;
+    border-left:4px solid #e0e4ef;
+}
+.breakdown-card.rank1 { border-left-color:var(--gold-dk); }
+.breakdown-card.rank2 { border-left-color:#9ca3af; }
+.breakdown-card.rank3 { border-left-color:#f97316; }
+
+.bc-head {
+    padding:.8rem 1.25rem; border-bottom:1px solid #f0f2f8;
+    display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+}
+.cand-name { font-size:.88rem; font-weight:800; color:var(--navy); }
+.cand-ref  { font-size:.7rem; color:#adb5bd; font-family:monospace; }
+
+.bc-body { padding:.85rem 1.25rem; }
+
+.crit-row {
+    display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
+    padding:.35rem 0; border-bottom:1px solid #f7f8fc; font-size:.78rem;
+}
+.crit-row:last-child { border-bottom:none; }
+.crit-label { flex:1; min-width:120px; color:#344767; font-weight:500; }
+
+.member-score-cell {
+    min-width:70px; text-align:center;
+}
+.member-score-cell .val { font-weight:700; color:var(--navy); }
+.member-score-cell .max { font-size:.68rem; color:#adb5bd; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-2">
+
+    <!-- Banner -->
+    <div class="page-banner">
+        <div>
+            <p class="banner-title mb-1">
+                <i class="fas fa-trophy me-2"></i>Interview Evaluation Summary
+            </p>
+            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        </div>
+        <div class="d-flex align-items-center gap-3 flex-wrap">
+            <span class="banner-ref">{{ vacancy.reference_number }}</span>
+            <a href="{% url 'hr_interview_progress' vacancy.id %}" class="back-link">
+                <i class="fas fa-chart-bar"></i> Progress
+            </a>
+            <a href="{% url 'vacancy_interviews' %}" class="back-link">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary stats -->
+    <div class="d-flex gap-3 flex-wrap mb-3">
+        <div class="stat-card">
+            <div class="stat-val">{{ total_candidates }}</div>
+            <div class="stat-label">Candidates Ranked</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">{{ panel_members|length }}</div>
+            <div class="stat-label">Panel Members</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-val">{{ criteria|length }}</div>
+            <div class="stat-label">Scoring Criteria</div>
+        </div>
+        {% if result_rows %}
+        <div class="stat-card">
+            <div class="stat-val">{{ result_rows.0.result.max_possible }}</div>
+            <div class="stat-label">Max Possible Score</div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- ── Ranked results table ── -->
+    <div class="section-card">
+        <div class="section-header">
+            <h6 class="section-title">
+                <i class="fas fa-list-ol" style="color:var(--gold-dk);"></i>
+                Ranked Results
+            </h6>
+        </div>
+        <div style="overflow-x:auto;">
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th>Candidate</th>
+                        <th>App No.</th>
+                        {% for pm in panel_members %}
+                        <th style="text-align:center;">{{ pm.member.name|truncatechars:12 }}</th>
+                        {% endfor %}
+                        <th>Total</th>
+                        <th>%</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in result_rows %}
+                    <tr class="{% if row.is_top3 %}top3{% endif %}">
+                        <td>
+                            {% if row.result.rank == 1 %}
+                                <span class="rank-badge rank-1">1</span>
+                            {% elif row.result.rank == 2 %}
+                                <span class="rank-badge rank-2">2</span>
+                            {% elif row.result.rank == 3 %}
+                                <span class="rank-badge rank-3">3</span>
+                            {% else %}
+                                <span class="rank-badge rank-n">{{ row.result.rank }}</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="font-weight:700;color:var(--navy);">
+                                {{ row.app.user.name }}
+                                {% if row.is_top3 %}
+                                    <span class="chip chip-gold ms-1">
+                                        <i class="fas fa-medal me-1"></i>Top 3
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td style="font-family:monospace;font-size:.7rem;color:#8392ab;">
+                            {{ row.app.application_number }}
+                        </td>
+                        {% for mt in row.member_totals %}
+                        <td class="member-score {% if mt.total is None %}empty{% endif %}"
+                            style="text-align:center;">
+                            {% if mt.total is not None %}{{ mt.total }}{% else %}—{% endif %}
+                        </td>
+                        {% endfor %}
+                        <td>
+                            <div class="score-bar-wrap">
+                                <div class="score-bar-track">
+                                    <div class="score-bar-fill"
+                                         style="width:{{ row.result.percentage }}%;"></div>
+                                </div>
+                                <span class="score-num">{{ row.result.total_score }}</span>
+                            </div>
+                        </td>
+                        <td class="score-pct">{{ row.result.percentage }}%</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="99"
+                            style="text-align:center;padding:2.5rem;color:#b0bac9;">
+                            No results computed yet.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ── Per-candidate criteria breakdown ── -->
+    <div class="section-header" style="background:none;padding:0;margin-bottom:.85rem;">
+        <h6 class="section-title" style="font-size:.85rem;">
+            <i class="fas fa-microscope me-2" style="color:var(--gold-dk);"></i>
+            Detailed Breakdown by Candidate
+        </h6>
+    </div>
+
+    {% for row in result_rows %}
+    <div class="breakdown-card {% if row.result.rank == 1 %}rank1{% elif row.result.rank == 2 %}rank2{% elif row.result.rank == 3 %}rank3{% endif %}">
+        <div class="bc-head">
+            {% if row.result.rank == 1 %}
+                <span class="rank-badge rank-1">1</span>
+            {% elif row.result.rank == 2 %}
+                <span class="rank-badge rank-2">2</span>
+            {% elif row.result.rank == 3 %}
+                <span class="rank-badge rank-3">3</span>
+            {% else %}
+                <span class="rank-badge rank-n">{{ row.result.rank }}</span>
+            {% endif %}
+            <div>
+                <div class="cand-name">{{ row.app.user.name }}</div>
+                <div class="cand-ref">{{ row.app.application_number }}</div>
+            </div>
+            <div class="ms-auto d-flex align-items-center gap-3">
+                <div style="text-align:right;">
+                    <div style="font-size:1.1rem;font-weight:900;color:var(--navy);">
+                        {{ row.result.total_score }}
+                        <span style="font-size:.72rem;color:#adb5bd;font-weight:400;">
+                            / {{ row.result.max_possible }}
+                        </span>
+                    </div>
+                    <div style="font-size:.7rem;color:#8392ab;">{{ row.result.percentage }}%</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bc-body">
+            <!-- Header row -->
+            <div class="crit-row" style="font-size:.65rem;font-weight:700;
+                 text-transform:uppercase;letter-spacing:.05em;color:#8392ab;padding-bottom:.5rem;">
+                <span class="crit-label">Criterion</span>
+                {% for pm in panel_members %}
+                <span class="member-score-cell">{{ pm.member.name|truncatechars:10 }}</span>
+                {% endfor %}
+            </div>
+
+            {% for c in criteria %}
+            <div class="crit-row">
+                <span class="crit-label">
+                    {{ c.name }}
+                    <span style="font-size:.67rem;color:#adb5bd;"> / {{ c.max_score }}</span>
+                </span>
+                {% for mt in row.member_totals %}
+                    {% with score=mt.scores|default_if_none:'' %}
+                    <div class="member-score-cell">
+                        {% if mt.scores %}
+                            {% for cid, s in mt.scores.items %}
+                                {% if cid == c.id %}
+                                    <span class="val">{{ s.score }}</span>
+                                    <span class="max"> /{{ c.max_score }}</span>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <span style="color:#adb5bd;">—</span>
+                        {% endif %}
+                    </div>
+                    {% endwith %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+
+</div>
+{% endblock %}
