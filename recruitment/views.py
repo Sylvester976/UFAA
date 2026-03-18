@@ -5969,32 +5969,40 @@ def _notify_hr_panel_coi(entry, reason):
 @role_required(['hod_hr'])
 def vacancy_interviews(request):
     """
-    HR pipeline list view — shows all vacancies currently in the interviews stage.
-    Mirrors the pattern of vacancy_shortlisting / vacancy_longlisting.
+    HR pipeline list — shows vacancies in both interview sub-stages:
+      interview_scheduling  = panel/slots/scoring in progress
+      interviews            = all scoring done, ready to submit to CEO
     """
     vacancies = Vacancy.objects.filter(
-        status='interview_scheduling'
+        status__in=['interview_scheduling', 'interviews']
     ).order_by('-created_at')
 
-    # Annotate each vacancy with quick-glance stats
     vacancy_data = []
     for v in vacancies:
-        panel_count     = InterviewPanel.objects.filter(vacancy=v, is_active=True).count()
-        panel_done      = InterviewPanel.objects.filter(vacancy=v, is_active=True, scores_submitted=True).count()
-        slot_count      = InterviewSlot.objects.filter(vacancy=v).count()
-        notified_count  = InterviewSlot.objects.filter(vacancy=v, notified=True).count()
+        panel_count    = InterviewPanel.objects.filter(vacancy=v, is_active=True).count()
+        panel_active   = InterviewPanel.objects.filter(vacancy=v, is_active=True, has_conflict=False).count()
+        panel_done     = InterviewPanel.objects.filter(vacancy=v, is_active=True, has_conflict=False, scores_submitted=True).count()
+        slot_count     = InterviewSlot.objects.filter(vacancy=v).count()
+        notified_count = InterviewSlot.objects.filter(vacancy=v, notified=True).count()
+        results_exist  = InterviewResult.objects.filter(vacancy=v).exists()
+        scoring_complete = panel_active > 0 and panel_done == panel_active
+
         vacancy_data.append({
-            'vacancy':        v,
-            'panel_count':    panel_count,
-            'panel_done':     panel_done,
-            'slot_count':     slot_count,
-            'notified_count': notified_count,
+            'vacancy':          v,
+            'panel_count':      panel_count,
+            'panel_active':     panel_active,
+            'panel_done':       panel_done,
+            'slot_count':       slot_count,
+            'notified_count':   notified_count,
+            'scoring_complete': scoring_complete,
+            'results_exist':    results_exist,
+            'stage':            v.status,
         })
 
     context = {
-        'page':          'Interviews',
-        'vacancy_data':  vacancy_data,
-        'total':         len(vacancy_data),
+        'page':         'Interviews',
+        'vacancy_data': vacancy_data,
+        'total':        len(vacancy_data),
     }
     return render(request, 'recruitment/hr/interview/vacancy_interviews.html', context)
 
@@ -7033,7 +7041,8 @@ def hr_submit_to_ceo(request, vacancy_id):
                 'error': 'You may select a maximum of 3 candidates for CEO review.',
             })
 
-        top3_app_ids = {str(r.app.id) for r in result_rows if r['is_top3']}
+        # FIX: result_rows is a list of dicts — use r['app'], not r.app
+        top3_app_ids = {str(r['app'].id) for r in result_rows if r['is_top3']}
         has_override = any(sid not in top3_app_ids for sid in selected_ids)
 
         if has_override and not override_reason:
@@ -7094,9 +7103,9 @@ def hr_submit_to_ceo(request, vacancy_id):
                         to_status=top_candidate_status,
                         changed_by=request.user,
                         notes=(
-                                f'Selected for CEO review (rank #{rank}). '
-                                + (f'Override — reason: {override_reason}' if is_override
-                                   else 'Within top 3 ranked candidates.')
+                            f'Selected for CEO review (rank #{rank}). '
+                            + (f'Override — reason: {override_reason}' if is_override
+                               else 'Within top 3 ranked candidates.')
                         ),
                     )
                     InterviewLog.objects.create(
@@ -7104,8 +7113,8 @@ def hr_submit_to_ceo(request, vacancy_id):
                         performed_by=request.user,
                         action='top_candidate_selected',
                         notes=(
-                                f'Selected for CEO review. Rank #{rank}.'
-                                + (f' Override: {override_reason}' if is_override else '')
+                            f'Selected for CEO review. Rank #{rank}.'
+                            + (f' Override: {override_reason}' if is_override else '')
                         ),
                         metadata={
                             'app_id': str(app.pk),
@@ -7117,7 +7126,9 @@ def hr_submit_to_ceo(request, vacancy_id):
                     )
 
                 except JobApplication.DoesNotExist:
-                    logger.warning(f"hr_submit_to_ceo: app {app_id} not found for vacancy {vacancy_id}")
+                    logger.warning(
+                        f"hr_submit_to_ceo: app {app_id} not found for vacancy {vacancy_id}"
+                    )
 
             # Advance vacancy → ceo_review
             vacancy.status = 'ceo_review'
@@ -7128,8 +7139,8 @@ def hr_submit_to_ceo(request, vacancy_id):
                 performed_by=request.user,
                 action='submitted_to_ceo',
                 notes=(
-                        f'{len(selected_ids)} candidate(s) submitted to CEO for review.'
-                        + (f' Override applied — {override_reason}' if has_override else '')
+                    f'{len(selected_ids)} candidate(s) submitted to CEO for review.'
+                    + (f' Override applied — {override_reason}' if has_override else '')
                 ),
                 metadata={
                     'selected_ids': selected_ids,
@@ -7295,18 +7306,6 @@ def ceo_vacancy_review(request, vacancy_id):
 @role_required(['ceo'])
 @require_POST
 def ceo_make_selection(request, vacancy_id):
-    """
-    CEO selects one candidate.
-
-    Rules
-    -----
-    - If selected candidate was NOT in the top_candidate list → override;
-      override_reason is mandatory.
-    - Winner status: ceo_selected
-    - All other interviewed/top_candidate apps: not_selected
-    - Vacancy: ceo_approved
-    - Full audit trail in JobApplicationStatusLog + InterviewLog
-    """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id, status='ceo_review')
 
     selected_id = request.POST.get('selected_id', '').strip()
@@ -7326,17 +7325,18 @@ def ceo_make_selection(request, vacancy_id):
 
     if is_override and not override_reason:
         return JsonResponse(
-            {'error': 'A written reason is required when selecting a candidate outside the HR-recommended list.'},
+            {'error': 'A written reason is required when selecting a candidate '
+                      'outside the HR-recommended list.'},
             status=400,
         )
 
-    # Status objects
     ceo_selected_status = _get_job_status('ceo_selected')
     not_selected_status = _get_job_status('not_selected')
 
     if not ceo_selected_status or not not_selected_status:
         return JsonResponse(
-            {'error': "System error: missing status codes. Run seed_application_statuses."},
+            {'error': 'System error: missing status codes. '
+                      'Run seed_application_statuses.'},
             status=500,
         )
 
@@ -7346,12 +7346,14 @@ def ceo_make_selection(request, vacancy_id):
     ])) or selected_app.user.email
 
     try:
-        rank = InterviewResult.objects.get(vacancy=vacancy, application=selected_app).rank
+        rank = InterviewResult.objects.get(
+            vacancy=vacancy, application=selected_app
+        ).rank
     except InterviewResult.DoesNotExist:
         rank = '?'
 
     with transaction.atomic():
-        # All apps that were in the running → not_selected (except winner)
+        # All top_candidate + interviewed apps → not_selected (except winner)
         other_apps = JobApplication.objects.filter(
             vacancy=vacancy,
             status__code__in=['top_candidate', 'interviewed'],
@@ -7362,9 +7364,11 @@ def ceo_make_selection(request, vacancy_id):
             app.status = not_selected_status
             app.save(update_fields=['status'])
             JobApplicationStatusLog.objects.create(
-                application=app, from_status=old, to_status=not_selected_status,
+                application=app,
+                from_status=old,
+                to_status=not_selected_status,
                 changed_by=request.user,
-                notes=f'Not selected by CEO. Successful candidate: {winner_name}.',
+                notes=f'Not selected by CEO. Appointed candidate: {winner_name}.',
             )
 
         # Mark winner
@@ -7383,7 +7387,6 @@ def ceo_make_selection(request, vacancy_id):
             ),
         )
 
-        # Advance vacancy
         vacancy.status = 'ceo_approved'
         vacancy.save(update_fields=['status'])
 
@@ -7394,7 +7397,8 @@ def ceo_make_selection(request, vacancy_id):
             action='ceo_selection_made',
             notes=(
                     f'CEO selected {winner_name} (rank #{rank}).'
-                    + (f' Override: {override_reason}' if is_override else ' From HR-recommended list.')
+                    + (f' Override: {override_reason}'
+                       if is_override else ' From HR-recommended list.')
             ),
             metadata={
                 'selected_app_id': str(selected_app.pk),
@@ -7406,6 +7410,16 @@ def ceo_make_selection(request, vacancy_id):
             },
             performed_by_label=_display_name(request.user),
         )
+
+    # ── Notify HR by email (outside transaction) ─────────────────────────────
+    _notify_hr_ceo_selection(
+        vacancy=vacancy,
+        winner_app=selected_app,
+        winner_name=winner_name,
+        is_override=is_override,
+        override_reason=override_reason,
+        selected_by=request.user,
+    )
 
     return JsonResponse({
         'success': True,
@@ -7447,13 +7461,6 @@ def hr_appointments_list(request):
 @login_required
 @role_required(['hod_hr'])
 def hr_issue_appointment(request, vacancy_id):
-    """
-    HR reviews the CEO-selected candidate and formally issues the appointment.
-
-    GET  → Preview screen with candidate details + confirmation button.
-    POST → Marks candidate as 'appointed', sends notification email,
-           updates vacancy → 'appointed'.
-    """
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
 
     if vacancy.status != 'ceo_approved':
@@ -7467,8 +7474,7 @@ def hr_issue_appointment(request, vacancy_id):
     if not winner:
         messages.error(
             request,
-            "No CEO-selected candidate found for this vacancy. "
-            "Please contact the CEO to confirm their selection."
+            "No CEO-selected candidate found for this vacancy."
         )
         return redirect('hr_appointments_list')
 
@@ -7487,7 +7493,8 @@ def hr_issue_appointment(request, vacancy_id):
         if not appointed_status:
             messages.error(
                 request,
-                "System error: 'appointed' status not found. Run seed_application_statuses."
+                "System error: 'appointed' status not found. "
+                "Run seed_application_statuses."
             )
             return redirect('hr_appointments_list')
 
@@ -7513,20 +7520,47 @@ def hr_issue_appointment(request, vacancy_id):
                 performed_by=request.user,
                 action='appointment_issued',
                 notes=f'Appointment issued to {winner_name}.',
-                metadata={'app_id': str(winner.pk), 'winner_name': winner_name},
+                metadata={
+                    'app_id': str(winner.pk),
+                    'winner_name': winner_name,
+                },
                 performed_by_label=_display_name(request.user),
             )
 
-        # Send appointment email (outside transaction)
+        # ── Emails outside transaction ────────────────────────────────────────
+
+        # 1. Appointment email to winner (collect letter + upload to portal)
         _send_appointment_email_v2(winner, vacancy, winner_name)
+
+        # 2. Regret emails to candidates who reached CEO stage but lost.
+        #    Find them via status log: top_candidate → not_selected for this vacancy.
+        ceo_stage_losers = JobApplication.objects.filter(
+            vacancy=vacancy,
+            status__code='not_selected',
+            status_logs__from_status__code='top_candidate',
+            status_logs__to_status__code='not_selected',
+        ).distinct().select_related('user')
+
+        regret_count = 0
+        for loser in ceo_stage_losers:
+            _send_ceo_stage_regret(loser, vacancy)
+            regret_count += 1
+
+        logger.info(
+            f"hr_issue_appointment: vacancy {vacancy.id} — "
+            f"appointment issued to {winner_name}, "
+            f"{regret_count} CEO-stage regret email(s) sent."
+        )
 
         messages.success(
             request,
             f"Appointment issued to {winner_name}. "
-            f"A notification email has been sent to {winner.user.email}."
+            f"Notification email sent. "
+            f"{regret_count} regret email(s) sent to other CEO-stage candidate(s)."
         )
         return redirect('hr_dashboard')
 
+    # GET — preview
     return render(request, 'recruitment/hr/appointment/issue_appointment.html', {
         'page': 'Issue Appointment',
         'vacancy': vacancy,
@@ -7546,46 +7580,96 @@ def hr_issue_appointment(request, vacancy_id):
 
 def _send_appointment_email_v2(application, vacancy, winner_name):
     """
-    Send appointment congratulations email to the appointed candidate.
-    Uses the existing _send_html_email helper already in views.py.
+    Congratulations email to the appointed candidate.
+    Instructs them to collect their letter from HR and upload
+    the signed copy to their portal.
     """
     try:
-        site_url = __import__('django.conf', fromlist=['settings']).settings.SITE_URL
+        from django.conf import settings as django_settings
+        site_url = getattr(django_settings, 'SITE_URL', 'https://portal.ufaa.go.ke')
     except Exception:
         site_url = 'https://portal.ufaa.go.ke'
 
-    subject = f'Appointment Notification — {vacancy.title} | UFAA'
+    subject = f'Congratulations — Appointment Offer | {vacancy.title} | UFAA'
 
     message_html = f"""
         <p>Dear <strong>{winner_name}</strong>,</p>
 
-        <p>We are delighted to inform you that, following the completion of the
-        competitive recruitment process for the position of
-        <strong>{vacancy.title}</strong>
-        (Reference: <strong>{vacancy.reference_number}</strong>),
-        you have been <strong>successfully appointed</strong> to this role.</p>
+        <p>
+            We are delighted to inform you that following the completion of the
+            competitive recruitment process for the position of
+            <strong>{vacancy.title}</strong>
+            (Reference: <strong>{vacancy.reference_number}</strong>),
+            you have been <strong>selected for appointment</strong> to this role.
+        </p>
 
-        <div style="background:#f0f4ff;border-left:4px solid #262561;
+        <div style="background:#f0f9f4;border-left:4px solid #1a7a45;
                     border-radius:0 .5rem .5rem 0;padding:1rem 1.25rem;margin:1.25rem 0;">
-            <div style="font-size:.68rem;font-weight:700;color:#8392ab;
+            <div style="font-size:.68rem;font-weight:700;color:#52906b;
                         text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem;">
                 Application Reference
             </div>
-            <div style="font-size:.9rem;font-weight:700;color:#262561;">
+            <div style="font-size:.9rem;font-weight:700;color:#1a5c38;">
                 {application.application_number}
             </div>
         </div>
 
-        <p>The UFAA Human Resources Department will contact you shortly with
-        your formal appointment letter, reporting date, and onboarding details.
-        Please ensure your contact information on the portal is current.</p>
+        <div style="background:#fff8e1;border:1px solid #ffe082;border-radius:.5rem;
+                    padding:1rem 1.25rem;margin:1.25rem 0;">
+            <div style="font-size:.78rem;font-weight:700;color:#6d4c00;
+                        text-transform:uppercase;letter-spacing:.04em;margin-bottom:.75rem;">
+                📋 Next Steps
+            </div>
+
+            <div style="font-size:.82rem;color:#344767;margin-bottom:.6rem;
+                        display:flex;align-items:flex-start;gap:.6rem;">
+                <span style="background:#C39545;color:#fff;width:20px;height:20px;
+                             border-radius:50%;font-size:.65rem;font-weight:700;
+                             display:inline-flex;align-items:center;justify-content:center;
+                             flex-shrink:0;margin-top:.1rem;">1</span>
+                <span>
+                    Visit the <strong>UFAA HR Office</strong> to collect your
+                    formal appointment letter. Please bring a valid form of
+                    identification.
+                </span>
+            </div>
+
+            <div style="font-size:.82rem;color:#344767;margin-bottom:.6rem;
+                        display:flex;align-items:flex-start;gap:.6rem;">
+                <span style="background:#C39545;color:#fff;width:20px;height:20px;
+                             border-radius:50%;font-size:.65rem;font-weight:700;
+                             display:inline-flex;align-items:center;justify-content:center;
+                             flex-shrink:0;margin-top:.1rem;">2</span>
+                <span>
+                    Review and sign the appointment letter.
+                </span>
+            </div>
+
+            <div style="font-size:.82rem;color:#344767;
+                        display:flex;align-items:flex-start;gap:.6rem;">
+                <span style="background:#C39545;color:#fff;width:20px;height:20px;
+                             border-radius:50%;font-size:.65rem;font-weight:700;
+                             display:inline-flex;align-items:center;justify-content:center;
+                             flex-shrink:0;margin-top:.1rem;">3</span>
+                <span>
+                    Log in to the <strong>UFAA Recruitment Portal</strong> and
+                    upload the signed copy of your appointment letter under
+                    <em>My Applications → Documents</em>.
+                </span>
+            </div>
+        </div>
+
+        <p style="font-size:.85rem;color:#344767;">
+            If you have any questions about the appointment process, please
+            contact the UFAA Human Resources Department directly.
+        </p>
 
         <p>
             <a href="{site_url}/recruitment/job-status/"
                style="background:#262561;color:#F9E6A1;padding:.6rem 1.4rem;
                       border-radius:.4rem;text-decoration:none;font-weight:600;
                       font-size:.85rem;display:inline-block;">
-                View Your Application Status
+                Go to Your Portal
             </a>
         </p>
 
@@ -7605,4 +7689,190 @@ def _send_appointment_email_v2(application, vacancy, winner_name):
             f'Appointment email failed for {application.user.email}: {e}',
             exc_info=True,
         )
+
+
+def _notify_hr_ceo_selection(vacancy, winner_app, winner_name, is_override,
+                             override_reason, selected_by):
+    """Email HR to notify them the CEO has made their selection."""
+    try:
+        from django.conf import settings as django_settings
+        hr_email = getattr(django_settings, 'HR_NOTIFICATION_EMAIL',
+                           django_settings.DEFAULT_FROM_EMAIL)
+
+        result = None
+        try:
+            result = InterviewResult.objects.get(
+                vacancy=vacancy, application=winner_app
+            )
+        except InterviewResult.DoesNotExist:
+            pass
+
+        override_block = ''
+        if is_override:
+            override_block = f"""
+            <div style="background:#fff3cd;border:1px solid #ffe082;border-radius:.5rem;
+                        padding:.75rem 1rem;margin:1rem 0;font-size:.82rem;color:#7d5500;">
+                <strong><i class="fas fa-exclamation-triangle"></i> Override Applied</strong><br>
+                The selected candidate was outside the HR-recommended shortlist.<br>
+                <strong>CEO's reason:</strong> {override_reason}
+            </div>
+            """
+
+        rank_line = f"Rank #{result.rank} — {result.total_score}/{result.max_possible} ({result.percentage}%)" \
+            if result else "Score data unavailable"
+
+        subject = (f"CEO Selection Made — {vacancy.title} "
+                   f"[{vacancy.reference_number}]")
+
+        message_html = f"""
+            <p>Dear HR,</p>
+            <p>
+                <strong>{_display_name(selected_by)}</strong> has made their
+                candidate selection for the following vacancy:
+            </p>
+            <table style="border-collapse:collapse;width:100%;margin:1rem 0;">
+                <tr>
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;width:35%;">Position</td>
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;">
+                        {vacancy.title}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Reference</td>
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;
+                               font-family:monospace;">
+                        {vacancy.reference_number}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Selected Candidate</td>
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;
+                               font-weight:700;color:#262561;">
+                        {winner_name}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Application No.</td>
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;
+                               font-family:monospace;">
+                        {winner_app.application_number}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="padding:.5rem 1rem;background:#f8f9ff;font-weight:600;
+                               border:1px solid #e0e4ef;">Interview Score</td>
+                    <td style="padding:.5rem 1rem;border:1px solid #e0e4ef;">
+                        {rank_line}
+                    </td>
+                </tr>
+            </table>
+
+            {override_block}
+
+            <p>
+                The vacancy is now in <strong>CEO Approved</strong> status.
+                Please proceed to the appointments module to issue the formal
+                appointment letter.
+            </p>
+            <p style="margin-top:1.5rem;">
+                <a href="/recruitment/hr/appointments/"
+                   style="background:#262561;color:#F9E6A1;padding:.6rem 1.4rem;
+                          border-radius:.4rem;text-decoration:none;font-weight:600;
+                          font-size:.85rem;display:inline-block;">
+                    Go to Appointments
+                </a>
+            </p>
+            <p style="margin-top:1.5rem;color:#67748e;font-size:.82rem;">
+                This is an automated notification from the UFAA Recruitment Portal.
+            </p>
+        """
+
+        _send_html_email(subject, hr_email, message_html)
+
+    except Exception as e:
+        logger.error(
+            f'HR CEO-selection notification failed for vacancy {vacancy.id}: {e}',
+            exc_info=True,
+        )
+
+def _send_ceo_stage_regret(application, vacancy):
+    """
+    Regret email sent to candidates who reached CEO review stage
+    but were not selected. Called from hr_issue_appointment.
+    """
+    try:
+        b = application.snapshot_basic or {}
+        candidate_name = ' '.join(filter(None, [
+            b.get('first_name', ''), b.get('surname', ''),
+        ])) or application.user.email
+
+        subject = (f"Application Outcome — {vacancy.title} "
+                   f"[{vacancy.reference_number}]")
+
+        message_html = f"""
+            <p>Dear <strong>{candidate_name}</strong>,</p>
+            <p>
+                Thank you for participating in the recruitment process for the
+                position of <strong>{vacancy.title}</strong>
+                (Reference: <strong>{vacancy.reference_number}</strong>) at UFAA.
+            </p>
+            <div style="background:#f8f9ff;border-left:4px solid #8392ab;
+                        border-radius:0 .5rem .5rem 0;
+                        padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:.68rem;font-weight:700;color:#8392ab;
+                            text-transform:uppercase;letter-spacing:.06em;
+                            margin-bottom:.3rem;">Application Reference</div>
+                <div style="font-size:.9rem;font-weight:700;color:#262561;">
+                    {application.application_number}
+                </div>
+            </div>
+            <p style="font-size:.88rem;color:#344767;line-height:1.65;">
+                We write to inform you that, following the conclusion of the
+                full recruitment process — including shortlisting, interviews,
+                and final review — the position has been offered to another
+                candidate whose overall profile most closely matched the
+                requirements of the role at this time.
+            </p>
+            <p style="font-size:.88rem;color:#344767;line-height:1.65;">
+                We wish to acknowledge the considerable effort you invested
+                throughout this process, particularly at the interview stage.
+                Reaching this stage is a significant achievement and reflects
+                well on your qualifications and experience.
+            </p>
+            <div style="background:#f0f2f8;border-radius:.5rem;
+                        padding:1rem 1.25rem;margin:1.25rem 0;">
+                <div style="font-size:.78rem;font-weight:700;color:#262561;
+                            text-transform:uppercase;letter-spacing:.04em;
+                            margin-bottom:.5rem;">Future Opportunities</div>
+                <p style="font-size:.82rem;color:#344767;line-height:1.6;margin:0;">
+                    We encourage you to continue monitoring our recruitment
+                    portal for future vacancies. Your profile remains active
+                    and you are welcome to apply for positions that match your
+                    skills and aspirations.
+                </p>
+            </div>
+            <p style="margin-top:1.5rem;">
+                Yours sincerely,<br>
+                <strong>UFAA Human Resources Department</strong><br>
+                <span style="color:#67748e;font-size:.82rem;">
+                    Unclaimed Financial Assets Authority
+                </span>
+            </p>
+        """
+
+        _send_html_email(subject, application.user.email, message_html)
+
+    except Exception as e:
+        logger.error(
+            f'CEO-stage regret email failed for {application.user.email}: {e}',
+            exc_info=True,
+        )
+
+
+
+
 

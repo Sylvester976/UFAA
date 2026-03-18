@@ -143,6 +143,17 @@ class LoginRequiredMiddleware:
         'panel_results',
 
 
+        # submit to ceo and ceo
+        'hr_submit_to_ceo',
+        'ceo_dashboard',
+        'ceo_vacancy_review',
+        'ceo_make_selection',
+
+        #appointment
+        'hr_issue_appointment',
+        'hr_appointments_list',
+
+
 
 
 
