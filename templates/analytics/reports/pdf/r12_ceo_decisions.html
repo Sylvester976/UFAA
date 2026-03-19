@@ -1,0 +1,47 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ rows|length }}</div>
+            <div class="stat-label">Total Decisions</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{% for r in rows %}{% if r.override %}X{% endif %}{% endfor %}</div>
+            <div class="stat-label">Overrides</div>
+        </div>
+    </div>
+
+    <h2>CEO Decision Log</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Vacancy</th>
+            <th>Reference</th>
+            <th>Selected</th>
+            <th>Rank</th>
+            <th>Override</th>
+            <th>Override Reason</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="text-muted">{{ row.log.timestamp|date:"d M Y" }}</td>
+                <td class="bold">{{ row.vacancy.title|truncatechars:30 }}</td>
+                <td class="monospace">{{ row.vacancy.reference_number }}</td>
+                <td>{{ row.winner }}</td>
+                <td class="text-center bold">{{ row.rank }}</td>
+                <td>{% if row.override %}<span class="badge badge-amber">Yes</span>{% else %}
+                    <span class="badge badge-green">No</span>{% endif %}</td>
+                <td>{{ row.reason|truncatechars:60|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">No CEO decisions recorded</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

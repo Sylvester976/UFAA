@@ -1,0 +1,276 @@
+{% extends 'recruitment/base.html' %}
+{% block title %}Admin Analytics{% endblock %}
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --amber: #b7770d;
+            --red: #c0392b;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .18);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .kpi-sub {
+            font-size: .72rem;
+            margin-top: .25rem;
+            color: #8392ab;
+        }
+
+        .chart-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .chart-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .chart-sub {
+            font-size: .7rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        .snap-info {
+            background: #f0f4ff;
+            border-radius: .65rem;
+            padding: .75rem 1rem;
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-top: 1rem;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <p class="banner-title mb-0"><i class="fas fa-cogs me-2" style="color:var(--gold-dk);"></i>Admin Analytics
+            </p>
+            <p class="banner-sub mb-0">System health and user overview</p>
+        </div>
+        <div class="gold-divider"></div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Internal Staff</div>
+                        <div class="kpi-val">{{ internal_users }}</div>
+                        <div class="kpi-sub">Active users</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-lt));"><i
+                            class="fas fa-users-cog"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Applicants</div>
+                        <div class="kpi-val">{{ external_users }}</div>
+                        <div class="kpi-sub">Registered jobseekers</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,#1a6fa8,#2E86C1);"><i
+                            class="fas fa-user"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Unverified</div>
+                        <div class="kpi-val"
+                             style="color:{% if unverified > 0 %}var(--amber){% else %}var(--navy){% endif %};">{{ unverified }}</div>
+                        <div class="kpi-sub">Pending email verification</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--amber),#e0a020);"><i
+                            class="fas fa-envelope"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Staff Numbers</div>
+                        <div class="kpi-val">{{ staff_numbers }}</div>
+                        <div class="kpi-sub">Active in register</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--green),#22a05a);"><i
+                            class="fas fa-id-badge"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-5">
+                <div class="chart-card">
+                    <div class="chart-header"><p class="chart-title mb-0"><i class="fas fa-users me-2"
+                                                                             style="color:var(--gold-dk);opacity:.7;"></i>User
+                        Types</p>
+                        <p class="chart-sub mb-0">Internal vs external</p></div>
+                    <div style="padding:1rem;height:240px;display:flex;align-items:center;justify-content:center;">
+                        <canvas id="userChart" style="max-width:200px;max-height:200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <div class="chart-header"><p class="chart-title mb-0"><i class="fas fa-briefcase me-2"
+                                                                             style="color:var(--gold-dk);opacity:.7;"></i>Vacancy
+                        Status Distribution</p>
+                        <p class="chart-sub mb-0">Current pipeline</p></div>
+                    <div style="padding:1rem;height:240px;">
+                        <canvas id="statusChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% if last_snap %}
+            <div class="snap-info mt-3">
+                <i class="fas fa-database" style="color:var(--gold-dk);font-size:1.1rem;flex-shrink:0;"></i>
+                <div>
+                    <strong style="color:var(--navy);">Analytics Snapshots:</strong>
+                    {{ snapshots_count }} vacanc{{ snapshots_count|pluralize:"y,ies" }} snapshotted.
+                    Last updated: <strong>{{ last_snap.snapped_at|date:"d M Y H:i" }}</strong>.
+                    Snapshots rebuild automatically when vacancies progress through the pipeline.
+                </div>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const ud = {{ user_type_json|safe }};
+        new Chart(document.getElementById('userChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ud.labels,
+                datasets: [{
+                    data: ud.values,
+                    backgroundColor: ['#262561', '#C39545'],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '68%',
+                plugins: {legend: {position: 'bottom', labels: {font: {size: 10}, padding: 14}}}
+            }
+        });
+        const sd = {{ status_json|safe }};
+        new Chart(document.getElementById('statusChart'), {
+            type: 'bar',
+            data: {
+                labels: sd.labels,
+                datasets: [{data: sd.values, backgroundColor: '#262561', borderRadius: 4, borderWidth: 0}]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {legend: {display: false}},
+                scales: {
+                    x: {grid: {display: false}, ticks: {font: {size: 9}}},
+                    y: {beginAtZero: true, grid: {color: 'rgba(0,0,0,.05)'}, ticks: {font: {size: 10}, stepSize: 1}}
+                }
+            }
+        });
+    </script>
+{% endblock %}

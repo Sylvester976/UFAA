@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+  /* ── Reset ── */
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  /* ── Page setup ── */
+  @page {
+    size: A4;
+    margin: 18mm 15mm 22mm 15mm;
+  }
+
+  /* ── Typography ── */
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    font-size: 9pt;
+    color: #344767;
+    line-height: 1.5;
+  }
+
+  /* ── Report header ── */
+  .report-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    border-bottom: 3px solid #262561;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+  }
+  .report-header-left { flex: 1; }
+  .report-logo {
+    height: 48px;
+    width: auto;
+    /* TODO: confirm logo dimensions with client */
+  }
+  .report-org {
+    font-size: 7pt;
+    color: #8392ab;
+    margin-top: 3px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .report-header-right { text-align: right; }
+  .report-code {
+    display: inline-block;
+    background: #262561;
+    color: #F9E6A1;
+    font-size: 7.5pt;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 3px;
+    letter-spacing: 0.06em;
+    margin-bottom: 4px;
+  }
+  .report-title {
+    font-size: 14pt;
+    font-weight: 800;
+    color: #262561;
+    line-height: 1.2;
+  }
+  .report-meta {
+    font-size: 7.5pt;
+    color: #8392ab;
+    margin-top: 4px;
+  }
+
+  /* ── Vacancy banner (shown when report is vacancy-specific) ── */
+  .vacancy-banner {
+    background: #f0f4ff;
+    border-left: 4px solid #262561;
+    border-radius: 0 4px 4px 0;
+    padding: 8px 12px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .vacancy-banner-item { }
+  .vb-label {
+    font-size: 6.5pt;
+    font-weight: 700;
+    color: #8392ab;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .vb-value {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #262561;
+  }
+
+  /* ── Section heading ── */
+  h2 {
+    font-size: 10pt;
+    font-weight: 800;
+    color: #262561;
+    border-bottom: 1.5px solid #e0e4ef;
+    padding-bottom: 4px;
+    margin: 18px 0 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  h3 {
+    font-size: 9pt;
+    font-weight: 700;
+    color: #344767;
+    margin: 12px 0 6px;
+  }
+
+  /* ── Tables ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 14px;
+    font-size: 8pt;
+  }
+  thead th {
+    background: #262561;
+    color: #F9E6A1;
+    font-size: 7pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 6px 8px;
+    text-align: left;
+    white-space: nowrap;
+  }
+  tbody td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f0f2f8;
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td { background: #fafbff; }
+  tbody tr:last-child td { border-bottom: none; }
+
+  /* ── Status badges ── */
+  .badge {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 7pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .badge-green  { background: #d4f5e2; color: #1a5c38; }
+  .badge-red    { background: #fde8e8; color: #c0392b; }
+  .badge-amber  { background: #fff3cd; color: #7d5500; }
+  .badge-blue   { background: #e8f4fd; color: #1a6fa8; }
+  .badge-purple { background: #ede9fe; color: #5b21b6; }
+  .badge-navy   { background: #262561; color: #F9E6A1; }
+  .badge-muted  { background: #f0f2f8; color: #8392ab; }
+
+  /* ── Stat boxes ── */
+  .stat-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+  }
+  .stat-box {
+    flex: 1;
+    min-width: 80px;
+    border: 1.5px solid #e0e4ef;
+    border-radius: 5px;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .stat-val   { font-size: 16pt; font-weight: 800; color: #262561; line-height: 1; }
+  .stat-label { font-size: 7pt;  font-weight: 600; color: #8392ab; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* ── Candidate profile block (used in R06) ── */
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  .profile-item { }
+  .pi-label { font-size: 6.5pt; font-weight: 700; color: #8392ab; text-transform: uppercase; letter-spacing: 0.04em; }
+  .pi-value { font-size: 9pt;   font-weight: 600; color: #344767; }
+
+  /* ── Signature block — TODO: confirm format with client ── */
+  .signature-block {
+    margin-top: 32px;
+    border-top: 1px solid #e0e4ef;
+    padding-top: 14px;
+    display: flex;
+    gap: 48px;
+  }
+  .sig-item { flex: 1; }
+  .sig-line {
+    border-bottom: 1px solid #344767;
+    margin-bottom: 4px;
+    height: 28px;
+  }
+  .sig-label { font-size: 7.5pt; color: #8392ab; }
+
+  /* ── Audit log entries ── */
+  .log-entry {
+    padding: 5px 8px;
+    border-left: 3px solid #e0e4ef;
+    margin-bottom: 4px;
+    font-size: 8pt;
+  }
+  .log-entry.action-override   { border-left-color: #c0392b; }
+  .log-entry.action-submitted  { border-left-color: #1a7a45; }
+  .log-entry.action-appointed  { border-left-color: #262561; }
+  .log-timestamp { font-size: 7pt; color: #adb5bd; }
+  .log-actor     { font-weight: 700; color: #262561; }
+  .log-action    { font-size: 7.5pt; color: #344767; }
+
+  /* ── Page break helpers ── */
+  .page-break       { page-break-after: always; }
+  .no-page-break    { page-break-inside: avoid; }
+  .keep-with-next   { page-break-after: avoid; }
+
+  /* ── Utility ── */
+  .text-right  { text-align: right; }
+  .text-center { text-align: center; }
+  .text-muted  { color: #8392ab; }
+  .monospace   { font-family: 'Courier New', Courier, monospace; font-size: 8pt; }
+  .bold        { font-weight: 700; }
+  .navy        { color: #262561; }
+  .green       { color: #1a7a45; }
+  .red         { color: #c0392b; }
+  .amber       { color: #b7770d; }
+  .mt-8  { margin-top: 8px; }
+  .mt-14 { margin-top: 14px; }
+  .mb-8  { margin-bottom: 8px; }
+  .mb-14 { margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+  <!-- ── Report Header ── -->
+  <div class="report-header">
+    <div class="report-header-left">
+      <!-- TODO: swap src for {{ logo_url }} once client confirms dimensions -->
+      <img src="{{ logo_url }}" alt="UFAA Logo" class="report-logo">
+      <div class="report-org">Unclaimed Financial Assets Authority</div>
+    </div>
+    <div class="report-header-right">
+      <div><span class="report-code">{{ report_code }}</span></div>
+      <div class="report-title">{{ report_title }}</div>
+      <div class="report-meta">
+        Generated: {{ generated_date }}
+        {% if request.user.is_authenticated %}
+          &nbsp;·&nbsp; By: {{ request.user.get_full_name|default:request.user.email }}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Vacancy Banner (only shown when vacancy is in context) ── -->
+  {% if vacancy %}
+  <div class="vacancy-banner">
+    <div class="vacancy-banner-item">
+      <div class="vb-label">Position</div>
+      <div class="vb-value">{{ vacancy.title }}</div>
+    </div>
+    <div class="vacancy-banner-item">
+      <div class="vb-label">Reference</div>
+      <div class="vb-value monospace">{{ vacancy.reference_number }}</div>
+    </div>
+    <div class="vacancy-banner-item">
+      <div class="vb-label">Grade</div>
+      <div class="vb-value">{{ vacancy.get_grade_category_display }}</div>
+    </div>
+    <div class="vacancy-banner-item">
+      <div class="vb-label">Type</div>
+      <div class="vb-value">{{ vacancy.get_vacancy_type_display }}</div>
+    </div>
+    <div class="vacancy-banner-item">
+      <div class="vb-label">Status</div>
+      <div class="vb-value">{{ vacancy.status|title }}</div>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Report Content ── -->
+  {% block content %}{% endblock %}
+
+  <!-- ── Signature Block ── -->
+  {% block signature %}
+  <div class="signature-block no-page-break">
+    <div class="sig-item">
+      <div class="sig-line"></div>
+      <div class="sig-label">Prepared By &amp; Date</div>
+    </div>
+    <div class="sig-item">
+      <div class="sig-line"></div>
+      <div class="sig-label">Reviewed By &amp; Date</div>
+    </div>
+    <div class="sig-item">
+      <div class="sig-line"></div>
+      <div class="sig-label">Authorised By &amp; Date</div>
+    </div>
+  </div>
+  {% endblock %}
+
+</body>
+</html>

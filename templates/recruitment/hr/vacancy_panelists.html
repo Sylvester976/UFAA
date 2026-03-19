@@ -3,78 +3,78 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- HEADER -->
-    <div class="dash-header-banner mb-2">
+        <!-- HEADER -->
+        <div class="dash-header-banner mb-2">
 
-        <div>
-            <h4>
-                <i class="fas fa-user-tie me-2" style="color:var(--gold-dark);"></i>
-                Interview Panelists
-            </h4>
+            <div>
+                <h4>
+                    <i class="fas fa-user-tie me-2" style="color:var(--gold-dark);"></i>
+                    Interview Panelists
+                </h4>
 
-            <p>
-                Vacancy: <strong>{{ vacancy.title }}</strong>
-            </p>
+                <p>
+                    Vacancy: <strong>{{ vacancy.title }}</strong>
+                </p>
+            </div>
+
         </div>
 
-    </div>
-
-    <div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
 
-    <!-- PANELISTS CARD -->
-    <div class="card dash-card brand-card">
+        <!-- PANELISTS CARD -->
+        <div class="card dash-card brand-card">
 
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-users me-2" style="opacity:.5;"></i>
-                Assigned Panelists
-            </h6>
-            <p>Panel members responsible for conducting interviews</p>
-        </div>
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-users me-2" style="opacity:.5;"></i>
+                    Assigned Panelists
+                </h6>
+                <p>Panel members responsible for conducting interviews</p>
+            </div>
 
-        <div class="card-body">
+            <div class="card-body">
 
-            {% if panelists %}
+                {% if panelists %}
 
-                <ul class="list-group">
+                    <ul class="list-group">
 
-                    {% for user in panelists %}
+                        {% for user in panelists %}
 
-                    <li class="list-group-item d-flex align-items-center">
+                            <li class="list-group-item d-flex align-items-center">
 
-                        <i class="fas fa-user me-2" style="opacity:.3;"></i>
+                                <i class="fas fa-user me-2" style="opacity:.3;"></i>
 
-                        {{ user.first_name }} {{ user.last_name }}
+                                {{ user.first_name }} {{ user.last_name }}
 
-                        <span class="ms-auto vacancy-status vacancy-status-interviews">
+                                <span class="ms-auto vacancy-status vacancy-status-interviews">
                             Panelist
                         </span>
 
-                    </li>
+                            </li>
 
-                    {% endfor %}
+                        {% endfor %}
 
-                </ul>
+                    </ul>
 
-            {% else %}
+                {% else %}
 
-                <div class="empty-state text-center">
+                    <div class="empty-state text-center">
 
-                    <i class="fas fa-users"></i>
+                        <i class="fas fa-users"></i>
 
-                    <p>No panelists assigned yet.</p>
+                        <p>No panelists assigned yet.</p>
 
-                </div>
+                    </div>
 
-            {% endif %}
+                {% endif %}
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 {% endblock %}

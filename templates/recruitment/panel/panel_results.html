@@ -2,238 +2,417 @@
 {% block title %}Interview Results — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561; --gold:#F9E6A1; --gold-dk:#C39545;
-        --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link    { color:rgba(255,255,255,.65); font-size:.78rem;
-                display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-/* Pending notice */
-.pending-notice {
-    background:#fff3cd; border:1px solid #ffe69c; border-radius:.75rem;
-    padding:1rem 1.25rem; display:flex; gap:.75rem; align-items:flex-start;
-    margin-bottom:1.25rem;
-}
-.pending-notice i { color:var(--amber); font-size:1.1rem; flex-shrink:0; margin-top:.1rem; }
-.pending-notice p { font-size:.82rem; color:#7d5500; margin:0; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* Result card */
-.result-card {
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-    overflow:hidden; margin-bottom:1rem;
-    border-left:4px solid #e0e4ef;
-}
-.result-card.top3 { border-left-color:var(--gold-dk); }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.rc-head {
-    padding:.8rem 1.25rem; border-bottom:1px solid #f0f2f8;
-    display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
-}
-.rank-badge {
-    width:34px; height:34px; border-radius:50%; flex-shrink:0;
-    display:flex; align-items:center; justify-content:center;
-    font-size:.82rem; font-weight:800;
-}
-.rank-1 { background:linear-gradient(135deg,#f9e6a1,#c39545); color:#5c3d00; }
-.rank-2 { background:linear-gradient(135deg,#e0e0e0,#9e9e9e); color:#3d3d3d; }
-.rank-3 { background:linear-gradient(135deg,#ffccbc,#bf360c); color:#fff; }
-.rank-n { background:#f0f2f8; color:#67748e; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-.cand-name { font-size:.88rem; font-weight:800; color:var(--navy); }
-.cand-ref  { font-size:.7rem; color:#adb5bd; font-family:monospace; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-.score-summary {
-    margin-left:auto; text-align:right;
-}
-.my-score-val {
-    font-size:1.1rem; font-weight:800; color:var(--navy);
-}
-.score-max { font-size:.7rem; color:#adb5bd; }
-.overall-avg {
-    font-size:.72rem; color:#8392ab;
-    margin-top:.1rem;
-}
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-/* Score breakdown */
-.score-breakdown {
-    padding:.85rem 1.25rem;
-}
-.score-row {
-    display:flex; align-items:center; gap:.75rem;
-    padding:.35rem 0; border-bottom:1px solid #f7f8fc; font-size:.78rem;
-}
-.score-row:last-child { border-bottom:none; }
-.crit-name { flex:1; color:#344767; font-weight:500; }
-.score-bar-wrap { width:140px; }
-.score-bar-track { height:6px; background:#f0f2f8; border-radius:99px; overflow:hidden; }
-.score-bar-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
-                   border-radius:99px; }
-.score-num  { width:55px; text-align:right; font-weight:700; color:var(--navy); }
-.score-max-label { width:40px; text-align:right; color:#adb5bd; font-size:.7rem; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-/* Chip */
-.chip { font-size:.65rem; font-weight:700; padding:.18rem .55rem;
-        border-radius:99px; white-space:nowrap; }
-.chip-gold   { background:#fff8dc; color:#7d5500; border:1px solid #ffe69c; }
-.chip-done   { background:#d4f5e2; color:#1a5c38; }
-.chip-muted  { background:#f0f2f8; color:#8392ab; }
+        /* Pending notice */
+        .pending-notice {
+            background: #fff3cd;
+            border: 1px solid #ffe69c;
+            border-radius: .75rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            gap: .75rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+        }
 
-/* Summary stat */
-.summary-stat {
-    background:#fff; border-radius:.75rem;
-    box-shadow:0 2px 10px rgba(38,37,97,.07);
-    padding:.85rem 1.1rem; text-align:center; flex:1; min-width:130px;
-}
-.stat-val   { font-size:1.3rem; font-weight:800; color:var(--navy); }
-.stat-label { font-size:.72rem; color:#8392ab; margin-top:.15rem; }
-</style>
+        .pending-notice i {
+            color: var(--amber);
+            font-size: 1.1rem;
+            flex-shrink: 0;
+            margin-top: .1rem;
+        }
+
+        .pending-notice p {
+            font-size: .82rem;
+            color: #7d5500;
+            margin: 0;
+        }
+
+        /* Result card */
+        .result-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1rem;
+            border-left: 4px solid #e0e4ef;
+        }
+
+        .result-card.top3 {
+            border-left-color: var(--gold-dk);
+        }
+
+        .rc-head {
+            padding: .8rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
+
+        .rank-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .82rem;
+            font-weight: 800;
+        }
+
+        .rank-1 {
+            background: linear-gradient(135deg, #f9e6a1, #c39545);
+            color: #5c3d00;
+        }
+
+        .rank-2 {
+            background: linear-gradient(135deg, #e0e0e0, #9e9e9e);
+            color: #3d3d3d;
+        }
+
+        .rank-3 {
+            background: linear-gradient(135deg, #ffccbc, #bf360c);
+            color: #fff;
+        }
+
+        .rank-n {
+            background: #f0f2f8;
+            color: #67748e;
+        }
+
+        .cand-name {
+            font-size: .88rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .cand-ref {
+            font-size: .7rem;
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .score-summary {
+            margin-left: auto;
+            text-align: right;
+        }
+
+        .my-score-val {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .score-max {
+            font-size: .7rem;
+            color: #adb5bd;
+        }
+
+        .overall-avg {
+            font-size: .72rem;
+            color: #8392ab;
+            margin-top: .1rem;
+        }
+
+        /* Score breakdown */
+        .score-breakdown {
+            padding: .85rem 1.25rem;
+        }
+
+        .score-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .35rem 0;
+            border-bottom: 1px solid #f7f8fc;
+            font-size: .78rem;
+        }
+
+        .score-row:last-child {
+            border-bottom: none;
+        }
+
+        .crit-name {
+            flex: 1;
+            color: #344767;
+            font-weight: 500;
+        }
+
+        .score-bar-wrap {
+            width: 140px;
+        }
+
+        .score-bar-track {
+            height: 6px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+            border-radius: 99px;
+        }
+
+        .score-num {
+            width: 55px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .score-max-label {
+            width: 40px;
+            text-align: right;
+            color: #adb5bd;
+            font-size: .7rem;
+        }
+
+        /* Chip */
+        .chip {
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .chip-gold {
+            background: #fff8dc;
+            color: #7d5500;
+            border: 1px solid #ffe69c;
+        }
+
+        .chip-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .chip-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        /* Summary stat */
+        .summary-stat {
+            background: #fff;
+            border-radius: .75rem;
+            box-shadow: 0 2px 10px rgba(38, 37, 97, .07);
+            padding: .85rem 1.1rem;
+            text-align: center;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .stat-val {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
+
+        .stat-label {
+            font-size: .72rem;
+            color: #8392ab;
+            margin-top: .15rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-chart-bar me-2"></i>Interview Results
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'panel_dashboard' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Dashboard
-            </a>
-        </div>
-    </div>
-
-    <!-- Pending notice if not all panel members done -->
-    {% if not all_done %}
-    <div class="pending-notice">
-        <i class="fas fa-clock"></i>
-        <p>
-            <strong>Results are provisional.</strong>
-            Some panel members have not yet submitted all their scores.
-            Rankings may change once all scores are in.
-        </p>
-    </div>
-    {% endif %}
-
-    <!-- Summary row -->
-    <div class="d-flex gap-3 flex-wrap mb-3">
-        <div class="summary-stat">
-            <div class="stat-val">{{ app_rows|length }}</div>
-            <div class="stat-label">Candidates Interviewed</div>
-        </div>
-        <div class="summary-stat">
-            <div class="stat-val">{{ my_max }}</div>
-            <div class="stat-label">Max Score Per Candidate</div>
-        </div>
-        <div class="summary-stat">
-            <div class="stat-val">{{ criteria|length }}</div>
-            <div class="stat-label">Scoring Criteria</div>
-        </div>
-        <div class="summary-stat">
-            {% if all_done %}
-            <div class="stat-val" style="color:var(--green);">
-                <i class="fas fa-check-circle" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="stat-label">All Scores In</div>
-            {% else %}
-            <div class="stat-val" style="color:var(--amber);">
-                <i class="fas fa-clock" style="font-size:1.1rem;"></i>
-            </div>
-            <div class="stat-label">Awaiting Panel</div>
-            {% endif %}
-        </div>
-    </div>
-
-    {% if not app_rows %}
-    <div style="text-align:center;padding:3rem;background:#fff;border-radius:.9rem;
-                box-shadow:0 2px 14px rgba(38,37,97,.08);color:#b0bac9;">
-        <i class="fas fa-chart-bar" style="font-size:2rem;display:block;margin-bottom:.5rem;color:#d0d5e8;"></i>
-        <p style="font-size:.82rem;margin:0;">Results are not yet available.</p>
-    </div>
-    {% else %}
-
-    {% for row in app_rows %}
-    <div class="result-card {% if row.is_top3 %}top3{% endif %}">
-        <div class="rc-head">
-
-            <!-- Rank badge -->
-            {% if row.result.rank == 1 %}
-                <div class="rank-badge rank-1">1</div>
-            {% elif row.result.rank == 2 %}
-                <div class="rank-badge rank-2">2</div>
-            {% elif row.result.rank == 3 %}
-                <div class="rank-badge rank-3">3</div>
-            {% else %}
-                <div class="rank-badge rank-n">{{ row.result.rank|default:"—" }}</div>
-            {% endif %}
-
-            <!-- Candidate info -->
+        <div class="page-banner">
             <div>
-                <div class="cand-name">{{ row.app.user.name }}</div>
-                <div class="cand-ref">{{ row.app.application_number }}</div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-chart-bar me-2"></i>Interview Results
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
             </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'panel_dashboard' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
+        </div>
 
-            {% if row.is_top3 %}
-                <span class="chip chip-gold ms-1">
-                    <i class="fas fa-medal me-1"></i>Top 3
-                </span>
-            {% endif %}
+        <!-- Pending notice if not all panel members done -->
+        {% if not all_done %}
+            <div class="pending-notice">
+                <i class="fas fa-clock"></i>
+                <p>
+                    <strong>Results are provisional.</strong>
+                    Some panel members have not yet submitted all their scores.
+                    Rankings may change once all scores are in.
+                </p>
+            </div>
+        {% endif %}
 
-            <!-- My score summary -->
-            <div class="score-summary ms-auto">
-                <div>
-                    <span class="my-score-val">{{ row.my_total }}</span>
-                    <span class="score-max"> / {{ my_max }}</span>
-                </div>
-                {% if row.result.average_score is not None %}
-                <div class="overall-avg">
-                    Panel avg: {{ row.result.average_score|floatformat:1 }}
-                </div>
+        <!-- Summary row -->
+        <div class="d-flex gap-3 flex-wrap mb-3">
+            <div class="summary-stat">
+                <div class="stat-val">{{ app_rows|length }}</div>
+                <div class="stat-label">Candidates Interviewed</div>
+            </div>
+            <div class="summary-stat">
+                <div class="stat-val">{{ my_max }}</div>
+                <div class="stat-label">Max Score Per Candidate</div>
+            </div>
+            <div class="summary-stat">
+                <div class="stat-val">{{ criteria|length }}</div>
+                <div class="stat-label">Scoring Criteria</div>
+            </div>
+            <div class="summary-stat">
+                {% if all_done %}
+                    <div class="stat-val" style="color:var(--green);">
+                        <i class="fas fa-check-circle" style="font-size:1.1rem;"></i>
+                    </div>
+                    <div class="stat-label">All Scores In</div>
+                {% else %}
+                    <div class="stat-val" style="color:var(--amber);">
+                        <i class="fas fa-clock" style="font-size:1.1rem;"></i>
+                    </div>
+                    <div class="stat-label">Awaiting Panel</div>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Score breakdown -->
-        <div class="score-breakdown">
-            {% for cs in row.criterion_scores %}
-            <div class="score-row">
-                <span class="crit-name">{{ cs.criterion.name }}</span>
-                <div class="score-bar-wrap">
-                    <div class="score-bar-track">
-                        <div class="score-bar-fill"
-                             style="width:{% if cs.score_obj %}{% widthratio cs.score_obj.score cs.criterion.max_score 100 %}{% else %}0{% endif %}%;"></div>
+        {% if not app_rows %}
+            <div style="text-align:center;padding:3rem;background:#fff;border-radius:.9rem;
+                box-shadow:0 2px 14px rgba(38,37,97,.08);color:#b0bac9;">
+                <i class="fas fa-chart-bar" style="font-size:2rem;display:block;margin-bottom:.5rem;color:#d0d5e8;"></i>
+                <p style="font-size:.82rem;margin:0;">Results are not yet available.</p>
+            </div>
+        {% else %}
+
+            {% for row in app_rows %}
+                <div class="result-card {% if row.is_top3 %}top3{% endif %}">
+                    <div class="rc-head">
+
+                        <!-- Rank badge -->
+                        {% if row.result.rank == 1 %}
+                            <div class="rank-badge rank-1">1</div>
+                        {% elif row.result.rank == 2 %}
+                            <div class="rank-badge rank-2">2</div>
+                        {% elif row.result.rank == 3 %}
+                            <div class="rank-badge rank-3">3</div>
+                        {% else %}
+                            <div class="rank-badge rank-n">{{ row.result.rank|default:"—" }}</div>
+                        {% endif %}
+
+                        <!-- Candidate info -->
+                        <div>
+                            <div class="cand-name">{{ row.app.user.name }}</div>
+                            <div class="cand-ref">{{ row.app.application_number }}</div>
+                        </div>
+
+                        {% if row.is_top3 %}
+                            <span class="chip chip-gold ms-1">
+                    <i class="fas fa-medal me-1"></i>Top 3
+                </span>
+                        {% endif %}
+
+                        <!-- My score summary -->
+                        <div class="score-summary ms-auto">
+                            <div>
+                                <span class="my-score-val">{{ row.my_total }}</span>
+                                <span class="score-max"> / {{ my_max }}</span>
+                            </div>
+                            {% if row.result.average_score is not None %}
+                                <div class="overall-avg">
+                                    Panel avg: {{ row.result.average_score|floatformat:1 }}
+                                </div>
+                            {% endif %}
+                        </div>
                     </div>
-                </div>
-                <span class="score-num">
+
+                    <!-- Score breakdown -->
+                    <div class="score-breakdown">
+                        {% for cs in row.criterion_scores %}
+                            <div class="score-row">
+                                <span class="crit-name">{{ cs.criterion.name }}</span>
+                                <div class="score-bar-wrap">
+                                    <div class="score-bar-track">
+                                        <div class="score-bar-fill"
+                                             style="width:
+                                                     {% if cs.score_obj %}{% widthratio cs.score_obj.score cs.criterion.max_score 100 %}{% else %}0{% endif %}%;"></div>
+                                    </div>
+                                </div>
+                                <span class="score-num">
                     {% if cs.score_obj %}{{ cs.score_obj.score }}{% else %}—{% endif %}
                 </span>
-                <span class="score-max-label">/ {{ cs.criterion.max_score }}</span>
-            </div>
+                                <span class="score-max-label">/ {{ cs.criterion.max_score }}</span>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
             {% endfor %}
-        </div>
+
+        {% endif %}
+
     </div>
-    {% endfor %}
-
-    {% endif %}
-
-</div>
 {% endblock %}

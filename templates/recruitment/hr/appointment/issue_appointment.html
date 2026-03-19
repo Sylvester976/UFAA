@@ -2,468 +2,706 @@
 {% block title %}Issue Appointment — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561; --navy-lt:#1a1f5c; --gold:#F9E6A1; --gold-dk:#C39545; --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #1a1f5c;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-  background:linear-gradient(135deg,var(--navy),var(--navy-lt));
-  border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-  display:flex; align-items:center; justify-content:space-between;
-  flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.65); margin:.15rem 0 0; }
-.banner-ref   { font-family:monospace; font-size:.72rem; background:rgba(249,230,161,.15); color:var(--gold); padding:.25rem .65rem; border-radius:.4rem; }
-.back-link    { color:rgba(255,255,255,.65); font-size:.78rem; display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-.section-card {
-  background:#fff; border-radius:.9rem;
-  box-shadow:0 2px 14px rgba(38,37,97,.08);
-  overflow:hidden; margin-bottom:1.25rem;
-}
-.section-header {
-  padding:.9rem 1.25rem; border-bottom:1px solid #f0f2f8;
-  display:flex; align-items:center; justify-content:space-between;
-  flex-wrap:wrap; gap:.5rem;
-}
-.section-title {
-  font-size:.85rem; font-weight:800; color:var(--navy);
-  display:flex; align-items:center; gap:.5rem; margin:0;
-}
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* ── Candidate profile ── */
-.profile-hero {
-  background:linear-gradient(135deg,rgba(38,37,97,.04),rgba(38,37,97,.01));
-  border-bottom:1px solid #f0f2f8; padding:1.5rem 1.25rem;
-  display:flex; align-items:center; gap:1.25rem; flex-wrap:wrap;
-}
-.hero-avatar {
-  width:64px; height:64px; border-radius:50%; flex-shrink:0;
-  background:linear-gradient(135deg,var(--navy),#4f46e5);
-  color:var(--gold); font-size:1.4rem; font-weight:800;
-  display:flex; align-items:center; justify-content:center;
-  box-shadow:0 4px 14px rgba(38,37,97,.2);
-}
-.hero-name  { font-size:1.1rem; font-weight:800; color:var(--navy); margin:0 0 .15rem; }
-.hero-ref   { font-family:monospace; font-size:.75rem; color:#8392ab; }
-.hero-chips { display:flex; gap:.4rem; flex-wrap:wrap; margin-top:.5rem; }
-.chip       { font-size:.63rem; font-weight:700; padding:.2rem .55rem; border-radius:99px; }
-.chip-green { background:#d4f5e2; color:#1a5c38; }
-.chip-navy  { background:rgba(38,37,97,.1); color:var(--navy); }
-.chip-amber { background:#fff3cd; color:var(--amber); }
-.chip-muted { background:#f0f2f8; color:#8392ab; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-/* ── Detail grid ── */
-.detail-grid {
-  display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr));
-  gap:.65rem; padding:1rem 1.25rem;
-}
-.detail-item { }
-.detail-label { font-size:.62rem; font-weight:700; color:#8392ab; text-transform:uppercase; letter-spacing:.04em; margin-bottom:.15rem; }
-.detail-value { font-size:.82rem; font-weight:600; color:#344767; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
 
-/* ── Score summary ── */
-.score-highlight {
-  background:linear-gradient(135deg,rgba(38,37,97,.06),rgba(38,37,97,.02));
-  border-radius:.65rem; padding:1rem 1.25rem;
-  display:flex; align-items:center; gap:1rem; flex-wrap:wrap;
-  margin:1rem 1.25rem;
-}
-.score-big { font-size:2rem; font-weight:800; color:var(--navy); line-height:1; }
-.score-sub { font-size:.72rem; color:#8392ab; margin:.15rem 0 0; }
-.score-bar-wrap { flex:1; min-width:120px; }
-.score-bar-bg   { height:10px; background:#e8ecf4; border-radius:99px; overflow:hidden; }
-.score-bar-fill {
-  height:100%; border-radius:99px;
-  background:linear-gradient(90deg,var(--navy),#4f46e5);
-}
-.score-pct { font-size:.8rem; font-weight:700; color:var(--navy); margin-top:.3rem; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-/* ── Qualifications mini list ── */
-.qual-list { padding:.6rem 1.25rem 1rem; }
-.qual-row  { display:flex; align-items:flex-start; gap:.6rem; padding:.4rem 0; border-bottom:1px solid #f7f8fc; font-size:.78rem; }
-.qual-row:last-child { border-bottom:none; }
-.qual-icon { color:var(--gold-dk); margin-top:.1rem; flex-shrink:0; }
-.qual-info { }
-.qual-title { font-weight:700; color:var(--navy); }
-.qual-sub   { font-size:.7rem; color:#8392ab; }
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-/* ── Confirmation box ── */
-.confirm-box {
-  background:#f8f9ff; border:2px solid var(--navy);
-  border-radius:.8rem; padding:1.25rem;
-}
-.confirm-warning {
-  background:#fff3cd; border:1px solid #ffe082;
-  border-radius:.5rem; padding:.75rem 1rem;
-  font-size:.78rem; color:#7d5500;
-  display:flex; align-items:flex-start; gap:.6rem;
-  margin-bottom:1rem;
-}
-.btn-issue {
-  width:100%; padding:.7rem;
-  background:var(--green); color:#fff;
-  font-size:.88rem; font-weight:700; border:none;
-  border-radius:.5rem; cursor:pointer;
-  display:flex; align-items:center; justify-content:center; gap:.5rem;
-  transition:opacity .15s;
-}
-.btn-issue:hover   { opacity:.88; }
-.btn-issue:disabled { opacity:.4; cursor:not-allowed; }
-.btn-back {
-  width:100%; padding:.6rem; margin-top:.5rem;
-  background:#fff; color:var(--navy);
-  font-size:.82rem; font-weight:700;
-  border:1.5px solid #d0d7f0; border-radius:.5rem;
-  cursor:pointer; display:flex; align-items:center;
-  justify-content:center; gap:.5rem; transition:all .15s;
-  text-decoration:none;
-}
-.btn-back:hover { background:#f0f2f8; color:var(--navy); }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-/* confirm checkbox */
-.check-label {
-  display:flex; align-items:flex-start; gap:.6rem;
-  font-size:.8rem; color:#344767; cursor:pointer; margin-bottom:.85rem;
-}
-.check-label input { margin-top:.15rem; accent-color:var(--navy); width:15px; height:15px; flex-shrink:0; }
-</style>
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header {
+            padding: .9rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .section-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin: 0;
+        }
+
+        /* ── Candidate profile ── */
+        .profile-hero {
+            background: linear-gradient(135deg, rgba(38, 37, 97, .04), rgba(38, 37, 97, .01));
+            border-bottom: 1px solid #f0f2f8;
+            padding: 1.5rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .hero-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--navy), #4f46e5);
+            color: var(--gold);
+            font-size: 1.4rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 14px rgba(38, 37, 97, .2);
+        }
+
+        .hero-name {
+            font-size: 1.1rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0 0 .15rem;
+        }
+
+        .hero-ref {
+            font-family: monospace;
+            font-size: .75rem;
+            color: #8392ab;
+        }
+
+        .hero-chips {
+            display: flex;
+            gap: .4rem;
+            flex-wrap: wrap;
+            margin-top: .5rem;
+        }
+
+        .chip {
+            font-size: .63rem;
+            font-weight: 700;
+            padding: .2rem .55rem;
+            border-radius: 99px;
+        }
+
+        .chip-green {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .chip-navy {
+            background: rgba(38, 37, 97, .1);
+            color: var(--navy);
+        }
+
+        .chip-amber {
+            background: #fff3cd;
+            color: var(--amber);
+        }
+
+        .chip-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        /* ── Detail grid ── */
+        .detail-grid {
+            display: grid;
+            grid-template-columns:repeat(auto-fill, minmax(200px, 1fr));
+            gap: .65rem;
+            padding: 1rem 1.25rem;
+        }
+
+        .detail-item {
+        }
+
+        .detail-label {
+            font-size: .62rem;
+            font-weight: 700;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: .15rem;
+        }
+
+        .detail-value {
+            font-size: .82rem;
+            font-weight: 600;
+            color: #344767;
+        }
+
+        /* ── Score summary ── */
+        .score-highlight {
+            background: linear-gradient(135deg, rgba(38, 37, 97, .06), rgba(38, 37, 97, .02));
+            border-radius: .65rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 1.25rem;
+        }
+
+        .score-big {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .score-sub {
+            font-size: .72rem;
+            color: #8392ab;
+            margin: .15rem 0 0;
+        }
+
+        .score-bar-wrap {
+            flex: 1;
+            min-width: 120px;
+        }
+
+        .score-bar-bg {
+            height: 10px;
+            background: #e8ecf4;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .score-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+        }
+
+        .score-pct {
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-top: .3rem;
+        }
+
+        /* ── Qualifications mini list ── */
+        .qual-list {
+            padding: .6rem 1.25rem 1rem;
+        }
+
+        .qual-row {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            padding: .4rem 0;
+            border-bottom: 1px solid #f7f8fc;
+            font-size: .78rem;
+        }
+
+        .qual-row:last-child {
+            border-bottom: none;
+        }
+
+        .qual-icon {
+            color: var(--gold-dk);
+            margin-top: .1rem;
+            flex-shrink: 0;
+        }
+
+        .qual-info {
+        }
+
+        .qual-title {
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .qual-sub {
+            font-size: .7rem;
+            color: #8392ab;
+        }
+
+        /* ── Confirmation box ── */
+        .confirm-box {
+            background: #f8f9ff;
+            border: 2px solid var(--navy);
+            border-radius: .8rem;
+            padding: 1.25rem;
+        }
+
+        .confirm-warning {
+            background: #fff3cd;
+            border: 1px solid #ffe082;
+            border-radius: .5rem;
+            padding: .75rem 1rem;
+            font-size: .78rem;
+            color: #7d5500;
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            margin-bottom: 1rem;
+        }
+
+        .btn-issue {
+            width: 100%;
+            padding: .7rem;
+            background: var(--green);
+            color: #fff;
+            font-size: .88rem;
+            font-weight: 700;
+            border: none;
+            border-radius: .5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            transition: opacity .15s;
+        }
+
+        .btn-issue:hover {
+            opacity: .88;
+        }
+
+        .btn-issue:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        .btn-back {
+            width: 100%;
+            padding: .6rem;
+            margin-top: .5rem;
+            background: #fff;
+            color: var(--navy);
+            font-size: .82rem;
+            font-weight: 700;
+            border: 1.5px solid #d0d7f0;
+            border-radius: .5rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            transition: all .15s;
+            text-decoration: none;
+        }
+
+        .btn-back:hover {
+            background: #f0f2f8;
+            color: var(--navy);
+        }
+
+        /* confirm checkbox */
+        .check-label {
+            display: flex;
+            align-items: flex-start;
+            gap: .6rem;
+            font-size: .8rem;
+            color: #344767;
+            cursor: pointer;
+            margin-bottom: .85rem;
+        }
+
+        .check-label input {
+            margin-top: .15rem;
+            accent-color: var(--navy);
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-  <!-- Banner -->
-  <div class="page-banner">
-    <div>
-      <p class="banner-title mb-0">
-        <i class="fas fa-envelope-open-text me-2"></i>Issue Appointment
-      </p>
-      <p class="banner-sub mb-0">{{ vacancy.title }}</p>
-    </div>
-    <div class="d-flex align-items:center gap-3 flex-wrap">
-      <span class="banner-ref">{{ vacancy.reference_number }}</span>
-      <a href="{% url 'hr_appointments_list' %}" class="back-link">
-        <i class="fas fa-arrow-left"></i> Appointments
-      </a>
-    </div>
-  </div>
-
-  <div class="row g-3">
-
-    <!-- ── Left: Candidate dossier ── -->
-    <div class="col-lg-8">
-
-      <!-- Candidate profile hero -->
-      <div class="section-card">
-        <div class="section-header">
-          <h6 class="section-title">
-            <i class="fas fa-user-check" style="color:var(--green);"></i>
-            CEO-Selected Candidate
-          </h6>
-          <span class="chip chip-green">
-            <i class="fas fa-check me-1"></i>Approved by CEO
-          </span>
+        <!-- Banner -->
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-0">
+                    <i class="fas fa-envelope-open-text me-2"></i>Issue Appointment
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items:center gap-3 flex-wrap">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'hr_appointments_list' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Appointments
+                </a>
+            </div>
         </div>
 
-        <div class="profile-hero">
-          <div class="hero-avatar">
-            {{ basic.first_name|first|upper }}
-          </div>
-          <div>
-            <p class="hero-name">{{ winner_name }}</p>
-            <p class="hero-ref">{{ winner.application_number }}</p>
-            <div class="hero-chips">
+        <div class="row g-3">
+
+            <!-- ── Left: Candidate dossier ── -->
+            <div class="col-lg-8">
+
+                <!-- Candidate profile hero -->
+                <div class="section-card">
+                    <div class="section-header">
+                        <h6 class="section-title">
+                            <i class="fas fa-user-check" style="color:var(--green);"></i>
+                            CEO-Selected Candidate
+                        </h6>
+                        <span class="chip chip-green">
+            <i class="fas fa-check me-1"></i>Approved by CEO
+          </span>
+                    </div>
+
+                    <div class="profile-hero">
+                        <div class="hero-avatar">
+                            {{ basic.first_name|first|upper }}
+                        </div>
+                        <div>
+                            <p class="hero-name">{{ winner_name }}</p>
+                            <p class="hero-ref">{{ winner.application_number }}</p>
+                            <div class="hero-chips">
               <span class="chip chip-navy">
                 <i class="fas fa-id-card me-1"></i>{{ basic.id_no|default:'—' }}
               </span>
-              <span class="chip chip-muted">
+                                <span class="chip chip-muted">
                 <i class="fas fa-phone me-1"></i>{{ basic.phone_number|default:'—' }}
               </span>
-              <span class="chip chip-muted">
+                                <span class="chip chip-muted">
                 <i class="fas fa-envelope me-1"></i>{{ winner.user.email }}
               </span>
-              {% if basic.disability_status and basic.disability_status != 'None' and basic.disability_status != 'No' %}
-              <span class="chip chip-amber">PWD</span>
-              {% endif %}
-            </div>
-          </div>
-        </div>
+                                {% if basic.disability_status and basic.disability_status != 'None' and basic.disability_status != 'No' %}
+                                    <span class="chip chip-amber">PWD</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
 
-        <!-- Personal details -->
-        <div class="detail-grid">
-          <div class="detail-item">
-            <div class="detail-label">Gender</div>
-            <div class="detail-value">{{ basic.gender|default:'—' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Date of Birth</div>
-            <div class="detail-value">{{ basic.date_of_birth|default:'—' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">County</div>
-            <div class="detail-value">{{ basic.home_county|default:'—' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Ethnic Group</div>
-            <div class="detail-value">{{ basic.ethnic_group|default:'—' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Availability</div>
-            <div class="detail-value">{{ additional.availability|default:'—' }}</div>
-          </div>
-          <div class="detail-item">
-            <div class="detail-label">Expected Salary</div>
-            <div class="detail-value">
-              {% if additional.expected_salary %}
-                KES {{ additional.expected_salary|floatformat:0 }}
-              {% else %}—{% endif %}
-            </div>
-          </div>
-        </div>
-      </div>
+                    <!-- Personal details -->
+                    <div class="detail-grid">
+                        <div class="detail-item">
+                            <div class="detail-label">Gender</div>
+                            <div class="detail-value">{{ basic.gender|default:'—' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Date of Birth</div>
+                            <div class="detail-value">{{ basic.date_of_birth|default:'—' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">County</div>
+                            <div class="detail-value">{{ basic.home_county|default:'—' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Ethnic Group</div>
+                            <div class="detail-value">{{ basic.ethnic_group|default:'—' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Availability</div>
+                            <div class="detail-value">{{ additional.availability|default:'—' }}</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Expected Salary</div>
+                            <div class="detail-value">
+                                {% if additional.expected_salary %}
+                                    KES {{ additional.expected_salary|floatformat:0 }}
+                                {% else %}—{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
 
-      <!-- Interview score -->
-      {% if result %}
-      <div class="section-card">
-        <div class="section-header">
-          <h6 class="section-title">
-            <i class="fas fa-chart-bar" style="color:var(--gold-dk);"></i>
-            Interview Score
-          </h6>
-          <span class="chip chip-navy">Rank #{{ result.rank }}</span>
-        </div>
-        <div class="score-highlight">
-          <div>
-            <div class="score-big">{{ result.total_score }}</div>
-            <div class="score-sub">out of {{ result.max_possible }} marks</div>
-          </div>
-          <div class="score-bar-wrap">
-            <div class="score-bar-bg">
-              <div class="score-bar-fill" style="width:{{ result.percentage }}%;"></div>
-            </div>
-            <div class="score-pct">{{ result.percentage }}%</div>
-          </div>
-        </div>
-      </div>
-      {% endif %}
+                <!-- Interview score -->
+                {% if result %}
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-chart-bar" style="color:var(--gold-dk);"></i>
+                                Interview Score
+                            </h6>
+                            <span class="chip chip-navy">Rank #{{ result.rank }}</span>
+                        </div>
+                        <div class="score-highlight">
+                            <div>
+                                <div class="score-big">{{ result.total_score }}</div>
+                                <div class="score-sub">out of {{ result.max_possible }} marks</div>
+                            </div>
+                            <div class="score-bar-wrap">
+                                <div class="score-bar-bg">
+                                    <div class="score-bar-fill" style="width:{{ result.percentage }}%;"></div>
+                                </div>
+                                <div class="score-pct">{{ result.percentage }}%</div>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
 
-      <!-- Academic qualifications (snapshot) -->
-      {% if academic %}
-      <div class="section-card">
-        <div class="section-header">
-          <h6 class="section-title">
-            <i class="fas fa-graduation-cap" style="color:var(--gold-dk);"></i>
-            Academic Qualifications
-          </h6>
-        </div>
-        <div class="qual-list">
-          {% for q in academic %}
-          <div class="qual-row">
-            <i class="fas fa-award qual-icon"></i>
-            <div class="qual-info">
-              <div class="qual-title">{{ q.education_level }}</div>
-              <div class="qual-sub">
-                {{ q.institution }}
-                {% if q.field_of_study %} — {{ q.field_of_study }}{% endif %}
-                · {{ q.year_completed }}
-                {% if q.grade %} · {{ q.grade }}{% endif %}
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+                <!-- Academic qualifications (snapshot) -->
+                {% if academic %}
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-graduation-cap" style="color:var(--gold-dk);"></i>
+                                Academic Qualifications
+                            </h6>
+                        </div>
+                        <div class="qual-list">
+                            {% for q in academic %}
+                                <div class="qual-row">
+                                    <i class="fas fa-award qual-icon"></i>
+                                    <div class="qual-info">
+                                        <div class="qual-title">{{ q.education_level }}</div>
+                                        <div class="qual-sub">
+                                            {{ q.institution }}
+                                            {% if q.field_of_study %} — {{ q.field_of_study }}{% endif %}
+                                            · {{ q.year_completed }}
+                                            {% if q.grade %} · {{ q.grade }}{% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
 
-      <!-- Referees (snapshot) -->
-      {% if referees %}
-      <div class="section-card">
-        <div class="section-header">
-          <h6 class="section-title">
-            <i class="fas fa-user-tie" style="color:var(--gold-dk);"></i>
-            Referees
-          </h6>
-        </div>
-        <div class="qual-list">
-          {% for r in referees %}
-          <div class="qual-row">
-            <i class="fas fa-user qual-icon"></i>
-            <div class="qual-info">
-              <div class="qual-title">{{ r.name }} — {{ r.occupation }}</div>
-              <div class="qual-sub">
-                {{ r.organization }} &nbsp;·&nbsp;
-                {{ r.mobile }} &nbsp;·&nbsp;
-                {{ r.email }}
-              </div>
-            </div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endif %}
+                <!-- Referees (snapshot) -->
+                {% if referees %}
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-user-tie" style="color:var(--gold-dk);"></i>
+                                Referees
+                            </h6>
+                        </div>
+                        <div class="qual-list">
+                            {% for r in referees %}
+                                <div class="qual-row">
+                                    <i class="fas fa-user qual-icon"></i>
+                                    <div class="qual-info">
+                                        <div class="qual-title">{{ r.name }} — {{ r.occupation }}</div>
+                                        <div class="qual-sub">
+                                            {{ r.organization }} &nbsp;·&nbsp;
+                                            {{ r.mobile }} &nbsp;·&nbsp;
+                                            {{ r.email }}
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endif %}
 
-    </div><!-- /col-lg-8 -->
+            </div><!-- /col-lg-8 -->
 
-    <!-- ── Right: Confirm panel ── -->
-    <div class="col-lg-4">
-      <div class="section-card" style="position:sticky;top:1rem;">
-        <div class="section-header">
-          <h6 class="section-title">
-            <i class="fas fa-paper-plane" style="color:var(--green);"></i>
-            Issue Appointment
-          </h6>
-        </div>
-        <div style="padding:1rem 1.1rem;">
+            <!-- ── Right: Confirm panel ── -->
+            <div class="col-lg-4">
+                <div class="section-card" style="position:sticky;top:1rem;">
+                    <div class="section-header">
+                        <h6 class="section-title">
+                            <i class="fas fa-paper-plane" style="color:var(--green);"></i>
+                            Issue Appointment
+                        </h6>
+                    </div>
+                    <div style="padding:1rem 1.1rem;">
 
-          <!-- Summary -->
-          <div style="font-size:.72rem;color:#8392ab;text-transform:uppercase;
+                        <!-- Summary -->
+                        <div style="font-size:.72rem;color:#8392ab;text-transform:uppercase;
                       font-weight:700;letter-spacing:.04em;margin-bottom:.25rem;">
-            Candidate
-          </div>
-          <div style="font-size:.88rem;font-weight:700;color:var(--navy);
+                            Candidate
+                        </div>
+                        <div style="font-size:.88rem;font-weight:700;color:var(--navy);
                       margin-bottom:.1rem;">
-            {{ winner_name }}
-          </div>
-          <div style="font-size:.74rem;color:#8392ab;margin-bottom:1rem;">
-            {{ winner.application_number }}
-          </div>
+                            {{ winner_name }}
+                        </div>
+                        <div style="font-size:.74rem;color:#8392ab;margin-bottom:1rem;">
+                            {{ winner.application_number }}
+                        </div>
 
-          <div style="font-size:.72rem;color:#8392ab;text-transform:uppercase;
+                        <div style="font-size:.72rem;color:#8392ab;text-transform:uppercase;
                       font-weight:700;letter-spacing:.04em;margin-bottom:.25rem;">
-            Position
-          </div>
-          <div style="font-size:.82rem;font-weight:700;color:var(--navy);
+                            Position
+                        </div>
+                        <div style="font-size:.82rem;font-weight:700;color:var(--navy);
                       margin-bottom:.1rem;">
-            {{ vacancy.title }}
-          </div>
-          <div style="font-family:monospace;font-size:.72rem;color:#8392ab;
+                            {{ vacancy.title }}
+                        </div>
+                        <div style="font-family:monospace;font-size:.72rem;color:#8392ab;
                       margin-bottom:1.25rem;">
-            {{ vacancy.reference_number }}
-          </div>
+                            {{ vacancy.reference_number }}
+                        </div>
 
-          <div class="confirm-box">
-            <div class="confirm-warning">
-              <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:.05rem;"></i>
-              <span>
+                        <div class="confirm-box">
+                            <div class="confirm-warning">
+                                <i class="fas fa-exclamation-triangle" style="flex-shrink:0;margin-top:.05rem;"></i>
+                                <span>
                 Issuing this appointment is <strong>permanent and irreversible</strong>.
                 An appointment notification email will be sent immediately to the candidate.
               </span>
-            </div>
+                            </div>
 
-            <form method="POST" id="appointForm">
-              {% csrf_token %}
-              <label class="check-label">
-                <input type="checkbox" id="confirmCheck" onchange="toggleBtn()">
-                <span>
+                            <form method="POST" id="appointForm">
+                                {% csrf_token %}
+                                <label class="check-label">
+                                    <input type="checkbox" id="confirmCheck" onchange="toggleBtn()">
+                                    <span>
                   I confirm this is the correct candidate and authorise the
                   issuance of the formal appointment letter.
                 </span>
-              </label>
-              <button type="button" class="btn-issue" id="issueBtn"
-                      disabled onclick="submitAppoint()">
-                <i class="fas fa-paper-plane"></i> Issue Appointment
-              </button>
-            </form>
+                                </label>
+                                <button type="button" class="btn-issue" id="issueBtn"
+                                        disabled onclick="submitAppoint()">
+                                    <i class="fas fa-paper-plane"></i> Issue Appointment
+                                </button>
+                            </form>
 
-            <a href="{% url 'hr_appointments_list' %}" class="btn-back">
-              <i class="fas fa-arrow-left"></i> Back to Appointments
-            </a>
-          </div>
+                            <a href="{% url 'hr_appointments_list' %}" class="btn-back">
+                                <i class="fas fa-arrow-left"></i> Back to Appointments
+                            </a>
+                        </div>
 
-          <!-- CV / Cover letter links -->
-          {% if additional.cv_url or additional.cover_letter_url %}
-          <div style="margin-top:1rem;border-top:1px solid #f0f2f8;padding-top:.85rem;">
-            <div style="font-size:.7rem;font-weight:700;color:#8392ab;
+                        <!-- CV / Cover letter links -->
+                        {% if additional.cv_url or additional.cover_letter_url %}
+                            <div style="margin-top:1rem;border-top:1px solid #f0f2f8;padding-top:.85rem;">
+                                <div style="font-size:.7rem;font-weight:700;color:#8392ab;
                         text-transform:uppercase;letter-spacing:.04em;margin-bottom:.5rem;">
-              Documents
-            </div>
-            {% if additional.cv_url %}
-            <a href="{{ additional.cv_url }}" target="_blank"
-               style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;
+                                    Documents
+                                </div>
+                                {% if additional.cv_url %}
+                                    <a href="{{ additional.cv_url }}" target="_blank"
+                                       style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;
                       font-weight:600;color:var(--navy);margin-bottom:.3rem;">
-              <i class="fas fa-file-pdf" style="color:var(--red);"></i>
-              View CV
-            </a>
-            {% endif %}
-            {% if additional.cover_letter_url %}
-            <a href="{{ additional.cover_letter_url }}" target="_blank"
-               style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;
+                                        <i class="fas fa-file-pdf" style="color:var(--red);"></i>
+                                        View CV
+                                    </a>
+                                {% endif %}
+                                {% if additional.cover_letter_url %}
+                                    <a href="{{ additional.cover_letter_url }}" target="_blank"
+                                       style="display:flex;align-items:center;gap:.4rem;font-size:.78rem;
                       font-weight:600;color:var(--navy);">
-              <i class="fas fa-file-pdf" style="color:var(--red);"></i>
-              View Cover Letter
-            </a>
-            {% endif %}
-          </div>
-          {% endif %}
+                                        <i class="fas fa-file-pdf" style="color:var(--red);"></i>
+                                        View Cover Letter
+                                    </a>
+                                {% endif %}
+                            </div>
+                        {% endif %}
 
-        </div>
-      </div>
-    </div><!-- /col-lg-4 -->
+                    </div>
+                </div>
+            </div><!-- /col-lg-4 -->
 
-  </div><!-- /row -->
-</div>
-
-<!-- Confirmation modal -->
-<div class="modal fade" id="appointModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content" style="border-radius:.8rem;border:none;">
-      <div class="modal-header"
-           style="background:var(--green);border-radius:.8rem .8rem 0 0;
-                  padding:1rem 1.25rem;">
-        <h5 class="modal-title"
-            style="color:#fff;font-size:.9rem;font-weight:700;">
-          <i class="fas fa-paper-plane me-2"></i>Confirm Appointment Issuance
-        </h5>
-        <button type="button" class="btn-close btn-close-white"
-                data-bs-dismiss="modal"></button>
-      </div>
-      <div class="modal-body" style="padding:1.25rem;">
-        <p style="font-size:.85rem;color:#344767;margin:0;">
-          You are about to formally appoint
-          <strong>{{ winner_name }}</strong> to the position of
-          <strong>{{ vacancy.title }}</strong>.
-        </p>
-        <p style="font-size:.78rem;color:#8392ab;margin:.75rem 0 0;">
-          A notification email will be sent to
-          <strong>{{ winner.user.email }}</strong> immediately.
-          This action cannot be undone.
-        </p>
-      </div>
-      <div class="modal-footer" style="padding:.85rem 1.25rem;gap:.5rem;">
-        <button class="btn-back" style="width:auto;padding:.45rem 1rem;"
-                data-bs-dismiss="modal">
-          Cancel
-        </button>
-        <button class="btn-issue" style="width:auto;padding:.45rem 1.1rem;"
-                id="modalIssueBtn" onclick="doSubmit()">
-          <i class="fas fa-check"></i> Yes, Issue Now
-        </button>
-      </div>
+        </div><!-- /row -->
     </div>
-  </div>
-</div>
+
+    <!-- Confirmation modal -->
+    <div class="modal fade" id="appointModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content" style="border-radius:.8rem;border:none;">
+                <div class="modal-header"
+                     style="background:var(--green);border-radius:.8rem .8rem 0 0;
+                  padding:1rem 1.25rem;">
+                    <h5 class="modal-title"
+                        style="color:#fff;font-size:.9rem;font-weight:700;">
+                        <i class="fas fa-paper-plane me-2"></i>Confirm Appointment Issuance
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white"
+                            data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" style="padding:1.25rem;">
+                    <p style="font-size:.85rem;color:#344767;margin:0;">
+                        You are about to formally appoint
+                        <strong>{{ winner_name }}</strong> to the position of
+                        <strong>{{ vacancy.title }}</strong>.
+                    </p>
+                    <p style="font-size:.78rem;color:#8392ab;margin:.75rem 0 0;">
+                        A notification email will be sent to
+                        <strong>{{ winner.user.email }}</strong> immediately.
+                        This action cannot be undone.
+                    </p>
+                </div>
+                <div class="modal-footer" style="padding:.85rem 1.25rem;gap:.5rem;">
+                    <button class="btn-back" style="width:auto;padding:.45rem 1rem;"
+                            data-bs-dismiss="modal">
+                        Cancel
+                    </button>
+                    <button class="btn-issue" style="width:auto;padding:.45rem 1.1rem;"
+                            id="modalIssueBtn" onclick="doSubmit()">
+                        <i class="fas fa-check"></i> Yes, Issue Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-function toggleBtn() {
-  document.getElementById('issueBtn').disabled =
-    !document.getElementById('confirmCheck').checked;
-}
+    <script>
+        function toggleBtn() {
+            document.getElementById('issueBtn').disabled =
+                !document.getElementById('confirmCheck').checked;
+        }
 
-function submitAppoint() {
-  if (!document.getElementById('confirmCheck').checked) return;
-  new bootstrap.Modal(document.getElementById('appointModal')).show();
-}
+        function submitAppoint() {
+            if (!document.getElementById('confirmCheck').checked) return;
+            new bootstrap.Modal(document.getElementById('appointModal')).show();
+        }
 
-function doSubmit() {
-  document.getElementById('modalIssueBtn').disabled = true;
-  document.getElementById('modalIssueBtn').innerHTML =
-    '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
-  document.getElementById('appointForm').submit();
-}
-</script>
+        function doSubmit() {
+            document.getElementById('modalIssueBtn').disabled = true;
+            document.getElementById('modalIssueBtn').innerHTML =
+                '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
+            document.getElementById('appointForm').submit();
+        }
+    </script>
 {% endblock %}

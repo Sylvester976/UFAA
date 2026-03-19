@@ -3,166 +3,166 @@
 
 {% block content %}
 
-<style>
+    <style>
 
-/* MESSAGE ALERTS */
+        /* MESSAGE ALERTS */
 
-.messages-container {
-    animation: fadeInDown 0.35s ease;
-}
+        .messages-container {
+            animation: fadeInDown 0.35s ease;
+        }
 
-.alert-custom {
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 0.9rem;
-    border: 1px solid rgba(0,0,0,0.05);
-    box-shadow: 0 3px 8px rgba(0,0,0,0.06);
-    margin-bottom: 12px;
-}
+        .alert-custom {
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+            margin-bottom: 12px;
+        }
 
-.alert-custom .alert-text {
-    font-weight: 500;
-    color: #344767;
-}
+        .alert-custom .alert-text {
+            font-weight: 500;
+            color: #344767;
+        }
 
-/* Close button */
+        /* Close button */
 
-.close-btn {
-    background: transparent;
-    border: none;
-    font-size: 20px;
-    color: #999;
-    cursor: pointer;
-    line-height: 1;
-}
+        .close-btn {
+            background: transparent;
+            border: none;
+            font-size: 20px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
 
-.close-btn:hover {
-    color: #000;
-}
+        .close-btn:hover {
+            color: #000;
+        }
 
-/* Alert Colors */
+        /* Alert Colors */
 
-.alert-success {
-    background: #ecfdf5;
-    border-left: 4px solid #10b981;
-}
+        .alert-success {
+            background: #ecfdf5;
+            border-left: 4px solid #10b981;
+        }
 
-.alert-error,
-.alert-danger {
-    background: #fef2f2;
-    border-left: 4px solid #ef4444;
-}
+        .alert-error,
+        .alert-danger {
+            background: #fef2f2;
+            border-left: 4px solid #ef4444;
+        }
 
-.alert-warning {
-    background: #fffbeb;
-    border-left: 4px solid #f59e0b;
-}
+        .alert-warning {
+            background: #fffbeb;
+            border-left: 4px solid #f59e0b;
+        }
 
-.alert-info {
-    background: #eff6ff;
-    border-left: 4px solid #3b82f6;
-}
+        .alert-info {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+        }
 
-/* Animation */
+        /* Animation */
 
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-6px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-6px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
-</style>
+    </style>
 
 
-<div class="login-wrapper">
-    <div class="login-card card">
+    <div class="login-wrapper">
+        <div class="login-card card">
 
-        <div class="card-header pb-0 bg-transparent text-center">
-            <a href="#" class="logo d-flex justify-content-center align-items-center">
-                <img alt="Court of Arms"
-                     src="{% static 'assets/img/logos/court_of_arms.png' %}"
-                     style="max-height: 80px;">
+            <div class="card-header pb-0 bg-transparent text-center">
+                <a href="#" class="logo d-flex justify-content-center align-items-center">
+                    <img alt="Court of Arms"
+                         src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                         style="max-height: 80px;">
 
-                <div class="logo-divider mx-2"></div>
+                    <div class="logo-divider mx-2"></div>
 
-                <img alt="ufaa Logo"
-                     src="{% static 'assets/img/logos/ufaa_logo.png' %}"
-                     style="max-height: 80px;">
-            </a>
-            <br>
-            <h3 class="font-weight-bolder" style="color:#003366;">UFAA Staff login</h3>
-            <p class="mb-0">Enter your Email and Password to sign in</p>
-        </div>
+                    <img alt="ufaa Logo"
+                         src="{% static 'assets/img/logos/ufaa_logo.png' %}"
+                         style="max-height: 80px;">
+                </a>
+                <br>
+                <h3 class="font-weight-bolder" style="color:#003366;">UFAA Staff login</h3>
+                <p class="mb-0">Enter your Email and Password to sign in</p>
+            </div>
 
-        <div class="card-body">
+            <div class="card-body">
 
-            <!-- MESSAGES -->
-            {% if messages %}
-            <div class="messages-container">
+                <!-- MESSAGES -->
+                {% if messages %}
+                    <div class="messages-container">
 
-                {% for message in messages %}
-                <div class="alert alert-{{ message.tags }} alert-custom d-flex align-items-center justify-content-between">
+                        {% for message in messages %}
+                            <div class="alert alert-{{ message.tags }} alert-custom d-flex align-items-center justify-content-between">
 
-                    <div class="d-flex align-items-center">
+                                <div class="d-flex align-items-center">
 
-                        {% if message.tags == "success" %}
-                            <i class="fas fa-check-circle me-2 text-success"></i>
-                        {% elif message.tags == "error" %}
-                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
-                        {% elif message.tags == "warning" %}
-                            <i class="fas fa-exclamation-circle me-2 text-warning"></i>
-                        {% else %}
-                            <i class="fas fa-info-circle me-2 text-primary"></i>
-                        {% endif %}
+                                    {% if message.tags == "success" %}
+                                        <i class="fas fa-check-circle me-2 text-success"></i>
+                                    {% elif message.tags == "error" %}
+                                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                                    {% elif message.tags == "warning" %}
+                                        <i class="fas fa-exclamation-circle me-2 text-warning"></i>
+                                    {% else %}
+                                        <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    {% endif %}
 
-                        <span class="alert-text">{{ message }}</span>
+                                    <span class="alert-text">{{ message }}</span>
+
+                                </div>
+
+                                <button class="close-btn"
+                                        onclick="this.parentElement.style.display='none';">
+                                    &times;
+                                </button>
+
+                            </div>
+                        {% endfor %}
 
                     </div>
-
-                    <button class="close-btn"
-                            onclick="this.parentElement.style.display='none';">
-                        &times;
-                    </button>
-
-                </div>
-                {% endfor %}
-
-            </div>
-            {% endif %}
+                {% endif %}
 
 
-            <form method="post">
-                {% csrf_token %}
+                <form method="post">
+                    {% csrf_token %}
 
-                <label>Email Address</label>
-                <div class="mb-3">
-                    <input
-                        type="email"
-                        name="email"
-                        class="form-control"
-                        placeholder="Email Address"
-                        required>
-                </div>
+                    <label>Email Address</label>
+                    <div class="mb-3">
+                        <input
+                                type="email"
+                                name="email"
+                                class="form-control"
+                                placeholder="Email Address"
+                                required>
+                    </div>
 
-                <label>Password</label>
-                <div class="mb-3 input-group">
+                    <label>Password</label>
+                    <div class="mb-3 input-group">
 
-                    <input
-                        type="password"
-                        name="password"
-                        id="passwordInput"
-                        class="form-control"
-                        placeholder="Password"
-                        required>
+                        <input
+                                type="password"
+                                name="password"
+                                id="passwordInput"
+                                class="form-control"
+                                placeholder="Password"
+                                required>
 
-                    <span class="input-group-text"
-                          onclick="togglePassword()"
-                          title="Toggle password visibility">
+                        <span class="input-group-text"
+                              onclick="togglePassword()"
+                              title="Toggle password visibility">
 
                         <!-- Eye icon -->
                         <svg fill="none" height="18" id="eyeIcon"
@@ -175,7 +175,7 @@
                                      -4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
 
-                        <!-- Eye off -->
+                            <!-- Eye off -->
                         <svg fill="none" height="18"
                              id="eyeOffIcon"
                              stroke="#999"
@@ -194,34 +194,34 @@
 
                     </span>
 
-                </div>
+                    </div>
 
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                    <a href="{% url 'staff_forgot_password' %}"
-                       class="text-sm"
-                       style="color:#003366;text-decoration:none;">
-                        Forgot password?
-                    </a>
-                </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <a href="{% url 'staff_forgot_password' %}"
+                           class="text-sm"
+                           style="color:#003366;text-decoration:none;">
+                            Forgot password?
+                        </a>
+                    </div>
 
-                <div class="text-center">
-                    <button class="btn w-100 mt-2 mb-0"
-                            style="background-color:#003366; border-color:#003366; color:white;"
-                            type="submit">
-                        Sign in
-                    </button>
-                </div>
+                    <div class="text-center">
+                        <button class="btn w-100 mt-2 mb-0"
+                                style="background-color:#003366; border-color:#003366; color:white;"
+                                type="submit">
+                            Sign in
+                        </button>
+                    </div>
 
-            </form>
+                </form>
+            </div>
+
+            <div class="card-footer text-center pt-0 px-lg-2 px-1">
+                <p class="mb-0 text-sm mx-auto">
+                    © 2026 The Unclaimed Financial Assets Authority (UFAA). All rights reserved
+                </p>
+            </div>
+
         </div>
-
-        <div class="card-footer text-center pt-0 px-lg-2 px-1">
-            <p class="mb-0 text-sm mx-auto">
-                © 2026 The Unclaimed Financial Assets Authority (UFAA). All rights reserved
-            </p>
-        </div>
-
     </div>
-</div>
 
 {% endblock %}

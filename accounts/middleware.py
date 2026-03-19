@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.urls import resolve
 from django.conf import settings
 
+
 class LoginRequiredMiddleware:
     PUBLIC_VIEWS = {
         'landing',
@@ -73,7 +74,6 @@ class LoginRequiredMiddleware:
         # panelist actions
         'submit_shortlist',
 
-
         # HR ranking / selection
         'hr_ranking_view',
         'select_top_three',
@@ -97,7 +97,6 @@ class LoginRequiredMiddleware:
         'hr_longlist_bulk',
         'hr_longlist_recall',
         'hr_longlist_finalise',
-        'vacancy_shortlisting',
         'hr_appoint_committee',
         'hr_committee_progress',
         'hr_committee_staff_search',
@@ -110,8 +109,7 @@ class LoginRequiredMiddleware:
         '_notify_rejected_applicants',
         '_notify_shortlisted_applicants',
 
-
-        #commitee
+        # committee
         'committee_dashboard',
         'committee_acknowledge',
         'committee_review',
@@ -142,27 +140,21 @@ class LoginRequiredMiddleware:
         'panel_submit_all',
         'panel_results',
 
-
         # submit to ceo and ceo
         'hr_submit_to_ceo',
         'ceo_dashboard',
         'ceo_vacancy_review',
         'ceo_make_selection',
 
-        #appointment
+        # appointment
         'hr_issue_appointment',
         'hr_appointments_list',
-
-
-
-
-
 
         # sections
         'section_create',
         'section_edit',
         'section_delete',
-        
+
         # permissions
         'permission_list',
         'permission_create',
@@ -174,14 +166,61 @@ class LoginRequiredMiddleware:
         'role_create',
         'role_update',
         'role_delete',
+
+        # ── Analytics dashboards ──────────────────────────────────────────────
+        'analytics:hr_analytics',
+        'analytics:hr_vacancy_analytics',
+        'analytics:hr_analytics_refresh',
+        'analytics:ceo_analytics',
+        'analytics:committee_analytics',
+        'analytics:panel_analytics',
+        'analytics:auditor_analytics',
+        'analytics:auditor_vacancy_trail',
+        'analytics:admin_analytics',
+
+        # ── Chart JSON endpoints ──────────────────────────────────────────────
+        'analytics:hr_chart_funnel',
+        'analytics:hr_chart_cycle',
+        'analytics:hr_chart_gender',
+        'analytics:hr_chart_county',
+        'analytics:hr_chart_monthly',
+
+        # ── Reports index pages ───────────────────────────────────────────────
+        'analytics:hr_reports_index',
+        'analytics:ceo_reports_index',
+        'analytics:auditor_reports_index',
+
+        # ── HR Reports ────────────────────────────────────────────────────────
+        'analytics:report_r01',
+        'analytics:report_r02',
+        'analytics:report_r03',
+        'analytics:report_r04',
+        'analytics:report_r05',
+        'analytics:report_r06',
+        'analytics:report_r07',
+        'analytics:report_r08',
+        'analytics:report_r09',
+        'analytics:report_r10',
+        'analytics:report_r11',
+
+        # ── CEO Reports ───────────────────────────────────────────────────────
+        'analytics:report_r12',
+        'analytics:report_r13',
+
+        # ── Auditor Reports ───────────────────────────────────────────────────
+        'analytics:report_r14',
+        'analytics:report_r15',
+        'analytics:report_r16',
+        'analytics:report_r17',
+        'analytics:report_r18',
     }
-    
+
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
 
-        # Allow admin
+        # Allow Django admin
         if request.path.startswith('/admin/'):
             return self.get_response(request)
 
@@ -195,15 +234,20 @@ class LoginRequiredMiddleware:
 
         try:
             current_view = resolve(request.path_info).view_name
-        except:
+        except Exception:
             current_view = None
 
-        # Allow public views
+        # Allow whitelisted views
         if current_view in self.PUBLIC_VIEWS:
             return self.get_response(request)
 
-        # Require login
-        if not request.session.get('user_id'):
+        # ── Auth check ────────────────────────────────────────────────────────
+        # Jobseeker session (external applicants)
+        has_jobseeker_session = bool(request.session.get('user_id'))
+        # Django auth (internal staff — HR, CEO, auditor, panel, committee, admin)
+        has_django_auth = request.user.is_authenticated
+
+        if not has_jobseeker_session and not has_django_auth:
             return redirect('/login/')
 
         return self.get_response(request)

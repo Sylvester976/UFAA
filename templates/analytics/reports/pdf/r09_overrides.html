@@ -1,0 +1,72 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ total }}</div>
+            <div class="stat-label">Total Overrides</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ shortlist_overrides|length }}</div>
+            <div class="stat-label">Shortlist Overrides</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ ceo_overrides|length }}</div>
+            <div class="stat-label">CEO Overrides</div>
+        </div>
+    </div>
+
+    <h2>Shortlisting Overrides</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Vacancy</th>
+            <th>Reference</th>
+            <th>Performed By</th>
+            <th>Notes</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in shortlist_overrides %}
+            <tr>
+                <td class="text-muted">{{ log.timestamp|date:"d M Y" }}</td>
+                <td class="bold">{{ log.vacancy.title|truncatechars:35 }}</td>
+                <td class="monospace">{{ log.vacancy.reference_number }}</td>
+                <td>{{ log.performed_by_label|default:"System" }}</td>
+                <td>{{ log.notes|truncatechars:60|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="5" class="text-center text-muted">No shortlist overrides</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>CEO Selection Overrides</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Date</th>
+            <th>Vacancy</th>
+            <th>Selected Candidate</th>
+            <th>Override Reason</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for log in ceo_overrides %}
+            <tr>
+                <td class="text-muted">{{ log.timestamp|date:"d M Y" }}</td>
+                <td class="bold">{{ log.vacancy.title|truncatechars:35 }}</td>
+                <td>{{ log.metadata.selected_name|default:"—" }}</td>
+                <td>{{ log.metadata.override_reason|truncatechars:80|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4" class="text-center text-muted">No CEO overrides</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

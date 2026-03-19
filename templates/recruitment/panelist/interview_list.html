@@ -3,117 +3,117 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
-Interview Candidates
-</h4>
-<p>{{ vacancy.title }}</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+                Interview Candidates
+            </h4>
+            <p>{{ vacancy.title }}</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="card-header">
-<h6 class="mb-0">Assigned Candidates</h6>
-<p>Score candidates after interview</p>
-</div>
+            <div class="card-header">
+                <h6 class="mb-0">Assigned Candidates</h6>
+                <p>Score candidates after interview</p>
+            </div>
 
-<div class="ufaa-table-wrapper">
+            <div class="ufaa-table-wrapper">
 
-<table class="table brand-table mb-0">
+                <table class="table brand-table mb-0">
 
-<thead>
-<tr>
-<th>#</th>
-<th>ID</th>
-<th>Candidate</th>
-<th>Details</th>
-<th>Your Score</th>
-<th>Action</th>
-</tr>
-</thead>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>ID</th>
+                        <th>Candidate</th>
+                        <th>Details</th>
+                        <th>Your Score</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
 
-<tbody>
+                    <tbody>
 
-{% for app in applications %}
+                    {% for app in applications %}
 
-<tr>
+                        <tr>
 
-<td>{{ forloop.counter }}</td>
+                            <td>{{ forloop.counter }}</td>
 
-<td class="vacancy-ref-cell">
-{{ app.applicant.id_no }}
-</td>
+                            <td class="vacancy-ref-cell">
+                                {{ app.applicant.id_no }}
+                            </td>
 
-<td class="vacancy-title-cell">
-<i class="fas fa-user me-2" style="opacity:.25;font-size:.7rem;"></i>
-{{ app.applicant.name }}
-</td>
+                            <td class="vacancy-title-cell">
+                                <i class="fas fa-user me-2" style="opacity:.25;font-size:.7rem;"></i>
+                                {{ app.applicant.name }}
+                            </td>
 
-<td>
-<a href="{% url 'application_detail' app.id %}"
-class="btn-open"
-target="_blank">
+                            <td>
+                                <a href="{% url 'application_detail' app.id %}"
+                                   class="btn-open"
+                                   target="_blank">
 
-<i class="fas fa-eye me-1"></i>
-Profile
+                                    <i class="fas fa-eye me-1"></i>
+                                    Profile
 
-</a>
-</td>
+                                </a>
+                            </td>
 
-<td>
+                            <td>
 
-{% for s in app.scores.all %}
-{% if s.panelist == request.user %}
-<span class="vacancy-status vacancy-status-interviews">
+                                {% for s in app.scores.all %}
+                                    {% if s.panelist == request.user %}
+                                        <span class="vacancy-status vacancy-status-interviews">
 {{ s.score }}
 </span>
-{% endif %}
-{% endfor %}
+                                    {% endif %}
+                                {% endfor %}
 
-</td>
+                            </td>
 
-<td>
+                            <td>
 
-<a href="{% url 'panelist_score_candidate' app.id %}"
-class="btn-interviews">
+                                <a href="{% url 'panelist_score_candidate' app.id %}"
+                                   class="btn-interviews">
 
-<i class="fas fa-star me-1"></i>
-Score
+                                    <i class="fas fa-star me-1"></i>
+                                    Score
 
-</a>
+                                </a>
 
-</td>
+                            </td>
 
-</tr>
+                        </tr>
 
-{% empty %}
+                    {% empty %}
 
-<tr>
-<td colspan="6">
+                        <tr>
+                            <td colspan="6">
 
-<div class="empty-state">
-<i class="fas fa-users"></i>
-<p>No candidates assigned.</p>
-</div>
+                                <div class="empty-state">
+                                    <i class="fas fa-users"></i>
+                                    <p>No candidates assigned.</p>
+                                </div>
 
-</td>
-</tr>
+                            </td>
+                        </tr>
 
-{% endfor %}
+                    {% endfor %}
 
-</tbody>
+                    </tbody>
 
-</table>
+                </table>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

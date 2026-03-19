@@ -3,220 +3,220 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- Header -->
-    <div class="dash-header-banner mb-2">
-        <h4>
-            <i class="fas fa-user-tie me-2" style="color:var(--gold-dark);"></i>
-            Panelist Dashboard
-        </h4>
-        <p>Your assigned interview panels</p>
-    </div>
-
-    <div class="gold-divider"></div>
-
-
-    <!-- PANEL ASSIGNMENTS -->
-    <div class="card dash-card brand-card mb-3">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
-                Panel Assignments
-            </h6>
-            <p>Respond to panel invitations</p>
+        <!-- Header -->
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-user-tie me-2" style="color:var(--gold-dark);"></i>
+                Panelist Dashboard
+            </h4>
+            <p>Your assigned interview panels</p>
         </div>
 
-        <div class="card-body">
+        <div class="gold-divider"></div>
 
-            {% for assignment in assignments %}
 
-            <div class="card mb-3 p-3">
+        <!-- PANEL ASSIGNMENTS -->
+        <div class="card dash-card brand-card mb-3">
 
-                <div class="d-flex justify-content-between align-items-center">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
+                    Panel Assignments
+                </h6>
+                <p>Respond to panel invitations</p>
+            </div>
 
-                    <div>
-                        <h6 class="mb-1">{{ assignment.vacancy.title }}</h6>
+            <div class="card-body">
 
-                        <small class="text-muted">
-                            Status:
-                            <span class="status-badge">
+                {% for assignment in assignments %}
+
+                    <div class="card mb-3 p-3">
+
+                        <div class="d-flex justify-content-between align-items-center">
+
+                            <div>
+                                <h6 class="mb-1">{{ assignment.vacancy.title }}</h6>
+
+                                <small class="text-muted">
+                                    Status:
+                                    <span class="status-badge">
                                 {{ assignment.status|title }}
                             </span>
-                        </small>
-                    </div>
+                                </small>
+                            </div>
 
-                </div>
+                        </div>
 
-                {% if assignment.status == "pending" %}
+                        {% if assignment.status == "pending" %}
 
-                <form method="POST"
-                      action="{% url 'respond_panel_assignment' assignment.id %}"
-                      enctype="multipart/form-data"
-                      class="mt-3">
+                            <form method="POST"
+                                  action="{% url 'respond_panel_assignment' assignment.id %}"
+                                  enctype="multipart/form-data"
+                                  class="mt-3">
 
-                    {% csrf_token %}
+                                {% csrf_token %}
 
-                    <button name="action"
-                            value="accept"
-                            class="btn btn-brand btn-sm me-2">
+                                <button name="action"
+                                        value="accept"
+                                        class="btn btn-brand btn-sm me-2">
 
-                        <i class="fas fa-check me-1"></i>
-                        Accept
+                                    <i class="fas fa-check me-1"></i>
+                                    Accept
 
-                    </button>
+                                </button>
 
-                    <button type="button"
-                            class="btn btn-danger btn-sm"
-                            data-bs-toggle="collapse"
-                            data-bs-target="#decline{{ assignment.id }}">
+                                <button type="button"
+                                        class="btn btn-danger btn-sm"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#decline{{ assignment.id }}">
 
-                        <i class="fas fa-times me-1"></i>
-                        Decline
+                                    <i class="fas fa-times me-1"></i>
+                                    Decline
 
-                    </button>
+                                </button>
 
-                    <div id="decline{{ assignment.id }}"
-                         class="collapse mt-3">
+                                <div id="decline{{ assignment.id }}"
+                                     class="collapse mt-3">
 
                         <textarea name="reason"
                                   class="form-control mb-2"
                                   placeholder="Reason for conflict of interest"></textarea>
 
-                        <div class="mb-2">
+                                    <div class="mb-2">
 
-                            <label class="form-label">
-                                Upload Signed Declaration
-                            </label>
+                                        <label class="form-label">
+                                            Upload Signed Declaration
+                                        </label>
 
-                            <input type="file"
-                                   name="decline_document"
-                                   class="form-control">
+                                        <input type="file"
+                                               name="decline_document"
+                                               class="form-control">
 
-                        </div>
+                                    </div>
 
-                        <button name="action"
-                                value="decline"
-                                class="btn btn-danger btn-sm">
+                                    <button name="action"
+                                            value="decline"
+                                            class="btn btn-danger btn-sm">
 
-                            Confirm Decline
+                                        Confirm Decline
 
-                        </button>
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        {% endif %}
 
                     </div>
 
-                </form>
+                {% empty %}
 
-                {% endif %}
+                    <div class="empty-state text-center">
 
-            </div>
+                        <i class="fas fa-user-slash"></i>
 
-            {% empty %}
+                        <p>No pending panel assignments.</p>
 
-            <div class="empty-state text-center">
+                    </div>
 
-                <i class="fas fa-user-slash"></i>
-
-                <p>No pending panel assignments.</p>
+                {% endfor %}
 
             </div>
 
-            {% endfor %}
-
         </div>
 
-    </div>
 
+        <!-- ACTIVE INTERVIEW TASKS -->
+        <div class="card dash-card brand-card">
 
-    <!-- ACTIVE INTERVIEW TASKS -->
-    <div class="card dash-card brand-card">
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2" style="opacity:.5;"></i>
+                    Active Interview Tasks
+                </h6>
+                <p>Vacancies requiring your evaluation</p>
+            </div>
 
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-clipboard-list me-2" style="opacity:.5;"></i>
-                Active Interview Tasks
-            </h6>
-            <p>Vacancies requiring your evaluation</p>
-        </div>
+            <div class="ufaa-table-wrapper">
 
-        <div class="ufaa-table-wrapper">
+                <table class="table brand-table mb-0">
 
-            <table class="table brand-table mb-0">
-
-                <thead>
+                    <thead>
                     <tr>
                         <th>Vacancy</th>
                         <th>Reference</th>
                         <th>Status</th>
                         <th class="text-md-center">Action</th>
                     </tr>
-                </thead>
+                    </thead>
 
-                <tbody>
+                    <tbody>
 
                     {% for vacancy in vacancies %}
 
-                    <tr>
+                        <tr>
 
-                        <td>
-                            <strong>{{ vacancy.title }}</strong>
-                        </td>
+                            <td>
+                                <strong>{{ vacancy.title }}</strong>
+                            </td>
 
-                        <td>
-                            {{ vacancy.reference_number }}
-                        </td>
+                            <td>
+                                {{ vacancy.reference_number }}
+                            </td>
 
-                        <td>
+                            <td>
 
                             <span class="status-badge">
                                 {{ vacancy.status|title }}
                             </span>
 
-                        </td>
+                            </td>
 
-                        <td class="text-md-center">
+                            <td class="text-md-center">
 
-                            <a href="{% url 'panelist_interview_list' vacancy.id %}"
-                            class="btn btn-sm btn-brand">
+                                <a href="{% url 'panelist_interview_list' vacancy.id %}"
+                                   class="btn btn-sm btn-brand">
 
-                                <i class="fas fa-list-check me-1"></i>
-                                Score Candidates
+                                    <i class="fas fa-list-check me-1"></i>
+                                    Score Candidates
 
-                            </a>
+                                </a>
 
-                        </td>
+                            </td>
 
-                    </tr>
+                        </tr>
 
                     {% empty %}
 
-                    <tr>
+                        <tr>
 
-                        <td colspan="4">
+                            <td colspan="4">
 
-                            <div class="empty-state">
+                                <div class="empty-state">
 
-                                <i class="fas fa-folder-open"></i>
+                                    <i class="fas fa-folder-open"></i>
 
-                                <p>No active interview assignments.</p>
+                                    <p>No active interview assignments.</p>
 
-                            </div>
+                                </div>
 
-                        </td>
+                            </td>
 
-                    </tr>
+                        </tr>
 
                     {% endfor %}
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 {% endblock %}

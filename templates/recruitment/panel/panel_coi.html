@@ -2,350 +2,562 @@
 {% block title %}Conflict of Interest — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561; --gold:#F9E6A1; --gold-dk:#C39545;
-        --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link    { color:rgba(255,255,255,.65); font-size:.78rem;
-                display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-.coi-card {
-    background:#fff; border-radius:1rem;
-    box-shadow:0 2px 18px rgba(38,37,97,.1);
-    overflow:hidden; max-width:640px; margin:0 auto;
-}
-.coi-header {
-    background:linear-gradient(135deg,var(--amber),#d4890a);
-    padding:1.75rem 2rem 1.5rem; text-align:center; color:#fff;
-}
-.coi-icon {
-    width:60px; height:60px; border-radius:50%;
-    background:rgba(255,255,255,.2); border:2px solid rgba(255,255,255,.6);
-    display:flex; align-items:center; justify-content:center;
-    margin:0 auto .85rem; font-size:1.5rem;
-}
-.coi-title    { font-size:1rem; font-weight:800; margin-bottom:.2rem; }
-.coi-subtitle { font-size:.78rem; color:rgba(255,255,255,.8); margin:0; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* Recused / already-declared states */
-.coi-header.recused {
-    background:linear-gradient(135deg,var(--red),#a93226);
-}
-.coi-header.done {
-    background:linear-gradient(135deg,var(--green),#145e35);
-}
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.coi-body { padding:1.75rem 2rem; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-/* Choice cards */
-.choice-grid { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; margin-bottom:1.25rem; }
-@media(max-width:480px){ .choice-grid { grid-template-columns:1fr; } }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-.choice-card {
-    border:2px solid #e0e4ef; border-radius:.75rem;
-    padding:1.1rem 1rem; cursor:pointer; text-align:center;
-    transition:border-color .15s, background .15s;
-}
-.choice-card:hover { border-color:var(--navy); background:#f8f9ff; }
-.choice-card input[type=radio] { display:none; }
-.choice-card.selected-no  { border-color:var(--green); background:#f0fff6; }
-.choice-card.selected-yes { border-color:var(--red);   background:#fff5f5; }
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-.choice-icon {
-    width:44px; height:44px; border-radius:50%; margin:0 auto .65rem;
-    display:flex; align-items:center; justify-content:center;
-    font-size:1.1rem;
-}
-.ci-green { background:#d4f5e2; color:var(--green); }
-.ci-red   { background:#fde8e8; color:var(--red); }
-.choice-label { font-size:.82rem; font-weight:700; color:var(--navy); margin-bottom:.2rem; }
-.choice-desc  { font-size:.72rem; color:#8392ab; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-/* Reason box */
-.reason-box {
-    display:none;
-    background:#fff5f5; border:1.5px solid #f5c6cb;
-    border-radius:.6rem; padding:1rem; margin-bottom:1.25rem;
-}
-.reason-box.visible { display:block; }
-.reason-box label {
-    font-size:.75rem; font-weight:700; color:var(--red);
-    text-transform:uppercase; letter-spacing:.04em; display:block;
-    margin-bottom:.4rem;
-}
-.reason-box textarea {
-    width:100%; padding:.55rem .75rem;
-    border:1.5px solid #f5c6cb; border-radius:.45rem;
-    font-size:.82rem; color:#344767; resize:vertical;
-    box-sizing:border-box;
-}
-.reason-box textarea:focus { outline:none; border-color:var(--red); }
+        .coi-card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 18px rgba(38, 37, 97, .1);
+            overflow: hidden;
+            max-width: 640px;
+            margin: 0 auto;
+        }
 
-/* Error */
-.error-alert {
-    background:#fde8e8; border:1px solid #f5c6cb; border-radius:.5rem;
-    padding:.65rem 1rem; font-size:.8rem; color:var(--red);
-    display:flex; align-items:center; gap:.5rem; margin-bottom:1rem;
-}
+        .coi-header {
+            background: linear-gradient(135deg, var(--amber), #d4890a);
+            padding: 1.75rem 2rem 1.5rem;
+            text-align: center;
+            color: #fff;
+        }
 
-/* Already declared / recused banners */
-.state-banner {
-    border-radius:.65rem; padding:1.25rem 1.25rem;
-    margin-bottom:1.25rem; display:flex; gap:.85rem; align-items:flex-start;
-}
-.sb-recused { background:#fff5f5; border:1px solid #f5c6cb; }
-.sb-done    { background:#f0fff6; border:1px solid #b7dfc8; }
-.sb-icon { font-size:1.3rem; flex-shrink:0; margin-top:.1rem; }
+        .coi-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, .2);
+            border: 2px solid rgba(255, 255, 255, .6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto .85rem;
+            font-size: 1.5rem;
+        }
 
-.btn-submit {
-    width:100%; padding:.75rem; border:none; border-radius:.6rem;
-    font-size:.88rem; font-weight:700; cursor:pointer;
-    display:flex; align-items:center; justify-content:center; gap:.5rem;
-    transition:opacity .15s;
-}
-.btn-submit:hover    { opacity:.9; }
-.btn-submit:disabled { opacity:.5; cursor:not-allowed; }
-.btn-navy  { background:var(--navy); color:#fff; }
-.btn-muted { background:#f0f2f8; color:#8392ab; pointer-events:none; }
+        .coi-title {
+            font-size: 1rem;
+            font-weight: 800;
+            margin-bottom: .2rem;
+        }
 
-.steps-row {
-    display:flex; gap:.5rem; margin-bottom:1.25rem; flex-wrap:wrap;
-}
-.step-pill {
-    flex:1; min-width:100px; text-align:center; padding:.55rem .5rem;
-    border-radius:.5rem; font-size:.7rem; font-weight:700;
-    background:#f0f2f8; color:#8392ab;
-}
-.step-pill.active { background:var(--amber); color:#fff; }
-.step-pill.done   { background:#d4f5e2; color:#1a5c38; }
-.step-num { display:block; font-size:.62rem; font-weight:800; opacity:.6; margin-bottom:.1rem; }
-</style>
+        .coi-subtitle {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .8);
+            margin: 0;
+        }
+
+        /* Recused / already-declared states */
+        .coi-header.recused {
+            background: linear-gradient(135deg, var(--red), #a93226);
+        }
+
+        .coi-header.done {
+            background: linear-gradient(135deg, var(--green), #145e35);
+        }
+
+        .coi-body {
+            padding: 1.75rem 2rem;
+        }
+
+        /* Choice cards */
+        .choice-grid {
+            display: grid;
+            grid-template-columns:1fr 1fr;
+            gap: .75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        @media (max-width: 480px) {
+            .choice-grid {
+                grid-template-columns:1fr;
+            }
+        }
+
+        .choice-card {
+            border: 2px solid #e0e4ef;
+            border-radius: .75rem;
+            padding: 1.1rem 1rem;
+            cursor: pointer;
+            text-align: center;
+            transition: border-color .15s, background .15s;
+        }
+
+        .choice-card:hover {
+            border-color: var(--navy);
+            background: #f8f9ff;
+        }
+
+        .choice-card input[type=radio] {
+            display: none;
+        }
+
+        .choice-card.selected-no {
+            border-color: var(--green);
+            background: #f0fff6;
+        }
+
+        .choice-card.selected-yes {
+            border-color: var(--red);
+            background: #fff5f5;
+        }
+
+        .choice-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            margin: 0 auto .65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+        }
+
+        .ci-green {
+            background: #d4f5e2;
+            color: var(--green);
+        }
+
+        .ci-red {
+            background: #fde8e8;
+            color: var(--red);
+        }
+
+        .choice-label {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: .2rem;
+        }
+
+        .choice-desc {
+            font-size: .72rem;
+            color: #8392ab;
+        }
+
+        /* Reason box */
+        .reason-box {
+            display: none;
+            background: #fff5f5;
+            border: 1.5px solid #f5c6cb;
+            border-radius: .6rem;
+            padding: 1rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .reason-box.visible {
+            display: block;
+        }
+
+        .reason-box label {
+            font-size: .75rem;
+            font-weight: 700;
+            color: var(--red);
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            display: block;
+            margin-bottom: .4rem;
+        }
+
+        .reason-box textarea {
+            width: 100%;
+            padding: .55rem .75rem;
+            border: 1.5px solid #f5c6cb;
+            border-radius: .45rem;
+            font-size: .82rem;
+            color: #344767;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+
+        .reason-box textarea:focus {
+            outline: none;
+            border-color: var(--red);
+        }
+
+        /* Error */
+        .error-alert {
+            background: #fde8e8;
+            border: 1px solid #f5c6cb;
+            border-radius: .5rem;
+            padding: .65rem 1rem;
+            font-size: .8rem;
+            color: var(--red);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Already declared / recused banners */
+        .state-banner {
+            border-radius: .65rem;
+            padding: 1.25rem 1.25rem;
+            margin-bottom: 1.25rem;
+            display: flex;
+            gap: .85rem;
+            align-items: flex-start;
+        }
+
+        .sb-recused {
+            background: #fff5f5;
+            border: 1px solid #f5c6cb;
+        }
+
+        .sb-done {
+            background: #f0fff6;
+            border: 1px solid #b7dfc8;
+        }
+
+        .sb-icon {
+            font-size: 1.3rem;
+            flex-shrink: 0;
+            margin-top: .1rem;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: .75rem;
+            border: none;
+            border-radius: .6rem;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            transition: opacity .15s;
+        }
+
+        .btn-submit:hover {
+            opacity: .9;
+        }
+
+        .btn-submit:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .btn-navy {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+            pointer-events: none;
+        }
+
+        .steps-row {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.25rem;
+            flex-wrap: wrap;
+        }
+
+        .step-pill {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            padding: .55rem .5rem;
+            border-radius: .5rem;
+            font-size: .7rem;
+            font-weight: 700;
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .step-pill.active {
+            background: var(--amber);
+            color: #fff;
+        }
+
+        .step-pill.done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .step-num {
+            display: block;
+            font-size: .62rem;
+            font-weight: 800;
+            opacity: .6;
+            margin-bottom: .1rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-shield-alt me-2"></i>Conflict of Interest
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-shield-alt me-2"></i>Conflict of Interest
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'panel_dashboard' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'panel_dashboard' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Dashboard
-            </a>
-        </div>
-    </div>
 
-    <!-- Steps -->
-    {% if not already_declared and not just_recused %}
-    <div class="steps-row" style="max-width:640px;margin:0 auto 1.25rem;">
-        <div class="step-pill done">
-            <span class="step-num">STEP 1</span>
-            Acknowledge
-        </div>
-        <div class="step-pill active">
-            <span class="step-num">STEP 2</span>
-            Declare COI
-        </div>
-        <div class="step-pill">
-            <span class="step-num">STEP 3</span>
-            Score
-        </div>
-    </div>
-    {% endif %}
+        <!-- Steps -->
+        {% if not already_declared and not just_recused %}
+            <div class="steps-row" style="max-width:640px;margin:0 auto 1.25rem;">
+                <div class="step-pill done">
+                    <span class="step-num">STEP 1</span>
+                    Acknowledge
+                </div>
+                <div class="step-pill active">
+                    <span class="step-num">STEP 2</span>
+                    Declare COI
+                </div>
+                <div class="step-pill">
+                    <span class="step-num">STEP 3</span>
+                    Score
+                </div>
+            </div>
+        {% endif %}
 
-    <div class="coi-card">
+        <div class="coi-card">
 
-        <!-- ── ALREADY RECUSED ── -->
-        {% if already_declared and entry.has_conflict %}
-        <div class="coi-header recused">
-            <div class="coi-icon"><i class="fas fa-ban"></i></div>
-            <p class="coi-title">You have been recused from this panel</p>
-            <p class="coi-subtitle">Your conflict of interest has been declared and HR has been notified</p>
-        </div>
-        <div class="coi-body">
-            <div class="state-banner sb-recused">
+            <!-- ── ALREADY RECUSED ── -->
+            {% if already_declared and entry.has_conflict %}
+                <div class="coi-header recused">
+                    <div class="coi-icon"><i class="fas fa-ban"></i></div>
+                    <p class="coi-title">You have been recused from this panel</p>
+                    <p class="coi-subtitle">Your conflict of interest has been declared and HR has been notified</p>
+                </div>
+                <div class="coi-body">
+                    <div class="state-banner sb-recused">
                 <span class="sb-icon" style="color:var(--red);">
                     <i class="fas fa-exclamation-circle"></i>
                 </span>
-                <div>
-                    <p style="font-size:.82rem;font-weight:700;color:var(--red);margin:0 0 .3rem;">
-                        Conflict declared
-                    </p>
-                    <p style="font-size:.78rem;color:#67748e;margin:0;">
-                        <strong>Reason:</strong> {{ entry.conflict_reason }}
-                    </p>
-                    <p style="font-size:.72rem;color:#adb5bd;margin:.4rem 0 0;">
-                        Declared {{ entry.conflict_declared_at|date:"d M Y, H:i" }}
+                        <div>
+                            <p style="font-size:.82rem;font-weight:700;color:var(--red);margin:0 0 .3rem;">
+                                Conflict declared
+                            </p>
+                            <p style="font-size:.78rem;color:#67748e;margin:0;">
+                                <strong>Reason:</strong> {{ entry.conflict_reason }}
+                            </p>
+                            <p style="font-size:.72rem;color:#adb5bd;margin:.4rem 0 0;">
+                                Declared {{ entry.conflict_declared_at|date:"d M Y, H:i" }}
+                            </p>
+                        </div>
+                    </div>
+                    <p style="font-size:.8rem;color:#67748e;text-align:center;margin:0;">
+                        You will not score candidates for this vacancy.
+                        Please contact HR if you believe this was made in error.
                     </p>
                 </div>
-            </div>
-            <p style="font-size:.8rem;color:#67748e;text-align:center;margin:0;">
-                You will not score candidates for this vacancy.
-                Please contact HR if you believe this was made in error.
-            </p>
-        </div>
 
-        <!-- ── JUST SUBMITTED — RECUSED ── -->
-        {% elif just_recused %}
-        <div class="coi-header recused">
-            <div class="coi-icon"><i class="fas fa-ban"></i></div>
-            <p class="coi-title">Conflict declared — you have been recused</p>
-            <p class="coi-subtitle">HR has been notified of your conflict of interest</p>
-        </div>
-        <div class="coi-body">
-            <div class="state-banner sb-recused">
+                <!-- ── JUST SUBMITTED — RECUSED ── -->
+            {% elif just_recused %}
+                <div class="coi-header recused">
+                    <div class="coi-icon"><i class="fas fa-ban"></i></div>
+                    <p class="coi-title">Conflict declared — you have been recused</p>
+                    <p class="coi-subtitle">HR has been notified of your conflict of interest</p>
+                </div>
+                <div class="coi-body">
+                    <div class="state-banner sb-recused">
                 <span class="sb-icon" style="color:var(--red);">
                     <i class="fas fa-info-circle"></i>
                 </span>
-                <div>
-                    <p style="font-size:.82rem;color:#67748e;margin:0;">
-                        Thank you for your transparency. HR has been notified and will review
-                        the panel composition. You will not be required to score candidates
-                        for <strong>{{ vacancy.title }}</strong>.
-                    </p>
-                </div>
-            </div>
-            <a href="{% url 'panel_dashboard' %}"
-               style="display:flex;align-items:center;justify-content:center;gap:.5rem;
+                        <div>
+                            <p style="font-size:.82rem;color:#67748e;margin:0;">
+                                Thank you for your transparency. HR has been notified and will review
+                                the panel composition. You will not be required to score candidates
+                                for <strong>{{ vacancy.title }}</strong>.
+                            </p>
+                        </div>
+                    </div>
+                    <a href="{% url 'panel_dashboard' %}"
+                       style="display:flex;align-items:center;justify-content:center;gap:.5rem;
                       background:#f0f2f8;color:#67748e;border-radius:.6rem;
                       padding:.65rem;font-size:.82rem;font-weight:600;">
-                <i class="fas fa-arrow-left"></i> Back to Dashboard
-            </a>
-        </div>
+                        <i class="fas fa-arrow-left"></i> Back to Dashboard
+                    </a>
+                </div>
 
-        <!-- ── DECLARATION FORM ── -->
-        {% else %}
-        <div class="coi-header">
-            <div class="coi-icon"><i class="fas fa-balance-scale"></i></div>
-            <p class="coi-title">Conflict of Interest Declaration</p>
-            <p class="coi-subtitle">You must complete this before you can score candidates</p>
-        </div>
+                <!-- ── DECLARATION FORM ── -->
+            {% else %}
+                <div class="coi-header">
+                    <div class="coi-icon"><i class="fas fa-balance-scale"></i></div>
+                    <p class="coi-title">Conflict of Interest Declaration</p>
+                    <p class="coi-subtitle">You must complete this before you can score candidates</p>
+                </div>
 
-        <div class="coi-body">
-            {% if error %}
-            <div class="error-alert">
-                <i class="fas fa-exclamation-circle"></i> {{ error }}
-            </div>
+                <div class="coi-body">
+                    {% if error %}
+                        <div class="error-alert">
+                            <i class="fas fa-exclamation-circle"></i> {{ error }}
+                        </div>
+                    {% endif %}
+
+                    <p style="font-size:.82rem;color:#67748e;margin-bottom:1.25rem;">
+                        Do you have a personal, financial, or professional relationship with any of the
+                        candidates shortlisted for <strong>{{ vacancy.title }}</strong> that could
+                        influence your impartiality?
+                    </p>
+
+                    <form method="post"
+                          action="{% url 'panel_declare_coi' vacancy.id %}">
+                        {% csrf_token %}
+
+                        <div class="choice-grid">
+                            <!-- No conflict -->
+                            <label class="choice-card
+                                    {% if not decision_pre or decision_pre == 'no_conflict' and error %}{% endif %}"
+                                   id="card-no" onclick="selectDecision('no_conflict', this)">
+                                <input type="radio" name="decision" value="no_conflict"
+                                       {% if decision_pre == 'no_conflict' %}checked{% endif %}>
+                                <div class="choice-icon ci-green">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="choice-label">No Conflict</div>
+                                <div class="choice-desc">
+                                    I have no conflict of interest and can score objectively.
+                                </div>
+                            </label>
+
+                            <!-- Has conflict -->
+                            <label class="choice-card" id="card-yes"
+                                   onclick="selectDecision('has_conflict', this)">
+                                <input type="radio" name="decision" value="has_conflict"
+                                       {% if decision_pre == 'has_conflict' %}checked{% endif %}>
+                                <div class="choice-icon ci-red">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="choice-label">I Have a Conflict</div>
+                                <div class="choice-desc">
+                                    I have a relationship that may affect my impartiality.
+                                </div>
+                            </label>
+                        </div>
+
+                        <!-- Reason (shown only when conflict selected) -->
+                        <div class="reason-box {% if decision_pre == 'has_conflict' %}visible{% endif %}"
+                             id="reasonBox">
+                            <label for="conflictReason">
+                                <i class="fas fa-pencil-alt me-1"></i>
+                                Describe your conflict of interest *
+                            </label>
+                            <textarea id="conflictReason" name="conflict_reason"
+                                      rows="4"
+                                      placeholder="e.g. The applicant John Doe is my direct relative / former business partner…">{{ request.POST.conflict_reason|default:'' }}</textarea>
+                        </div>
+
+                        <button type="submit" class="btn-submit btn-navy">
+                            <i class="fas fa-paper-plane"></i> Submit Declaration
+                        </button>
+                    </form>
+
+                    <p style="text-align:center;font-size:.72rem;color:#adb5bd;margin-top:.85rem;margin-bottom:0;">
+                        <i class="fas fa-lock me-1"></i>
+                        Your declaration is confidential and recorded for audit purposes.
+                    </p>
+                </div>
             {% endif %}
 
-            <p style="font-size:.82rem;color:#67748e;margin-bottom:1.25rem;">
-                Do you have a personal, financial, or professional relationship with any of the
-                candidates shortlisted for <strong>{{ vacancy.title }}</strong> that could
-                influence your impartiality?
-            </p>
-
-            <form method="post"
-                  action="{% url 'panel_declare_coi' vacancy.id %}">
-                {% csrf_token %}
-
-                <div class="choice-grid">
-                    <!-- No conflict -->
-                    <label class="choice-card {% if not decision_pre or decision_pre == 'no_conflict' and error %}{% endif %}"
-                           id="card-no" onclick="selectDecision('no_conflict', this)">
-                        <input type="radio" name="decision" value="no_conflict"
-                               {% if decision_pre == 'no_conflict' %}checked{% endif %}>
-                        <div class="choice-icon ci-green">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="choice-label">No Conflict</div>
-                        <div class="choice-desc">
-                            I have no conflict of interest and can score objectively.
-                        </div>
-                    </label>
-
-                    <!-- Has conflict -->
-                    <label class="choice-card" id="card-yes"
-                           onclick="selectDecision('has_conflict', this)">
-                        <input type="radio" name="decision" value="has_conflict"
-                               {% if decision_pre == 'has_conflict' %}checked{% endif %}>
-                        <div class="choice-icon ci-red">
-                            <i class="fas fa-exclamation-triangle"></i>
-                        </div>
-                        <div class="choice-label">I Have a Conflict</div>
-                        <div class="choice-desc">
-                            I have a relationship that may affect my impartiality.
-                        </div>
-                    </label>
-                </div>
-
-                <!-- Reason (shown only when conflict selected) -->
-                <div class="reason-box {% if decision_pre == 'has_conflict' %}visible{% endif %}"
-                     id="reasonBox">
-                    <label for="conflictReason">
-                        <i class="fas fa-pencil-alt me-1"></i>
-                        Describe your conflict of interest *
-                    </label>
-                    <textarea id="conflictReason" name="conflict_reason"
-                              rows="4"
-                              placeholder="e.g. The applicant John Doe is my direct relative / former business partner…">{{ request.POST.conflict_reason|default:'' }}</textarea>
-                </div>
-
-                <button type="submit" class="btn-submit btn-navy">
-                    <i class="fas fa-paper-plane"></i> Submit Declaration
-                </button>
-            </form>
-
-            <p style="text-align:center;font-size:.72rem;color:#adb5bd;margin-top:.85rem;margin-bottom:0;">
-                <i class="fas fa-lock me-1"></i>
-                Your declaration is confidential and recorded for audit purposes.
-            </p>
-        </div>
-        {% endif %}
-
-    </div><!-- /coi-card -->
-</div>
+        </div><!-- /coi-card -->
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// Pre-select card if decision_pre is set from a POST validation error
-(function(){
-    const pre = '{{ decision_pre|default:"" }}';
-    if (pre === 'no_conflict')  markCard('no_conflict');
-    if (pre === 'has_conflict') markCard('has_conflict');
-})();
+    <script>
+        // Pre-select card if decision_pre is set from a POST validation error
+        (function () {
+            const pre = '{{ decision_pre|default:"" }}';
+            if (pre === 'no_conflict') markCard('no_conflict');
+            if (pre === 'has_conflict') markCard('has_conflict');
+        })();
 
-function selectDecision(val, label) {
-    markCard(val);
-}
+        function selectDecision(val, label) {
+            markCard(val);
+        }
 
-function markCard(val) {
-    const cardNo  = document.getElementById('card-no');
-    const cardYes = document.getElementById('card-yes');
-    const box     = document.getElementById('reasonBox');
+        function markCard(val) {
+            const cardNo = document.getElementById('card-no');
+            const cardYes = document.getElementById('card-yes');
+            const box = document.getElementById('reasonBox');
 
-    if (!cardNo) return;
+            if (!cardNo) return;
 
-    cardNo.classList.remove('selected-no','selected-yes');
-    cardYes.classList.remove('selected-no','selected-yes');
+            cardNo.classList.remove('selected-no', 'selected-yes');
+            cardYes.classList.remove('selected-no', 'selected-yes');
 
-    if (val === 'no_conflict') {
-        cardNo.classList.add('selected-no');
-        cardNo.querySelector('input').checked = true;
-        if (box) box.classList.remove('visible');
-    } else {
-        cardYes.classList.add('selected-yes');
-        cardYes.querySelector('input').checked = true;
-        if (box) box.classList.add('visible');
-    }
-}
-</script>
+            if (val === 'no_conflict') {
+                cardNo.classList.add('selected-no');
+                cardNo.querySelector('input').checked = true;
+                if (box) box.classList.remove('visible');
+            } else {
+                cardYes.classList.add('selected-yes');
+                cardYes.querySelector('input').checked = true;
+                if (box) box.classList.add('visible');
+            }
+        }
+    </script>
 {% endblock %}

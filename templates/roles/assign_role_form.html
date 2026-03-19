@@ -3,87 +3,87 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-user-tag me-2" style="color:var(--gold-dark);"></i>
-Assign Roles
-</h4>
-<p>{{ user.first_name }} {{ user.last_name }}</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-user-tag me-2" style="color:var(--gold-dark);"></i>
+                Assign Roles
+            </h4>
+            <p>{{ user.first_name }} {{ user.last_name }}</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="row justify-content-center">
-<div class="col-lg-6">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
 
-<div class="card dash-card brand-card">
+                <div class="card dash-card brand-card">
 
-<div class="card-body">
+                    <div class="card-body">
 
-<form method="post">
-{% csrf_token %}
+                        <form method="post">
+                            {% csrf_token %}
 
-<label class="form-label fw-semibold mb-3">
-Select Roles
-</label>
+                            <label class="form-label fw-semibold mb-3">
+                                Select Roles
+                            </label>
 
-<div class="row">
+                            <div class="row">
 
-{% for role in roles %}
+                                {% for role in roles %}
 
-<div class="col-md-6 mb-3">
+                                    <div class="col-md-6 mb-3">
 
-<label class="list-group-item d-flex align-items-center">
+                                        <label class="list-group-item d-flex align-items-center">
 
-<input
-type="checkbox"
-name="role"
-value="{{ role.id }}"
-class="form-check-input me-2"
-id="role_{{ role.id }}"
-{% if role.id in assigned_role_ids %}checked{% endif %}
->
+                                            <input
+                                                    type="checkbox"
+                                                    name="role"
+                                                    value="{{ role.id }}"
+                                                    class="form-check-input me-2"
+                                                    id="role_{{ role.id }}"
+                                                    {% if role.id in assigned_role_ids %}checked{% endif %}
+                                            >
 
-<i class="fas fa-user-shield me-2" style="opacity:.3;"></i>
+                                            <i class="fas fa-user-shield me-2" style="opacity:.3;"></i>
 
-{{ role.name }}
+                                            {{ role.name }}
 
-</label>
+                                        </label>
 
-</div>
+                                    </div>
 
-{% empty %}
+                                {% empty %}
 
-<p class="text-muted">No roles available.</p>
+                                    <p class="text-muted">No roles available.</p>
 
-{% endfor %}
+                                {% endfor %}
 
-</div>
+                            </div>
 
-<div class="mt-3">
+                            <div class="mt-3">
 
-<button type="submit" class="btn btn-brand">
-<i class="fas fa-save me-1"></i>
-Save Roles
-</button>
+                                <button type="submit" class="btn btn-brand">
+                                    <i class="fas fa-save me-1"></i>
+                                    Save Roles
+                                </button>
 
-<a href="{% url 'user_list' %}" class="btn btn-outline-brand">
-Cancel
-</a>
+                                <a href="{% url 'user_list' %}" class="btn btn-outline-brand">
+                                    Cancel
+                                </a>
 
-</div>
+                            </div>
 
-</form>
+                        </form>
 
-</div>
+                    </div>
 
-</div>
+                </div>
 
-</div>
-</div>
+            </div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

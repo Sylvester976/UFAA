@@ -1,0 +1,212 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}CEO Reports{% endblock %}
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .18);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+
+        .section-label {
+            font-size: .72rem;
+            font-weight: 800;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin: 1.1rem 0 .6rem;
+        }
+
+        .report-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .07);
+            padding: 1rem 1.2rem;
+            height: 100%;
+            transition: transform .2s, box-shadow .2s;
+            border: 1.5px solid transparent;
+        }
+
+        .report-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(38, 37, 97, .13);
+            border-color: rgba(38, 37, 97, .1);
+        }
+
+        .report-code {
+            display: inline-block;
+            background: var(--navy);
+            color: var(--gold);
+            font-size: .65rem;
+            font-weight: 800;
+            padding: .2rem .6rem;
+            border-radius: .35rem;
+            letter-spacing: .05em;
+            margin-bottom: .5rem;
+        }
+
+        .report-title {
+            font-size: .85rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: .25rem;
+        }
+
+        .report-desc {
+            font-size: .75rem;
+            color: #8392ab;
+            margin-bottom: .75rem;
+            line-height: 1.4;
+        }
+
+        .report-actions {
+            display: flex;
+            gap: .4rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-pdf {
+            background: var(--navy);
+            color: var(--gold) !important;
+            font-size: .68rem;
+            font-weight: 700;
+            padding: .28rem .75rem;
+            border-radius: .4rem;
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .btn-pdf:hover {
+            opacity: .85;
+        }
+
+        .vacancy-select {
+            width: 100%;
+            font-size: .78rem;
+            padding: .35rem .65rem;
+            border: 1.5px solid #e0e4ef;
+            border-radius: .5rem;
+            color: #344767;
+            margin-bottom: .65rem;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="banner-title mb-0"><i class="fas fa-file-alt me-2" style="color:var(--gold-dk);"></i>CEO
+                        Reports</p>
+                    <p class="banner-sub mb-0">Selection decisions and candidate rankings</p>
+                </div>
+                <a href="{% url 'analytics:ceo_analytics' %}"
+                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:.5rem;font-size:.75rem;font-weight:700;padding:.4rem 1rem;display:inline-flex;align-items:center;gap:.4rem;">
+                    <i class="fas fa-chart-pie"></i> Analytics
+                </a>
+            </div>
+        </div>
+        <div class="gold-divider"></div>
+
+        <div class="section-label">System-wide</div>
+        <div class="row g-3 mb-3">
+            <div class="col-md-4">
+                <div class="report-card">
+                    <span class="report-code">R12</span>
+                    <div class="report-title">CEO Decision Log</div>
+                    <div class="report-desc">All CEO selections across every vacancy with override details.</div>
+                    <div class="report-actions">
+                        <a href="{% url 'analytics:report_r12' %}" class="btn-pdf"><i class="fas fa-file-pdf"></i>
+                            PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-label">Per-Vacancy — Select a Vacancy</div>
+        <select class="vacancy-select" id="vacancySelect">
+            <option value="">— Select vacancy —</option>
+            {% for v in vacancies %}
+                <option value="{{ v.id }}">{{ v.reference_number }} — {{ v.title }}</option>
+            {% endfor %}
+        </select>
+
+        <div class="row g-3" id="vacancyReports" style="display:none;">
+            <div class="col-md-4">
+                <div class="report-card">
+                    <span class="report-code">R13</span>
+                    <div class="report-title">Top Candidates</div>
+                    <div class="report-desc">HR-submitted candidates with interview scores and rankings.</div>
+                    <div class="report-actions">
+                        <a href="#" class="btn-pdf vacancy-link" data-url="{% url 'analytics:report_r13' 0 %}"><i
+                                class="fas fa-file-pdf"></i> PDF</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+{% block extra_js %}
+    <script>
+        document.getElementById('vacancySelect').addEventListener('change', function () {
+            const id = this.value;
+            const panel = document.getElementById('vacancyReports');
+            if (!id) {
+                panel.style.display = 'none';
+                return;
+            }
+            panel.style.display = '';
+            document.querySelectorAll('.vacancy-link').forEach(a => {
+                a.href = a.dataset.url.replace('/0/', `/${id}/`);
+            });
+        });
+    </script>
+{% endblock %}

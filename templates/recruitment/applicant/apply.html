@@ -2,31 +2,31 @@
 {% load static %}
 
 {% block content %}
-<h2>Apply for {{ vacancy.title }}</h2>
+    <h2>Apply for {{ vacancy.title }}</h2>
 
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
 
-    <div>
-        <label for="cv">Upload CV (PDF only):</label><br>
-        <input type="file" name="cv" id="cv" accept=".pdf" required>
-    </div>
+        <div>
+            <label for="cv">Upload CV (PDF only):</label><br>
+            <input type="file" name="cv" id="cv" accept=".pdf" required>
+        </div>
 
-    <div>
-        <label for="cover_letter">Cover letter</label><br>
-        <textarea name="cover_letter" id="cover_letter" rows="6" required></textarea>
-    </div>
+        <div>
+            <label for="cover_letter">Cover letter</label><br>
+            <textarea name="cover_letter" id="cover_letter" rows="6" required></textarea>
+        </div>
 
-    <button style="background-color: #C39545; border-color: #C39545;" type="submit">Submit Application</button>
-</form>
+        <button style="background-color: #C39545; border-color: #C39545;" type="submit">Submit Application</button>
+    </form>
 
-{% if messages %}
-<ul>
-    {% for message in messages %}
-    <li>{{ message }}</li>
-    {% endfor %}
-</ul>
-{% endif %}
+    {% if messages %}
+        <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 
 
 {% endblock %}

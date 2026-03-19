@@ -26,6 +26,7 @@ urlpatterns = [
     path("", include("accounts.urls")),
     path("recruitment/", include("recruitment.urls")),
     path("roles/", include("roles.urls")),
+    path('recruitment/analytics/', include('analytics.urls')),
 ]
 
 if settings.DEBUG:

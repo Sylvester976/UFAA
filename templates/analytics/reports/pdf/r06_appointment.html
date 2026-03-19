@@ -1,0 +1,168 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <h2>Appointed Candidate Profile</h2>
+
+    <div class="profile-grid">
+        <div class="profile-item">
+            <div class="pi-label">Application No.</div>
+            <div class="pi-value monospace">{{ winner.application_number }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Full Name</div>
+            <div class="pi-value">{{ basic.salutation }} {{ basic.first_name }} {{ basic.other_names }} {{ basic.surname }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">ID No.</div>
+            <div class="pi-value monospace">{{ basic.id_no|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Date of Birth</div>
+            <div class="pi-value">{{ basic.date_of_birth|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Gender</div>
+            <div class="pi-value">{{ basic.gender|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Nationality</div>
+            <div class="pi-value">{{ basic.nationality|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Home County</div>
+            <div class="pi-value">{{ basic.home_county|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Phone</div>
+            <div class="pi-value">{{ basic.phone_number|default:"—" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Email</div>
+            <div class="pi-value">{{ winner.user.email }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">PWD</div>
+            <div class="pi-value">{{ basic.disability_status|default:"None" }}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Interview Rank</div>
+            <div class="pi-value">
+                {% if result %}{{ result.rank }} ({{ result.percentage }}%){% else %}—{% endif %}</div>
+        </div>
+        <div class="profile-item">
+            <div class="pi-label">Status</div>
+            <div class="pi-value"><span class="badge badge-green">Appointed</span></div>
+        </div>
+    </div>
+
+    {% if academic %}
+        <h2>Academic Qualifications</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Institution</th>
+                <th>Qualification</th>
+                <th>Level</th>
+                <th>Year</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for q in academic %}
+                <tr>
+                    <td class="bold">{{ q.institution_name|default:"—" }}</td>
+                    <td>{{ q.award_name|default:"—" }}</td>
+                    <td>{{ q.education_level|default:"—" }}</td>
+                    <td>{{ q.year_completed|default:"—" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if professional %}
+        <h2>Professional Qualifications</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Institution</th>
+                <th>Award</th>
+                <th>Year</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for q in professional %}
+                <tr>
+                    <td class="bold">{{ q.institution_name|default:"—" }}</td>
+                    <td>{{ q.award_name|default:"—" }}</td>
+                    <td>{{ q.year_completed|default:"—" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if work %}
+        <h2>Work History</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Employer</th>
+                <th>Position</th>
+                <th>From</th>
+                <th>To</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for w in work %}
+                <tr>
+                    <td class="bold">{{ w.employer_name|default:"—" }}</td>
+                    <td>{{ w.job_title|default:"—" }}</td>
+                    <td>{{ w.start_date|default:"—" }}</td>
+                    <td>{{ w.end_date|default:"Present" }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {% if referees %}
+        <h2>Referees</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Organisation</th>
+                <th>Position</th>
+                <th>Contact</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for r in referees %}
+                <tr>
+                    <td>{% if r.organization %}{{ r.organization }}{% else %}—{% endif %}</td>
+                    <td>{% if r.designation %}{{ r.designation }}{% else %}—{% endif %}</td>
+                    <td>{% if r.mobile %}{{ r.mobile }}{% elif r.email %}{{ r.email }}{% else %}—{% endif %}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% endif %}
+
+    {# TODO: Signature block format to be confirmed by client #}
+{% endblock %}
+{% block signature %}
+    <div class="signature-block no-page-break">
+        <div class="sig-item">
+            <div class="sig-line"></div>
+            <div class="sig-label">HR Officer &amp; Date</div>
+        </div>
+        <div class="sig-item">
+            <div class="sig-line"></div>
+            <div class="sig-label">Head of HR &amp; Date</div>
+        </div>
+        <div class="sig-item">
+            <div class="sig-line"></div>
+            <div class="sig-label">CEO &amp; Date</div>
+        </div>
+    </div>
+{% endblock %}

@@ -3,58 +3,58 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-user-plus me-2" style="color:var(--gold-dark);"></i>
-{% if user_obj %}Edit User{% else %}Create Internal User{% endif %}
-</h4>
-<p>Manage internal system users</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-user-plus me-2" style="color:var(--gold-dark);"></i>
+                {% if user_obj %}Edit User{% else %}Create Internal User{% endif %}
+            </h4>
+            <p>Manage internal system users</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="row justify-content-center">
-<div class="col-lg-6">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
 
-<div class="card dash-card brand-card">
+                <div class="card dash-card brand-card">
 
-<div class="card-body">
+                    <div class="card-body">
 
-<form method="POST">
-{% csrf_token %}
+                        <form method="POST">
+                            {% csrf_token %}
 
-<div class="mb-3">
-<label>Email (Ensure the email is valid to receive password setup via email)</label>
-<input type="email"
-       name="email"
-       class="form-control"
-       required
-       value="{{ user_obj.email|default_if_none:'' }}">
-</div>
+                            <div class="mb-3">
+                                <label>Email (Ensure the email is valid to receive password setup via email)</label>
+                                <input type="email"
+                                       name="email"
+                                       class="form-control"
+                                       required
+                                       value="{{ user_obj.email|default_if_none:'' }}">
+                            </div>
 
-<div class="row">
+                            <div class="row">
 
-<div class="col-md-6 mb-3">
-<label>First Name</label>
-<input type="text"
-       name="first_name"
-       class="form-control"
-       value="{{ user_obj.first_name|default_if_none:'' }}">
-</div>
+                                <div class="col-md-6 mb-3">
+                                    <label>First Name</label>
+                                    <input type="text"
+                                           name="first_name"
+                                           class="form-control"
+                                           value="{{ user_obj.first_name|default_if_none:'' }}">
+                                </div>
 
-<div class="col-md-6 mb-3">
-<label>Last Name</label>
-<input type="text"
-       name="last_name"
-       class="form-control"
-       value="{{ user_obj.last_name|default_if_none:'' }}">
-</div>
+                                <div class="col-md-6 mb-3">
+                                    <label>Last Name</label>
+                                    <input type="text"
+                                           name="last_name"
+                                           class="form-control"
+                                           value="{{ user_obj.last_name|default_if_none:'' }}">
+                                </div>
 
-</div>
+                            </div>
 
-{% comment %} <div class="mb-3">
+                            {% comment %} <div class="mb-3">
 <label>Password (For new accounts leave blank user will receive password setup via email)</label>
 <input type="password"
        name="password"
@@ -62,24 +62,24 @@
        required>
 </div> {% endcomment %}
 
-<button type="submit" class="btn btn-brand">
-<i class="fas fa-save me-1"></i>
-Save User
-</button>
+                            <button type="submit" class="btn btn-brand">
+                                <i class="fas fa-save me-1"></i>
+                                Save User
+                            </button>
 
-<a href="{% url 'user_list' %}" class="btn btn-outline-brand">
-Cancel
-</a>
+                            <a href="{% url 'user_list' %}" class="btn btn-outline-brand">
+                                Cancel
+                            </a>
 
-</form>
+                        </form>
 
-</div>
+                    </div>
 
-</div>
+                </div>
 
-</div>
-</div>
+            </div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

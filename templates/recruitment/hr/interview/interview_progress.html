@@ -2,330 +2,529 @@
 {% block title %}Interview Progress — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root {
-    --navy:#262561; --navy-lt:#1a1f5c;
-    --gold:#F9E6A1; --gold-dk:#C39545;
-    --green:#1a7a45; --red:#c0392b; --amber:#b7770d;
-}
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #1a1f5c;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-lt) 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link    { color:rgba(255,255,255,.65); font-size:.78rem;
-                display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-/* ── Summary stat cards ── */
-.stat-card {
-    background:#fff; border-radius:.85rem;
-    box-shadow:0 2px 10px rgba(38,37,97,.07);
-    padding:.9rem 1.1rem; text-align:center; flex:1; min-width:130px;
-}
-.stat-val   { font-size:1.4rem; font-weight:900; color:var(--navy); }
-.stat-label { font-size:.7rem; color:#8392ab; margin-top:.1rem; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* ── Section card ── */
-.section-card {
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-    overflow:hidden; margin-bottom:1.25rem;
-}
-.section-header {
-    padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.5rem;
-}
-.section-title {
-    font-size:.82rem; font-weight:800; color:var(--navy);
-    display:flex; align-items:center; gap:.5rem; margin:0;
-}
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-/* ── Panel member rows ── */
-.member-row {
-    display:flex; align-items:center; gap:1rem;
-    padding:.75rem 1.25rem; border-bottom:1px solid #f7f8fc;
-    flex-wrap:wrap;
-}
-.member-row:last-child { border-bottom:none; }
-.m-avatar {
-    width:34px; height:34px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg,var(--navy),#4f46e5);
-    color:var(--gold); font-size:.72rem; font-weight:800;
-    display:flex; align-items:center; justify-content:center;
-}
-.m-avatar.recused { background:linear-gradient(135deg,#9ca3af,#6b7280); }
-.m-name  { font-size:.82rem; font-weight:700; color:var(--navy); }
-.m-email { font-size:.7rem; color:#8392ab; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-.step-chips { display:flex; gap:.35rem; flex-wrap:wrap; }
-.chip { font-size:.63rem; font-weight:700; padding:.15rem .5rem;
-        border-radius:99px; white-space:nowrap; }
-.chip-done    { background:#d4f5e2; color:#1a5c38; }
-.chip-pending { background:#fff3cd; color:#7d5500; }
-.chip-no      { background:#f0f2f8; color:#8392ab; }
-.chip-red     { background:#fde8e8; color:#c0392b; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-/* Progress bar */
-.prog-track { height:7px; background:#f0f2f8; border-radius:99px;
-              overflow:hidden; width:120px; }
-.prog-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
-              border-radius:99px; transition:width .4s; }
-.prog-fill.full { background:linear-gradient(90deg,var(--green),#22c55e); }
-.prog-pct   { font-size:.7rem; font-weight:700; color:var(--navy);
-              min-width:32px; text-align:right; }
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-/* ── Candidate scoring matrix ── */
-.cand-table { width:100%; border-collapse:collapse; font-size:.78rem; }
-.cand-table th {
-    background:#f8f9ff; color:#8392ab; font-size:.62rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:.05em;
-    padding:.6rem .9rem; border-bottom:1px solid #f0f2f8; text-align:left;
-}
-.cand-table td { padding:.55rem .9rem; border-bottom:1px solid #f7f8fc; vertical-align:middle; }
-.cand-table tr:last-child td { border-bottom:none; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-.score-dot {
-    width:22px; height:22px; border-radius:50%;
-    display:inline-flex; align-items:center; justify-content:center;
-    font-size:.6rem; font-weight:800;
-}
-.dot-done    { background:#d4f5e2; color:#1a5c38; }
-.dot-partial { background:#fff3cd; color:#7d5500; }
-.dot-none    { background:#f0f2f8; color:#adb5bd; }
+        /* ── Summary stat cards ── */
+        .stat-card {
+            background: #fff;
+            border-radius: .85rem;
+            box-shadow: 0 2px 10px rgba(38, 37, 97, .07);
+            padding: .9rem 1.1rem;
+            text-align: center;
+            flex: 1;
+            min-width: 130px;
+        }
 
-/* ── Results ready banner ── */
-.results-banner {
-    background:linear-gradient(135deg,var(--green),#145e35);
-    border-radius:.9rem; padding:1.1rem 1.5rem;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem;
-}
-.rb-text { color:#fff; font-size:.88rem; font-weight:700; }
-.rb-sub  { color:rgba(255,255,255,.75); font-size:.75rem; }
-.btn-results {
-    background:var(--gold); color:var(--navy);
-    font-size:.82rem; font-weight:800; padding:.5rem 1.4rem;
-    border-radius:.5rem; border:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.4rem;
-    text-decoration:none !important;
-    transition:opacity .15s;
-}
-.btn-results:hover { opacity:.88; color:var(--navy); }
-</style>
+        .stat-val {
+            font-size: 1.4rem;
+            font-weight: 900;
+            color: var(--navy);
+        }
+
+        .stat-label {
+            font-size: .7rem;
+            color: #8392ab;
+            margin-top: .1rem;
+        }
+
+        /* ── Section card ── */
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header {
+            padding: .85rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .section-title {
+            font-size: .82rem;
+            font-weight: 800;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin: 0;
+        }
+
+        /* ── Panel member rows ── */
+        .member-row {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: .75rem 1.25rem;
+            border-bottom: 1px solid #f7f8fc;
+            flex-wrap: wrap;
+        }
+
+        .member-row:last-child {
+            border-bottom: none;
+        }
+
+        .m-avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--navy), #4f46e5);
+            color: var(--gold);
+            font-size: .72rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .m-avatar.recused {
+            background: linear-gradient(135deg, #9ca3af, #6b7280);
+        }
+
+        .m-name {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .m-email {
+            font-size: .7rem;
+            color: #8392ab;
+        }
+
+        .step-chips {
+            display: flex;
+            gap: .35rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            font-size: .63rem;
+            font-weight: 700;
+            padding: .15rem .5rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .chip-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .chip-pending {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .chip-no {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .chip-red {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        /* Progress bar */
+        .prog-track {
+            height: 7px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+            width: 120px;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+            border-radius: 99px;
+            transition: width .4s;
+        }
+
+        .prog-fill.full {
+            background: linear-gradient(90deg, var(--green), #22c55e);
+        }
+
+        .prog-pct {
+            font-size: .7rem;
+            font-weight: 700;
+            color: var(--navy);
+            min-width: 32px;
+            text-align: right;
+        }
+
+        /* ── Candidate scoring matrix ── */
+        .cand-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .cand-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .6rem .9rem;
+            border-bottom: 1px solid #f0f2f8;
+            text-align: left;
+        }
+
+        .cand-table td {
+            padding: .55rem .9rem;
+            border-bottom: 1px solid #f7f8fc;
+            vertical-align: middle;
+        }
+
+        .cand-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .score-dot {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .6rem;
+            font-weight: 800;
+        }
+
+        .dot-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .dot-partial {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .dot-none {
+            background: #f0f2f8;
+            color: #adb5bd;
+        }
+
+        /* ── Results ready banner ── */
+        .results-banner {
+            background: linear-gradient(135deg, var(--green), #145e35);
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .rb-text {
+            color: #fff;
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .rb-sub {
+            color: rgba(255, 255, 255, .75);
+            font-size: .75rem;
+        }
+
+        .btn-results {
+            background: var(--gold);
+            color: var(--navy);
+            font-size: .82rem;
+            font-weight: 800;
+            padding: .5rem 1.4rem;
+            border-radius: .5rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            text-decoration: none !important;
+            transition: opacity .15s;
+        }
+
+        .btn-results:hover {
+            opacity: .88;
+            color: var(--navy);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- Banner -->
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-chart-bar me-2"></i>Interview Progress
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        <!-- Banner -->
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-chart-bar me-2"></i>Interview Progress
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'hr_interview_setup' vacancy.id %}" class="back-link">
+                    <i class="fas fa-cog"></i> Setup
+                </a>
+                <a href="{% url 'vacancy_interviews' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'hr_interview_setup' vacancy.id %}" class="back-link">
-                <i class="fas fa-cog"></i> Setup
-            </a>
-            <a href="{% url 'vacancy_interviews' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        </div>
-    </div>
 
-    <!-- Results ready -->
-    {% if results_exist %}
-    <div class="results-banner">
-        <div>
-            <div class="rb-text"><i class="fas fa-trophy me-2"></i>Results are ready</div>
-            <div class="rb-sub">All active panel members have submitted their scores.</div>
-        </div>
-        <a href="{% url 'hr_interview_results' vacancy.id %}" class="btn-results">
-            <i class="fas fa-chart-bar"></i> View Full Results
-        </a>
-    </div>
-    {% endif %}
+        <!-- Results ready -->
+        {% if results_exist %}
+            <div class="results-banner">
+                <div>
+                    <div class="rb-text"><i class="fas fa-trophy me-2"></i>Results are ready</div>
+                    <div class="rb-sub">All active panel members have submitted their scores.</div>
+                </div>
+                <a href="{% url 'hr_interview_results' vacancy.id %}" class="btn-results">
+                    <i class="fas fa-chart-bar"></i> View Full Results
+                </a>
+            </div>
+        {% endif %}
 
-    <!-- Summary stats -->
-    <div class="d-flex gap-3 flex-wrap mb-3">
-        <div class="stat-card">
-            <div class="stat-val">{{ active_count }}</div>
-            <div class="stat-label">Active Panel Members</div>
+        <!-- Summary stats -->
+        <div class="d-flex gap-3 flex-wrap mb-3">
+            <div class="stat-card">
+                <div class="stat-val">{{ active_count }}</div>
+                <div class="stat-label">Active Panel Members</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">{{ members_done }}</div>
+                <div class="stat-label">Scores Submitted</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">{{ recused_count }}</div>
+                <div class="stat-label">Recused</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">{{ app_count }}</div>
+                <div class="stat-label">Candidates</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-val">{{ criteria|length }}</div>
+                <div class="stat-label">Criteria</div>
+            </div>
         </div>
-        <div class="stat-card">
-            <div class="stat-val">{{ members_done }}</div>
-            <div class="stat-label">Scores Submitted</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val">{{ recused_count }}</div>
-            <div class="stat-label">Recused</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val">{{ app_count }}</div>
-            <div class="stat-label">Candidates</div>
-        </div>
-        <div class="stat-card">
-            <div class="stat-val">{{ criteria|length }}</div>
-            <div class="stat-label">Criteria</div>
-        </div>
-    </div>
 
-    <!-- Panel member progress -->
-    <div class="section-card">
-        <div class="section-header">
-            <h6 class="section-title">
-                <i class="fas fa-users" style="color:var(--gold-dk);"></i>
-                Panel Member Status
-            </h6>
-            <span style="font-size:.72rem;color:#8392ab;">
+        <!-- Panel member progress -->
+        <div class="section-card">
+            <div class="section-header">
+                <h6 class="section-title">
+                    <i class="fas fa-users" style="color:var(--gold-dk);"></i>
+                    Panel Member Status
+                </h6>
+                <span style="font-size:.72rem;color:#8392ab;">
                 {{ members_done }} of {{ active_count }} submitted
             </span>
-        </div>
-
-        {% for m in panel %}
-        <div class="member-row">
-            <div class="m-avatar {% if m.is_recused %}recused{% endif %}">
-                {{ m.name|first|upper }}
-            </div>
-            <div style="flex:1;min-width:0;">
-                <div class="m-name">{{ m.name }}</div>
-                <div class="m-email">{{ m.email }}</div>
             </div>
 
-            <div class="step-chips">
-                {% if m.acknowledged %}
-                    <span class="chip chip-done"><i class="fas fa-check me-1"></i>Acknowledged</span>
-                {% else %}
-                    <span class="chip chip-pending">Not acknowledged</span>
-                {% endif %}
+            {% for m in panel %}
+                <div class="member-row">
+                    <div class="m-avatar {% if m.is_recused %}recused{% endif %}">
+                        {{ m.name|first|upper }}
+                    </div>
+                    <div style="flex:1;min-width:0;">
+                        <div class="m-name">{{ m.name }}</div>
+                        <div class="m-email">{{ m.email }}</div>
+                    </div>
 
-                {% if m.coi_declared %}
-                    {% if m.has_conflict %}
-                        <span class="chip chip-red"><i class="fas fa-ban me-1"></i>Recused</span>
+                    <div class="step-chips">
+                        {% if m.acknowledged %}
+                            <span class="chip chip-done"><i class="fas fa-check me-1"></i>Acknowledged</span>
+                        {% else %}
+                            <span class="chip chip-pending">Not acknowledged</span>
+                        {% endif %}
+
+                        {% if m.coi_declared %}
+                            {% if m.has_conflict %}
+                                <span class="chip chip-red"><i class="fas fa-ban me-1"></i>Recused</span>
+                            {% else %}
+                                <span class="chip chip-done">No conflict</span>
+                            {% endif %}
+                        {% else %}
+                            <span class="chip chip-no">COI pending</span>
+                        {% endif %}
+
+                        {% if not m.is_recused %}
+                            {% if m.scores_submitted %}
+                                <span class="chip chip-done"><i class="fas fa-check me-1"></i>Submitted</span>
+                            {% elif m.submitted_count > 0 %}
+                                <span class="chip chip-pending">{{ m.submitted_count }}/{{ app_count }} scored</span>
+                            {% else %}
+                                <span class="chip chip-no">Not started</span>
+                            {% endif %}
+                        {% endif %}
+                    </div>
+
+                    {% if not m.is_recused %}
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="prog-track">
+                                <div class="prog-fill {% if m.percent == 100 %}full{% endif %}"
+                                     style="width:{{ m.percent }}%;"></div>
+                            </div>
+                            <span class="prog-pct">{{ m.percent }}%</span>
+                        </div>
                     {% else %}
-                        <span class="chip chip-done">No conflict</span>
-                    {% endif %}
-                {% else %}
-                    <span class="chip chip-no">COI pending</span>
-                {% endif %}
-
-                {% if not m.is_recused %}
-                    {% if m.scores_submitted %}
-                        <span class="chip chip-done"><i class="fas fa-check me-1"></i>Submitted</span>
-                    {% elif m.submitted_count > 0 %}
-                        <span class="chip chip-pending">{{ m.submitted_count }}/{{ app_count }} scored</span>
-                    {% else %}
-                        <span class="chip chip-no">Not started</span>
-                    {% endif %}
-                {% endif %}
-            </div>
-
-            {% if not m.is_recused %}
-            <div class="d-flex align-items-center gap-2">
-                <div class="prog-track">
-                    <div class="prog-fill {% if m.percent == 100 %}full{% endif %}"
-                         style="width:{{ m.percent }}%;"></div>
-                </div>
-                <span class="prog-pct">{{ m.percent }}%</span>
-            </div>
-            {% else %}
-            <span style="font-size:.72rem;color:#adb5bd;font-style:italic;">
+                        <span style="font-size:.72rem;color:#adb5bd;font-style:italic;">
                 {{ m.conflict_reason|truncatechars:40 }}
             </span>
-            {% endif %}
+                    {% endif %}
+                </div>
+            {% empty %}
+                <div style="padding:2rem;text-align:center;color:#b0bac9;font-size:.8rem;">
+                    No panel members appointed yet.
+                </div>
+            {% endfor %}
         </div>
-        {% empty %}
-        <div style="padding:2rem;text-align:center;color:#b0bac9;font-size:.8rem;">
-            No panel members appointed yet.
-        </div>
-        {% endfor %}
-    </div>
 
-    <!-- Candidate scoring matrix -->
-    <div class="section-card">
-        <div class="section-header">
-            <h6 class="section-title">
-                <i class="fas fa-table" style="color:var(--gold-dk);"></i>
-                Candidate Scoring Matrix
-            </h6>
-            <span style="font-size:.72rem;color:#8392ab;">
+        <!-- Candidate scoring matrix -->
+        <div class="section-card">
+            <div class="section-header">
+                <h6 class="section-title">
+                    <i class="fas fa-table" style="color:var(--gold-dk);"></i>
+                    Candidate Scoring Matrix
+                </h6>
+                <span style="font-size:.72rem;color:#8392ab;">
                 ● = all criteria submitted &nbsp; ◑ = partial &nbsp; ○ = not started
             </span>
-        </div>
-        <div style="overflow-x:auto;">
-            <table class="cand-table">
-                <thead>
+            </div>
+            <div style="overflow-x:auto;">
+                <table class="cand-table">
+                    <thead>
                     <tr>
                         <th>Candidate</th>
                         <th>App No.</th>
                         {% for m in panel %}
                             {% if not m.is_recused %}
-                            <th style="text-align:center;">{{ m.name|truncatechars:14 }}</th>
+                                <th style="text-align:center;">{{ m.name|truncatechars:14 }}</th>
                             {% endif %}
                         {% endfor %}
                         <th style="text-align:center;">Total Score</th>
                     </tr>
-                </thead>
-                <tbody>
+                    </thead>
+                    <tbody>
                     {% for row in app_rows %}
-                    <tr>
-                        <td style="font-weight:600;color:var(--navy);">
-                            {{ row.app.user.name }}
-                        </td>
-                        <td style="font-family:monospace;font-size:.7rem;color:#8392ab;">
-                            {{ row.app.application_number }}
-                        </td>
-                        {% for m in panel %}
-                            {% if not m.is_recused %}
-                            <td style="text-align:center;">
-                                {% if row.members_scored >= 1 %}
-                                    <span class="score-dot dot-done" title="Submitted">
+                        <tr>
+                            <td style="font-weight:600;color:var(--navy);">
+                                {{ row.app.user.name }}
+                            </td>
+                            <td style="font-family:monospace;font-size:.7rem;color:#8392ab;">
+                                {{ row.app.application_number }}
+                            </td>
+                            {% for m in panel %}
+                                {% if not m.is_recused %}
+                                    <td style="text-align:center;">
+                                        {% if row.members_scored >= 1 %}
+                                            <span class="score-dot dot-done" title="Submitted">
                                         <i class="fas fa-check" style="font-size:.55rem;"></i>
                                     </span>
-                                {% else %}
-                                    <span class="score-dot dot-none">—</span>
+                                        {% else %}
+                                            <span class="score-dot dot-none">—</span>
+                                        {% endif %}
+                                    </td>
                                 {% endif %}
-                            </td>
-                            {% endif %}
-                        {% endfor %}
-                        <td style="text-align:center;">
-                            {% if row.result %}
-                                <strong style="color:var(--navy);">{{ row.result.total_score }}</strong>
-                                <span style="font-size:.68rem;color:#adb5bd;">
+                            {% endfor %}
+                            <td style="text-align:center;">
+                                {% if row.result %}
+                                    <strong style="color:var(--navy);">{{ row.result.total_score }}</strong>
+                                    <span style="font-size:.68rem;color:#adb5bd;">
                                     / {{ row.result.max_possible }}
                                 </span>
-                            {% elif row.total > 0 %}
-                                <span style="color:var(--amber);font-weight:700;">{{ row.total }}</span>
-                                <span style="font-size:.68rem;color:#adb5bd;">(partial)</span>
-                            {% else %}
-                                <span style="color:#adb5bd;">—</span>
-                            {% endif %}
-                        </td>
-                    </tr>
+                                {% elif row.total > 0 %}
+                                    <span style="color:var(--amber);font-weight:700;">{{ row.total }}</span>
+                                    <span style="font-size:.68rem;color:#adb5bd;">(partial)</span>
+                                {% else %}
+                                    <span style="color:#adb5bd;">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
                     {% empty %}
-                    <tr>
-                        <td colspan="99" style="text-align:center;padding:2rem;color:#b0bac9;">
-                            No shortlisted candidates.
-                        </td>
-                    </tr>
+                        <tr>
+                            <td colspan="99" style="text-align:center;padding:2rem;color:#b0bac9;">
+                                No shortlisted candidates.
+                            </td>
+                        </tr>
                     {% endfor %}
-                </tbody>
-            </table>
+                    </tbody>
+                </table>
+            </div>
         </div>
-    </div>
 
-</div>
+    </div>
 {% endblock %}

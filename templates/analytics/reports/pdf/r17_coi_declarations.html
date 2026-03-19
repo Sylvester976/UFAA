@@ -1,0 +1,18 @@
+{% extends 'analytics/reports/pdf/base_report.html' %} {% block content %}
+{{ total }}
+Total Declarations
+{{ committee_coi|length }}
+Committee COIs
+{{ panel_coi|length }}
+Panel COIs
+Committee COI Declarations
+{% for e in committee_coi %} {% empty %} {% endfor %}
+Member	Vacancy	Reference	Declared At	Reason
+{{ e.member.get_full_name|default:e.member.email }}	{{ e.vacancy.title|truncatechars:35 }}	{{ e.vacancy.reference_number }}	{{ e.conflict_declared_at|date:"d M Y"|default:"—" }}	{{ e.conflict_reason|truncatechars:80|default:"—" }}
+No committee COI declarations
+Panel COI Declarations
+{% for e in panel_coi %} {% empty %} {% endfor %}
+Member	Vacancy	Reference	Declared At	Reason
+{{ e.member.get_full_name|default:e.member.email }}	{{ e.vacancy.title|truncatechars:35 }}	{{ e.vacancy.reference_number }}	{{ e.conflict_declared_at|date:"d M Y"|default:"—" }}	{{ e.conflict_reason|truncatechars:80|default:"—" }}
+No panel COI declarations
+{% endblock %} {% block signature %}{% endblock %}

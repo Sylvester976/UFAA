@@ -4,156 +4,234 @@
     <link rel="stylesheet" href="{% static 'assets/css/profile.css' %}">
     <style>
         .form-state-bar {
-            display:flex; align-items:center; gap:.6rem;
-            padding:.6rem 1rem; border-radius:.6rem;
-            font-size:.78rem; font-weight:600;
-            margin-bottom:1rem; transition:all .3s;
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            padding: .6rem 1rem;
+            border-radius: .6rem;
+            font-size: .78rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            transition: all .3s;
         }
-        .fsb-empty   { background:#f8f9fa; color:#8392ab; border:1px dashed #dee2e6; }
-        .fsb-filling { background:#fff8e1; color:#7d5500; border:1px solid #ffc107; }
-        .fsb-ready   { background:#d1fae5; color:#065f46; border:1px solid #6ee7b7; }
+
+        .fsb-empty {
+            background: #f8f9fa;
+            color: #8392ab;
+            border: 1px dashed #dee2e6;
+        }
+
+        .fsb-filling {
+            background: #fff8e1;
+            color: #7d5500;
+            border: 1px solid #ffc107;
+        }
+
+        .fsb-ready {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+        }
 
         .btn-save-mem {
-            background:linear-gradient(135deg,#1D255B,#2d3899);
-            color:#F9E6A1; border:none; border-radius:.6rem;
-            font-size:.82rem; font-weight:700; padding:.5rem 1.4rem;
-            cursor:pointer; display:inline-flex; align-items:center; gap:.4rem;
-            transition:all .2s; box-shadow:0 2px 8px rgba(29,37,91,.25);
+            background: linear-gradient(135deg, #1D255B, #2d3899);
+            color: #F9E6A1;
+            border: none;
+            border-radius: .6rem;
+            font-size: .82rem;
+            font-weight: 700;
+            padding: .5rem 1.4rem;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: all .2s;
+            box-shadow: 0 2px 8px rgba(29, 37, 91, .25);
         }
-        .btn-save-mem:hover { transform:translateY(-1px); box-shadow:0 4px 14px rgba(29,37,91,.3); }
-        .btn-save-mem:disabled { background:#e2e8f0; color:#94a3b8;
-                                 cursor:not-allowed; transform:none; box-shadow:none; }
-        .saved-row-new { animation:rowFadeIn .5s ease-out; }
-        @keyframes rowFadeIn { from { background:#d1fae5; } to { background:transparent; } }
+
+        .btn-save-mem:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(29, 37, 91, .3);
+        }
+
+        .btn-save-mem:disabled {
+            background: #e2e8f0;
+            color: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .saved-row-new {
+            animation: rowFadeIn .5s ease-out;
+        }
+
+        @keyframes rowFadeIn {
+            from {
+                background: #d1fae5;
+            }
+            to {
+                background: transparent;
+            }
+        }
     </style>
 {% endblock %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12 mt-4">
+    <div class="row">
+        <div class="col-12 mt-4">
 
-        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-            <div>
-                <h6 class="mb-0 font-weight-bolder">Professional Body Memberships</h6>
-                <p class="text-sm text-secondary mb-0">Add your memberships to professional bodies and associations</p>
-            </div>
-            <span class="badge px-3 py-2 {% if completion == 100 %}bg-gradient-success{% elif completion >= 60 %}bg-gradient-info{% elif completion >= 30 %}bg-gradient-warning{% else %}bg-gradient-danger{% endif %}">
+            <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                <div>
+                    <h6 class="mb-0 font-weight-bolder">Professional Body Memberships</h6>
+                    <p class="text-sm text-secondary mb-0">Add your memberships to professional bodies and
+                        associations</p>
+                </div>
+                <span class="badge px-3 py-2 {% if completion == 100 %}bg-gradient-success{% elif completion >= 60 %}bg-gradient-info{% elif completion >= 30 %}bg-gradient-warning{% else %}bg-gradient-danger{% endif %}">
                 <i class="fas fa-tasks me-1"></i> {{ completion }}% Complete
             </span>
-        </div>
-
-        <div class="mb-3">
-            <div class="d-flex justify-content-between align-items-center mb-1">
-                <small class="text-secondary" style="font-size:0.75rem;">
-                    {% if completion == 100 %}🎉 Profile complete!
-                    {% elif completion >= 60 %}Almost there — keep going!
-                    {% elif completion >= 30 %}Good start — more to fill in.
-                    {% else %}Just getting started...{% endif %}
-                </small>
-                <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
             </div>
-            <div class="progress" style="height:8px;border-radius:1rem;">
-                <div class="progress-bar {% if completion == 100 %}bg-gradient-success{% elif completion >= 60 %}bg-gradient-info{% elif completion >= 30 %}bg-gradient-warning{% else %}bg-gradient-danger{% endif %}"
-                     role="progressbar" style="width:{{ completion }}%;transition:width 0.6s ease;"
-                     aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100"></div>
-            </div>
-        </div>
 
-        <!-- Tabs -->
-        <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
-            <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}"><i class="fas fa-user me-1"></i><span class="d-none d-sm-inline">Basic Details</span>{% if completion >= 40 %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'academic_qualifications' %}"><i class="fas fa-graduation-cap me-1"></i><span class="d-none d-sm-inline">Academic</span>{% if has_academic %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'professional_qualifications' %}"><i class="fas fa-certificate me-1"></i><span class="d-none d-sm-inline">Professional</span>{% if has_professional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'work_history' %}"><i class="fas fa-briefcase me-1"></i><span class="d-none d-sm-inline">Work History</span>{% if has_work_history %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link active" href="{% url 'memberships' %}"><i class="fas fa-users me-1"></i><span class="d-none d-sm-inline">Memberships</span>{% if has_memberships %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'referees' %}"><i class="fas fa-user-tie me-1"></i><span class="d-none d-sm-inline">Referees</span>{% if has_referees %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-            <li class="nav-item"><a class="nav-link" href="{% url 'additional_details' %}"><i class="fas fa-info-circle me-1"></i><span class="d-none d-sm-inline">Additional</span>{% if has_additional %}<i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a></li>
-        </ul>
-
-        <div class="card mb-4 profile-content-card">
-            <div class="card-body p-3 p-md-4">
-
-                <h6 class="font-weight-bolder mb-1">Step 5: Professional Body Memberships</h6>
-                <p class="text-sm text-secondary mb-4">
-                    Add your memberships to professional bodies e.g. ICPAK, LSK, KISM, EBK.
-                    Fill in the form and click <strong>Save Membership</strong>.
-                    This section is optional — click <strong>Next</strong> to skip.
-                </p>
-
-                <!-- Form state bar -->
-                <div class="form-state-bar fsb-empty" id="formStateBar">
-                    <i class="fas fa-info-circle"></i>
-                    <span id="formStateMsg">Enter a professional body name to begin</span>
+            <div class="mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <small class="text-secondary" style="font-size:0.75rem;">
+                        {% if completion == 100 %}🎉 Profile complete!
+                        {% elif completion >= 60 %}Almost there — keep going!
+                        {% elif completion >= 30 %}Good start — more to fill in.
+                        {% else %}Just getting started...{% endif %}
+                    </small>
+                    <small class="font-weight-bold" style="font-size:0.75rem;">{{ completion }}%</small>
                 </div>
+                <div class="progress" style="height:8px;border-radius:1rem;">
+                    <div class="progress-bar {% if completion == 100 %}bg-gradient-success{% elif completion >= 60 %}bg-gradient-info{% elif completion >= 30 %}bg-gradient-warning{% else %}bg-gradient-danger{% endif %}"
+                         role="progressbar" style="width:{{ completion }}%;transition:width 0.6s ease;"
+                         aria-valuenow="{{ completion }}" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
 
-                <!-- Form -->
-                <div class="acad-add-card mb-4">
-                    <div class="acad-add-header">
-                        <i class="fas fa-users me-2"></i> Membership Details
+            <!-- Tabs -->
+            <ul class="nav d-flex flex-wrap mb-0 gap-1" id="profileTabs">
+                <li class="nav-item"><a class="nav-link" href="{% url 'profile' %}"><i
+                        class="fas fa-user me-1"></i><span class="d-none d-sm-inline">Basic Details</span>
+                    {% if completion >= 40 %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'academic_qualifications' %}"><i
+                        class="fas fa-graduation-cap me-1"></i><span class="d-none d-sm-inline">Academic</span>
+                    {% if has_academic %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'professional_qualifications' %}"><i
+                        class="fas fa-certificate me-1"></i><span class="d-none d-sm-inline">Professional</span>
+                    {% if has_professional %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'work_history' %}"><i
+                        class="fas fa-briefcase me-1"></i><span class="d-none d-sm-inline">Work History</span>
+                    {% if has_work_history %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link active" href="{% url 'memberships' %}"><i
+                        class="fas fa-users me-1"></i><span class="d-none d-sm-inline">Memberships</span>
+                    {% if has_memberships %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'referees' %}"><i
+                        class="fas fa-user-tie me-1"></i><span class="d-none d-sm-inline">Referees</span>
+                    {% if has_referees %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'additional_details' %}"><i
+                        class="fas fa-info-circle me-1"></i><span class="d-none d-sm-inline">Additional</span>
+                    {% if has_additional %}
+                        <i class="fas fa-check-circle ms-1 text-success" style="font-size:0.7rem;"></i>{% endif %}</a>
+                </li>
+            </ul>
+
+            <div class="card mb-4 profile-content-card">
+                <div class="card-body p-3 p-md-4">
+
+                    <h6 class="font-weight-bolder mb-1">Step 5: Professional Body Memberships</h6>
+                    <p class="text-sm text-secondary mb-4">
+                        Add your memberships to professional bodies e.g. ICPAK, LSK, KISM, EBK.
+                        Fill in the form and click <strong>Save Membership</strong>.
+                        This section is optional — click <strong>Next</strong> to skip.
+                    </p>
+
+                    <!-- Form state bar -->
+                    <div class="form-state-bar fsb-empty" id="formStateBar">
+                        <i class="fas fa-info-circle"></i>
+                        <span id="formStateMsg">Enter a professional body name to begin</span>
                     </div>
-                    <div class="acad-add-body">
-                        <div class="row g-3 mb-3">
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Professional Body <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" id="f_body_name" class="form-control"
-                                       placeholder="e.g. ICPAK, LSK, KISM, EBK, IEK"
-                                       oninput="updateFormState()">
+
+                    <!-- Form -->
+                    <div class="acad-add-card mb-4">
+                        <div class="acad-add-header">
+                            <i class="fas fa-users me-2"></i> Membership Details
+                        </div>
+                        <div class="acad-add-body">
+                            <div class="row g-3 mb-3">
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Professional Body <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="f_body_name" class="form-control"
+                                           placeholder="e.g. ICPAK, LSK, KISM, EBK, IEK"
+                                           oninput="updateFormState()">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Membership Number <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="f_membership_no" class="form-control"
+                                           placeholder="Enter membership number"
+                                           oninput="updateFormState()">
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Year Joined <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="f_year_joined" class="form-control" onchange="updateFormState()">
+                                        <option value="">Select year</option>
+                                    </select>
+                                </div>
+                                <div class="col-12 col-md-6">
+                                    <label class="form-label text-sm font-weight-bold">
+                                        Expiry Year
+                                        <small class="text-secondary ms-1">(optional)</small>
+                                    </label>
+                                    <select id="f_expiry_year" class="form-control">
+                                        <option value="">No expiry / Lifetime</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Membership Number <span class="text-danger">*</span>
-                                </label>
-                                <input type="text" id="f_membership_no" class="form-control"
-                                       placeholder="Enter membership number"
-                                       oninput="updateFormState()">
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Year Joined <span class="text-danger">*</span>
-                                </label>
-                                <select id="f_year_joined" class="form-control" onchange="updateFormState()">
-                                    <option value="">Select year</option>
-                                </select>
-                            </div>
-                            <div class="col-12 col-md-6">
-                                <label class="form-label text-sm font-weight-bold">
-                                    Expiry Year
-                                    <small class="text-secondary ms-1">(optional)</small>
-                                </label>
-                                <select id="f_expiry_year" class="form-control">
-                                    <option value="">No expiry / Lifetime</option>
-                                </select>
+
+                            <div class="d-flex justify-content-end mt-2">
+                                <button type="button" class="btn-save-mem" id="saveMemBtn"
+                                        onclick="saveMembership()" disabled>
+                                    <i class="fas fa-save"></i> Save Membership
+                                </button>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="d-flex justify-content-end mt-2">
-                            <button type="button" class="btn-save-mem" id="saveMemBtn"
-                                    onclick="saveMembership()" disabled>
-                                <i class="fas fa-save"></i> Save Membership
-                            </button>
+                    <!-- Saved table -->
+                    <div id="savedSection" style="{% if not existing %}display:none;{% endif %}">
+                        <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+                            <h6 class="font-weight-bolder mb-0">
+                                <i class="fas fa-check-circle me-2 text-success"></i>
+                                Saved Memberships
+                                <span class="badge bg-gradient-success ms-1 px-2 py-1"
+                                      style="font-size:0.7rem;" id="savedCount">{{ existing|length }}</span>
+                            </h6>
+                            <small class="text-secondary" style="font-size:0.73rem;">
+                                <i class="fas fa-info-circle me-1"></i>
+                                These have been saved — you can edit or delete them below
+                            </small>
                         </div>
-                    </div>
-                </div>
-
-                <!-- Saved table -->
-                <div id="savedSection" style="{% if not existing %}display:none;{% endif %}">
-                    <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
-                        <h6 class="font-weight-bolder mb-0">
-                            <i class="fas fa-check-circle me-2 text-success"></i>
-                            Saved Memberships
-                            <span class="badge bg-gradient-success ms-1 px-2 py-1"
-                                  style="font-size:0.7rem;" id="savedCount">{{ existing|length }}</span>
-                        </h6>
-                        <small class="text-secondary" style="font-size:0.73rem;">
-                            <i class="fas fa-info-circle me-1"></i>
-                            These have been saved — you can edit or delete them below
-                        </small>
-                    </div>
-                    <div class="table-responsive">
-                        <table class="table table-sm align-middle" id="savedTable">
-                            <thead class="table-light">
+                        <div class="table-responsive">
+                            <table class="table table-sm align-middle" id="savedTable">
+                                <thead class="table-light">
                                 <tr>
                                     <th style="min-width:140px;">Professional Body</th>
                                     <th style="min-width:120px;">Membership No.</th>
@@ -161,240 +239,269 @@
                                     <th class="d-none d-sm-table-cell">Expiry</th>
                                     <th>Action</th>
                                 </tr>
-                            </thead>
-                            <tbody id="savedTableBody">
-                            {% for m in existing %}
-                            <tr id="row_{{ m.id }}">
-                                <td><span class="badge bg-gradient-info" style="font-size:0.72rem;">{{ m.body_name }}</span></td>
-                                <td class="text-sm">{{ m.membership_no }}</td>
-                                <td class="d-none d-sm-table-cell text-sm">{{ m.year_joined }}</td>
-                                <td class="d-none d-sm-table-cell text-sm">
-                                    {% if m.expiry_year %}
-                                        <span class="badge bg-gradient-warning" style="font-size:0.65rem;">{{ m.expiry_year }}</span>
-                                    {% else %}
-                                        <span class="badge bg-gradient-success" style="font-size:0.65rem;">Lifetime</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <div class="d-flex gap-1">
-                                        <button type="button" class="btn btn-outline-info btn-xs"
-                                                onclick="editMembership({{ m.id }},'{{ m.body_name|escapejs }}','{{ m.membership_no|escapejs }}',{{ m.year_joined }},'{{ m.expiry_year|default:'' }}')">
-                                            <i class="fas fa-edit"></i>
-                                        </button>
-                                        <button type="button" class="btn btn-outline-danger btn-xs"
-                                                onclick="deleteMembership({{ m.id }},'{{ m.body_name|escapejs }}')">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody id="savedTableBody">
+                                {% for m in existing %}
+                                    <tr id="row_{{ m.id }}">
+                                        <td><span class="badge bg-gradient-info"
+                                                  style="font-size:0.72rem;">{{ m.body_name }}</span></td>
+                                        <td class="text-sm">{{ m.membership_no }}</td>
+                                        <td class="d-none d-sm-table-cell text-sm">{{ m.year_joined }}</td>
+                                        <td class="d-none d-sm-table-cell text-sm">
+                                            {% if m.expiry_year %}
+                                                <span class="badge bg-gradient-warning"
+                                                      style="font-size:0.65rem;">{{ m.expiry_year }}</span>
+                                            {% else %}
+                                                <span class="badge bg-gradient-success" style="font-size:0.65rem;">Lifetime</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="d-flex gap-1">
+                                                <button type="button" class="btn btn-outline-info btn-xs"
+                                                        onclick="editMembership({{ m.id }},'{{ m.body_name|escapejs }}','{{ m.membership_no|escapejs }}',{{ m.year_joined }},'{{ m.expiry_year|default:'' }}')">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-outline-danger btn-xs"
+                                                        onclick="deleteMembership({{ m.id }},'{{ m.body_name|escapejs }}')">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Nav -->
+                    <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
+                        <a href="{% url 'work_history' %}" class="btn btn-outline-secondary btn-sm mb-0">
+                            <i class="fas fa-arrow-left me-1"></i> Back
+                        </a>
+                        <button type="button" class="btn btn-outline-success btn-sm mb-0" onclick="goNext()">
+                            Next <i class="fas fa-arrow-right ms-1"></i>
+                        </button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h6 class="modal-title font-weight-bolder mb-0">
+                        <i class="fas fa-edit me-2"></i> Edit Membership
+                    </h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="edit_mem_id">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">Professional Body <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" id="edit_body_name" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">Membership Number <span
+                                    class="text-danger">*</span></label>
+                            <input type="text" id="edit_membership_no" class="form-control">
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">Year Joined <span
+                                    class="text-danger">*</span></label>
+                            <select id="edit_year_joined" class="form-control"></select>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label class="form-label text-sm font-weight-bold">Expiry Year</label>
+                            <select id="edit_expiry_year" class="form-control"></select>
+                        </div>
                     </div>
                 </div>
-
-                <!-- Nav -->
-                <div class="d-flex justify-content-between align-items-center mt-4 flex-wrap gap-2">
-                    <a href="{% url 'work_history' %}" class="btn btn-outline-secondary btn-sm mb-0">
-                        <i class="fas fa-arrow-left me-1"></i> Back
-                    </a>
-                    <button type="button" class="btn btn-outline-success btn-sm mb-0" onclick="goNext()">
-                        Next <i class="fas fa-arrow-right ms-1"></i>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" onclick="submitEdit()">
+                        <i class="fas fa-save me-1"></i> Update
                     </button>
                 </div>
-
             </div>
         </div>
     </div>
-</div>
-
-<!-- Edit Modal -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h6 class="modal-title font-weight-bolder mb-0">
-                    <i class="fas fa-edit me-2"></i> Edit Membership
-                </h6>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="edit_mem_id">
-                <div class="row g-3">
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">Professional Body <span class="text-danger">*</span></label>
-                        <input type="text" id="edit_body_name" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">Membership Number <span class="text-danger">*</span></label>
-                        <input type="text" id="edit_membership_no" class="form-control">
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">Year Joined <span class="text-danger">*</span></label>
-                        <select id="edit_year_joined" class="form-control"></select>
-                    </div>
-                    <div class="col-12 col-md-6">
-                        <label class="form-label text-sm font-weight-bold">Expiry Year</label>
-                        <select id="edit_expiry_year" class="form-control"></select>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-outline-info btn-sm" onclick="submitEdit()">
-                    <i class="fas fa-save me-1"></i> Update
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const CSRF = '{{ csrf_token }}';
+    <script>
+        const CSRF = '{{ csrf_token }}';
 
-// ── Year populators ───────────────────────────────────────────
-function populateJoinedYears(elId, selected) {
-    const sel = document.getElementById(elId);
-    const cur = new Date().getFullYear();
-    sel.innerHTML = '<option value="">Select year</option>';
-    for (let y = cur; y >= 1970; y--)
-        sel.innerHTML += `<option value="${y}" ${y==selected?'selected':''}>${y}</option>`;
-}
-function populateExpiryYears(elId, selected) {
-    const sel = document.getElementById(elId);
-    const cur = new Date().getFullYear();
-    sel.innerHTML = '<option value="">No expiry / Lifetime</option>';
-    for (let y = cur; y <= cur+20; y++)
-        sel.innerHTML += `<option value="${y}" ${y==selected?'selected':''}>${y}</option>`;
-}
-populateJoinedYears('f_year_joined', null);
-populateExpiryYears('f_expiry_year', null);
-
-// ── Form state bar ────────────────────────────────────────────
-function updateFormState() {
-    const bar    = document.getElementById('formStateBar');
-    const msg    = document.getElementById('formStateMsg');
-    const btn    = document.getElementById('saveMemBtn');
-    const body   = document.getElementById('f_body_name').value.trim();
-    const memNo  = document.getElementById('f_membership_no').value.trim();
-    const yr     = document.getElementById('f_year_joined').value;
-    if (!body && !memNo) {
-        bar.className = 'form-state-bar fsb-empty';
-        msg.textContent = 'Enter a professional body name to begin';
-        btn.disabled = true; return;
-    }
-    const missing = [];
-    if (!body)  missing.push('Professional body');
-    if (!memNo) missing.push('Membership number');
-    if (!yr)    missing.push('Year joined');
-    if (missing.length) {
-        bar.className = 'form-state-bar fsb-filling';
-        msg.textContent = 'Still needed: ' + missing.join(', ');
-        btn.disabled = true; return;
-    }
-    bar.className = 'form-state-bar fsb-ready';
-    msg.innerHTML = '<i class="fas fa-check-circle me-1"></i>Ready to save — click Save Membership';
-    btn.disabled = false;
-}
-
-// ── Save (single, immediate) ──────────────────────────────────
-function saveMembership() {
-    const body_name    = document.getElementById('f_body_name').value.trim();
-    const membership_no = document.getElementById('f_membership_no').value.trim();
-    const year_joined  = document.getElementById('f_year_joined').value;
-    if (!body_name || !membership_no || !year_joined) { updateFormState(); return; }
-
-    const btn = document.getElementById('saveMemBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving…';
-
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', CSRF);
-    formData.append('action', 'save');
-    formData.append('memberships', JSON.stringify([{
-        body_name,
-        membership_no,
-        year_joined,
-        expiry_year: document.getElementById('f_expiry_year').value,
-    }]));
-
-    fetch("{% url 'memberships' %}", { method:'POST', headers:{'X-CSRFToken':CSRF}, body:formData })
-    .then(r => r.json())
-    .then(data => {
-        if (data.status === 'success' && data.saved?.length) {
-            const m = data.saved[0];
-            const tr = document.createElement('tr');
-            tr.id = `row_${m.id}`;
-            tr.className = 'saved-row-new';
-            tr.innerHTML = buildTableRow(m);
-            document.getElementById('savedTableBody').appendChild(tr);
-            document.getElementById('savedSection').style.display = 'block';
-            const badge = document.getElementById('savedCount');
-            badge.textContent = parseInt(badge.textContent||0) + 1;
-            // reset
-            document.getElementById('f_body_name').value    = '';
-            document.getElementById('f_membership_no').value = '';
-            document.getElementById('f_year_joined').value  = '';
-            document.getElementById('f_expiry_year').value  = '';
-            document.getElementById('formStateBar').className = 'form-state-bar fsb-empty';
-            document.getElementById('formStateMsg').textContent = 'Enter a professional body name to begin';
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
-            Swal.fire({
-                icon:'success', title:'Saved!',
-                html:`<strong>${m.body_name}</strong> membership saved.<br>
-                      <small class="text-secondary">You can add another or click Next to continue.</small>`,
-                confirmButtonText:'OK', position:'center', scrollbarPadding:false, heightAuto:false,
-            });
-        } else {
-            Swal.fire({ icon:'error', title:'Save Failed', text:data.message||'Something went wrong.', position:'center', scrollbarPadding:false, heightAuto:false });
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
+        // ── Year populators ───────────────────────────────────────────
+        function populateJoinedYears(elId, selected) {
+            const sel = document.getElementById(elId);
+            const cur = new Date().getFullYear();
+            sel.innerHTML = '<option value="">Select year</option>';
+            for (let y = cur; y >= 1970; y--)
+                sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
         }
-    })
-    .catch(() => {
-        Swal.fire({ icon:'error', title:'System Error', text:'Something went wrong. Please try again.', position:'center', scrollbarPadding:false, heightAuto:false });
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
-    });
-}
 
-// ── Next guard ────────────────────────────────────────────────
-function goNext() {
-    const hasUnsaved = document.getElementById('f_body_name').value.trim() !== ''
-                    || document.getElementById('f_membership_no').value.trim() !== '';
-    if (hasUnsaved) {
-        Swal.fire({
-            icon:'warning', title:'Unsaved Membership',
-            html:'You have details entered but not yet saved.<br>Click <strong>Save Membership</strong> first, or discard and continue.',
-            showCancelButton:true,
-            confirmButtonText:'<i class="fas fa-arrow-right me-1"></i> Discard & Go Next',
-            cancelButtonText:'<i class="fas fa-save me-1"></i> Go Back & Save',
-            confirmButtonColor:'#64748b', cancelButtonColor:'#1D255B',
-            position:'center', scrollbarPadding:false, heightAuto:false,
-        }).then(r => { if (r.isConfirmed) window.location.href = "{% url 'referees' %}"; });
-    } else {
-        window.location.href = "{% url 'referees' %}";
-    }
-}
+        function populateExpiryYears(elId, selected) {
+            const sel = document.getElementById(elId);
+            const cur = new Date().getFullYear();
+            sel.innerHTML = '<option value="">No expiry / Lifetime</option>';
+            for (let y = cur; y <= cur + 20; y++)
+                sel.innerHTML += `<option value="${y}" ${y == selected ? 'selected' : ''}>${y}</option>`;
+        }
 
-// ── Build table row ───────────────────────────────────────────
-function buildTableRow(m) {
-    const esc = s => (s||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-    const expiryBadge = m.expiry_year
-        ? `<span class="badge bg-gradient-warning" style="font-size:0.65rem;">${m.expiry_year}</span>`
-        : `<span class="badge bg-gradient-success" style="font-size:0.65rem;">Lifetime</span>`;
-    return `
+        populateJoinedYears('f_year_joined', null);
+        populateExpiryYears('f_expiry_year', null);
+
+        // ── Form state bar ────────────────────────────────────────────
+        function updateFormState() {
+            const bar = document.getElementById('formStateBar');
+            const msg = document.getElementById('formStateMsg');
+            const btn = document.getElementById('saveMemBtn');
+            const body = document.getElementById('f_body_name').value.trim();
+            const memNo = document.getElementById('f_membership_no').value.trim();
+            const yr = document.getElementById('f_year_joined').value;
+            if (!body && !memNo) {
+                bar.className = 'form-state-bar fsb-empty';
+                msg.textContent = 'Enter a professional body name to begin';
+                btn.disabled = true;
+                return;
+            }
+            const missing = [];
+            if (!body) missing.push('Professional body');
+            if (!memNo) missing.push('Membership number');
+            if (!yr) missing.push('Year joined');
+            if (missing.length) {
+                bar.className = 'form-state-bar fsb-filling';
+                msg.textContent = 'Still needed: ' + missing.join(', ');
+                btn.disabled = true;
+                return;
+            }
+            bar.className = 'form-state-bar fsb-ready';
+            msg.innerHTML = '<i class="fas fa-check-circle me-1"></i>Ready to save — click Save Membership';
+            btn.disabled = false;
+        }
+
+        // ── Save (single, immediate) ──────────────────────────────────
+        function saveMembership() {
+            const body_name = document.getElementById('f_body_name').value.trim();
+            const membership_no = document.getElementById('f_membership_no').value.trim();
+            const year_joined = document.getElementById('f_year_joined').value;
+            if (!body_name || !membership_no || !year_joined) {
+                updateFormState();
+                return;
+            }
+
+            const btn = document.getElementById('saveMemBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Saving…';
+
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', CSRF);
+            formData.append('action', 'save');
+            formData.append('memberships', JSON.stringify([{
+                body_name,
+                membership_no,
+                year_joined,
+                expiry_year: document.getElementById('f_expiry_year').value,
+            }]));
+
+            fetch("{% url 'memberships' %}", {method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' && data.saved?.length) {
+                        const m = data.saved[0];
+                        const tr = document.createElement('tr');
+                        tr.id = `row_${m.id}`;
+                        tr.className = 'saved-row-new';
+                        tr.innerHTML = buildTableRow(m);
+                        document.getElementById('savedTableBody').appendChild(tr);
+                        document.getElementById('savedSection').style.display = 'block';
+                        const badge = document.getElementById('savedCount');
+                        badge.textContent = parseInt(badge.textContent || 0) + 1;
+                        // reset
+                        document.getElementById('f_body_name').value = '';
+                        document.getElementById('f_membership_no').value = '';
+                        document.getElementById('f_year_joined').value = '';
+                        document.getElementById('f_expiry_year').value = '';
+                        document.getElementById('formStateBar').className = 'form-state-bar fsb-empty';
+                        document.getElementById('formStateMsg').textContent = 'Enter a professional body name to begin';
+                        btn.disabled = true;
+                        btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
+                        Swal.fire({
+                            icon: 'success', title: 'Saved!',
+                            html: `<strong>${m.body_name}</strong> membership saved.<br>
+                      <small class="text-secondary">You can add another or click Next to continue.</small>`,
+                            confirmButtonText: 'OK', position: 'center', scrollbarPadding: false, heightAuto: false,
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Save Failed',
+                            text: data.message || 'Something went wrong.',
+                            position: 'center',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        });
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
+                    }
+                })
+                .catch(() => {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'System Error',
+                        text: 'Something went wrong. Please try again.',
+                        position: 'center',
+                        scrollbarPadding: false,
+                        heightAuto: false
+                    });
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-save"></i> Save Membership';
+                });
+        }
+
+        // ── Next guard ────────────────────────────────────────────────
+        function goNext() {
+            const hasUnsaved = document.getElementById('f_body_name').value.trim() !== ''
+                || document.getElementById('f_membership_no').value.trim() !== '';
+            if (hasUnsaved) {
+                Swal.fire({
+                    icon: 'warning', title: 'Unsaved Membership',
+                    html: 'You have details entered but not yet saved.<br>Click <strong>Save Membership</strong> first, or discard and continue.',
+                    showCancelButton: true,
+                    confirmButtonText: '<i class="fas fa-arrow-right me-1"></i> Discard & Go Next',
+                    cancelButtonText: '<i class="fas fa-save me-1"></i> Go Back & Save',
+                    confirmButtonColor: '#64748b', cancelButtonColor: '#1D255B',
+                    position: 'center', scrollbarPadding: false, heightAuto: false,
+                }).then(r => {
+                    if (r.isConfirmed) window.location.href = "{% url 'referees' %}";
+                });
+            } else {
+                window.location.href = "{% url 'referees' %}";
+            }
+        }
+
+        // ── Build table row ───────────────────────────────────────────
+        function buildTableRow(m) {
+            const esc = s => (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+            const expiryBadge = m.expiry_year
+                ? `<span class="badge bg-gradient-warning" style="font-size:0.65rem;">${m.expiry_year}</span>`
+                : `<span class="badge bg-gradient-success" style="font-size:0.65rem;">Lifetime</span>`;
+            return `
         <td><span class="badge bg-gradient-info" style="font-size:0.72rem;">${m.body_name}</span></td>
         <td class="text-sm">${m.membership_no}</td>
         <td class="d-none d-sm-table-cell text-sm">${m.year_joined}</td>
         <td class="d-none d-sm-table-cell text-sm">${expiryBadge}</td>
         <td><div class="d-flex gap-1">
             <button type="button" class="btn btn-outline-info btn-xs"
-                    onclick="editMembership(${m.id},'${esc(m.body_name)}','${esc(m.membership_no)}',${m.year_joined},'${m.expiry_year||''}')">
+                    onclick="editMembership(${m.id},'${esc(m.body_name)}','${esc(m.membership_no)}',${m.year_joined},'${m.expiry_year || ''}')">
                 <i class="fas fa-edit"></i>
             </button>
             <button type="button" class="btn btn-outline-danger btn-xs"
@@ -402,70 +509,179 @@ function buildTableRow(m) {
                 <i class="fas fa-trash"></i>
             </button>
         </div></td>`;
-}
+        }
 
-// ── Edit ──────────────────────────────────────────────────────
-function editMembership(id, bodyName, membershipNo, yearJoined, expiryYear) {
-    document.getElementById('edit_mem_id').value      = id;
-    document.getElementById('edit_body_name').value   = bodyName;
-    document.getElementById('edit_membership_no').value = membershipNo;
-    populateJoinedYears('edit_year_joined', yearJoined);
-    populateExpiryYears('edit_expiry_year', expiryYear);
-    new bootstrap.Modal(document.getElementById('editModal')).show();
-}
+        // ── Edit ──────────────────────────────────────────────────────
+        function editMembership(id, bodyName, membershipNo, yearJoined, expiryYear) {
+            document.getElementById('edit_mem_id').value = id;
+            document.getElementById('edit_body_name').value = bodyName;
+            document.getElementById('edit_membership_no').value = membershipNo;
+            populateJoinedYears('edit_year_joined', yearJoined);
+            populateExpiryYears('edit_expiry_year', expiryYear);
+            new bootstrap.Modal(document.getElementById('editModal')).show();
+        }
 
-function submitEdit() {
-    const mem_id       = document.getElementById('edit_mem_id').value;
-    const body_name    = document.getElementById('edit_body_name').value.trim();
-    const membership_no = document.getElementById('edit_membership_no').value.trim();
-    const year_joined  = document.getElementById('edit_year_joined').value;
-    if (!body_name)    { Swal.fire({ icon:'error', title:'Required', text:'Professional body name is required.', position:'center', scrollbarPadding:false, heightAuto:false }); return; }
-    if (!membership_no) { Swal.fire({ icon:'error', title:'Required', text:'Membership number is required.', position:'center', scrollbarPadding:false, heightAuto:false }); return; }
-    if (!year_joined)  { Swal.fire({ icon:'error', title:'Required', text:'Year joined is required.', position:'center', scrollbarPadding:false, heightAuto:false }); return; }
-    Swal.fire({ title:'Updating…', icon:'info', allowOutsideClick:false, showConfirmButton:false, position:'center', scrollbarPadding:false, didOpen:()=>Swal.showLoading() });
-    const formData = new FormData();
-    formData.append('csrfmiddlewaretoken', CSRF); formData.append('action','edit');
-    formData.append('mem_id', mem_id); formData.append('body_name', body_name);
-    formData.append('membership_no', membership_no); formData.append('year_joined', year_joined);
-    formData.append('expiry_year', document.getElementById('edit_expiry_year').value);
-    fetch("{% url 'memberships' %}", { method:'POST', headers:{'X-CSRFToken':CSRF}, body:formData })
-    .then(r => r.json())
-    .then(data => {
-        Swal.close();
-        if (data.status === 'success') {
-            const row = document.getElementById(`row_${mem_id}`);
-            if (row && data.mem) row.innerHTML = buildTableRow(data.mem);
-            bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
-            Swal.fire({ icon:'success', title:'Updated!', text:data.message, timer:1800, showConfirmButton:false, position:'center', scrollbarPadding:false, heightAuto:false });
-        } else { Swal.fire({ icon:'error', title:'Update Failed', text:data.message, position:'center', scrollbarPadding:false, heightAuto:false }); }
-    })
-    .catch(() => { Swal.close(); Swal.fire({ icon:'error', title:'System Error', text:'Something went wrong.', position:'center', scrollbarPadding:false, heightAuto:false }); });
-}
+        function submitEdit() {
+            const mem_id = document.getElementById('edit_mem_id').value;
+            const body_name = document.getElementById('edit_body_name').value.trim();
+            const membership_no = document.getElementById('edit_membership_no').value.trim();
+            const year_joined = document.getElementById('edit_year_joined').value;
+            if (!body_name) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Required',
+                    text: 'Professional body name is required.',
+                    position: 'center',
+                    scrollbarPadding: false,
+                    heightAuto: false
+                });
+                return;
+            }
+            if (!membership_no) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Required',
+                    text: 'Membership number is required.',
+                    position: 'center',
+                    scrollbarPadding: false,
+                    heightAuto: false
+                });
+                return;
+            }
+            if (!year_joined) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Required',
+                    text: 'Year joined is required.',
+                    position: 'center',
+                    scrollbarPadding: false,
+                    heightAuto: false
+                });
+                return;
+            }
+            Swal.fire({
+                title: 'Updating…',
+                icon: 'info',
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                position: 'center',
+                scrollbarPadding: false,
+                didOpen: () => Swal.showLoading()
+            });
+            const formData = new FormData();
+            formData.append('csrfmiddlewaretoken', CSRF);
+            formData.append('action', 'edit');
+            formData.append('mem_id', mem_id);
+            formData.append('body_name', body_name);
+            formData.append('membership_no', membership_no);
+            formData.append('year_joined', year_joined);
+            formData.append('expiry_year', document.getElementById('edit_expiry_year').value);
+            fetch("{% url 'memberships' %}", {method: 'POST', headers: {'X-CSRFToken': CSRF}, body: formData})
+                .then(r => r.json())
+                .then(data => {
+                    Swal.close();
+                    if (data.status === 'success') {
+                        const row = document.getElementById(`row_${mem_id}`);
+                        if (row && data.mem) row.innerHTML = buildTableRow(data.mem);
+                        bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Updated!',
+                            text: data.message,
+                            timer: 1800,
+                            showConfirmButton: false,
+                            position: 'center',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        });
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Update Failed',
+                            text: data.message,
+                            position: 'center',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        });
+                    }
+                })
+                .catch(() => {
+                    Swal.close();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'System Error',
+                        text: 'Something went wrong.',
+                        position: 'center',
+                        scrollbarPadding: false,
+                        heightAuto: false
+                    });
+                });
+        }
 
-function deleteMembership(memId, bodyName) {
-    Swal.fire({ icon:'warning', title:'Delete Membership',
-        html:`Delete <strong>${bodyName}</strong> membership?<br><small class="text-secondary">This cannot be undone.</small>`,
-        showCancelButton:true, confirmButtonText:'<i class="fas fa-trash me-1"></i> Yes, Delete',
-        cancelButtonText:'Cancel', confirmButtonColor:'#ef4444', cancelButtonColor:'#8392ab',
-        position:'center', scrollbarPadding:false, heightAuto:false,
-    }).then(r => {
-        if (!r.isConfirmed) return;
-        Swal.fire({ title:'Deleting…', icon:'info', allowOutsideClick:false, showConfirmButton:false, position:'center', scrollbarPadding:false, didOpen:()=>Swal.showLoading() });
-        const fd = new FormData(); fd.append('csrfmiddlewaretoken', CSRF); fd.append('action','delete'); fd.append('mem_id', memId);
-        fetch("{% url 'memberships' %}", { method:'POST', headers:{'X-CSRFToken':CSRF}, body:fd })
-        .then(r => r.json())
-        .then(data => {
-            Swal.close();
-            if (data.status === 'success') {
-                document.getElementById(`row_${memId}`)?.remove();
-                const badge = document.getElementById('savedCount');
-                badge.textContent = Math.max(0, parseInt(badge.textContent||0) - 1);
-                if (!document.querySelectorAll('#savedTableBody tr').length) document.getElementById('savedSection').style.display = 'none';
-                Swal.fire({ icon:'success', title:'Deleted', text:'Membership removed.', timer:1500, showConfirmButton:false, position:'center', scrollbarPadding:false, heightAuto:false });
-            } else { Swal.fire({ icon:'error', title:'Delete Failed', text:data.message, position:'center', scrollbarPadding:false, heightAuto:false }); }
-        })
-        .catch(() => { Swal.close(); Swal.fire({ icon:'error', title:'System Error', text:'Something went wrong.', position:'center', scrollbarPadding:false, heightAuto:false }); });
-    });
-}
-</script>
+        function deleteMembership(memId, bodyName) {
+            Swal.fire({
+                icon: 'warning', title: 'Delete Membership',
+                html: `Delete <strong>${bodyName}</strong> membership?<br><small class="text-secondary">This cannot be undone.</small>`,
+                showCancelButton: true, confirmButtonText: '<i class="fas fa-trash me-1"></i> Yes, Delete',
+                cancelButtonText: 'Cancel', confirmButtonColor: '#ef4444', cancelButtonColor: '#8392ab',
+                position: 'center', scrollbarPadding: false, heightAuto: false,
+            }).then(r => {
+                if (!r.isConfirmed) return;
+                Swal.fire({
+                    title: 'Deleting…',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    showConfirmButton: false,
+                    position: 'center',
+                    scrollbarPadding: false,
+                    didOpen: () => Swal.showLoading()
+                });
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', CSRF);
+                fd.append('action', 'delete');
+                fd.append('mem_id', memId);
+                fetch("{% url 'memberships' %}", {method: 'POST', headers: {'X-CSRFToken': CSRF}, body: fd})
+                    .then(r => r.json())
+                    .then(data => {
+                        Swal.close();
+                        if (data.status === 'success') {
+                            document.getElementById(`row_${memId}`)?.remove();
+                            const badge = document.getElementById('savedCount');
+                            badge.textContent = Math.max(0, parseInt(badge.textContent || 0) - 1);
+                            if (!document.querySelectorAll('#savedTableBody tr').length) document.getElementById('savedSection').style.display = 'none';
+                            Swal.fire({
+                                icon: 'success',
+                                title: 'Deleted',
+                                text: 'Membership removed.',
+                                timer: 1500,
+                                showConfirmButton: false,
+                                position: 'center',
+                                scrollbarPadding: false,
+                                heightAuto: false
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Delete Failed',
+                                text: data.message,
+                                position: 'center',
+                                scrollbarPadding: false,
+                                heightAuto: false
+                            });
+                        }
+                    })
+                    .catch(() => {
+                        Swal.close();
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'System Error',
+                            text: 'Something went wrong.',
+                            position: 'center',
+                            scrollbarPadding: false,
+                            heightAuto: false
+                        });
+                    });
+            });
+        }
+    </script>
 {% endblock %}

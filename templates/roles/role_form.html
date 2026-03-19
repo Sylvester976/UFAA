@@ -3,92 +3,92 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-user-cog me-2" style="color:var(--gold-dark);"></i>
-Update Role
-</h4>
-<p>Edit role and permissions</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-user-cog me-2" style="color:var(--gold-dark);"></i>
+                Update Role
+            </h4>
+            <p>Edit role and permissions</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="row justify-content-center">
-<div class="col-lg-6">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
 
-<div class="card dash-card brand-card">
+                <div class="card dash-card brand-card">
 
-<div class="card-body">
+                    <div class="card-body">
 
-<form method="post">
-{% csrf_token %}
+                        <form method="post">
+                            {% csrf_token %}
 
-<div class="mb-3">
-<label>Name</label>
-<input type="text"
-name="name"
-class="form-control"
-value="{{ role.name }}"
-required>
-</div>
+                            <div class="mb-3">
+                                <label>Name</label>
+                                <input type="text"
+                                       name="name"
+                                       class="form-control"
+                                       value="{{ role.name }}"
+                                       required>
+                            </div>
 
-<div class="mb-3">
-<label>Description</label>
-<textarea name="description"
-class="form-control"
-rows="4">{{ role.description }}</textarea>
-</div>
+                            <div class="mb-3">
+                                <label>Description</label>
+                                <textarea name="description"
+                                          class="form-control"
+                                          rows="4">{{ role.description }}</textarea>
+                            </div>
 
-<label class="mb-2">Permissions</label>
+                            <label class="mb-2">Permissions</label>
 
-<div class="row">
+                            <div class="row">
 
-{% for permission in permissions %}
+                                {% for permission in permissions %}
 
-<div class="col-md-6 mb-2">
+                                    <div class="col-md-6 mb-2">
 
-<label class="list-group-item d-flex align-items-center">
+                                        <label class="list-group-item d-flex align-items-center">
 
-<input type="checkbox"
-name="permissions"
-value="{{ permission.id }}"
-class="form-check-input me-2"
-{% if permission in role.permissions.all %}checked{% endif %}>
+                                            <input type="checkbox"
+                                                   name="permissions"
+                                                   value="{{ permission.id }}"
+                                                   class="form-check-input me-2"
+                                                   {% if permission in role.permissions.all %}checked{% endif %}>
 
-{{ permission.name }}
+                                            {{ permission.name }}
 
-</label>
+                                        </label>
 
-</div>
+                                    </div>
 
-{% endfor %}
+                                {% endfor %}
 
-</div>
+                            </div>
 
-<div class="mt-3">
+                            <div class="mt-3">
 
-<button type="submit" class="btn btn-brand">
-<i class="fas fa-save me-1"></i>
-Update Role
-</button>
+                                <button type="submit" class="btn btn-brand">
+                                    <i class="fas fa-save me-1"></i>
+                                    Update Role
+                                </button>
 
-<a href="{% url 'role_list' %}" class="btn btn-outline-brand">
-Cancel
-</a>
+                                <a href="{% url 'role_list' %}" class="btn btn-outline-brand">
+                                    Cancel
+                                </a>
 
-</div>
+                            </div>
 
-</form>
+                        </form>
 
-</div>
+                    </div>
 
-</div>
+                </div>
 
-</div>
-</div>
+            </div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

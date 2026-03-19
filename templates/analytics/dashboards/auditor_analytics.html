@@ -1,0 +1,465 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}Auditor Dashboard{% endblock %}
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --amber: #b7770d;
+            --red: #c0392b;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, #1a1a45, var(--navy));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .25);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .kpi-sub {
+            font-size: .72rem;
+            margin-top: .25rem;
+            color: #8392ab;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .section-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+
+        .mini-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .55rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .mini-table td {
+            padding: .6rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: middle;
+        }
+
+        .mini-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mini-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .flag-row {
+            background: #fde8e8;
+            border-left: 4px solid var(--red);
+            padding: .6rem 1rem;
+            margin-bottom: .5rem;
+            border-radius: 0 .4rem .4rem 0;
+            font-size: .8rem;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+
+        .chip {
+            font-size: .63rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+        }
+
+        .chip-red {
+            background: #fde8e8;
+            color: var(--red);
+        }
+
+        .chip-amber {
+            background: #fff3cd;
+            color: var(--amber);
+        }
+
+        .chip-green {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="banner-title mb-0"><i class="fas fa-shield-alt me-2" style="color:var(--gold-dk);"></i>Auditor
+                        Dashboard</p>
+                    <p class="banner-sub mb-0">Immutable audit trail, overrides, compliance flags</p>
+                </div>
+                <a href="{% url 'analytics:auditor_reports_index' %}"
+                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:.5rem;font-size:.75rem;font-weight:700;padding:.4rem 1rem;display:inline-flex;align-items:center;gap:.4rem;">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </div>
+        </div>
+        <div class="gold-divider"></div>
+
+        <!-- KPIs -->
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Total Vacancies</div>
+                        <div class="kpi-val">{{ total_vacancies }}</div>
+                        <div class="kpi-sub">In system</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-lt));"><i
+                            class="fas fa-briefcase"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Total Applications</div>
+                        <div class="kpi-val">{{ total_apps }}</div>
+                        <div class="kpi-sub">Submitted</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,#1a6fa8,#2E86C1);"><i
+                            class="fas fa-users"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Status Changes</div>
+                        <div class="kpi-val">{{ total_status_changes }}</div>
+                        <div class="kpi-sub"
+                             style="color:{% if changes_today > 0 %}var(--amber){% else %}#8392ab{% endif %};">{{ changes_today }}
+                            today
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--amber),#e0a020);"><i
+                            class="fas fa-exchange-alt"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Overdue</div>
+                        <div class="kpi-val"
+                             style="color:{% if overdue_committee|length > 0 %}var(--red){% else %}var(--navy){% endif %};">{{ overdue_committee|length }}</div>
+                        <div class="kpi-sub"
+                             style="color:{% if overdue_committee|length > 0 %}var(--red){% else %}#8392ab{% endif %};">
+                            Missed deadlines
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--red),#e74c3c);"><i
+                            class="fas fa-exclamation-circle"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance flags -->
+        {% if overdue_committee %}
+            <div class="section-card">
+                <div class="section-header"><h6 class="section-title" style="color:var(--red);"><i
+                        class="fas fa-exclamation-triangle me-2"></i>Compliance Flags — Missed Deadlines</h6></div>
+                <div style="padding:.85rem 1.2rem;">
+                    {% for item in overdue_committee %}
+                        <div class="flag-row">
+                            <strong style="color:var(--red);">{{ item.vacancy.title }}</strong>
+                            <span style="font-family:monospace;font-size:.75rem;color:#7d3030;margin-left:.5rem;">{{ item.vacancy.reference_number }}</span>
+                            <span class="chip chip-red ms-2">{{ item.pending_count }} member{{ item.pending_count|pluralize }} pending</span>
+                            <span style="font-size:.75rem;color:#7d3030;margin-left:.5rem;">{{ item.days_overdue }} day{{ item.days_overdue|pluralize }} overdue</span>
+                            <a href="{% url 'analytics:auditor_vacancy_trail' item.vacancy.id %}"
+                               style="float:right;font-size:.75rem;font-weight:700;color:var(--red);">View Trail →</a>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Overrides -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-undo me-2"
+                                                                             style="color:var(--amber);opacity:.8;"></i>Shortlist
+                        Overrides</h6><span class="chip chip-amber">{{ shortlist_overrides|length }} total</span></div>
+                    {% if shortlist_overrides %}
+                        <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Vacancy</th>
+                                    <th>By</th>
+                                    <th>Date</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for log in shortlist_overrides %}
+                                    <tr>
+                                        <td style="font-weight:600;color:var(--navy);font-size:.78rem;">{{ log.vacancy.title|truncatechars:30 }}</td>
+                                        <td style="font-size:.75rem;">{{ log.performed_by_label|default:"System" }}</td>
+                                        <td style="font-size:.72rem;color:#8392ab;">{{ log.timestamp|date:"d M Y" }}</td>
+                                        <td><a href="{% url 'analytics:auditor_vacancy_trail' log.vacancy.id %}"
+                                               style="font-size:.7rem;color:var(--navy);font-weight:700;"><i
+                                                class="fas fa-eye"></i></a></td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:1.5rem;color:#b0bac9;font-size:.8rem;">No shortlist
+                            overrides recorded
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-user-tie me-2"
+                                                                             style="color:var(--amber);opacity:.8;"></i>CEO
+                        Overrides</h6><span class="chip chip-amber">{{ ceo_overrides|length }} total</span></div>
+                    {% if ceo_overrides %}
+                        <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Vacancy</th>
+                                    <th>Selected</th>
+                                    <th>By</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for log in ceo_overrides %}
+                                    <tr>
+                                        <td style="font-weight:600;color:var(--navy);font-size:.78rem;">{{ log.vacancy.title|truncatechars:25 }}</td>
+                                        <td style="font-size:.75rem;">{{ log.metadata.selected_name|default:"—" }}</td>
+                                        <td style="font-size:.75rem;">{{ log.performed_by_label|default:"—" }}</td>
+                                        <td style="font-size:.72rem;color:#8392ab;">{{ log.timestamp|date:"d M Y" }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:1.5rem;color:#b0bac9;font-size:.8rem;">No CEO overrides
+                            recorded
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- COI Declarations -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-shield-alt me-2"
+                                                                             style="color:var(--gold-dk);opacity:.8;"></i>Committee
+                        COI Declarations</h6><span class="chip chip-amber">{{ committee_coi|length }}</span></div>
+                    {% if committee_coi %}
+                        <div style="overflow-x:auto;max-height:220px;overflow-y:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Vacancy</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for e in committee_coi %}
+                                    <tr>
+                                        <td style="font-weight:600;font-size:.78rem;">{{ e.member.get_full_name|default:e.member.email }}</td>
+                                        <td style="font-size:.75rem;color:#67748e;font-family:monospace;">{{ e.vacancy.reference_number }}</td>
+                                        <td style="font-size:.72rem;color:#8392ab;">{{ e.conflict_declared_at|date:"d M Y"|default:"—" }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:1.5rem;color:#b0bac9;font-size:.8rem;">No COI
+                            declarations
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-shield-alt me-2"
+                                                                             style="color:var(--gold-dk);opacity:.8;"></i>Panel
+                        COI Declarations</h6><span class="chip chip-amber">{{ panel_coi|length }}</span></div>
+                    {% if panel_coi %}
+                        <div style="overflow-x:auto;max-height:220px;overflow-y:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Member</th>
+                                    <th>Vacancy</th>
+                                    <th>Date</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for e in panel_coi %}
+                                    <tr>
+                                        <td style="font-weight:600;font-size:.78rem;">{{ e.member.get_full_name|default:e.member.email }}</td>
+                                        <td style="font-size:.75rem;color:#67748e;font-family:monospace;">{{ e.vacancy.reference_number }}</td>
+                                        <td style="font-size:.72rem;color:#8392ab;">{{ e.conflict_declared_at|date:"d M Y"|default:"—" }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:1.5rem;color:#b0bac9;font-size:.8rem;">No COI
+                            declarations
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Vacancy trail lookup -->
+        <div class="section-card">
+            <div class="section-header"><h6 class="section-title"><i class="fas fa-search me-2"
+                                                                     style="color:var(--gold-dk);opacity:.8;"></i>Audit
+                Trail Lookup</h6></div>
+            <div style="padding:.85rem 1.2rem;">
+                <div style="max-height:280px;overflow-y:auto;">
+                    <table class="mini-table">
+                        <thead>
+                        <tr>
+                            <th>Vacancy</th>
+                            <th>Reference</th>
+                            <th>Status</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for v in vacancies %}
+                            <tr>
+                                <td style="font-weight:600;color:var(--navy);font-size:.8rem;">{{ v.title }}</td>
+                                <td style="font-family:monospace;font-size:.74rem;color:#67748e;">{{ v.reference_number }}</td>
+                                <td><span
+                                        style="font-size:.68rem;font-weight:700;padding:.18rem .55rem;border-radius:99px;background:#f0f2f8;color:#344767;">{{ v.status|title }}</span>
+                                </td>
+                                <td><a href="{% url 'analytics:auditor_vacancy_trail' v.id %}"
+                                       style="font-size:.75rem;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:.3rem;">Trail
+                                    <i class="fas fa-arrow-right"></i></a></td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

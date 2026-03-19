@@ -2,407 +2,711 @@
 {% block title %}My Committee Assignments{% endblock %}
 
 {% block extra_css %}
-<style>
-:root {
-    --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
-    --green: #1a7a45; --red: #c0392b; --amber: #b7770d;
-}
-a { text-decoration: none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
-    border-radius: 1rem; padding: 1.25rem 1.5rem; color: #fff;
-    display: flex; align-items: center;
-    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
-    margin-bottom: 1.75rem;
-}
-.banner-title { font-size: 1.05rem; font-weight: 700; color: var(--gold); margin: 0; }
-.banner-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.7); margin: 0; }
+        a {
+            text-decoration: none !important;
+        }
 
-.section-heading {
-    display: flex; align-items: center; gap: 0.6rem;
-    margin-bottom: 0.9rem;
-}
-.sh-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.sh-label { font-size: 0.68rem; font-weight: 800; text-transform: uppercase;
-            letter-spacing: .06em; color: #8392ab; }
-.sh-line  { flex: 1; height: 1px; background: #f0f2f8; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1.75rem;
+        }
 
-/* Action cards */
-.action-card {
-    background: #fff; border-radius: 0.9rem;
-    box-shadow: 0 2px 14px rgba(38,37,97,0.09);
-    overflow: hidden; display: flex; flex-direction: column;
-    border-left: 4px solid transparent;
-    transition: box-shadow 0.2s;
-    height: 100%;
-}
-.action-card:hover { box-shadow: 0 6px 28px rgba(38,37,97,0.14); }
-.action-card.needs-ack   { border-left-color: #f59e0b; }
-.action-card.needs-coi   { border-left-color: #f97316; }
-.action-card.in-progress { border-left-color: #6366f1; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.ac-head {
-    padding: 1rem 1.25rem 0.7rem;
-    display: flex; align-items: flex-start;
-    justify-content: space-between; gap: 0.75rem;
-}
-.ac-title { font-size: 0.9rem; font-weight: 800; color: var(--navy); margin: 0 0 0.15rem; }
-.ac-ref   { font-size: 0.7rem; color: #adb5bd; font-family: monospace; }
+        .banner-sub {
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
 
-.step-badge {
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    font-size: 0.67rem; font-weight: 700; padding: 0.22rem 0.65rem;
-    border-radius: 99px; white-space: nowrap; flex-shrink: 0;
-}
-.sb-ack  { background: #fff3cd; color: #7d5500; }
-.sb-coi  { background: #ffedd5; color: #9a3412; }
-.sb-vote { background: #e0e7ff; color: #3730a3; }
+        .section-heading {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.9rem;
+        }
 
-/* Step strip */
-.step-strip {
-    display: flex; padding: 0 1.25rem 0.9rem;
-}
-.step-item {
-    flex: 1; display: flex; flex-direction: column;
-    align-items: center; gap: 0.3rem;
-    position: relative; font-size: 0.62rem; font-weight: 600;
-    color: #c9d0e0; text-align: center;
-}
-.step-item::before {
-    content: ''; position: absolute; top: 9px;
-    left: calc(-50% + 10px); right: calc(50% + 10px);
-    height: 2px; background: #e9ecef; z-index: 0;
-}
-.step-item:first-child::before { display: none; }
-.step-dot {
-    width: 20px; height: 20px; border-radius: 50%;
-    background: #f0f2f8; border: 2px solid #e2e6ea;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 0.55rem; font-weight: 800; z-index: 1; position: relative;
-}
-.step-item.s-done   { color: var(--green); }
-.step-item.s-done   .step-dot { background: var(--green); border-color: var(--green); color: #fff; }
-.step-item.s-done::before     { background: var(--green); }
-.step-item.s-active { color: var(--navy); font-weight: 800; }
-.step-item.s-active .step-dot { background: var(--navy); border-color: var(--navy); color: var(--gold); }
-.step-item.s-active::before   { background: var(--green); }
+        .sh-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
 
-/* Vote progress */
-.vote-progress { padding: 0 1.25rem 0.85rem; }
-.vp-row { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 0.3rem; }
-.vp-track { flex: 1; height: 7px; background: #f0f2f8; border-radius: 99px; overflow: hidden; }
-.vp-fill  { height: 100%; border-radius: 99px;
-            background: linear-gradient(90deg, var(--navy), #4f46e5); transition: width 0.4s; }
-.vp-pct   { font-size: 0.72rem; font-weight: 800; color: var(--navy); min-width: 34px; text-align: right; }
-.vp-meta  { font-size: 0.72rem; color: #8392ab; }
-.vp-meta strong { color: #344767; }
+        .sh-label {
+            font-size: 0.68rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            color: #8392ab;
+        }
 
-.ac-hint {
-    padding: 0 1.25rem 0.9rem;
-    font-size: 0.73rem; color: #8392ab;
-    display: flex; align-items: center; gap: 0.4rem;
-}
+        .sh-line {
+            flex: 1;
+            height: 1px;
+            background: #f0f2f8;
+        }
 
-.ac-deadline { padding: 0 1.25rem 0.9rem; font-size: 0.72rem; font-weight: 600; }
-.dl-red   { color: var(--red); }
-.dl-amber { color: var(--amber); }
-.dl-ok    { color: #adb5bd; }
+        /* Action cards */
+        .action-card {
+            background: #fff;
+            border-radius: 0.9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, 0.09);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            border-left: 4px solid transparent;
+            transition: box-shadow 0.2s;
+            height: 100%;
+        }
 
-.ac-footer {
-    margin-top: auto;
-    padding: 0.7rem 1.25rem; background: #fafbff;
-    border-top: 1px solid #f0f2f8;
-    display: flex; align-items: center;
-    justify-content: space-between; gap: 0.5rem; flex-wrap: wrap;
-}
-.ac-hint-foot {
-    font-size: 0.68rem; color: #b0bac9;
-    display: flex; align-items: center; gap: 0.3rem;
-}
-.btn-cta {
-    font-size: 0.78rem; font-weight: 700;
-    padding: 0.45rem 1.2rem; border-radius: 0.45rem;
-    border: none; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 0.4rem;
-    transition: opacity 0.15s; white-space: nowrap;
-    text-decoration: none !important;
-}
-.btn-cta:hover { opacity: 0.88; }
-.cta-navy  { background: var(--navy);  color: #fff !important; }
-.cta-amber { background: var(--amber); color: #fff !important; }
-.cta-green { background: var(--green); color: #fff !important; }
+        .action-card:hover {
+            box-shadow: 0 6px 28px rgba(38, 37, 97, 0.14);
+        }
 
-/* Slim rows */
-.slim-list { display: flex; flex-direction: column; gap: 0.45rem; }
-.slim-row {
-    background: #fff; border-radius: 0.6rem;
-    padding: 0.7rem 1.1rem;
-    display: flex; align-items: center; gap: 0.85rem; flex-wrap: wrap;
-    box-shadow: 0 1px 5px rgba(38,37,97,0.05);
-}
-.slim-row.recused-row { background: #fff8f8; opacity: 0.85; }
-.slim-info { flex: 1; min-width: 140px; }
-.slim-title { font-size: 0.82rem; font-weight: 700; color: var(--navy); }
-.slim-ref   { font-size: 0.68rem; color: #adb5bd; font-family: monospace; }
-.slim-meta  { font-size: 0.72rem; color: #8392ab; display: flex; align-items: center; gap: 0.3rem; }
-.slim-meta strong { color: #344767; }
-.badge-done    { background: #d4f5e2; color: #1a5c38; font-size: 0.65rem; font-weight: 700;
-                 padding: 0.2rem 0.6rem; border-radius: 99px; white-space: nowrap; }
-.badge-recused { background: #fde8e8; color: var(--red); font-size: 0.65rem; font-weight: 700;
-                 padding: 0.2rem 0.6rem; border-radius: 99px; white-space: nowrap; }
-.slim-btn {
-    font-size: 0.72rem; font-weight: 600; color: var(--navy);
-    background: #f0f2f8; padding: 0.25rem 0.75rem;
-    border-radius: 0.35rem;
-    display: inline-flex; align-items: center; gap: 0.3rem;
-    transition: background 0.15s; text-decoration: none !important;
-}
-.slim-btn:hover { background: #e0e4ef; }
+        .action-card.needs-ack {
+            border-left-color: #f59e0b;
+        }
 
-.empty-wrap { text-align: center; padding: 3.5rem 1rem; color: #b0bac9; }
-.empty-wrap i { font-size: 3rem; display: block; margin-bottom: 0.75rem; }
-</style>
+        .action-card.needs-coi {
+            border-left-color: #f97316;
+        }
+
+        .action-card.in-progress {
+            border-left-color: #6366f1;
+        }
+
+        .ac-head {
+            padding: 1rem 1.25rem 0.7rem;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .ac-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0 0 0.15rem;
+        }
+
+        .ac-ref {
+            font-size: 0.7rem;
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.67rem;
+            font-weight: 700;
+            padding: 0.22rem 0.65rem;
+            border-radius: 99px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .sb-ack {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .sb-coi {
+            background: #ffedd5;
+            color: #9a3412;
+        }
+
+        .sb-vote {
+            background: #e0e7ff;
+            color: #3730a3;
+        }
+
+        /* Step strip */
+        .step-strip {
+            display: flex;
+            padding: 0 1.25rem 0.9rem;
+        }
+
+        .step-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            position: relative;
+            font-size: 0.62rem;
+            font-weight: 600;
+            color: #c9d0e0;
+            text-align: center;
+        }
+
+        .step-item::before {
+            content: '';
+            position: absolute;
+            top: 9px;
+            left: calc(-50% + 10px);
+            right: calc(50% + 10px);
+            height: 2px;
+            background: #e9ecef;
+            z-index: 0;
+        }
+
+        .step-item:first-child::before {
+            display: none;
+        }
+
+        .step-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #f0f2f8;
+            border: 2px solid #e2e6ea;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.55rem;
+            font-weight: 800;
+            z-index: 1;
+            position: relative;
+        }
+
+        .step-item.s-done {
+            color: var(--green);
+        }
+
+        .step-item.s-done .step-dot {
+            background: var(--green);
+            border-color: var(--green);
+            color: #fff;
+        }
+
+        .step-item.s-done::before {
+            background: var(--green);
+        }
+
+        .step-item.s-active {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .step-item.s-active .step-dot {
+            background: var(--navy);
+            border-color: var(--navy);
+            color: var(--gold);
+        }
+
+        .step-item.s-active::before {
+            background: var(--green);
+        }
+
+        /* Vote progress */
+        .vote-progress {
+            padding: 0 1.25rem 0.85rem;
+        }
+
+        .vp-row {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .vp-track {
+            flex: 1;
+            height: 7px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .vp-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+            transition: width 0.4s;
+        }
+
+        .vp-pct {
+            font-size: 0.72rem;
+            font-weight: 800;
+            color: var(--navy);
+            min-width: 34px;
+            text-align: right;
+        }
+
+        .vp-meta {
+            font-size: 0.72rem;
+            color: #8392ab;
+        }
+
+        .vp-meta strong {
+            color: #344767;
+        }
+
+        .ac-hint {
+            padding: 0 1.25rem 0.9rem;
+            font-size: 0.73rem;
+            color: #8392ab;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .ac-deadline {
+            padding: 0 1.25rem 0.9rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+        }
+
+        .dl-red {
+            color: var(--red);
+        }
+
+        .dl-amber {
+            color: var(--amber);
+        }
+
+        .dl-ok {
+            color: #adb5bd;
+        }
+
+        .ac-footer {
+            margin-top: auto;
+            padding: 0.7rem 1.25rem;
+            background: #fafbff;
+            border-top: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .ac-hint-foot {
+            font-size: 0.68rem;
+            color: #b0bac9;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .btn-cta {
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 1.2rem;
+            border-radius: 0.45rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+            text-decoration: none !important;
+        }
+
+        .btn-cta:hover {
+            opacity: 0.88;
+        }
+
+        .cta-navy {
+            background: var(--navy);
+            color: #fff !important;
+        }
+
+        .cta-amber {
+            background: var(--amber);
+            color: #fff !important;
+        }
+
+        .cta-green {
+            background: var(--green);
+            color: #fff !important;
+        }
+
+        /* Slim rows */
+        .slim-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.45rem;
+        }
+
+        .slim-row {
+            background: #fff;
+            border-radius: 0.6rem;
+            padding: 0.7rem 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            box-shadow: 0 1px 5px rgba(38, 37, 97, 0.05);
+        }
+
+        .slim-row.recused-row {
+            background: #fff8f8;
+            opacity: 0.85;
+        }
+
+        .slim-info {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .slim-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .slim-ref {
+            font-size: 0.68rem;
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .slim-meta {
+            font-size: 0.72rem;
+            color: #8392ab;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        .slim-meta strong {
+            color: #344767;
+        }
+
+        .badge-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .badge-recused {
+            background: #fde8e8;
+            color: var(--red);
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 0.2rem 0.6rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .slim-btn {
+            font-size: 0.72rem;
+            font-weight: 600;
+            color: var(--navy);
+            background: #f0f2f8;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.35rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            transition: background 0.15s;
+            text-decoration: none !important;
+        }
+
+        .slim-btn:hover {
+            background: #e0e4ef;
+        }
+
+        .empty-wrap {
+            text-align: center;
+            padding: 3.5rem 1rem;
+            color: #b0bac9;
+        }
+
+        .empty-wrap i {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 0.75rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-clipboard-check me-2"></i>My Committee Assignments
-            </p>
-            <p class="banner-sub mb-0">
-                Vacancies where you have been appointed to the shortlisting committee
-            </p>
-        </div>
-        <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);">
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-clipboard-check me-2"></i>My Committee Assignments
+                </p>
+                <p class="banner-sub mb-0">
+                    Vacancies where you have been appointed to the shortlisting committee
+                </p>
+            </div>
+            <span style="font-size:0.75rem;color:rgba(255,255,255,0.6);">
             {{ assignments|length }} active assignment{{ assignments|length|pluralize }}
         </span>
-    </div>
+        </div>
 
-    {% if assignments %}
+        {% if assignments %}
 
-    {% comment %}
+            {% comment %}
     SECTION 1 — ACTION REQUIRED
     next_action values: acknowledge / declare_coi / vote
     {% endcomment %}
 
-    {% with ns=assignments %}
+            {% with ns=assignments %}
 
-    {% for row in assignments %}
-    {% if row.next_action == 'acknowledge' or row.next_action == 'declare_coi' or row.next_action == 'vote' %}
-    {% if forloop.first %}
-    <div class="section-heading">
-        <div class="sh-dot" style="background:#f59e0b;"></div>
-        <span class="sh-label">Action Required</span>
-        <span class="sh-line"></span>
-    </div>
-    <div class="row g-3 mb-4">
-    {% endif %}
+                {% for row in assignments %}
+                    {% if row.next_action == 'acknowledge' or row.next_action == 'declare_coi' or row.next_action == 'vote' %}
+                        {% if forloop.first %}
+                            <div class="section-heading">
+                                <div class="sh-dot" style="background:#f59e0b;"></div>
+                                <span class="sh-label">Action Required</span>
+                                <span class="sh-line"></span>
+                            </div>
+                            <div class="row g-3 mb-4">
+                        {% endif %}
 
-    <div class="col-xl-6">
-        <div class="action-card
+                        <div class="col-xl-6">
+                            <div class="action-card
             {% if row.next_action == 'acknowledge' %}needs-ack
             {% elif row.next_action == 'declare_coi' %}needs-coi
             {% else %}in-progress{% endif %}">
 
-            <div class="ac-head">
-                <div>
-                    <div class="ac-title">{{ row.vacancy.title }}</div>
-                    <div class="ac-ref">{{ row.vacancy.reference_number }}</div>
-                </div>
-                {% if row.next_action == 'acknowledge' %}
-                    <span class="step-badge sb-ack"><i class="fas fa-envelope-open"></i> Step 1 of 3</span>
-                {% elif row.next_action == 'declare_coi' %}
-                    <span class="step-badge sb-coi"><i class="fas fa-balance-scale"></i> Step 2 of 3</span>
-                {% else %}
-                    <span class="step-badge sb-vote"><i class="fas fa-vote-yea"></i> Step 3 of 3</span>
-                {% endif %}
-            </div>
+                                <div class="ac-head">
+                                    <div>
+                                        <div class="ac-title">{{ row.vacancy.title }}</div>
+                                        <div class="ac-ref">{{ row.vacancy.reference_number }}</div>
+                                    </div>
+                                    {% if row.next_action == 'acknowledge' %}
+                                        <span class="step-badge sb-ack"><i class="fas fa-envelope-open"></i> Step 1 of 3</span>
+                                    {% elif row.next_action == 'declare_coi' %}
+                                        <span class="step-badge sb-coi"><i class="fas fa-balance-scale"></i> Step 2 of 3</span>
+                                    {% else %}
+                                        <span class="step-badge sb-vote"><i
+                                                class="fas fa-vote-yea"></i> Step 3 of 3</span>
+                                    {% endif %}
+                                </div>
 
-            <div class="step-strip">
-                <div class="step-item s-done">
-                    <div class="step-dot"><i class="fas fa-check" style="font-size:.5rem;"></i></div>
-                    Appointed
-                </div>
-                <div class="step-item {% if row.acknowledged %}s-done{% elif row.next_action == 'acknowledge' %}s-active{% endif %}">
-                    <div class="step-dot">
-                        {% if row.acknowledged %}<i class="fas fa-check" style="font-size:.5rem;"></i>{% else %}2{% endif %}
-                    </div>
-                    Acknowledge
-                </div>
-                <div class="step-item {% if row.coi_declared %}s-done{% elif row.next_action == 'declare_coi' %}s-active{% endif %}">
-                    <div class="step-dot">
-                        {% if row.coi_declared %}<i class="fas fa-check" style="font-size:.5rem;"></i>{% else %}3{% endif %}
-                    </div>
-                    Declare COI
-                </div>
-                <div class="step-item {% if row.next_action == 'vote' %}s-active{% endif %}">
-                    <div class="step-dot">4</div>
-                    Vote
-                </div>
-            </div>
+                                <div class="step-strip">
+                                    <div class="step-item s-done">
+                                        <div class="step-dot"><i class="fas fa-check" style="font-size:.5rem;"></i>
+                                        </div>
+                                        Appointed
+                                    </div>
+                                    <div class="step-item {% if row.acknowledged %}s-done{% elif row.next_action == 'acknowledge' %}s-active{% endif %}">
+                                        <div class="step-dot">
+                                            {% if row.acknowledged %}
+                                                <i class="fas fa-check" style="font-size:.5rem;"></i>{% else %}
+                                                2{% endif %}
+                                        </div>
+                                        Acknowledge
+                                    </div>
+                                    <div class="step-item {% if row.coi_declared %}s-done{% elif row.next_action == 'declare_coi' %}s-active{% endif %}">
+                                        <div class="step-dot">
+                                            {% if row.coi_declared %}
+                                                <i class="fas fa-check" style="font-size:.5rem;"></i>{% else %}
+                                                3{% endif %}
+                                        </div>
+                                        Declare COI
+                                    </div>
+                                    <div class="step-item {% if row.next_action == 'vote' %}s-active{% endif %}">
+                                        <div class="step-dot">4</div>
+                                        Vote
+                                    </div>
+                                </div>
 
-            {% if row.next_action == 'vote' %}
-            <div class="vote-progress">
-                <div class="vp-row">
-                    <div class="vp-track">
-                        <div class="vp-fill" style="width:{{ row.percent }}%"></div>
-                    </div>
-                    <div class="vp-pct">{{ row.percent }}%</div>
-                </div>
-                <div class="vp-meta">
-                    <strong>{{ row.submitted_votes }}</strong> / <strong>{{ row.app_count }}</strong> applicants voted
-                    {% if row.draft_votes %}&nbsp;· <strong>{{ row.draft_votes }}</strong> draft{% endif %}
-                    &nbsp;· <strong style="color:var(--amber);">{{ row.remaining }} left</strong>
-                </div>
-            </div>
-            {% else %}
-            <div class="ac-hint">
-                <i class="fas fa-file-alt" style="color:#c7d2fe;"></i>
-                <strong>{{ row.app_count }}</strong>&nbsp;applicant{{ row.app_count|pluralize }} to review once voting opens
-            </div>
-            {% endif %}
+                                {% if row.next_action == 'vote' %}
+                                    <div class="vote-progress">
+                                        <div class="vp-row">
+                                            <div class="vp-track">
+                                                <div class="vp-fill" style="width:{{ row.percent }}%"></div>
+                                            </div>
+                                            <div class="vp-pct">{{ row.percent }}%</div>
+                                        </div>
+                                        <div class="vp-meta">
+                                            <strong>{{ row.submitted_votes }}</strong> /
+                                            <strong>{{ row.app_count }}</strong> applicants voted
+                                            {% if row.draft_votes %}&nbsp;· <strong>{{ row.draft_votes }}</strong>
+                                                draft{% endif %}
+                                            &nbsp;· <strong style="color:var(--amber);">{{ row.remaining }}
+                                            left</strong>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="ac-hint">
+                                        <i class="fas fa-file-alt" style="color:#c7d2fe;"></i>
+                                        <strong>{{ row.app_count }}</strong>&nbsp;applicant{{ row.app_count|pluralize }}
+                                        to review once voting opens
+                                    </div>
+                                {% endif %}
 
-            <div class="ac-deadline {% if row.deadline_red %}dl-red{% elif row.deadline_amber %}dl-amber{% else %}dl-ok{% endif %}">
-                <i class="fas fa-calendar me-1"></i>
-                Committee deadline: {{ row.deadline|date:"d M Y" }}
-                {% if row.deadline_red %}&nbsp;— <strong>OVERDUE</strong>
-                {% elif row.deadline_amber %}&nbsp;— {{ row.days_remaining }} day{{ row.days_remaining|pluralize }} left
-                {% else %}&nbsp;({{ row.days_remaining }} days away){% endif %}
-            </div>
+                                <div class="ac-deadline {% if row.deadline_red %}dl-red{% elif row.deadline_amber %}dl-amber{% else %}dl-ok{% endif %}">
+                                    <i class="fas fa-calendar me-1"></i>
+                                    Committee deadline: {{ row.deadline|date:"d M Y" }}
+                                    {% if row.deadline_red %}&nbsp;— <strong>OVERDUE</strong>
+                                    {% elif row.deadline_amber %}&nbsp;— {{ row.days_remaining }} day
+                                        {{ row.days_remaining|pluralize }} left
+                                    {% else %}&nbsp;({{ row.days_remaining }} days away){% endif %}
+                                </div>
 
-            <div class="ac-footer">
+                                <div class="ac-footer">
                 <span class="ac-hint-foot">
                     {% if row.next_action == 'acknowledge' %}
                         <i class="fas fa-info-circle"></i> Accept your appointment to proceed
                     {% elif row.next_action == 'declare_coi' %}
                         <i class="fas fa-info-circle"></i> Required before you can vote
                     {% else %}
-                        <i class="fas fa-info-circle"></i> {{ row.remaining }} vote{{ row.remaining|pluralize }} remaining
+                        <i class="fas fa-info-circle"></i> {{ row.remaining }} vote{{ row.remaining|pluralize }}
+                        remaining
                     {% endif %}
                 </span>
-                {% if row.next_action == 'acknowledge' %}
-                    <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-cta cta-navy">
-                        <i class="fas fa-clipboard-check"></i> Acknowledge Appointment
-                    </a>
-                {% elif row.next_action == 'declare_coi' %}
-                    <a href="{% url 'committee_declare_coi' row.vacancy.id %}" class="btn-cta cta-amber">
-                        <i class="fas fa-balance-scale"></i> Declare COI
-                    </a>
-                {% else %}
-                    <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-cta cta-green">
-                        <i class="fas fa-edit"></i>
-                        {% if row.submitted_votes > 0 %}Continue Voting{% else %}Start Voting{% endif %}
-                    </a>
+                                    {% if row.next_action == 'acknowledge' %}
+                                        <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-cta cta-navy">
+                                            <i class="fas fa-clipboard-check"></i> Acknowledge Appointment
+                                        </a>
+                                    {% elif row.next_action == 'declare_coi' %}
+                                        <a href="{% url 'committee_declare_coi' row.vacancy.id %}"
+                                           class="btn-cta cta-amber">
+                                            <i class="fas fa-balance-scale"></i> Declare COI
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'committee_review' row.vacancy.id %}" class="btn-cta cta-green">
+                                            <i class="fas fa-edit"></i>
+                                            {% if row.submitted_votes > 0 %}Continue Voting{% else %}Start
+                                                Voting{% endif %}
+                                        </a>
+                                    {% endif %}
+                                </div>
+
+                            </div>
+                        </div>
+
+                    {% endif %}
+                {% endfor %}
+
+            {% comment %} Close the action-required row if it was opened {% endcomment %}
+            {% for row in assignments %}
+                {% if row.next_action == 'acknowledge' or row.next_action == 'declare_coi' or row.next_action == 'vote' %}
+                    {% if forloop.first %}</div>{% endif %}
                 {% endif %}
-            </div>
-
-        </div>
-    </div>
-
-    {% endif %}
-    {% endfor %}
-
-    {% comment %} Close the action-required row if it was opened {% endcomment %}
-    {% for row in assignments %}
-    {% if row.next_action == 'acknowledge' or row.next_action == 'declare_coi' or row.next_action == 'vote' %}
-    {% if forloop.first %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
+            {% endfor %}
 
 
-    {% comment %} SECTION 2 — COMPLETED {% endcomment %}
+                {% comment %} SECTION 2 — COMPLETED {% endcomment %}
 
-    {% for row in assignments %}
-    {% if row.next_action == 'done' %}
-    {% if forloop.first %}
-    <div class="section-heading" style="margin-top:0.5rem;">
-        <div class="sh-dot" style="background:var(--green);"></div>
-        <span class="sh-label">Completed</span>
-        <span class="sh-line"></span>
-    </div>
-    <div class="slim-list mb-4">
-    {% endif %}
+                {% for row in assignments %}
+                    {% if row.next_action == 'done' %}
+                        {% if forloop.first %}
+                            <div class="section-heading" style="margin-top:0.5rem;">
+                                <div class="sh-dot" style="background:var(--green);"></div>
+                                <span class="sh-label">Completed</span>
+                                <span class="sh-line"></span>
+                            </div>
+                            <div class="slim-list mb-4">
+                        {% endif %}
 
-    <div class="slim-row">
-        <div class="slim-info">
-            <div class="slim-title">{{ row.vacancy.title }}</div>
-            <div class="slim-ref">{{ row.vacancy.reference_number }}</div>
-        </div>
-        <span class="slim-meta">
+                        <div class="slim-row">
+                            <div class="slim-info">
+                                <div class="slim-title">{{ row.vacancy.title }}</div>
+                                <div class="slim-ref">{{ row.vacancy.reference_number }}</div>
+                            </div>
+                            <span class="slim-meta">
             <i class="fas fa-check-circle" style="color:var(--green);"></i>
             <strong>{{ row.submitted_votes }}</strong>/{{ row.app_count }} votes submitted
         </span>
-        <span class="slim-meta">
+                            <span class="slim-meta">
             <i class="fas fa-calendar"></i> {{ row.deadline|date:"d M Y" }}
         </span>
-        <span class="badge-done ms-auto"><i class="fas fa-check me-1"></i>Done</span>
-        <a href="{% url 'committee_results' row.vacancy.id %}" class="slim-btn">
-            <i class="fas fa-poll"></i> Results
-        </a>
-    </div>
+                            <span class="badge-done ms-auto"><i class="fas fa-check me-1"></i>Done</span>
+                            <a href="{% url 'committee_results' row.vacancy.id %}" class="slim-btn">
+                                <i class="fas fa-poll"></i> Results
+                            </a>
+                        </div>
 
-    {% endif %}
-    {% endfor %}
+                    {% endif %}
+                {% endfor %}
 
-    {% for row in assignments %}
-    {% if row.next_action == 'done' %}
-    {% if forloop.first %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
+            {% for row in assignments %}
+                {% if row.next_action == 'done' %}
+                    {% if forloop.first %}</div>{% endif %}
+                {% endif %}
+            {% endfor %}
 
 
-    {% comment %} SECTION 3 — RECUSED {% endcomment %}
+                {% comment %} SECTION 3 — RECUSED {% endcomment %}
 
-    {% for row in assignments %}
-    {% if row.next_action == 'recused' %}
-    {% if forloop.first %}
-    <div class="section-heading" style="margin-top:0.5rem;">
-        <div class="sh-dot" style="background:var(--red);"></div>
-        <span class="sh-label">Recused</span>
-        <span class="sh-line"></span>
-    </div>
-    <div class="slim-list mb-3">
-    {% endif %}
+                {% for row in assignments %}
+                    {% if row.next_action == 'recused' %}
+                        {% if forloop.first %}
+                            <div class="section-heading" style="margin-top:0.5rem;">
+                                <div class="sh-dot" style="background:var(--red);"></div>
+                                <span class="sh-label">Recused</span>
+                                <span class="sh-line"></span>
+                            </div>
+                            <div class="slim-list mb-3">
+                        {% endif %}
 
-    <div class="slim-row recused-row">
-        <div class="slim-info">
-            <div class="slim-title" style="color:#67748e;">{{ row.vacancy.title }}</div>
-            <div class="slim-ref">{{ row.vacancy.reference_number }}</div>
-        </div>
-        <span class="slim-meta">
+                        <div class="slim-row recused-row">
+                            <div class="slim-info">
+                                <div class="slim-title" style="color:#67748e;">{{ row.vacancy.title }}</div>
+                                <div class="slim-ref">{{ row.vacancy.reference_number }}</div>
+                            </div>
+                            <span class="slim-meta">
             <i class="fas fa-user-slash" style="color:var(--red);"></i>
             Conflict of interest declared
         </span>
-        <span class="badge-recused ms-auto"><i class="fas fa-user-slash me-1"></i>Recused</span>
-        <a href="{% url 'committee_declare_coi' row.vacancy.id %}" class="slim-btn" style="color:#67748e;">
-            <i class="fas fa-eye"></i> View
-        </a>
+                            <span class="badge-recused ms-auto"><i class="fas fa-user-slash me-1"></i>Recused</span>
+                            <a href="{% url 'committee_declare_coi' row.vacancy.id %}" class="slim-btn"
+                               style="color:#67748e;">
+                                <i class="fas fa-eye"></i> View
+                            </a>
+                        </div>
+
+                    {% endif %}
+                {% endfor %}
+
+            {% for row in assignments %}
+                {% if row.next_action == 'recused' %}
+                    {% if forloop.first %}</div>{% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% endwith %}
+
+        {% else %}
+            <div class="empty-wrap">
+                <i class="fas fa-clipboard" style="color:#d0d7f0;"></i>
+                <p style="font-size:0.9rem;font-weight:600;color:#8392ab;margin:0;">No active committee assignments</p>
+                <p style="font-size:0.8rem;color:#b0bac9;margin-top:0.35rem;">
+                    You will appear here when HR appoints you to a shortlisting committee.
+                </p>
+            </div>
+        {% endif %}
+
     </div>
-
-    {% endif %}
-    {% endfor %}
-
-    {% for row in assignments %}
-    {% if row.next_action == 'recused' %}
-    {% if forloop.first %}</div>{% endif %}
-    {% endif %}
-    {% endfor %}
-
-    {% endwith %}
-
-    {% else %}
-    <div class="empty-wrap">
-        <i class="fas fa-clipboard" style="color:#d0d7f0;"></i>
-        <p style="font-size:0.9rem;font-weight:600;color:#8392ab;margin:0;">No active committee assignments</p>
-        <p style="font-size:0.8rem;color:#b0bac9;margin-top:0.35rem;">
-            You will appear here when HR appoints you to a shortlisting committee.
-        </p>
-    </div>
-    {% endif %}
-
-</div>
 {% endblock %}

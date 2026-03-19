@@ -1,0 +1,13 @@
+{% extends 'analytics/reports/pdf/base_report.html' %} {% block content %}
+    {{ vacancies|length }}
+    Total Vacancies
+    {{ vacancies|dictsortreversed:"status"|first|default:"—" }}
+    Latest Status
+    Vacancy Register
+    {% for v in vacancies %} {% empty %} {% endfor %}
+    #    Position    Reference    Type    Status    Grade    Opens    Closes    Applications
+    {{ forloop.counter }}    {{ v.title }}    {{ v.reference_number }}    {{ v.get_vacancy_type_display }}
+    {{ v.status|title }}    {{ v.grade_category }}    {{ v.start_date|date:"d M Y" }}    {{ v.end_date|date:"d M Y" }}
+    {{ v.app_count }}
+    No vacancies found
+{% endblock %}

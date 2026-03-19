@@ -2,51 +2,51 @@
 {% load static %}
 
 {% block content %}
-<div class="login-wrapper">
-    <div class="login-card card">
+    <div class="login-wrapper">
+        <div class="login-card card">
 
-        <div class="card-header pb-0 bg-transparent text-center">
-            <a href="#" class="logo d-flex justify-content-center align-items-center">
-                <img src="{% static 'assets/img/logos/court_of_arms.png' %}"
-                     alt="Court of Arms" style="max-height:80px;">
-                <div class="logo-divider mx-2"></div>
-                <img src="{% static 'assets/img/logos/ufaa_logo.png' %}"
-                     alt="UFAA Logo" style="max-height:80px;">
-            </a>
-            <br>
-            <h3 class="font-weight-bolder" style="color:#003366;">Welcome</h3>
-            <p class="mb-0">Enter your National ID Number and Password to sign in</p>
-        </div>
+            <div class="card-header pb-0 bg-transparent text-center">
+                <a href="#" class="logo d-flex justify-content-center align-items-center">
+                    <img src="{% static 'assets/img/logos/court_of_arms.png' %}"
+                         alt="Court of Arms" style="max-height:80px;">
+                    <div class="logo-divider mx-2"></div>
+                    <img src="{% static 'assets/img/logos/ufaa_logo.png' %}"
+                         alt="UFAA Logo" style="max-height:80px;">
+                </a>
+                <br>
+                <h3 class="font-weight-bolder" style="color:#003366;">Welcome</h3>
+                <p class="mb-0">Enter your National ID Number and Password to sign in</p>
+            </div>
 
-        <div class="card-body">
-            <form id="loginform" method="post">
-                {% csrf_token %}
+            <div class="card-body">
+                <form id="loginform" method="post">
+                    {% csrf_token %}
 
-                <label for="idnoInput">National ID Number</label>
-                <div class="mb-3">
-                    <input id="idnoInput"
-                           type="text"
-                           inputmode="numeric"
-                           class="form-control"
-                           name="idno"
-                           placeholder="Identification Number"
-                           autocomplete="username">
-                </div>
+                    <label for="idnoInput">National ID Number</label>
+                    <div class="mb-3">
+                        <input id="idnoInput"
+                               type="text"
+                               inputmode="numeric"
+                               class="form-control"
+                               name="idno"
+                               placeholder="Identification Number"
+                               autocomplete="username">
+                    </div>
 
-                <label for="passwordInput">Password</label>
-                <div class="mb-1 input-group">
+                    <label for="passwordInput">Password</label>
+                    <div class="mb-1 input-group">
 
-                    <input id="passwordInput"
-                           type="password"
-                           class="form-control"
-                           name="password"
-                           placeholder="Password"
-                           autocomplete="current-password">
+                        <input id="passwordInput"
+                               type="password"
+                               class="form-control"
+                               name="password"
+                               placeholder="Password"
+                               autocomplete="current-password">
 
-                    <span class="input-group-text"
-                          onclick="togglePassword()"
-                          title="Toggle password visibility"
-                          style="cursor:pointer">
+                        <span class="input-group-text"
+                              onclick="togglePassword()"
+                              title="Toggle password visibility"
+                              style="cursor:pointer">
 
                         <!-- eye -->
                         <svg id="eyeIcon" xmlns="http://www.w3.org/2000/svg"
@@ -62,7 +62,7 @@
                                   7-4.477 0-8.268-2.943-9.542-7z"/>
                         </svg>
 
-                        <!-- eye off -->
+                            <!-- eye off -->
                         <svg id="eyeOffIcon" xmlns="http://www.w3.org/2000/svg"
                              fill="none" viewBox="0 0 24 24"
                              stroke="#999" stroke-width="2"
@@ -82,145 +82,141 @@
                         </svg>
 
                     </span>
-                </div>
+                    </div>
 
-                <div class="text-end mb-3 mt-1">
-                    <a href="{% url 'forgot_password' %}"
-                       style="font-size:0.78rem;color:#003366;font-weight:600;text-decoration:none;">
-                        Forgot password?
+                    <div class="text-end mb-3 mt-1">
+                        <a href="{% url 'forgot_password' %}"
+                           style="font-size:0.78rem;color:#003366;font-weight:600;text-decoration:none;">
+                            Forgot password?
+                        </a>
+                    </div>
+
+                    <div class="text-center">
+                        <button type="submit"
+                                class="btn w-100"
+                                style="background:#003366;border-color:#003366;color:white;">
+                            Sign In
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+
+            <div class="card-footer text-center pt-0">
+                <p class="mb-0 text-sm">
+                    Don't have an account?
+                    <a href="{% url 'signup' %}"
+                       class="fw-bold" style="color:#003366;">
+                        Sign up
                     </a>
-                </div>
+                </p>
+            </div>
 
-                <div class="text-center">
-                    <button type="submit"
-                            class="btn w-100"
-                            style="background:#003366;border-color:#003366;color:white;">
-                        Sign In
-                    </button>
-                </div>
-
-            </form>
         </div>
-
-        <div class="card-footer text-center pt-0">
-            <p class="mb-0 text-sm">
-                Don't have an account?
-                <a href="{% url 'signup' %}"
-                   class="fw-bold" style="color:#003366;">
-                   Sign up
-                </a>
-            </p>
-        </div>
-
     </div>
-</div>
 
 
-<script>
+    <script>
 
-/* Password toggle */
-function togglePassword() {
+        /* Password toggle */
+        function togglePassword() {
 
-    const input = document.getElementById("passwordInput");
-    const eye = document.getElementById("eyeIcon");
-    const eyeOff = document.getElementById("eyeOffIcon");
+            const input = document.getElementById("passwordInput");
+            const eye = document.getElementById("eyeIcon");
+            const eyeOff = document.getElementById("eyeOffIcon");
 
-    if (input.type === "password") {
-        input.type = "text";
-        eye.style.display = "none";
-        eyeOff.style.display = "inline";
-    } else {
-        input.type = "password";
-        eye.style.display = "inline";
-        eyeOff.style.display = "none";
-    }
-}
-
-
-/* Login AJAX */
-
-document.getElementById("loginform").addEventListener("submit", function(e){
-
-    e.preventDefault();
-
-    Swal.fire({
-        title: "Signing in…",
-        text: "Please wait.",
-        allowOutsideClick:false,
-        showConfirmButton:false,
-        didOpen: () => Swal.showLoading()
-    });
-
-    const form = e.target;
-    const formData = new FormData(form);
-
-    fetch("{% url 'authlogin' %}",{
-        method:"POST",
-        headers:{
-            "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value
-        },
-        body:formData
-    })
-
-    .then(r=>r.json())
-    .then(data=>{
-
-        Swal.close();
-
-        if(data.status==="success"){
-
-            Swal.fire({
-                icon:"success",
-                title:"Login Successful",
-                text:data.message,
-                showConfirmButton:false,
-                timer:1200
-            }).then(()=>{
-                window.location.href="/recruitment/dashboard/";
-            });
-
+            if (input.type === "password") {
+                input.type = "text";
+                eye.style.display = "none";
+                eyeOff.style.display = "inline";
+            } else {
+                input.type = "password";
+                eye.style.display = "inline";
+                eyeOff.style.display = "none";
+            }
         }
 
-        else if(data.status==="locked"){
+
+        /* Login AJAX */
+
+        document.getElementById("loginform").addEventListener("submit", function (e) {
+
+            e.preventDefault();
 
             Swal.fire({
-                icon:"error",
-                title:"Account Locked",
-                text:data.message,
-                confirmButtonColor:"#003366",
-                confirmButtonText:"Reset Password"
-            }).then(r=>{
-                if(r.isConfirmed){
-                    window.location.href="{% url 'forgot_password' %}";
-                }
+                title: "Signing in…",
+                text: "Please wait.",
+                allowOutsideClick: false,
+                showConfirmButton: false,
+                didOpen: () => Swal.showLoading()
             });
 
-        }
+            const form = e.target;
+            const formData = new FormData(form);
 
-        else{
+            fetch("{% url 'authlogin' %}", {
+                method: "POST",
+                headers: {
+                    "X-CSRFToken": form.querySelector("[name=csrfmiddlewaretoken]").value
+                },
+                body: formData
+            })
 
-            Swal.fire({
-                icon:"error",
-                title:"Login Failed",
-                text:data.message || "Authentication failed.",
-                confirmButtonColor:"#003366"
-            });
+                .then(r => r.json())
+                .then(data => {
 
-        }
+                    Swal.close();
 
-    })
+                    if (data.status === "success") {
 
-    .catch(()=>{
-        Swal.fire({
-            icon:"error",
-            title:"System Error",
-            text:"Please try again later.",
-            confirmButtonColor:"#003366"
+                        Swal.fire({
+                            icon: "success",
+                            title: "Login Successful",
+                            text: data.message,
+                            showConfirmButton: false,
+                            timer: 1200
+                        }).then(() => {
+                            window.location.href = "/recruitment/dashboard/";
+                        });
+
+                    } else if (data.status === "locked") {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Account Locked",
+                            text: data.message,
+                            confirmButtonColor: "#003366",
+                            confirmButtonText: "Reset Password"
+                        }).then(r => {
+                            if (r.isConfirmed) {
+                                window.location.href = "{% url 'forgot_password' %}";
+                            }
+                        });
+
+                    } else {
+
+                        Swal.fire({
+                            icon: "error",
+                            title: "Login Failed",
+                            text: data.message || "Authentication failed.",
+                            confirmButtonColor: "#003366"
+                        });
+
+                    }
+
+                })
+
+                .catch(() => {
+                    Swal.fire({
+                        icon: "error",
+                        title: "System Error",
+                        text: "Please try again later.",
+                        confirmButtonColor: "#003366"
+                    });
+                });
+
         });
-    });
 
-});
-
-</script>
+    </script>
 
 {% endblock %}

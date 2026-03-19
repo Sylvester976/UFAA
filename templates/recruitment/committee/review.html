@@ -3,78 +3,78 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- Header -->
-    <div class="dash-header-banner mb-2">
-        <h4>
-            <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
-            Candidate Review
-        </h4>
-        <p>{{ application.applicant.name }}</p>
-    </div>
+        <!-- Header -->
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
+                Candidate Review
+            </h4>
+            <p>{{ application.applicant.name }}</p>
+        </div>
 
-    <div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
 
-            <div class="card dash-card brand-card">
+                <div class="card dash-card brand-card">
 
-                <div class="card-body">
+                    <div class="card-body">
 
-                    <h6 class="mb-3">
-                        Reviewing candidate:
-                        <strong>{{ application.applicant.name }}</strong>
-                    </h6>
+                        <h6 class="mb-3">
+                            Reviewing candidate:
+                            <strong>{{ application.applicant.name }}</strong>
+                        </h6>
 
-                    <form method="POST">
-                        {% csrf_token %}
+                        <form method="POST">
+                            {% csrf_token %}
 
-                        <div class="mb-3">
-                            <label class="form-label">Optional Comment</label>
+                            <div class="mb-3">
+                                <label class="form-label">Optional Comment</label>
 
-                            <textarea
-                                name="comment"
-                                class="form-control"
-                                rows="4"
-                                placeholder="Add review notes or justification">
+                                <textarea
+                                        name="comment"
+                                        class="form-control"
+                                        rows="4"
+                                        placeholder="Add review notes or justification">
                             </textarea>
-                        </div>
+                            </div>
 
-                        <div class="d-flex gap-2">
+                            <div class="d-flex gap-2">
 
-                            <button
-                                name="decision"
-                                value="approve"
-                                class="btn btn-brand">
+                                <button
+                                        name="decision"
+                                        value="approve"
+                                        class="btn btn-brand">
 
-                                <i class="fas fa-check me-1"></i>
-                                Shortlist
+                                    <i class="fas fa-check me-1"></i>
+                                    Shortlist
 
-                            </button>
+                                </button>
 
-                            <button
-                                name="decision"
-                                value="reject"
-                                class="btn btn-danger">
+                                <button
+                                        name="decision"
+                                        value="reject"
+                                        class="btn btn-danger">
 
-                                <i class="fas fa-times me-1"></i>
-                                Reject
+                                    <i class="fas fa-times me-1"></i>
+                                    Reject
 
-                            </button>
+                                </button>
 
-                        </div>
+                            </div>
 
-                    </form>
+                        </form>
+
+                    </div>
 
                 </div>
 
             </div>
-
         </div>
-    </div>
 
-</div>
+    </div>
 
 {% endblock %}

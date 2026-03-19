@@ -3,37 +3,37 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- HEADER BANNER -->
-    <div class="dash-header-banner mb-2">
-        <div>
-            <h4>
-                <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
-                Shortlisting Stage
-            </h4>
-            <p>Vacancies ready for shortlisting and panel appointment</p>
-        </div>
-    </div>
-
-    <div class="gold-divider"></div>
-
-    <!-- VACANCY TABLE -->
-    <div class="card dash-card brand-card">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-list-ul me-2" style="opacity:0.5;"></i>
-                Vacancies – Shortlisting Stage
-            </h6>
-            <p>Appoint interview panelists for these vacancies</p>
+        <!-- HEADER BANNER -->
+        <div class="dash-header-banner mb-2">
+            <div>
+                <h4>
+                    <i class="fas fa-user-check me-2" style="color:var(--gold-dark);"></i>
+                    Shortlisting Stage
+                </h4>
+                <p>Vacancies ready for shortlisting and panel appointment</p>
+            </div>
         </div>
 
-        <div class="ufaa-table-wrapper">
+        <div class="gold-divider"></div>
 
-            <table class="table brand-table mb-0">
+        <!-- VACANCY TABLE -->
+        <div class="card dash-card brand-card">
 
-                <thead>
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-list-ul me-2" style="opacity:0.5;"></i>
+                    Vacancies – Shortlisting Stage
+                </h6>
+                <p>Appoint interview panelists for these vacancies</p>
+            </div>
+
+            <div class="ufaa-table-wrapper">
+
+                <table class="table brand-table mb-0">
+
+                    <thead>
                     <tr>
                         <th>Vacancy</th>
                         <th>Reference</th>
@@ -41,73 +41,73 @@
                         <th>Closing Date</th>
                         <th class="text-end pe-3">Actions</th>
                     </tr>
-                </thead>
+                    </thead>
 
-                <tbody>
+                    <tbody>
 
-                {% for vacancy in vacancies %}
+                    {% for vacancy in vacancies %}
 
-                <tr>
+                        <tr>
 
-                    <td class="vacancy-title-cell">
-                        <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
-                        {{ vacancy.title }}
-                    </td>
+                            <td class="vacancy-title-cell">
+                                <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
+                                {{ vacancy.title }}
+                            </td>
 
-                    <td class="vacancy-ref-cell">
-                        {{ vacancy.reference_number }}
-                    </td>
+                            <td class="vacancy-ref-cell">
+                                {{ vacancy.reference_number }}
+                            </td>
 
-                    <td>
-                        {{ vacancy.get_vacancy_type_display }}
-                    </td>
+                            <td>
+                                {{ vacancy.get_vacancy_type_display }}
+                            </td>
 
-                    <td style="font-size:0.82rem;color:#67748e;">
-                        <i class="fas fa-calendar-times me-1" style="color:#dc3545;font-size:.7rem;"></i>
-                        {{ vacancy.end_date|date:"d M Y" }}
-                    </td>
+                            <td style="font-size:0.82rem;color:#67748e;">
+                                <i class="fas fa-calendar-times me-1" style="color:#dc3545;font-size:.7rem;"></i>
+                                {{ vacancy.end_date|date:"d M Y" }}
+                            </td>
 
-                    <td class="text-end pe-3">
+                            <td class="text-end pe-3">
 
-                        <div class="vacancy-actions">
+                                <div class="vacancy-actions">
 
-                            <a href="{% url 'appoint_panelists' vacancy.id %}"
-                               class="btn-shortlisting">
+                                    <a href="{% url 'appoint_panelists' vacancy.id %}"
+                                       class="btn-shortlisting">
 
-                                <i class="fas fa-users-cog me-1"></i>
-                                Appoint Panel
+                                        <i class="fas fa-users-cog me-1"></i>
+                                        Appoint Panel
 
-                            </a>
+                                    </a>
 
-                        </div>
+                                </div>
 
-                    </td>
+                            </td>
 
-                </tr>
+                        </tr>
 
-                {% empty %}
+                    {% empty %}
 
-                <tr>
-                    <td colspan="5">
+                        <tr>
+                            <td colspan="5">
 
-                        <div class="empty-state">
-                            <i class="fas fa-user-check"></i>
-                            <p>No vacancies currently in the shortlisting stage.</p>
-                        </div>
+                                <div class="empty-state">
+                                    <i class="fas fa-user-check"></i>
+                                    <p>No vacancies currently in the shortlisting stage.</p>
+                                </div>
 
-                    </td>
-                </tr>
+                            </td>
+                        </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 {% endblock %}

@@ -2,200 +2,511 @@
 {% block title %}Interview Scoring — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561;--gold:#F9E6A1;--gold-dk:#C39545;--green:#1a7a45;--red:#c0392b;--amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link { color:rgba(255,255,255,.65); font-size:.78rem;
-             display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-/* Progress */
-.progress-bar-track { height:8px; background:#f0f2f8; border-radius:99px; overflow:hidden; flex:1; }
-.progress-bar-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
-                      border-radius:99px; transition:width .4s; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* Candidate cards */
-.candidate-card {
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-    overflow:hidden; margin-bottom:1.25rem;
-    border-left:4px solid #e0e4ef; transition:border-color .2s;
-}
-.candidate-card.is-done    { border-left-color:var(--green); }
-.candidate-card.has-draft  { border-left-color:var(--amber); }
-.candidate-card.is-pending { border-left-color:#c7d2fe; }
-.candidate-card.is-locked  { border-left-color:#e2e8f0; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.card-head {
-    padding:.9rem 1.25rem; border-bottom:1px solid #f0f2f8;
-    display:flex; align-items:center; gap:.75rem; flex-wrap:wrap;
-}
-.cand-name { font-size:.88rem; font-weight:800; color:var(--navy); }
-.cand-ref  { font-size:.7rem; color:#adb5bd; font-family:monospace; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-.slot-info {
-    font-size:.72rem; color:#67748e;
-    display:flex; align-items:center; gap:.3rem;
-    background:#f8f9ff; padding:.25rem .65rem; border-radius:.4rem;
-}
-.slot-info.today {
-    background:#d4f5e2; color:#1a5c38; font-weight:700;
-}
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-.status-chip { font-size:.65rem; font-weight:700; padding:.2rem .6rem;
-               border-radius:99px; white-space:nowrap; }
-.sc-done    { background:#d4f5e2; color:#1a5c38; }
-.sc-draft   { background:#fff8e1; color:#7d5500; }
-.sc-pending { background:#f0f2f8; color:#8392ab; }
-.sc-locked  { background:#f1f5f9; color:#64748b; }
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-/* ── Lock overlay ─────────────────────────────────── */
-.lock-banner {
-    display:flex; align-items:center; gap:.85rem;
-    padding:.85rem 1.25rem;
-    background:linear-gradient(135deg,#f8fafc,#f1f5f9);
-    border-top:1px solid #e2e8f0;
-}
-.lock-icon {
-    width:36px; height:36px; border-radius:50%; flex-shrink:0;
-    background:#e2e8f0; color:#64748b;
-    display:flex; align-items:center; justify-content:center; font-size:.9rem;
-}
-.lock-text  { font-size:.8rem; font-weight:700; color:#334155; }
-.lock-sub   { font-size:.72rem; color:#94a3b8; margin-top:.1rem; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-/* ── Criteria grid ────────────────────────────────── */
-.criteria-grid { padding:1rem 1.25rem; }
+        /* Progress */
+        .progress-bar-track {
+            height: 8px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+            flex: 1;
+        }
 
-.criterion-block {
-    background:#fafbff; border:1px solid #eef0fb;
-    border-radius:.6rem; padding:.85rem 1rem;
-    margin-bottom:.6rem; transition:background .15s, border-color .15s;
-}
-.criterion-block:hover:not(.submitted) { background:#f0f2ff; border-color:#c7d2fe; }
-.criterion-block.submitted { background:#f0fdf4; border-color:#bbf7d0; }
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+            border-radius: 99px;
+            transition: width .4s;
+        }
 
-.cb-top {
-    display:flex; align-items:center; gap:.75rem;
-    margin-bottom:.65rem; flex-wrap:wrap;
-}
-.crit-label { font-size:.82rem; font-weight:700; color:var(--navy); flex:1; }
-.crit-max   { font-size:.7rem; color:#8392ab; white-space:nowrap; }
+        /* Candidate cards */
+        .candidate-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+            border-left: 4px solid #e0e4ef;
+            transition: border-color .2s;
+        }
 
-.score-input-wrap { display:flex; align-items:center; gap:.4rem; }
-.score-input {
-    width:76px; padding:.38rem .6rem; text-align:center;
-    border:2px solid #e0e4ef; border-radius:.45rem;
-    font-size:.92rem; font-weight:800; color:var(--navy);
-    transition:border-color .15s, background .15s;
-}
-.score-input:focus   { outline:none; border-color:var(--navy); background:#fff; }
-.score-input:disabled { background:#f8f9ff; color:#adb5bd; border-color:#eef0fb; }
-.score-denom { font-size:.78rem; color:#adb5bd; font-weight:600; }
+        .candidate-card.is-done {
+            border-left-color: var(--green);
+        }
 
-/* ── Comment field — more visible ─────────────────── */
-.comment-wrap { margin-top:.55rem; }
-.comment-label {
-    font-size:.68rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.05em; color:#8392ab; margin-bottom:.3rem;
-    display:flex; align-items:center; gap:.3rem;
-}
-.comment-input {
-    width:100%; padding:.55rem .75rem;
-    border:2px solid #d0d7f0; border-radius:.45rem;
-    font-size:.8rem; color:#344767; resize:vertical;
-    min-height:56px; font-family:inherit; background:#fff;
-    transition:border-color .15s, box-shadow .15s;
-    box-sizing:border-box;
-}
-.comment-input:focus {
-    outline:none; border-color:var(--navy);
-    box-shadow:0 0 0 3px rgba(38,37,97,.08);
-}
-.comment-input:disabled {
-    background:#f8f9ff; color:#94a3b8; border-color:#eef0fb; resize:none;
-}
+        .candidate-card.has-draft {
+            border-left-color: var(--amber);
+        }
 
-/* Row actions */
-.cb-actions { display:flex; gap:.35rem; margin-top:.6rem; justify-content:flex-end; }
-.btn-save-score {
-    font-size:.72rem; font-weight:700; padding:.32rem .75rem;
-    border-radius:.4rem; border:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.3rem;
-    transition:opacity .15s; white-space:nowrap;
-}
-.btn-save-score:hover { opacity:.85; }
-.bss-draft  { background:#fff3cd; color:#7d5500; }
-.bss-submit { background:var(--green); color:#fff; }
-.bss-done   { background:#d4f5e2; color:#1a5c38; cursor:default; }
+        .candidate-card.is-pending {
+            border-left-color: #c7d2fe;
+        }
 
-/* Card footer */
-.card-footer-inner {
-    padding:.7rem 1.25rem; background:#fafbff;
-    border-top:1px solid #f0f2f8;
-    display:flex; align-items:center; justify-content:space-between; gap:.5rem;
-}
+        .candidate-card.is-locked {
+            border-left-color: #e2e8f0;
+        }
 
-/* Other members' scores */
-.other-scores {
-    padding:.75rem 1.25rem; background:#f8f9ff; border-top:1px solid #f0f2f8;
-}
-.other-score-header {
-    font-size:.68rem; font-weight:700; color:#8392ab;
-    text-transform:uppercase; letter-spacing:.05em; margin-bottom:.5rem;
-}
-.other-member-row {
-    display:flex; align-items:center; gap:.6rem;
-    font-size:.75rem; margin-bottom:.25rem; flex-wrap:wrap;
-}
-.om-name  { color:#344767; font-weight:600; min-width:140px; }
-.om-total { color:var(--navy); font-weight:800; }
-.om-max   { color:#adb5bd; }
+        .card-head {
+            padding: .9rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            flex-wrap: wrap;
+        }
 
-/* Finalise strip */
-.finalise-strip {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:.9rem; padding:1.25rem 1.5rem;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.25rem;
-}
-.fs-text { color:#fff; font-size:.85rem; font-weight:700; }
-.fs-sub  { color:rgba(255,255,255,.7); font-size:.75rem; }
-.btn-finalise {
-    background:var(--gold); color:var(--navy);
-    font-size:.82rem; font-weight:800; padding:.5rem 1.5rem;
-    border-radius:.5rem; border:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.4rem;
-    transition:opacity .15s;
-}
-.btn-finalise:hover    { opacity:.88; }
-.btn-finalise:disabled { opacity:.45; cursor:not-allowed; }
+        .cand-name {
+            font-size: .88rem;
+            font-weight: 800;
+            color: var(--navy);
+        }
 
-.toast { position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
-         background:var(--navy); color:#fff; padding:.65rem 1.25rem;
-         border-radius:.5rem; font-size:.8rem; font-weight:600;
-         box-shadow:0 4px 16px rgba(0,0,0,.2);
-         opacity:0; transition:opacity .3s; pointer-events:none; }
-.toast.show    { opacity:1; }
-.toast.success { background:var(--green); }
-.toast.error   { background:var(--red); }
-</style>
+        .cand-ref {
+            font-size: .7rem;
+            color: #adb5bd;
+            font-family: monospace;
+        }
+
+        .slot-info {
+            font-size: .72rem;
+            color: #67748e;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+            background: #f8f9ff;
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
+
+        .slot-info.today {
+            background: #d4f5e2;
+            color: #1a5c38;
+            font-weight: 700;
+        }
+
+        .status-chip {
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .2rem .6rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .sc-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .sc-draft {
+            background: #fff8e1;
+            color: #7d5500;
+        }
+
+        .sc-pending {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .sc-locked {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        /* ── Lock overlay ─────────────────────────────────── */
+        .lock-banner {
+            display: flex;
+            align-items: center;
+            gap: .85rem;
+            padding: .85rem 1.25rem;
+            background: linear-gradient(135deg, #f8fafc, #f1f5f9);
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .lock-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: #e2e8f0;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: .9rem;
+        }
+
+        .lock-text {
+            font-size: .8rem;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .lock-sub {
+            font-size: .72rem;
+            color: #94a3b8;
+            margin-top: .1rem;
+        }
+
+        /* ── Criteria grid ────────────────────────────────── */
+        .criteria-grid {
+            padding: 1rem 1.25rem;
+        }
+
+        .criterion-block {
+            background: #fafbff;
+            border: 1px solid #eef0fb;
+            border-radius: .6rem;
+            padding: .85rem 1rem;
+            margin-bottom: .6rem;
+            transition: background .15s, border-color .15s;
+        }
+
+        .criterion-block:hover:not(.submitted) {
+            background: #f0f2ff;
+            border-color: #c7d2fe;
+        }
+
+        .criterion-block.submitted {
+            background: #f0fdf4;
+            border-color: #bbf7d0;
+        }
+
+        .cb-top {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .65rem;
+            flex-wrap: wrap;
+        }
+
+        .crit-label {
+            font-size: .82rem;
+            font-weight: 700;
+            color: var(--navy);
+            flex: 1;
+        }
+
+        .crit-max {
+            font-size: .7rem;
+            color: #8392ab;
+            white-space: nowrap;
+        }
+
+        .score-input-wrap {
+            display: flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .score-input {
+            width: 76px;
+            padding: .38rem .6rem;
+            text-align: center;
+            border: 2px solid #e0e4ef;
+            border-radius: .45rem;
+            font-size: .92rem;
+            font-weight: 800;
+            color: var(--navy);
+            transition: border-color .15s, background .15s;
+        }
+
+        .score-input:focus {
+            outline: none;
+            border-color: var(--navy);
+            background: #fff;
+        }
+
+        .score-input:disabled {
+            background: #f8f9ff;
+            color: #adb5bd;
+            border-color: #eef0fb;
+        }
+
+        .score-denom {
+            font-size: .78rem;
+            color: #adb5bd;
+            font-weight: 600;
+        }
+
+        /* ── Comment field — more visible ─────────────────── */
+        .comment-wrap {
+            margin-top: .55rem;
+        }
+
+        .comment-label {
+            font-size: .68rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            color: #8392ab;
+            margin-bottom: .3rem;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .comment-input {
+            width: 100%;
+            padding: .55rem .75rem;
+            border: 2px solid #d0d7f0;
+            border-radius: .45rem;
+            font-size: .8rem;
+            color: #344767;
+            resize: vertical;
+            min-height: 56px;
+            font-family: inherit;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s;
+            box-sizing: border-box;
+        }
+
+        .comment-input:focus {
+            outline: none;
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(38, 37, 97, .08);
+        }
+
+        .comment-input:disabled {
+            background: #f8f9ff;
+            color: #94a3b8;
+            border-color: #eef0fb;
+            resize: none;
+        }
+
+        /* Row actions */
+        .cb-actions {
+            display: flex;
+            gap: .35rem;
+            margin-top: .6rem;
+            justify-content: flex-end;
+        }
+
+        .btn-save-score {
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .32rem .75rem;
+            border-radius: .4rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            transition: opacity .15s;
+            white-space: nowrap;
+        }
+
+        .btn-save-score:hover {
+            opacity: .85;
+        }
+
+        .bss-draft {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .bss-submit {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .bss-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+            cursor: default;
+        }
+
+        /* Card footer */
+        .card-footer-inner {
+            padding: .7rem 1.25rem;
+            background: #fafbff;
+            border-top: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: .5rem;
+        }
+
+        /* Other members' scores */
+        .other-scores {
+            padding: .75rem 1.25rem;
+            background: #f8f9ff;
+            border-top: 1px solid #f0f2f8;
+        }
+
+        .other-score-header {
+            font-size: .68rem;
+            font-weight: 700;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: .5rem;
+        }
+
+        .other-member-row {
+            display: flex;
+            align-items: center;
+            gap: .6rem;
+            font-size: .75rem;
+            margin-bottom: .25rem;
+            flex-wrap: wrap;
+        }
+
+        .om-name {
+            color: #344767;
+            font-weight: 600;
+            min-width: 140px;
+        }
+
+        .om-total {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .om-max {
+            color: #adb5bd;
+        }
+
+        /* Finalise strip */
+        .finalise-strip {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: .9rem;
+            padding: 1.25rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .fs-text {
+            color: #fff;
+            font-size: .85rem;
+            font-weight: 700;
+        }
+
+        .fs-sub {
+            color: rgba(255, 255, 255, .7);
+            font-size: .75rem;
+        }
+
+        .btn-finalise {
+            background: var(--gold);
+            color: var(--navy);
+            font-size: .82rem;
+            font-weight: 800;
+            padding: .5rem 1.5rem;
+            border-radius: .5rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: opacity .15s;
+        }
+
+        .btn-finalise:hover {
+            opacity: .88;
+        }
+
+        .btn-finalise:disabled {
+            opacity: .45;
+            cursor: not-allowed;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            background: var(--navy);
+            color: #fff;
+            padding: .65rem 1.25rem;
+            border-radius: .5rem;
+            font-size: .8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+            opacity: 0;
+            transition: opacity .3s;
+            pointer-events: none;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: var(--green);
+        }
+
+        .toast.error {
+            background: var(--red);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
     <!-- Banner -->
     <div class="page-banner">
@@ -243,7 +554,8 @@ a { text-decoration:none !important; }
                     {{ criteria|length }} criteria
                 </div>
                 <div style="font-size:.7rem;color:#adb5bd;">
-                    {% for c in criteria %}{{ c.name }} ({{ c.max_score }}){% if not forloop.last %}, {% endif %}{% endfor %}
+                    {% for c in criteria %}{{ c.name }} ({{ c.max_score }}){% if not forloop.last %},
+                    {% endif %}{% endfor %}
                 </div>
             </div>
         </div>
@@ -251,38 +563,38 @@ a { text-decoration:none !important; }
 
     <!-- Finalise strip (all submitted) -->
     {% if all_submitted %}
-    <div class="finalise-strip">
-        <div>
-            <div class="fs-text"><i class="fas fa-check-circle me-2"></i>All candidates scored</div>
-            <div class="fs-sub">Submit your scores to complete your panel duties for this vacancy.</div>
+        <div class="finalise-strip">
+            <div>
+                <div class="fs-text"><i class="fas fa-check-circle me-2"></i>All candidates scored</div>
+                <div class="fs-sub">Submit your scores to complete your panel duties for this vacancy.</div>
+            </div>
+            <button class="btn-finalise" id="finaliseBtn" onclick="submitAll()">
+                <i class="fas fa-paper-plane"></i> Submit All Scores
+            </button>
         </div>
-        <button class="btn-finalise" id="finaliseBtn" onclick="submitAll()">
-            <i class="fas fa-paper-plane"></i> Submit All Scores
-        </button>
-    </div>
     {% endif %}
 
     <!-- Candidate cards -->
     {% for row in app_rows %}
-    {# Slot date as ISO string for JS comparison #}
-    {% if row.slot %}
-    <div class="candidate-card {% if row.all_submitted %}is-done{% elif row.any_draft %}has-draft{% else %}is-pending{% endif %}"
-         id="cand-card-{{ row.app.id }}"
-         data-slot-date="{{ row.slot.interview_date|date:'Y-m-d' }}">
-    {% else %}
-    <div class="candidate-card is-locked"
-         id="cand-card-{{ row.app.id }}"
-         data-slot-date="">
-    {% endif %}
+        {# Slot date as ISO string for JS comparison #}
+        {% if row.slot %}
+            <div class="candidate-card {% if row.all_submitted %}is-done{% elif row.any_draft %}has-draft{% else %}is-pending{% endif %}"
+                 id="cand-card-{{ row.app.id }}"
+                 data-slot-date="{{ row.slot.interview_date|date:'Y-m-d' }}">
+        {% else %}
+            <div class="candidate-card is-locked"
+                 id="cand-card-{{ row.app.id }}"
+                 data-slot-date="">
+        {% endif %}
 
-        <!-- Card header -->
-        <div class="card-head">
-            <div style="flex:1;">
-                <div class="cand-name">{{ row.app.user.name }}</div>
-                <div class="cand-ref">{{ row.app.application_number }}</div>
-            </div>
+    <!-- Card header -->
+    <div class="card-head">
+        <div style="flex:1;">
+            <div class="cand-name">{{ row.app.user.name }}</div>
+            <div class="cand-ref">{{ row.app.application_number }}</div>
+        </div>
 
-            {% if row.slot %}
+        {% if row.slot %}
             <div class="slot-info" id="slot-badge-{{ row.app.id }}">
                 <i class="fas fa-calendar-day"></i>
                 {{ row.slot.interview_date|date:"d M Y" }}
@@ -290,24 +602,24 @@ a { text-decoration:none !important; }
                 <i class="fas fa-clock"></i>
                 {{ row.slot.interview_time|time:"H:i" }}
             </div>
-            {% else %}
+        {% else %}
             <div class="slot-info">
                 <i class="fas fa-calendar-times"></i> No slot assigned
             </div>
-            {% endif %}
+        {% endif %}
 
-            {% if row.all_submitted %}
+        {% if row.all_submitted %}
             <span class="status-chip sc-done"><i class="fas fa-check me-1"></i>Scored</span>
-            {% elif row.any_draft %}
+        {% elif row.any_draft %}
             <span class="status-chip sc-draft"><i class="fas fa-save me-1"></i>Draft saved</span>
-            {% else %}
+        {% else %}
             <span class="status-chip sc-pending" id="chip-{{ row.app.id }}">Not started</span>
-            {% endif %}
-        </div>
+        {% endif %}
+    </div>
 
-        <!-- Criteria score rows -->
-        <div class="criteria-grid" id="grid-{{ row.app.id }}">
-            {% for cr in row.criterion_rows %}
+    <!-- Criteria score rows -->
+    <div class="criteria-grid" id="grid-{{ row.app.id }}">
+        {% for cr in row.criterion_rows %}
             <div class="criterion-block {% if cr.is_submitted %}submitted{% endif %}"
                  id="cr-{{ row.app.id }}-{{ cr.criterion.id }}">
 
@@ -343,207 +655,215 @@ a { text-decoration:none !important; }
 
                 <!-- Actions -->
                 {% if cr.is_submitted %}
-                <div class="cb-actions">
+                    <div class="cb-actions">
                     <span class="btn-save-score bss-done">
                         <i class="fas fa-check"></i> Submitted
                     </span>
-                </div>
+                    </div>
                 {% else %}
-                <div class="cb-actions">
-                    <button class="btn-save-score bss-draft"
-                            onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'draft')">
-                        <i class="fas fa-save"></i> Save Draft
-                    </button>
-                    <button class="btn-save-score bss-submit"
-                            onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'submit')">
-                        <i class="fas fa-check"></i> Submit Score
-                    </button>
-                </div>
+                    <div class="cb-actions">
+                        <button class="btn-save-score bss-draft"
+                                onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'draft')">
+                            <i class="fas fa-save"></i> Save Draft
+                        </button>
+                        <button class="btn-save-score bss-submit"
+                                onclick="saveScore({{ row.app.id }}, {{ cr.criterion.id }}, 'submit')">
+                            <i class="fas fa-check"></i> Submit Score
+                        </button>
+                    </div>
                 {% endif %}
 
             </div>
-            {% endfor %}
-        </div>
+        {% endfor %}
+    </div>
 
-        <!-- Lock banner (injected by JS when not today) -->
-        <div class="lock-banner" id="lock-{{ row.app.id }}" style="display:none;">
-            <div class="lock-icon"><i class="fas fa-lock"></i></div>
-            <div>
-                <div class="lock-text">Scoring not available yet</div>
-                <div class="lock-sub" id="lock-sub-{{ row.app.id }}">
-                    Scoring opens on the candidate's interview day.
-                </div>
+    <!-- Lock banner (injected by JS when not today) -->
+    <div class="lock-banner" id="lock-{{ row.app.id }}" style="display:none;">
+        <div class="lock-icon"><i class="fas fa-lock"></i></div>
+        <div>
+            <div class="lock-text">Scoring not available yet</div>
+            <div class="lock-sub" id="lock-sub-{{ row.app.id }}">
+                Scoring opens on the candidate's interview day.
             </div>
         </div>
+    </div>
 
-        <!-- Other members' scores (only after this member has fully submitted) -->
-        {% if row.other_scores %}
+    <!-- Other members' scores (only after this member has fully submitted) -->
+    {% if row.other_scores %}
         <div class="other-scores">
             <div class="other-score-header">
                 <i class="fas fa-users me-1"></i>Other panel members' scores
             </div>
             {% regroup row.other_scores by panel_member as member_score_list %}
             {% for member_group in member_score_list %}
-            <div class="other-member-row">
-                <div class="om-name">{{ member_group.grouper.name }}</div>
-                {% for s in member_group.list %}
-                <span style="font-size:.72rem;color:#67748e;margin-right:.5rem;">
+                <div class="other-member-row">
+                    <div class="om-name">{{ member_group.grouper.name }}</div>
+                    {% for s in member_group.list %}
+                        <span style="font-size:.72rem;color:#67748e;margin-right:.5rem;">
                     {{ s.criterion.name }}:
                     <strong>{{ s.score }}</strong>/{{ s.criterion.max_score }}
                 </span>
-                {% endfor %}
-            </div>
+                    {% endfor %}
+                </div>
             {% endfor %}
         </div>
-        {% endif %}
+    {% endif %}
 
     </div>
     {% empty %}
-    <div style="text-align:center;padding:3rem;color:#b0bac9;">
-        <i class="fas fa-users" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
-        No shortlisted candidates found for this vacancy.
-    </div>
+        <div style="text-align:center;padding:3rem;color:#b0bac9;">
+            <i class="fas fa-users" style="font-size:2rem;display:block;margin-bottom:.75rem;"></i>
+            No shortlisted candidates found for this vacancy.
+        </div>
     {% endfor %}
 
 </div>
 
-<div class="toast" id="toast"></div>
+    <div class="toast" id="toast"></div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const VACANCY_ID = {{ vacancy.id }};
+    <script>
+        const VACANCY_ID = {{ vacancy.id }};
 
-// ── Date helpers ───────────────────────────────────────────────────────────
-const TODAY_ISO = (() => {
-    const d = new Date();
-    const mm = String(d.getMonth() + 1).padStart(2, '0');
-    const dd = String(d.getDate()).padStart(2, '0');
-    return `${d.getFullYear()}-${mm}-${dd}`;
-})();
+        // ── Date helpers ───────────────────────────────────────────────────────────
+        const TODAY_ISO = (() => {
+            const d = new Date();
+            const mm = String(d.getMonth() + 1).padStart(2, '0');
+            const dd = String(d.getDate()).padStart(2, '0');
+            return `${d.getFullYear()}-${mm}-${dd}`;
+        })();
 
-function formatDateNice(iso) {
-    if (!iso) return '';
-    const [y, m, d] = iso.split('-');
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return `${parseInt(d)} ${months[parseInt(m)-1]} ${y}`;
-}
-
-// ── Lock cards whose slot date ≠ today ────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.candidate-card').forEach(card => {
-        const appId    = card.id.replace('cand-card-', '');
-        const slotDate = card.dataset.slotDate;
-        const grid     = document.getElementById('grid-' + appId);
-        const lockEl   = document.getElementById('lock-' + appId);
-        const lockSub  = document.getElementById('lock-sub-' + appId);
-        const slotBadge = document.getElementById('slot-badge-' + appId);
-        const chip     = document.getElementById('chip-' + appId);
-
-        // Already fully submitted — leave untouched
-        if (card.classList.contains('is-done')) return;
-
-        if (!slotDate) {
-            // No slot assigned — lock
-            if (grid)    grid.style.display    = 'none';
-            if (lockEl)  lockEl.style.display  = 'flex';
-            if (lockSub) lockSub.textContent   = 'This candidate has no interview slot assigned yet.';
-            card.classList.add('is-locked');
-            return;
+        function formatDateNice(iso) {
+            if (!iso) return '';
+            const [y, m, d] = iso.split('-');
+            const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+            return `${parseInt(d)} ${months[parseInt(m) - 1]} ${y}`;
         }
 
-        if (slotDate === TODAY_ISO) {
-            // Interview is today — highlight the slot badge
-            if (slotBadge) slotBadge.classList.add('today');
-        } else {
-            // Not today — lock scoring
-            if (grid)    grid.style.display    = 'none';
-            if (lockEl)  lockEl.style.display  = 'flex';
-            const isPast = slotDate < TODAY_ISO;
-            if (lockSub) lockSub.textContent = isPast
-                ? `Interview date was ${formatDateNice(slotDate)}. Contact HR if scoring is still required.`
-                : `Scoring opens on ${formatDateNice(slotDate)} — the candidate's interview day.`;
-            if (chip) {
-                chip.className = 'status-chip sc-locked';
-                chip.innerHTML = `<i class="fas fa-lock me-1"></i>${isPast ? 'Past' : formatDateNice(slotDate)}`;
+        // ── Lock cards whose slot date ≠ today ────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.candidate-card').forEach(card => {
+                const appId = card.id.replace('cand-card-', '');
+                const slotDate = card.dataset.slotDate;
+                const grid = document.getElementById('grid-' + appId);
+                const lockEl = document.getElementById('lock-' + appId);
+                const lockSub = document.getElementById('lock-sub-' + appId);
+                const slotBadge = document.getElementById('slot-badge-' + appId);
+                const chip = document.getElementById('chip-' + appId);
+
+                // Already fully submitted — leave untouched
+                if (card.classList.contains('is-done')) return;
+
+                if (!slotDate) {
+                    // No slot assigned — lock
+                    if (grid) grid.style.display = 'none';
+                    if (lockEl) lockEl.style.display = 'flex';
+                    if (lockSub) lockSub.textContent = 'This candidate has no interview slot assigned yet.';
+                    card.classList.add('is-locked');
+                    return;
+                }
+
+                if (slotDate === TODAY_ISO) {
+                    // Interview is today — highlight the slot badge
+                    if (slotBadge) slotBadge.classList.add('today');
+                } else {
+                    // Not today — lock scoring
+                    if (grid) grid.style.display = 'none';
+                    if (lockEl) lockEl.style.display = 'flex';
+                    const isPast = slotDate < TODAY_ISO;
+                    if (lockSub) lockSub.textContent = isPast
+                        ? `Interview date was ${formatDateNice(slotDate)}. Contact HR if scoring is still required.`
+                        : `Scoring opens on ${formatDateNice(slotDate)} — the candidate's interview day.`;
+                    if (chip) {
+                        chip.className = 'status-chip sc-locked';
+                        chip.innerHTML = `<i class="fas fa-lock me-1"></i>${isPast ? 'Past' : formatDateNice(slotDate)}`;
+                    }
+                    card.classList.remove('is-pending', 'has-draft');
+                    card.classList.add('is-locked');
+                }
+            });
+        });
+
+        // ── Toast ──────────────────────────────────────────────────────────────────
+        function showToast(msg, type = '') {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + type;
+            setTimeout(() => {
+                t.className = 'toast';
+            }, 3200);
+        }
+
+        function csrfToken() {
+            return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+        }
+
+        // ── Save / submit a single criterion score ─────────────────────────────────
+        async function saveScore(appId, criterionId, action) {
+            const scoreEl = document.getElementById(`score-${appId}-${criterionId}`);
+            const commentEl = document.getElementById(`comment-${appId}-${criterionId}`);
+            const score = scoreEl.value;
+            const comment = commentEl.value;
+
+            if (score === '' || score === null) {
+                showToast('Please enter a score before saving.', 'error');
+                return;
             }
-            card.classList.remove('is-pending', 'has-draft');
-            card.classList.add('is-locked');
+
+            const body = new URLSearchParams({
+                application_id: appId, criterion_id: criterionId,
+                score, comment, action
+            });
+
+            const res = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/save/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrfToken(), 'Content-Type': 'application/x-www-form-urlencoded'},
+                body,
+            });
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+
+            if (!data.is_draft) {
+                const row = document.getElementById(`cr-${appId}-${criterionId}`);
+                row.classList.add('submitted');
+                scoreEl.disabled = true;
+                commentEl.disabled = true;
+                const actions = row.querySelector('.cb-actions');
+                if (actions) actions.innerHTML =
+                    '<span class="btn-save-score bss-done"><i class="fas fa-check"></i> Submitted</span>';
+                showToast(`${data.score}/${data.max} submitted.`, 'success');
+                checkAllSubmitted(appId);
+            } else {
+                showToast('Draft saved.', '');
+                const card = document.getElementById(`cand-card-${appId}`);
+                card.classList.remove('is-pending');
+                card.classList.add('has-draft');
+            }
         }
-    });
-});
 
-// ── Toast ──────────────────────────────────────────────────────────────────
-function showToast(msg, type = '') {
-    const t   = document.getElementById('toast');
-    t.textContent = msg;
-    t.className   = 'toast show ' + type;
-    setTimeout(() => { t.className = 'toast'; }, 3200);
-}
-
-function csrfToken() {
-    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-}
-
-// ── Save / submit a single criterion score ─────────────────────────────────
-async function saveScore(appId, criterionId, action) {
-    const scoreEl   = document.getElementById(`score-${appId}-${criterionId}`);
-    const commentEl = document.getElementById(`comment-${appId}-${criterionId}`);
-    const score     = scoreEl.value;
-    const comment   = commentEl.value;
-
-    if (score === '' || score === null) {
-        showToast('Please enter a score before saving.', 'error'); return;
-    }
-
-    const body = new URLSearchParams({ application_id: appId, criterion_id: criterionId,
-                                       score, comment, action });
-
-    const res  = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/save/`, {
-        method:  'POST',
-        headers: { 'X-CSRFToken': csrfToken(), 'Content-Type': 'application/x-www-form-urlencoded' },
-        body,
-    });
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-
-    if (!data.is_draft) {
-        const row = document.getElementById(`cr-${appId}-${criterionId}`);
-        row.classList.add('submitted');
-        scoreEl.disabled   = true;
-        commentEl.disabled = true;
-        const actions = row.querySelector('.cb-actions');
-        if (actions) actions.innerHTML =
-            '<span class="btn-save-score bss-done"><i class="fas fa-check"></i> Submitted</span>';
-        showToast(`${data.score}/${data.max} submitted.`, 'success');
-        checkAllSubmitted(appId);
-    } else {
-        showToast('Draft saved.', '');
-        const card = document.getElementById(`cand-card-${appId}`);
-        card.classList.remove('is-pending');
-        card.classList.add('has-draft');
-    }
-}
-
-// ── Check if all criteria for a candidate are submitted ────────────────────
-function checkAllSubmitted(appId) {
-    const card    = document.getElementById(`cand-card-${appId}`);
-    const pending = card.querySelectorAll('.criterion-block:not(.submitted)');
-    if (!pending.length) {
-        card.classList.remove('has-draft', 'is-pending', 'is-locked');
-        card.classList.add('is-done');
-        const chip = card.querySelector('.status-chip');
-        if (chip) {
-            chip.className = 'status-chip sc-done';
-            chip.innerHTML = '<i class="fas fa-check me-1"></i>Scored';
-        }
-        // Show finalise strip if all candidates are done
-        const allDone = [...document.querySelectorAll('.candidate-card')]
-            .every(c => c.classList.contains('is-done'));
-        if (allDone && !document.querySelector('.finalise-strip')) {
-            const strip = document.createElement('div');
-            strip.className = 'finalise-strip';
-            strip.innerHTML = `
+        // ── Check if all criteria for a candidate are submitted ────────────────────
+        function checkAllSubmitted(appId) {
+            const card = document.getElementById(`cand-card-${appId}`);
+            const pending = card.querySelectorAll('.criterion-block:not(.submitted)');
+            if (!pending.length) {
+                card.classList.remove('has-draft', 'is-pending', 'is-locked');
+                card.classList.add('is-done');
+                const chip = card.querySelector('.status-chip');
+                if (chip) {
+                    chip.className = 'status-chip sc-done';
+                    chip.innerHTML = '<i class="fas fa-check me-1"></i>Scored';
+                }
+                // Show finalise strip if all candidates are done
+                const allDone = [...document.querySelectorAll('.candidate-card')]
+                    .every(c => c.classList.contains('is-done'));
+                if (allDone && !document.querySelector('.finalise-strip')) {
+                    const strip = document.createElement('div');
+                    strip.className = 'finalise-strip';
+                    strip.innerHTML = `
                 <div>
                     <div class="fs-text"><i class="fas fa-check-circle me-2"></i>All candidates scored</div>
                     <div class="fs-sub">Submit your scores to complete your panel duties.</div>
@@ -551,28 +871,30 @@ function checkAllSubmitted(appId) {
                 <button class="btn-finalise" onclick="submitAll()">
                     <i class="fas fa-paper-plane"></i> Submit All Scores
                 </button>`;
-            document.querySelector('.container-fluid')
-                .insertBefore(strip, document.querySelector('.candidate-card'));
+                    document.querySelector('.container-fluid')
+                        .insertBefore(strip, document.querySelector('.candidate-card'));
+                }
+            }
         }
-    }
-}
 
-// ── Submit all scores ──────────────────────────────────────────────────────
-async function submitAll() {
-    const btn = document.getElementById('finaliseBtn') || document.querySelector('.btn-finalise');
-    if (btn) btn.disabled = true;
+        // ── Submit all scores ──────────────────────────────────────────────────────
+        async function submitAll() {
+            const btn = document.getElementById('finaliseBtn') || document.querySelector('.btn-finalise');
+            if (btn) btn.disabled = true;
 
-    const res  = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/submit-all/`, {
-        method: 'POST', headers: { 'X-CSRFToken': csrfToken() },
-    });
-    const data = await res.json();
-    if (data.error) {
-        showToast(data.error, 'error');
-        if (btn) btn.disabled = false;
-        return;
-    }
-    showToast('All scores submitted!', 'success');
-    setTimeout(() => { window.location.href = data.redirect_url; }, 1200);
-}
-</script>
+            const res = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/score/submit-all/`, {
+                method: 'POST', headers: {'X-CSRFToken': csrfToken()},
+            });
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                if (btn) btn.disabled = false;
+                return;
+            }
+            showToast('All scores submitted!', 'success');
+            setTimeout(() => {
+                window.location.href = data.redirect_url;
+            }, 1200);
+        }
+    </script>
 {% endblock %}

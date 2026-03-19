@@ -3,67 +3,67 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- HEADER BANNER -->
-    <div class="dash-header-banner mb-2">
-        <div>
-            <h4>
-                <i class="fas fa-trash-alt me-2" style="color:var(--gold-dark);"></i>
-                Delete Vacancy
-            </h4>
-            <p>Confirm removal of this vacancy from the system</p>
+        <!-- HEADER BANNER -->
+        <div class="dash-header-banner mb-2">
+            <div>
+                <h4>
+                    <i class="fas fa-trash-alt me-2" style="color:var(--gold-dark);"></i>
+                    Delete Vacancy
+                </h4>
+                <p>Confirm removal of this vacancy from the system</p>
+            </div>
         </div>
-    </div>
 
-    <div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-    <!-- CONFIRMATION CARD -->
-    <div class="row justify-content-center">
-        <div class="col-lg-5">
+        <!-- CONFIRMATION CARD -->
+        <div class="row justify-content-center">
+            <div class="col-lg-5">
 
-            <div class="card dash-card brand-card">
+                <div class="card dash-card brand-card">
 
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
-                        Confirmation Required
-                    </h6>
-                    <p>This action cannot be undone</p>
-                </div>
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                            Confirmation Required
+                        </h6>
+                        <p>This action cannot be undone</p>
+                    </div>
 
-                <div class="card-body text-center">
+                    <div class="card-body text-center">
 
-                    <p class="mb-3">
-                        Are you sure you want to delete the vacancy:
-                    </p>
+                        <p class="mb-3">
+                            Are you sure you want to delete the vacancy:
+                        </p>
 
-                    <h5 class="mb-4 text-danger">
-                        "{{ vacancy.title }}"
-                    </h5>
+                        <h5 class="mb-4 text-danger">
+                            "{{ vacancy.title }}"
+                        </h5>
 
-                    <form method="POST">
-                        {% csrf_token %}
+                        <form method="POST">
+                            {% csrf_token %}
 
-                        <button type="submit" class="btn btn-danger me-2">
-                            <i class="fas fa-trash me-1"></i>
-                            Yes, Delete
-                        </button>
+                            <button type="submit" class="btn btn-danger me-2">
+                                <i class="fas fa-trash me-1"></i>
+                                Yes, Delete
+                            </button>
 
-                        <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-brand">
-                            <i class="fas fa-times me-1"></i>
-                            Cancel
-                        </a>
+                            <a href="{% url 'hr_dashboard' %}" class="btn btn-outline-brand">
+                                <i class="fas fa-times me-1"></i>
+                                Cancel
+                            </a>
 
-                    </form>
+                        </form>
+
+                    </div>
 
                 </div>
 
             </div>
-
         </div>
-    </div>
 
-</div>
+    </div>
 
 {% endblock %}
