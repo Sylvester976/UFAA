@@ -2,391 +2,864 @@
 {% block title %}HR Dashboard{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<style>
-    :root {
-        --navy: #262561; --navy-light: #2E3A7A;
-        --gold: #F9E6A1; --gold-dark: #C39545;
-        --green: #1a7a45; --red: #c0392b; --amber: #b7770d; --purple: #5b21b6;
-    }
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-deep: #1a1a45;
+            --navy-light: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dark: #C39545;
+            --gold-mid: #E0CA7A;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+            --purple: #5b21b6;
+        }
 
-    /* ── Banner ── */
-    .page-header-banner {
-        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-        border-radius: .85rem; padding: 1rem 1.5rem; margin-bottom: 1.25rem;
-        position: relative; overflow: hidden;
-        box-shadow: 0 6px 20px rgba(38,37,97,.18);
-    }
-    .page-header-banner::before {
-        content:''; position:absolute; top:-30px; right:-30px;
-        width:130px; height:130px; border-radius:50%;
-        background:rgba(249,230,161,.07); pointer-events:none;
-    }
-    .page-header-banner h5 { color:#fff; font-weight:700; font-size:1.05rem; margin:0; }
-    .page-header-banner p  { color:rgba(249,230,161,.7); font-size:.78rem; margin:0; }
-    .header-date { color:var(--gold); font-size:.72rem; font-weight:600; display:block; margin-bottom:.4rem; }
-    .btn-create {
-        background: linear-gradient(135deg, var(--gold-dark), #e0b55a);
-        color: var(--navy)!important; border:none; border-radius:.5rem;
-        font-size:.78rem; font-weight:700; padding:.45rem 1rem;
-        text-decoration:none; transition:all .2s; display:inline-block;
-    }
-    .btn-create:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(195,149,69,.4); }
+        /* ── Banner ── */
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 60%, var(--navy-light) 100%);
+            border-radius: 1rem;
+            overflow: hidden;
+            position: relative;
+            border: none;
+            box-shadow: 0 8px 32px rgba(38, 37, 97, .3);
+            margin-bottom: 1.25rem;
+        }
 
-    .gold-divider {
-        height:2px;
-        background:linear-gradient(90deg, var(--navy), var(--gold-dark), #F9E6A1, var(--gold-dark), var(--navy));
-        border-radius:2px; opacity:.5; margin:.5rem 0 1rem;
-    }
+        .welcome-banner::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            right: -50px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .06);
+            pointer-events: none;
+        }
 
-    /* ── KPI cards ── */
-    .kpi-card {
-        border-radius:1rem!important;
-        box-shadow:0 6px 24px rgba(38,37,97,.12)!important;
-        transition:transform .22s ease, box-shadow .22s ease;
-    }
-    .kpi-card:hover { transform:translateY(-3px); box-shadow:0 12px 28px rgba(38,37,97,.18)!important; }
-    .kpi-card .card-body { padding:.85rem 1.1rem; }
-    .kpi-value { font-size:1.7rem!important; }
-    .kpi-sub   { font-size:.7rem; margin-top:.25rem; }
+        .welcome-banner::after {
+            content: '';
+            position: absolute;
+            bottom: -60px;
+            right: 60px;
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .04);
+            pointer-events: none;
+        }
 
-    .kpi-navy  { background:linear-gradient(135deg,var(--navy),var(--navy-light))!important; }
-    .kpi-navy  .kpi-label,.kpi-navy .kpi-sub { color:rgba(255,255,255,.6)!important; }
-    .kpi-navy  .kpi-value { color:#fff!important; }
-    .kpi-navy  .kpi-icon  { background:rgba(255,255,255,.12)!important; color:var(--gold)!important; }
+        .gold-top-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--gold-dark), var(--gold), var(--gold-dark));
+        }
 
-    .kpi-gold  { background:linear-gradient(135deg,var(--gold-dark),#e8cc7a)!important; }
-    .kpi-gold  .kpi-label,.kpi-gold .kpi-sub { color:rgba(38,37,97,.6)!important; }
-    .kpi-gold  .kpi-value { color:var(--navy)!important; }
-    .kpi-gold  .kpi-icon  { background:rgba(38,37,97,.12)!important; color:var(--navy)!important; }
+        .banner-body {
+            padding: 1.25rem 1.5rem;
+            position: relative;
+            z-index: 1;
+        }
 
-    .kpi-green { background:linear-gradient(135deg,var(--green),#22a05a)!important; }
-    .kpi-green .kpi-label,.kpi-green .kpi-sub { color:rgba(255,255,255,.65)!important; }
-    .kpi-green .kpi-value { color:#fff!important; }
-    .kpi-green .kpi-icon  { background:rgba(255,255,255,.15)!important; color:#fff!important; }
+        .banner-date {
+            font-size: .72rem;
+            color: rgba(249, 230, 161, .65);
+            font-weight: 600;
+            display: block;
+            margin-bottom: .3rem;
+        }
 
-    .kpi-white { background:#fff!important; border-left:4px solid var(--navy)!important; }
-    .kpi-white .kpi-label,.kpi-white .kpi-sub { color:#8392ab!important; }
-    .kpi-white .kpi-value { color:var(--navy)!important; }
-    .kpi-white .kpi-icon  { background:linear-gradient(135deg,var(--navy),var(--navy-light))!important; color:var(--gold)!important; }
+        .banner-title {
+            color: #fff;
+            font-weight: 800;
+            font-size: 1.05rem;
+            margin: 0 0 .15rem;
+        }
 
-    /* ── Alert banner ── */
-    .alert-appoint {
-        background:linear-gradient(135deg,var(--green),#22a05a);
-        border-radius:.75rem; padding:.85rem 1.25rem; margin-bottom:1rem;
-        display:flex; align-items:center; justify-content:space-between;
-        flex-wrap:wrap; gap:.75rem; box-shadow:0 4px 16px rgba(26,122,69,.2);
-    }
-    .alert-appoint p { margin:0; color:#fff; }
-    .alert-appoint .title { font-size:.88rem; font-weight:700; }
-    .alert-appoint .sub   { font-size:.74rem; color:rgba(255,255,255,.75); }
-    .btn-alert {
-        background:#fff; color:var(--green); font-size:.78rem; font-weight:700;
-        padding:.4rem 1rem; border-radius:.4rem; text-decoration:none;
-        display:inline-flex; align-items:center; gap:.4rem; white-space:nowrap;
-        box-shadow:0 2px 8px rgba(0,0,0,.1); transition:opacity .15s;
-    }
-    .btn-alert:hover { opacity:.88; color:var(--green); }
+        .banner-sub {
+            color: rgba(249, 230, 161, .65);
+            font-size: .78rem;
+            margin: 0;
+        }
 
-    /* ── Table card ── */
-    .table-card {
-        background:#fff; border-radius:1rem; border:none;
-        box-shadow:0 4px 24px rgba(38,37,97,.08); overflow:hidden;
-    }
-    .table-card-header {
-        padding:1rem 1.4rem; border-bottom:1px solid rgba(38,37,97,.07);
-        display:flex; justify-content:space-between; align-items:center;
-        flex-wrap:wrap; gap:.5rem;
-    }
-    .table-card-header h6 { font-size:.9rem; font-weight:700; color:var(--navy); margin:0; }
-    .table-card-header p  { font-size:.71rem; color:#8392ab; margin:0; }
+        .btn-create {
+            background: linear-gradient(135deg, var(--gold-dark), #e0b55a);
+            color: var(--navy) !important;
+            border: none;
+            border-radius: .65rem;
+            font-size: .78rem;
+            font-weight: 700;
+            padding: .5rem 1.15rem;
+            text-decoration: none;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            box-shadow: 0 4px 14px rgba(195, 149, 69, .35);
+        }
 
-    /* ── DataTable overrides ── */
-    #vacancyTable_wrapper .dataTables_filter input {
-        border:1px solid #e0e4ef; border-radius:.5rem;
-        padding:.35rem .75rem; font-size:.8rem; color:#344767; outline:none;
-    }
-    #vacancyTable_wrapper .dataTables_filter input:focus {
-        border-color:var(--navy); box-shadow:0 0 0 2px rgba(38,37,97,.08);
-    }
-    #vacancyTable_wrapper .dataTables_length select {
-        border:1px solid #e0e4ef; border-radius:.5rem;
-        padding:.3rem .5rem; font-size:.8rem; color:#344767;
-    }
-    #vacancyTable_wrapper .dataTables_info,
-    #vacancyTable_wrapper .dataTables_length label,
-    #vacancyTable_wrapper .dataTables_filter label { font-size:.75rem; color:#8392ab; }
-    #vacancyTable_wrapper .dataTables_paginate .paginate_button {
-        font-size:.75rem!important; border-radius:.4rem!important; padding:.3rem .65rem!important;
-    }
-    #vacancyTable_wrapper .dataTables_paginate .paginate_button.current {
-        background:var(--navy)!important; border-color:var(--navy)!important; color:#fff!important;
-    }
+        .btn-create:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(195, 149, 69, .45);
+            color: var(--navy) !important;
+        }
 
-    /* ── Table styles ── */
-    #vacancyTable { font-size:.81rem; }
-    #vacancyTable thead th {
-        background:var(--navy); color:#fff; font-size:.67rem; font-weight:700;
-        text-transform:uppercase; letter-spacing:.06em;
-        padding:.8rem 1rem; border:none; white-space:nowrap;
-    }
-    #vacancyTable thead th.sorting::after,
-    #vacancyTable thead th.sorting_asc::after,
-    #vacancyTable thead th.sorting_desc::after { color:var(--gold)!important; opacity:.7; }
-    #vacancyTable tbody td {
-        padding:.7rem 1rem; vertical-align:middle;
-        border-bottom:1px solid rgba(38,37,97,.05); color:#344767;
-    }
-    #vacancyTable tbody tr:last-child td { border-bottom:none; }
-    #vacancyTable tbody tr:hover td { background:#fbf6e0; }
-    .cell-title { font-weight:600; color:var(--navy)!important; }
-    .cell-ref   { font-family:monospace; font-size:.76rem; color:#67748e; }
-    .cell-date  { font-size:.78rem; color:#67748e; white-space:nowrap; }
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dark), #F9E6A1, var(--gold-dark), var(--navy));
+            border-radius: 2px;
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+        }
 
-    /* ── Status badges ── */
-    .v-status {
-        display:inline-flex; align-items:center; gap:.28rem;
-        padding:.25rem .65rem; border-radius:2rem;
-        font-size:.65rem; font-weight:700;
-        letter-spacing:.04em; text-transform:uppercase; white-space:nowrap;
-    }
-    .v-status::before {
-        content:''; width:5px; height:5px; border-radius:50%;
-        display:inline-block; background:currentColor; flex-shrink:0;
-    }
-    .vs-open                 { background:#d4f5e2; color:#1a7a45; }
-    .vs-closed               { background:#fde8e8; color:#c0392b; }
-    .vs-longlisting          { background:#e8f4fd; color:#1a6fa8; }
-    .vs-committee_stage      { background:#fff3cd; color:#7d5500; }
-    .vs-shortlisting         { background:#fef3e2; color:#b7770d; }
-    .vs-interview_scheduling { background:#ede9fe; color:#5b21b6; }
-    .vs-interviews           { background:#d4c5fc; color:#4c1d95; }
-    .vs-ceo_review           { background:#fef9e7; color:#7d6608; }
-    .vs-ceo_approved         { background:#d4f5e2; color:#1a5c38; }
-    .vs-appointed            { background:#d4f5e2; color:#0d6830; }
+        /* ── KPI stat cards — jobseeker style ── */
+        .stat-card {
+            background: #fff;
+            border-radius: 1rem;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 4px 20px rgba(38, 37, 97, .07);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: none;
+            transition: transform .2s, box-shadow .2s;
+            text-decoration: none;
+            color: inherit;
+            height: 100%;
+        }
 
-    /* ── Action buttons ── */
-    .act-btn {
-        display:inline-flex; align-items:center;
-        padding:.22rem .6rem; border-radius:.4rem; font-size:.67rem; font-weight:600;
-        text-decoration:none!important; transition:all .16s ease;
-        border:1px solid transparent; cursor:pointer;
-        background:none; white-space:nowrap; margin:.1rem;
-    }
-    .ab-grey    { background:#f1f3f9; color:#344767; border-color:#dee2e6; }
-    .ab-grey:hover   { background:var(--navy); color:var(--gold); border-color:var(--navy); }
-    .ab-green   { background:#d4f5e2; color:#1a7a45; border-color:#b2dfca; }
-    .ab-green:hover  { background:#1a7a45; color:#fff; }
-    .ab-red     { background:#fde8e8; color:#c0392b; border-color:#f5c6c6; }
-    .ab-red:hover    { background:#c0392b; color:#fff; }
-    .ab-amber   { background:#fef3e2; color:#b7770d; border-color:#fdd99a; }
-    .ab-amber:hover  { background:#b7770d; color:#fff; }
-    .ab-blue    { background:#e8f4fd; color:#1a6fa8; border-color:#b8ddf5; }
-    .ab-blue:hover   { background:#1a6fa8; color:#fff; }
-    .ab-purple  { background:#ede9fe; color:#5b21b6; border-color:#d4c5fc; }
-    .ab-purple:hover { background:#5b21b6; color:#fff; }
-    .ab-navy    { background:var(--navy); color:var(--gold); border-color:var(--navy); }
-    .ab-navy:hover   { opacity:.88; }
-    .ab-teal    { background:#d0f4f0; color:#0d6e63; border-color:#9de8df; }
-    .ab-teal:hover   { background:#0d6e63; color:#fff; }
-    .act-group  { display:flex; flex-wrap:wrap; gap:.1rem; align-items:center; }
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 28px rgba(38, 37, 97, .13);
+            color: inherit;
+        }
 
-    /* ── Appointments table ── */
-    .appt-card {
-        background:#fff; border-radius:1rem; border:none;
-        box-shadow:0 4px 24px rgba(38,37,97,.08); overflow:hidden; margin-top:1.25rem;
-    }
-    .appt-card-header {
-        padding:1rem 1.4rem; border-bottom:1px solid rgba(38,37,97,.07);
-        display:flex; justify-content:space-between; align-items:center;
-        flex-wrap:wrap; gap:.5rem;
-    }
-    .appt-card-header h6 { font-size:.9rem; font-weight:700; color:var(--navy); margin:0; }
-    .appt-card-header p  { font-size:.71rem; color:#8392ab; margin:0; }
-    .pulse-dot {
-        width:9px; height:9px; border-radius:50%; background:#1a7a45;
-        box-shadow:0 0 0 3px rgba(26,122,69,.2);
-        display:inline-block; flex-shrink:0; animation:pulse-anim 1.8s infinite;
-    }
-    @keyframes pulse-anim {
-        0%,100% { box-shadow:0 0 0 3px rgba(26,122,69,.2); }
-        50%      { box-shadow:0 0 0 7px rgba(26,122,69,.06); }
-    }
-    .appt-scroll {
-        max-height:220px; overflow-y:auto;
-        scrollbar-width:thin; scrollbar-color:rgba(38,37,97,.2) transparent;
-    }
-    .appt-scroll::-webkit-scrollbar { width:5px; }
-    .appt-scroll::-webkit-scrollbar-thumb { background:rgba(38,37,97,.18); border-radius:3px; }
-    .appt-table { font-size:.8rem; min-width:640px; }
-    .appt-table thead th {
-        background:#f8f9ff; color:#8392ab; font-size:.62rem; font-weight:700;
-        text-transform:uppercase; letter-spacing:.05em;
-        padding:.6rem 1rem; border-bottom:1px solid rgba(38,37,97,.07);
-    }
-    .appt-table tbody td { padding:.6rem 1rem; border-bottom:1px solid rgba(38,37,97,.04); vertical-align:middle; }
-    .appt-table tbody tr:last-child td { border-bottom:none; }
-    .appt-table tbody tr:hover td { background:#fafbff; }
+        .stat-icon-box {
+            width: 52px;
+            height: 52px;
+            border-radius: .85rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
 
-    .empty-state { padding:2.5rem 1rem; text-align:center; }
-    .empty-state i { font-size:2.2rem; opacity:.1; color:var(--navy); display:block; margin-bottom:.6rem; }
-    .empty-state p { color:#adb5bd; font-size:.82rem; margin:0; }
-</style>
+        .stat-val {
+            font-size: 1.55rem;
+            font-weight: 700;
+            color: #344767;
+            line-height: 1;
+            margin-bottom: 2px;
+        }
+
+        .stat-lbl {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .stat-chg {
+            font-size: .72rem;
+            font-weight: 600;
+            margin-top: .25rem;
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        .chg-up {
+            color: #2dce89;
+        }
+
+        .chg-warn {
+            color: var(--amber);
+        }
+
+        .chg-down {
+            color: var(--red);
+        }
+
+        .chg-muted {
+            color: #8392ab;
+        }
+
+        /* ── Alert banner ── */
+        .alert-appoint {
+            background: linear-gradient(135deg, var(--green), #22a05a);
+            border-radius: 1rem;
+            padding: .9rem 1.25rem;
+            margin-bottom: 1.1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            box-shadow: 0 4px 18px rgba(26, 122, 69, .25);
+        }
+
+        .alert-appoint p {
+            margin: 0;
+            color: #fff;
+        }
+
+        .alert-appoint .title {
+            font-size: .88rem;
+            font-weight: 700;
+        }
+
+        .alert-appoint .sub {
+            font-size: .74rem;
+            color: rgba(255, 255, 255, .75);
+        }
+
+        .btn-alert {
+            background: #fff;
+            color: var(--green);
+            font-size: .78rem;
+            font-weight: 700;
+            padding: .42rem 1.05rem;
+            border-radius: .5rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+            transition: opacity .15s;
+        }
+
+        .btn-alert:hover {
+            opacity: .88;
+            color: var(--green);
+        }
+
+        /* ── Table card ── */
+        .table-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(38, 37, 97, .07);
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            padding: 1rem 1.4rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .table-card-header h6 {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .table-card-header p {
+            font-size: .71rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        /* ── DataTable overrides ── */
+        #vacancyTable_wrapper .dataTables_filter input {
+            border: 1.5px solid #e0e4ef;
+            border-radius: .55rem;
+            padding: .35rem .8rem;
+            font-size: .8rem;
+            color: #344767;
+            outline: none;
+        }
+
+        #vacancyTable_wrapper .dataTables_filter input:focus {
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(38, 37, 97, .08);
+        }
+
+        #vacancyTable_wrapper .dataTables_length select {
+            border: 1.5px solid #e0e4ef;
+            border-radius: .55rem;
+            padding: .3rem .55rem;
+            font-size: .8rem;
+            color: #344767;
+        }
+
+        #vacancyTable_wrapper .dataTables_info,
+        #vacancyTable_wrapper .dataTables_length label,
+        #vacancyTable_wrapper .dataTables_filter label {
+            font-size: .75rem;
+            color: #8392ab;
+        }
+
+        #vacancyTable_wrapper .dataTables_paginate .paginate_button {
+            font-size: .75rem !important;
+            border-radius: .4rem !important;
+            padding: .3rem .65rem !important;
+        }
+
+        #vacancyTable_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--navy) !important;
+            border-color: var(--navy) !important;
+            color: #fff !important;
+        }
+
+        /* ── Table styles ── */
+        #vacancyTable {
+            font-size: .81rem;
+        }
+
+        #vacancyTable thead th {
+            background: var(--navy);
+            color: #fff;
+            font-size: .67rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: .8rem 1rem;
+            border: none;
+            white-space: nowrap;
+        }
+
+        #vacancyTable thead th.sorting::after,
+        #vacancyTable thead th.sorting_asc::after,
+        #vacancyTable thead th.sorting_desc::after {
+            color: var(--gold) !important;
+            opacity: .7;
+        }
+
+        #vacancyTable tbody td {
+            padding: .7rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            color: #344767;
+        }
+
+        #vacancyTable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        #vacancyTable tbody tr:hover td {
+            background: #fbf6e0;
+        }
+
+        .cell-title {
+            font-weight: 600;
+            color: var(--navy) !important;
+        }
+
+        .cell-ref {
+            font-family: monospace;
+            font-size: .76rem;
+            color: #67748e;
+        }
+
+        .cell-date {
+            font-size: .78rem;
+            color: #67748e;
+            white-space: nowrap;
+        }
+
+        /* ── Status badges ── */
+        .v-status {
+            display: inline-flex;
+            align-items: center;
+            gap: .28rem;
+            padding: .25rem .65rem;
+            border-radius: 2rem;
+            font-size: .65rem;
+            font-weight: 700;
+            letter-spacing: .04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .v-status::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+        .vs-open {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .vs-closed {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .vs-longlisting {
+            background: #e8f4fd;
+            color: #1a6fa8;
+        }
+
+        .vs-committee_stage {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .vs-shortlisting {
+            background: #fef3e2;
+            color: #b7770d;
+        }
+
+        .vs-interview_scheduling {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .vs-interviews {
+            background: #d4c5fc;
+            color: #4c1d95;
+        }
+
+        .vs-ceo_review {
+            background: #fef9e7;
+            color: #7d6608;
+        }
+
+        .vs-ceo_approved {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .vs-appointed {
+            background: #d4f5e2;
+            color: #0d6830;
+        }
+
+        /* ── Action buttons ── */
+        .act-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: .22rem .6rem;
+            border-radius: .4rem;
+            font-size: .67rem;
+            font-weight: 600;
+            text-decoration: none !important;
+            transition: all .16s ease;
+            border: 1px solid transparent;
+            cursor: pointer;
+            background: none;
+            white-space: nowrap;
+            margin: .1rem;
+        }
+
+        .ab-grey {
+            background: #f1f3f9;
+            color: #344767;
+            border-color: #dee2e6;
+        }
+
+        .ab-grey:hover {
+            background: var(--navy);
+            color: var(--gold);
+            border-color: var(--navy);
+        }
+
+        .ab-green {
+            background: #d4f5e2;
+            color: #1a7a45;
+            border-color: #b2dfca;
+        }
+
+        .ab-green:hover {
+            background: #1a7a45;
+            color: #fff;
+        }
+
+        .ab-red {
+            background: #fde8e8;
+            color: #c0392b;
+            border-color: #f5c6c6;
+        }
+
+        .ab-red:hover {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .ab-amber {
+            background: #fef3e2;
+            color: #b7770d;
+            border-color: #fdd99a;
+        }
+
+        .ab-amber:hover {
+            background: #b7770d;
+            color: #fff;
+        }
+
+        .ab-blue {
+            background: #e8f4fd;
+            color: #1a6fa8;
+            border-color: #b8ddf5;
+        }
+
+        .ab-blue:hover {
+            background: #1a6fa8;
+            color: #fff;
+        }
+
+        .ab-purple {
+            background: #ede9fe;
+            color: #5b21b6;
+            border-color: #d4c5fc;
+        }
+
+        .ab-purple:hover {
+            background: #5b21b6;
+            color: #fff;
+        }
+
+        .ab-navy {
+            background: var(--navy);
+            color: var(--gold);
+            border-color: var(--navy);
+        }
+
+        .ab-navy:hover {
+            opacity: .88;
+        }
+
+        .ab-teal {
+            background: #d0f4f0;
+            color: #0d6e63;
+            border-color: #9de8df;
+        }
+
+        .ab-teal:hover {
+            background: #0d6e63;
+            color: #fff;
+        }
+
+        .act-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: .1rem;
+            align-items: center;
+        }
+
+        /* ── Appointments table ── */
+        .appt-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 20px rgba(38, 37, 97, .07);
+            overflow: hidden;
+            margin-top: 1.25rem;
+        }
+
+        .appt-card-header {
+            padding: 1rem 1.4rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .appt-card-header h6 {
+            font-size: .88rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .appt-card-header p {
+            font-size: .71rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        .pulse-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #1a7a45;
+            box-shadow: 0 0 0 3px rgba(26, 122, 69, .2);
+            display: inline-block;
+            flex-shrink: 0;
+            animation: pulse-anim 1.8s infinite;
+        }
+
+        @keyframes pulse-anim {
+            0%, 100% {
+                box-shadow: 0 0 0 3px rgba(26, 122, 69, .2);
+            }
+            50% {
+                box-shadow: 0 0 0 7px rgba(26, 122, 69, .06);
+            }
+        }
+
+        .appt-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(38, 37, 97, .2) transparent;
+        }
+
+        .appt-scroll::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .appt-scroll::-webkit-scrollbar-thumb {
+            background: rgba(38, 37, 97, .18);
+            border-radius: 3px;
+        }
+
+        .appt-table {
+            font-size: .8rem;
+            min-width: 640px;
+        }
+
+        .appt-table thead th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .6rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .appt-table tbody td {
+            padding: .6rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: middle;
+        }
+
+        .appt-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .appt-table tbody tr:hover td {
+            background: #fafbff;
+        }
+
+        .empty-state {
+            padding: 2.5rem 1rem;
+            text-align: center;
+        }
+
+        .empty-state i {
+            font-size: 2.2rem;
+            opacity: .1;
+            color: var(--navy);
+            display: block;
+            margin-bottom: .6rem;
+        }
+
+        .empty-state p {
+            color: #adb5bd;
+            font-size: .82rem;
+            margin: 0;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- Banner -->
-    <div class="page-header-banner">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <span class="header-date">
-                    <i class="fas fa-calendar-alt me-1"></i>{% now "l, d F Y" %}
-                </span>
-                <h5><i class="fas fa-tachometer-alt me-2" style="color:var(--gold-dark);"></i>HR Dashboard</h5>
-                <p>Overview of recruitment activities and vacancy lifecycle</p>
+        <!-- Banner -->
+        <div class="welcome-banner">
+            <div class="gold-top-line"></div>
+            <div class="banner-body">
+                <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <div>
+                    <span class="banner-date">
+                        <i class="fas fa-calendar-alt me-1"></i>{% now "l, d F Y" %}
+                    </span>
+                        <h5 class="banner-title">
+                            <i class="fas fa-tachometer-alt me-2"
+                               style="color:var(--gold-dark);"></i>HR Dashboard
+                        </h5>
+                        <p class="banner-sub">
+                            Recruitment activities and vacancy lifecycle overview
+                        </p>
+                    </div>
+                    <a href="{% url 'create_vacancy' %}" class="btn-create">
+                        <i class="fas fa-plus"></i> New Vacancy
+                    </a>
+                </div>
             </div>
-            <a href="{% url 'create_vacancy' %}" class="btn-create">
-                <i class="fas fa-plus me-1"></i> New Vacancy
-            </a>
         </div>
-    </div>
 
-    <div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-    <!-- CEO-approved alert -->
-    {% if pending_appointments_count %}
-    <div class="alert-appoint">
-        <div class="d-flex align-items-center gap-3">
-            <div style="width:38px;height:38px;border-radius:50%;
+        <!-- CEO-approved alert -->
+        {% if pending_appointments_count %}
+            <div class="alert-appoint">
+                <div class="d-flex align-items-center gap-3">
+                    <div style="width:42px;height:42px;border-radius:.85rem;
                         background:rgba(255,255,255,.18);
                         display:flex;align-items:center;justify-content:center;
-                        font-size:1rem;color:#fff;flex-shrink:0;">
-                <i class="fas fa-envelope-open-text"></i>
+                        font-size:1.05rem;color:#fff;flex-shrink:0;">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                    <div>
+                        <p class="title">
+                            {{ pending_appointments_count }}
+                            vacanc{{ pending_appointments_count|pluralize:"y,ies" }}
+                            ready for appointment issuance
+                        </p>
+                        <p class="sub">
+                            CEO selection complete — issue formal appointment letters now.
+                        </p>
+                    </div>
+                </div>
+                <a href="{% url 'hr_appointments_list' %}" class="btn-alert">
+                    <i class="fas fa-paper-plane"></i> Go to Appointments
+                </a>
             </div>
-            <div>
-                <p class="title">
-                    {{ pending_appointments_count }}
-                    vacanc{{ pending_appointments_count|pluralize:"y,ies" }}
-                    ready for appointment issuance
-                </p>
-                <p class="sub">CEO selection complete — issue formal appointment letters now.</p>
-            </div>
-        </div>
-        <a href="{% url 'hr_appointments_list' %}" class="btn-alert">
-            <i class="fas fa-paper-plane"></i> Go to Appointments
-        </a>
-    </div>
-    {% endif %}
+        {% endif %}
 
-    <!-- KPI strip -->
-    <div class="row g-2 mb-3">
-        <div class="col-xl-3 col-md-6">
-            <div class="card kpi-card kpi-navy h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="kpi-label mb-1">Open Vacancies</p>
-                            <h3 class="kpi-value mb-0">{{ open_vacancies_count }}</h3>
-                            <p class="kpi-sub">Accepting applications</p>
-                        </div>
-                        <div class="kpi-icon"><i class="fas fa-briefcase"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card kpi-card kpi-gold h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="kpi-label mb-1">Pending CEO Review</p>
-                            <h3 class="kpi-value mb-0">{{ pending_ceo_count }}</h3>
-                            <p class="kpi-sub">Awaiting CEO selection</p>
-                        </div>
-                        <div class="kpi-icon"><i class="fas fa-user-tie"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card kpi-card kpi-green h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="kpi-label mb-1">Pending Appointment</p>
-                            <h3 class="kpi-value mb-0">{{ pending_appointments_count }}</h3>
-                            <p class="kpi-sub">CEO approved, letter due</p>
-                        </div>
-                        <div class="kpi-icon"><i class="fas fa-envelope-open-text"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-xl-3 col-md-6">
-            <div class="card kpi-card kpi-white h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <p class="kpi-label mb-1">Appointments Done</p>
-                            <h3 class="kpi-value mb-0">{{ appointed_count }}</h3>
-                            <p class="kpi-sub">Successfully appointed</p>
-                        </div>
-                        <div class="kpi-icon"><i class="fas fa-check-circle"></i></div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+        <!-- KPI stat cards -->
+        <div class="row g-3 mb-3">
 
-    <!-- Vacancies DataTable -->
-    <div class="table-card">
-        <div class="table-card-header">
-            <div>
-                <h6><i class="fas fa-list-alt me-2" style="opacity:.5;"></i>All Vacancies</h6>
-                <p>Manage recruitment lifecycle stages — newest first</p>
+            <div class="col-6 col-md-3">
+                <a href="{% url 'vacancy_list' %}" class="stat-card">
+                    <div>
+                        <div class="stat-val">{{ open_vacancies_count }}</div>
+                        <div class="stat-lbl">Open Vacancies</div>
+                        <div class="stat-chg chg-up">
+                            <i class="fas fa-circle" style="font-size:.45rem;"></i>
+                            Accepting applications
+                        </div>
+                    </div>
+                    <div class="stat-icon-box"
+                         style="background:linear-gradient(135deg,var(--navy),var(--navy-light));">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                </a>
             </div>
-            <a href="{% url 'vacancy_list' %}" class="act-btn ab-grey">
-                <i class="fas fa-external-link-alt me-1"></i>Full Register
-            </a>
+
+            <div class="col-6 col-md-3">
+                <a href="{% url 'ceo_dashboard' %}" class="stat-card">
+                    <div>
+                        <div class="stat-val">{{ pending_ceo_count }}</div>
+                        <div class="stat-lbl">Pending CEO Review</div>
+                        <div class="stat-chg {% if pending_ceo_count > 0 %}chg-warn{% else %}chg-muted{% endif %}">
+                            <i class="fas fa-{% if pending_ceo_count > 0 %}hourglass-half{% else %}check{% endif %}"
+                               style="font-size:.65rem;"></i>
+                            {% if pending_ceo_count > 0 %}Awaiting selection{% else %}All clear{% endif %}
+                        </div>
+                    </div>
+                    <div class="stat-icon-box"
+                         style="background:linear-gradient(135deg,var(--gold-dark),var(--gold-mid));">
+                        <i class="fas fa-user-tie" style="color:var(--navy);"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <a href="{% url 'hr_appointments_list' %}" class="stat-card">
+                    <div>
+                        <div class="stat-val">{{ pending_appointments_count }}</div>
+                        <div class="stat-lbl">Pending Appointment</div>
+                        <div class="stat-chg {% if pending_appointments_count > 0 %}chg-up{% else %}chg-muted{% endif %}">
+                            <i class="fas fa-{% if pending_appointments_count > 0 %}envelope-open{% else %}check-circle{% endif %}"
+                               style="font-size:.65rem;"></i>
+                            {% if pending_appointments_count > 0 %}Letter due{% else %}None pending{% endif %}
+                        </div>
+                    </div>
+                    <div class="stat-icon-box"
+                         style="background:linear-gradient(135deg,var(--green),#22a05a);">
+                        <i class="fas fa-envelope-open-text"></i>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-6 col-md-3">
+                <div class="stat-card" style="cursor:default;">
+                    <div>
+                        <div class="stat-val">{{ appointed_count }}</div>
+                        <div class="stat-lbl">Appointments Done</div>
+                        <div class="stat-chg chg-up">
+                            <i class="fas fa-check-circle" style="font-size:.65rem;"></i>
+                            Successfully appointed
+                        </div>
+                    </div>
+                    <div class="stat-icon-box"
+                         style="background:linear-gradient(135deg,#C7B77F,var(--navy));">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+            </div>
+
         </div>
-        <div class="p-3">
-        {% if vacancies %}
-        <div class="table-responsive">
-            <table id="vacancyTable" class="table w-100">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Position</th>
-                        <th>Reference No.</th>
-                        <th>Type</th>
-                        <th>Status</th>
-                        <th>Closes</th>
-                        <th>Applications</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for vacancy in vacancies %}
-                    <tr>
-                        <td style="color:#adb5bd;font-size:.75rem;">{{ forloop.counter }}</td>
-                        <td class="cell-title">{{ vacancy.title }}</td>
-                        <td class="cell-ref">{{ vacancy.reference_number }}</td>
-                        <td>
-                            {% if vacancy.vacancy_type == 'internal' %}
-                                <span style="font-size:.7rem;font-weight:600;color:#5b21b6;">
-                                    <i class="fas fa-lock me-1"></i>Internal
-                                </span>
-                            {% else %}
-                                <span style="font-size:.7rem;font-weight:600;color:#1a6fa8;">
-                                    <i class="fas fa-globe me-1"></i>External
-                                </span>
-                            {% endif %}
-                        </td>
-                        <td>
-                            {% with s=vacancy.status %}
-                            <span class="v-status vs-{{ s }}">
+
+        <!-- Vacancies DataTable -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div>
+                    <h6>
+                        <i class="fas fa-list-alt me-2" style="opacity:.45;"></i>
+                        All Vacancies
+                    </h6>
+                    <p>Manage recruitment lifecycle — newest first</p>
+                </div>
+                <a href="{% url 'vacancy_list' %}" class="act-btn ab-grey">
+                    <i class="fas fa-external-link-alt me-1"></i>Full Register
+                </a>
+            </div>
+            <div class="p-3">
+                {% if vacancies %}
+                    <div class="table-responsive">
+                        <table id="vacancyTable" class="table w-100">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Position</th>
+                                <th>Reference No.</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Closes</th>
+                                <th>Applications</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for vacancy in vacancies %}
+                                <tr>
+                                    <td style="color:#adb5bd;font-size:.75rem;">{{ forloop.counter }}</td>
+                                    <td class="cell-title">{{ vacancy.title }}</td>
+                                    <td class="cell-ref">{{ vacancy.reference_number }}</td>
+                                    <td>
+                                        {% if vacancy.vacancy_type == 'internal' %}
+                                            <span style="font-size:.7rem;font-weight:600;color:#5b21b6;">
+                                <i class="fas fa-lock me-1"></i>Internal
+                            </span>
+                                        {% else %}
+                                            <span style="font-size:.7rem;font-weight:600;color:#1a6fa8;">
+                                <i class="fas fa-globe me-1"></i>External
+                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% with s=vacancy.status %}
+                                            <span class="v-status vs-{{ s }}">
                                 {% if s == 'open' %}Open
                                 {% elif s == 'closed' %}Closed
                                 {% elif s == 'longlisting' %}Longlisting
@@ -399,312 +872,321 @@
                                 {% elif s == 'appointed' %}Appointed
                                 {% else %}{{ s|title }}{% endif %}
                             </span>
-                            {% endwith %}
-                        </td>
-                        <td class="cell-date">
-                            <i class="fas fa-calendar-times me-1"
-                               style="color:#dc3545;font-size:.68rem;"></i>
-                            {{ vacancy.end_date|date:"d M Y" }}
-                        </td>
-                        <td>
-                            <a href="{% url 'hr_view_applications' vacancy.id %}"
-                               style="font-size:.8rem;font-weight:700;
-                                      color:var(--navy);text-decoration:none;">
-                                <i class="fas fa-users me-1"
-                                   style="font-size:.68rem;opacity:.6;"></i>
-                                {{ vacancy.applications_count }}
+                                        {% endwith %}
+                                    </td>
+                                    <td class="cell-date">
+                                        <i class="fas fa-calendar-times me-1"
+                                           style="color:#dc3545;font-size:.68rem;"></i>
+                                        {{ vacancy.end_date|date:"d M Y" }}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'hr_view_applications' vacancy.id %}"
+                                           style="font-size:.8rem;font-weight:700;color:var(--navy);
+                                      text-decoration:none;">
+                                            <i class="fas fa-users me-1"
+                                               style="font-size:.68rem;opacity:.6;"></i>
+                                            {{ vacancy.applications_count }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div class="act-group">
+                                            {% with s=vacancy.status %}
+                                                {% if s == 'open' %}
+                                                    <a href="{% url 'hr_view_applications' vacancy.id %}"
+                                                       class="act-btn ab-blue">
+                                                        <i class="fas fa-users me-1"></i>Applications
+                                                    </a>
+                                                    <a href="{% url 'update_vacancy' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-edit me-1"></i>Edit
+                                                    </a>
+                                                    <button class="act-btn ab-red"
+                                                            onclick="confirmClose({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
+                                                        <i class="fas fa-lock me-1"></i>Close
+                                                    </button>
+                                                {% elif s == 'closed' %}
+                                                    <a href="{% url 'hr_view_applications' vacancy.id %}"
+                                                       class="act-btn ab-blue">
+                                                        <i class="fas fa-users me-1"></i>Applications
+                                                    </a>
+                                                    <button class="act-btn ab-green"
+                                                            onclick="confirmReopen({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
+                                                        <i class="fas fa-lock-open me-1"></i>Reopen
+                                                    </button>
+                                                    <button class="act-btn ab-amber"
+                                                            onclick="confirmLonglist({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
+                                                        <i class="fas fa-list me-1"></i>Longlist
+                                                    </button>
+                                                {% elif s == 'longlisting' %}
+                                                    <a href="{% url 'hr_longlist_dashboard' vacancy.id %}"
+                                                       class="act-btn ab-amber">
+                                                        <i class="fas fa-tasks me-1"></i>Longlist
+                                                    </a>
+                                                    <a href="{% url 'hr_view_applications' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-users me-1"></i>Applications
+                                                    </a>
+                                                {% elif s == 'committee_stage' %}
+                                                    <a href="{% url 'hr_appoint_committee' vacancy.id %}"
+                                                       class="act-btn ab-amber">
+                                                        <i class="fas fa-users-cog me-1"></i>Committee
+                                                    </a>
+                                                    <a href="{% url 'hr_committee_progress' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-chart-bar me-1"></i>Progress
+                                                    </a>
+                                                {% elif s == 'shortlisting' %}
+                                                    <a href="{% url 'hr_shortlist_review' vacancy.id %}"
+                                                       class="act-btn ab-navy">
+                                                        <i class="fas fa-check-double me-1"></i>Shortlist Review
+                                                    </a>
+                                                    <a href="{% url 'hr_committee_progress' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-chart-bar me-1"></i>Progress
+                                                    </a>
+                                                {% elif s == 'interview_scheduling' %}
+                                                    <a href="{% url 'hr_interview_setup' vacancy.id %}"
+                                                       class="act-btn ab-purple">
+                                                        <i class="fas fa-cog me-1"></i>Setup
+                                                    </a>
+                                                    <a href="{% url 'hr_interview_progress' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-chart-bar me-1"></i>Progress
+                                                    </a>
+                                                {% elif s == 'interviews' %}
+                                                    <a href="{% url 'hr_interview_results' vacancy.id %}"
+                                                       class="act-btn ab-teal">
+                                                        <i class="fas fa-paper-plane me-1"></i>Submit to CEO
+                                                    </a>
+                                                    <a href="{% url 'hr_interview_progress' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-chart-bar me-1"></i>Progress
+                                                    </a>
+                                                {% elif s == 'ceo_review' %}
+                                                    <a href="{% url 'hr_interview_results' vacancy.id %}"
+                                                       class="act-btn ab-amber">
+                                                        <i class="fas fa-hourglass-half me-1"></i>Awaiting CEO
+                                                    </a>
+                                                {% elif s == 'ceo_approved' %}
+                                                    <a href="{% url 'hr_issue_appointment' vacancy.id %}"
+                                                       class="act-btn ab-green">
+                                                        <i class="fas fa-envelope-open-text me-1"></i>Issue Appointment
+                                                    </a>
+                                                    <a href="{% url 'hr_interview_results' vacancy.id %}"
+                                                       class="act-btn ab-grey">
+                                                        <i class="fas fa-trophy me-1"></i>Results
+                                                    </a>
+                                                {% elif s == 'appointed' %}
+                                                    <a href="{% url 'hr_view_applications' vacancy.id %}"
+                                                       class="act-btn ab-green">
+                                                        <i class="fas fa-users me-1"></i>Applications
+                                                    </a>
+                                                {% endif %}
+                                            {% endwith %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="8">
+                                        <div class="empty-state">
+                                            <i class="fas fa-folder-open"></i>
+                                            <p>No vacancies yet.
+                                                <a href="{% url 'create_vacancy' %}"
+                                                   style="color:var(--navy);font-weight:600;">
+                                                    Create your first vacancy
+                                                </a>
+                                            </p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="empty-state">
+                        <i class="fas fa-folder-open"></i>
+                        <p>No vacancies yet.
+                            <a href="{% url 'create_vacancy' %}" style="color:var(--navy);font-weight:600;">
+                                Create your first vacancy
                             </a>
-                        </td>
-                        <td>
-                            <div class="act-group">
-                            {% with s=vacancy.status %}
-                            {% if s == 'open' %}
-                                <a href="{% url 'hr_view_applications' vacancy.id %}" class="act-btn ab-blue">
-                                    <i class="fas fa-users me-1"></i>Applications
-                                </a>
-                                <a href="{% url 'update_vacancy' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-edit me-1"></i>Edit
-                                </a>
-                                <button class="act-btn ab-red"
-                                        onclick="confirmClose({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
-                                    <i class="fas fa-lock me-1"></i>Close
-                                </button>
-
-                            {% elif s == 'closed' %}
-                                <a href="{% url 'hr_view_applications' vacancy.id %}" class="act-btn ab-blue">
-                                    <i class="fas fa-users me-1"></i>Applications
-                                </a>
-                                <button class="act-btn ab-green"
-                                        onclick="confirmReopen({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
-                                    <i class="fas fa-lock-open me-1"></i>Reopen
-                                </button>
-                                <button class="act-btn ab-amber"
-                                        onclick="confirmLonglist({{ vacancy.id }},'{{ vacancy.title|escapejs }}')">
-                                    <i class="fas fa-list me-1"></i>Longlist
-                                </button>
-
-                            {% elif s == 'longlisting' %}
-                                <a href="{% url 'hr_longlist_dashboard' vacancy.id %}" class="act-btn ab-amber">
-                                    <i class="fas fa-tasks me-1"></i>Longlist
-                                </a>
-                                <a href="{% url 'hr_view_applications' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-users me-1"></i>Applications
-                                </a>
-
-                            {% elif s == 'committee_stage' %}
-                                <a href="{% url 'hr_appoint_committee' vacancy.id %}" class="act-btn ab-amber">
-                                    <i class="fas fa-users-cog me-1"></i>Committee
-                                </a>
-                                <a href="{% url 'hr_committee_progress' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-chart-bar me-1"></i>Progress
-                                </a>
-
-                            {% elif s == 'shortlisting' %}
-                                <a href="{% url 'hr_shortlist_review' vacancy.id %}" class="act-btn ab-navy">
-                                    <i class="fas fa-check-double me-1"></i>Shortlist Review
-                                </a>
-                                <a href="{% url 'hr_committee_progress' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-chart-bar me-1"></i>Progress
-                                </a>
-
-                            {% elif s == 'interview_scheduling' %}
-                                <a href="{% url 'hr_interview_setup' vacancy.id %}" class="act-btn ab-purple">
-                                    <i class="fas fa-cog me-1"></i>Setup
-                                </a>
-                                <a href="{% url 'hr_interview_progress' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-chart-bar me-1"></i>Progress
-                                </a>
-
-                            {% elif s == 'interviews' %}
-                                <a href="{% url 'hr_interview_results' vacancy.id %}" class="act-btn ab-teal">
-                                    <i class="fas fa-paper-plane me-1"></i>Submit to CEO
-                                </a>
-                                <a href="{% url 'hr_interview_progress' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-chart-bar me-1"></i>Progress
-                                </a>
-
-                            {% elif s == 'ceo_review' %}
-                                <a href="{% url 'hr_interview_results' vacancy.id %}" class="act-btn ab-amber">
-                                    <i class="fas fa-hourglass-half me-1"></i>Awaiting CEO
-                                </a>
-
-                            {% elif s == 'ceo_approved' %}
-                                <a href="{% url 'hr_issue_appointment' vacancy.id %}" class="act-btn ab-green">
-                                    <i class="fas fa-envelope-open-text me-1"></i>Issue Appointment
-                                </a>
-                                <a href="{% url 'hr_interview_results' vacancy.id %}" class="act-btn ab-grey">
-                                    <i class="fas fa-trophy me-1"></i>Results
-                                </a>
-
-                            {% elif s == 'appointed' %}
-                                <a href="{% url 'hr_view_applications' vacancy.id %}" class="act-btn ab-green">
-                                    <i class="fas fa-users me-1"></i>Applications
-                                </a>
-
-                            {% endif %}
-                            {% endwith %}
-                            </div>
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="8">
-                            <div class="empty-state">
-                                <i class="fas fa-folder-open"></i>
-                                <p>No vacancies yet.
-                                   <a href="{% url 'create_vacancy' %}"
-                                      style="color:var(--navy);font-weight:600;">
-                                       Create your first vacancy
-                                   </a>
-                                </p>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                        </p>
+                    </div>
+                {% endif %}
+            </div>
         </div>
-        {% else %}
-        <div class="empty-state">
-            <i class="fas fa-folder-open"></i>
-            <p>No vacancies yet.
-               <a href="{% url 'create_vacancy' %}" style="color:var(--navy);font-weight:600;">
-                   Create your first vacancy
-               </a>
-            </p>
-        </div>
-        {% endif %}
-        </div>
-    </div>
 
-    <!-- Pending appointments table -->
-    <div class="appt-card">
-        <div class="appt-card-header">
-            <div class="d-flex align-items-center gap-2">
-                <span class="pulse-dot"></span>
-                <div>
-                    <h6 class="mb-0">Pending Appointment Issuance</h6>
-                    <p>CEO has selected — issue the formal appointment letter</p>
+        <!-- Pending appointments -->
+        <div class="appt-card">
+            <div class="appt-card-header">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="pulse-dot"></span>
+                    <div>
+                        <h6 class="mb-0">Pending Appointment Issuance</h6>
+                        <p>CEO has selected — issue the formal appointment letter</p>
+                    </div>
                 </div>
+                {% if vacancies_ready %}
+                    <a href="{% url 'hr_appointments_list' %}" class="act-btn ab-green">
+                        View All <i class="fas fa-arrow-right ms-1"></i>
+                    </a>
+                {% endif %}
             </div>
             {% if vacancies_ready %}
-            <a href="{% url 'hr_appointments_list' %}" class="act-btn ab-green">
-                View All <i class="fas fa-arrow-right ms-1"></i>
-            </a>
-            {% endif %}
-        </div>
-        {% if vacancies_ready %}
-        <div class="appt-scroll">
-            <div class="table-responsive">
-                <table class="table appt-table mb-0">
-                    <thead>
-                        <tr>
-                            <th>Vacancy</th>
-                            <th>Reference</th>
-                            <th>Selected Candidate</th>
-                            <th>App No.</th>
-                            <th class="text-end">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for item in vacancies_ready %}
-                        <tr>
-                            <td style="font-weight:600;color:var(--navy);">
-                                {{ item.vacancy.title }}
-                            </td>
-                            <td style="font-family:monospace;font-size:.75rem;color:#67748e;">
-                                {{ item.vacancy.reference_number }}
-                            </td>
-                            <td>
-                                {% if item.winner %}
-                                {% with b=item.winner.snapshot_basic %}
-                                <span style="font-weight:600;color:var(--navy);">
+                <div class="appt-scroll">
+                    <div class="table-responsive">
+                        <table class="table appt-table mb-0">
+                            <thead>
+                            <tr>
+                                <th>Vacancy</th>
+                                <th>Reference</th>
+                                <th>Selected Candidate</th>
+                                <th>App No.</th>
+                                <th class="text-end">Action</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for item in vacancies_ready %}
+                                <tr>
+                                    <td style="font-weight:600;color:var(--navy);">
+                                        {{ item.vacancy.title }}
+                                    </td>
+                                    <td style="font-family:monospace;font-size:.75rem;color:#67748e;">
+                                        {{ item.vacancy.reference_number }}
+                                    </td>
+                                    <td>
+                                        {% if item.winner %}
+                                            {% with b=item.winner.snapshot_basic %}
+                                                <span style="font-weight:600;color:var(--navy);">
                                     {{ b.first_name }} {{ b.surname }}
                                 </span>
-                                {% endwith %}
-                                {% else %}
-                                <span style="color:#adb5bd;font-size:.75rem;">—</span>
-                                {% endif %}
-                            </td>
-                            <td style="font-family:monospace;font-size:.74rem;color:#8392ab;">
-                                {% if item.winner %}{{ item.winner.application_number }}{% endif %}
-                            </td>
-                            <td class="text-end">
-                                <a href="{% url 'hr_issue_appointment' item.vacancy.id %}"
-                                   class="act-btn ab-navy">
-                                    <i class="fas fa-paper-plane me-1"></i>Issue Appointment
-                                </a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+                                            {% endwith %}
+                                        {% else %}
+                                            <span style="color:#adb5bd;font-size:.75rem;">—</span>
+                                        {% endif %}
+                                    </td>
+                                    <td style="font-family:monospace;font-size:.74rem;color:#8392ab;">
+                                        {% if item.winner %}{{ item.winner.application_number }}{% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{% url 'hr_issue_appointment' item.vacancy.id %}"
+                                           class="act-btn ab-navy">
+                                            <i class="fas fa-paper-plane me-1"></i>Issue Appointment
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            {% else %}
+                <div class="empty-state" style="padding:1.5rem;">
+                    <i class="fas fa-clipboard-check"></i>
+                    <p>No vacancies awaiting appointment issuance.</p>
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="empty-state" style="padding:1.5rem;">
-            <i class="fas fa-clipboard-check"></i>
-            <p>No vacancies awaiting appointment issuance.</p>
-        </div>
-        {% endif %}
+
     </div>
 
-</div>
-
-<!-- Hidden POST forms -->
-<form id="closeForm"    method="POST" action="" style="display:none;">{% csrf_token %}</form>
-<form id="reopenForm"   method="POST" action="" style="display:none;">{% csrf_token %}</form>
-<form id="longlistForm" method="POST" action="" style="display:none;">{% csrf_token %}</form>
+    <form id="closeForm" method="POST" action="" style="display:none;">{% csrf_token %}</form>
+    <form id="reopenForm" method="POST" action="" style="display:none;">{% csrf_token %}</form>
+    <form id="longlistForm" method="POST" action="" style="display:none;">{% csrf_token %}</form>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script>
-$(document).ready(function () {
-    $('#vacancyTable').DataTable({
-        pageLength: 5,
-        lengthMenu: [10, 15, 25, 50],
-        order: [],   // row counter desc = newest first
-        columnDefs: [
-            { orderable: false, targets: [3, 6, 7] },
-            { searchable: false, targets: [0, 6, 7] },
-        ],
-        language: {
-            search: '',
-            searchPlaceholder: 'Search vacancies...',
-            lengthMenu: 'Show _MENU_ entries',
-            info: 'Showing _START_ to _END_ of _TOTAL_ vacancies',
-            infoEmpty: 'No vacancies found',
-            zeroRecords: 'No matching vacancies found',
-            paginate: {
-                previous: '<i class="fas fa-chevron-left"></i>',
-                next:     '<i class="fas fa-chevron-right"></i>',
-            }
-        },
-        dom: '<"d-flex justify-content-between align-items-center mb-3 px-1"lf>t<"d-flex justify-content-between align-items-center mt-3 px-1"ip>',
-    });
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#vacancyTable').DataTable({
+                pageLength: 5,
+                lengthMenu: [10, 15, 25, 50],
+                order: [],
+                columnDefs: [
+                    {orderable: false, targets: [3, 6, 7]},
+                    {searchable: false, targets: [0, 6, 7]},
+                ],
+                language: {
+                    search: '',
+                    searchPlaceholder: 'Search vacancies...',
+                    lengthMenu: 'Show _MENU_ entries',
+                    info: 'Showing _START_ to _END_ of _TOTAL_ vacancies',
+                    infoEmpty: 'No vacancies found',
+                    zeroRecords: 'No matching vacancies found',
+                    paginate: {
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>',
+                    }
+                },
+                dom: '<"d-flex justify-content-between align-items-center mb-3 px-1"lf>t<"d-flex justify-content-between align-items-center mt-3 px-1"ip>',
+            });
 
-    {% if messages %}
-    const msgs = [{% for m in messages %}{ level:"{{ m.tags }}", text:"{{ m|escapejs }}" },{% endfor %}];
-    msgs.forEach(m => {
-        const isErr  = m.level.includes('error');
-        const isWarn = m.level.includes('warning');
-        Swal.fire({
-            icon: isErr ? 'error' : isWarn ? 'warning' : 'success',
-            title: isErr ? 'Error' : isWarn ? 'Notice' : 'Done',
-            text: m.text,
-            confirmButtonColor: '#262561',
-            timer: isErr || isWarn ? undefined : 2500,
-            showConfirmButton: isErr || isWarn,
+            {% if messages %}
+                const msgs = [{% for m in messages %}{ level: "{{ m.tags }}", text: "{{ m|escapejs }}" },{% endfor %}];
+                msgs.forEach(m => {
+                    const isErr = m.level.includes('error');
+                    const isWarn = m.level.includes('warning');
+                    Swal.fire({
+                        icon: isErr ? 'error' : isWarn ? 'warning' : 'success',
+                        title: isErr ? 'Error' : isWarn ? 'Notice' : 'Done',
+                        text: m.text,
+                        confirmButtonColor: '#262561',
+                        timer: isErr || isWarn ? undefined : 2500,
+                        showConfirmButton: isErr || isWarn,
+                    });
+                });
+            {% endif %}
         });
-    });
-    {% endif %}
-});
 
-function confirmClose(id, title) {
-    Swal.fire({
-        title: 'Close vacancy?',
-        html: `<p style="font-size:.85rem;color:#67748e;"><strong style="color:#262561;">${title}</strong> will be closed. Applicants will no longer be able to apply.</p>`,
-        icon: 'warning', showCancelButton: true,
-        confirmButtonColor: '#c0392b', cancelButtonColor: '#adb5bd',
-        confirmButtonText: '<i class="fas fa-lock me-1"></i>Yes, Close',
-    }).then(r => {
-        if (r.isConfirmed) {
-            const f = document.getElementById('closeForm');
-            f.action = `/recruitment/vacancies/${id}/close/`; f.submit();
+        function confirmClose(id, title) {
+            Swal.fire({
+                title: 'Close vacancy?',
+                html: `<p style="font-size:.85rem;color:#67748e;"><strong style="color:#262561;">${title}</strong> will be closed. Applicants will no longer be able to apply.</p>`,
+                icon: 'warning', showCancelButton: true,
+                confirmButtonColor: '#c0392b', cancelButtonColor: '#adb5bd',
+                confirmButtonText: '<i class="fas fa-lock me-1"></i> Yes, Close',
+            }).then(r => {
+                if (r.isConfirmed) {
+                    const f = document.getElementById('closeForm');
+                    f.action = `/recruitment/vacancies/${id}/close/`;
+                    f.submit();
+                }
+            });
         }
-    });
-}
 
-function confirmReopen(id, title) {
-    Swal.fire({
-        title: 'Reopen vacancy?',
-        html: `<p style="font-size:.85rem;color:#67748e;"><strong style="color:#262561;">${title}</strong> will be reopened for applications.</p>`,
-        icon: 'question', showCancelButton: true,
-        confirmButtonColor: '#1a7a45', cancelButtonColor: '#adb5bd',
-        confirmButtonText: '<i class="fas fa-lock-open me-1"></i>Yes, Reopen',
-    }).then(r => {
-        if (r.isConfirmed) {
-            const f = document.getElementById('reopenForm');
-            f.action = `/recruitment/vacancies/${id}/open/`; f.submit();
+        function confirmReopen(id, title) {
+            Swal.fire({
+                title: 'Reopen vacancy?',
+                html: `<p style="font-size:.85rem;color:#67748e;"><strong style="color:#262561;">${title}</strong> will be reopened for applications.</p>`,
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#1a7a45', cancelButtonColor: '#adb5bd',
+                confirmButtonText: '<i class="fas fa-lock-open me-1"></i> Yes, Reopen',
+            }).then(r => {
+                if (r.isConfirmed) {
+                    const f = document.getElementById('reopenForm');
+                    f.action = `/recruitment/vacancies/${id}/open/`;
+                    f.submit();
+                }
+            });
         }
-    });
-}
 
-function confirmLonglist(id, title) {
-    Swal.fire({
-        title: 'Start Longlisting?',
-        html: `<p style="font-size:.85rem;color:#67748e;">This will move <strong style="color:#262561;">${title}</strong> to Longlisting stage. This cannot be undone.</p>`,
-        icon: 'question', showCancelButton: true,
-        confirmButtonColor: '#262561', cancelButtonColor: '#adb5bd',
-        confirmButtonText: '<i class="fas fa-list me-1"></i>Yes, Start',
-    }).then(r => {
-        if (r.isConfirmed) {
-            const f = document.getElementById('longlistForm');
-            f.action = `/recruitment/hr/vacancy/${id}/longlisting/`; f.submit();
+        function confirmLonglist(id, title) {
+            Swal.fire({
+                title: 'Start Longlisting?',
+                html: `<p style="font-size:.85rem;color:#67748e;">This will move <strong style="color:#262561;">${title}</strong> to Longlisting stage. This cannot be undone.</p>`,
+                icon: 'question', showCancelButton: true,
+                confirmButtonColor: '#262561', cancelButtonColor: '#adb5bd',
+                confirmButtonText: '<i class="fas fa-list me-1"></i> Yes, Start',
+            }).then(r => {
+                if (r.isConfirmed) {
+                    const f = document.getElementById('longlistForm');
+                    f.action = `/recruitment/hr/vacancy/${id}/longlisting/`;
+                    f.submit();
+                }
+            });
         }
-    });
-}
-</script>
+    </script>
 {% endblock %}

@@ -1,0 +1,92 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ rows|length }}</div>
+            <div class="stat-label">Candidates Interviewed</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ criteria|length }}</div>
+            <div class="stat-label">Criteria</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ panel|length }}</div>
+            <div class="stat-label">Panel Members</div>
+        </div>
+    </div>
+
+    <h2>Interview Score Summary</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Rank</th>
+            <th>App No.</th>
+            <th>Candidate</th>
+            {% for pm in panel %}
+                <th>{{ pm.member.first_name }}</th>{% endfor %}
+            <th>Total</th>
+            <th>%</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="text-center bold {% if row.result.rank == 1 %}navy{% endif %}">{{ row.result.rank }}</td>
+                <td class="monospace">{{ row.app_number }}</td>
+                <td class="bold">{{ row.name }}</td>
+                {% for md in row.member_data %}
+                    <td class="text-center">{{ md.subtotal|default:"—" }}</td>
+                {% endfor %}
+                <td class="bold text-center">{{ row.result.total_score }}</td>
+                <td class="bold text-center {% if row.result.percentage >= 70 %}green{% elif row.result.percentage >= 50 %}amber{% else %}red{% endif %}">{{ row.result.percentage }}%</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="10" class="text-center text-muted">No interview results</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Scoring Criteria</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Criterion</th>
+            <th>Max Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for c in criteria %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="bold">{{ c.name }}</td>
+                <td>{{ c.max_score }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Panel Members</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>COI</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for pm in panel %}
+            <tr>
+                <td class="bold">{{ pm.member.get_full_name|default:pm.member.email }}</td>
+                <td>{{ pm.member.email }}</td>
+                <td>{% if pm.has_conflict %}<span class="badge badge-amber">Declared</span>{% else %}None{% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

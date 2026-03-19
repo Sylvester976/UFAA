@@ -1,0 +1,57 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+<div class="stat-row">
+  <div class="stat-box"><div class="stat-val">{{ apps|length }}</div><div class="stat-label">Longlisted Candidates</div></div>
+  <div class="stat-box"><div class="stat-val">{{ logs|length }}</div><div class="stat-label">Review Actions</div></div>
+</div>
+
+<h2>Longlisted Candidates</h2>
+<table>
+  <thead>
+    <tr><th>App No.</th><th>Name</th><th>Status</th></tr>
+  </thead>
+  <tbody>
+    {% for app in apps %}
+    <tr>
+      <td class="monospace">{{ app.application_number }}</td>
+      <td class="bold">
+        {% with b=app.snapshot_basic %}
+        {% if b %}{{ b.first_name }} {{ b.surname }}{% else %}—{% endif %}
+        {% endwith %}
+      </td>
+      <td>
+        <span class="badge
+          {% if app.status.code == 'final_longlisted' %}badge-green
+          {% elif app.status.code == 'not_selected' %}badge-red
+          {% else %}badge-blue{% endif %}">
+          {{ app.status.name }}
+        </span>
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="3" class="text-center text-muted">No longlist records</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Review Log</h2>
+<table>
+  <thead>
+    <tr><th>Date</th><th>Officer</th><th>Action</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    {% for log in logs %}
+    <tr>
+      <td class="text-muted">{{ log.actioned_at|date:"d M Y H:i" }}</td>
+      <td>{% if log.officer %}{{ log.officer }}{% else %}System{% endif %}</td>
+      <td><span class="badge badge-navy">{{ log.action }}</span></td>
+      <td>{% if log.notes %}{{ log.notes|truncatechars:80 }}{% else %}—{% endif %}</td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-center text-muted">No review log entries</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

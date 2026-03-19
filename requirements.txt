@@ -28,3 +28,12 @@ gunicorn
 #mysqlclient==2.1.1
 django-dbbackup
 python-dateutil
+
+# Reports
+# WeasyPrint — production (Ubuntu). Requires system libs:
+#   sudo apt-get install -y libgobject-2.0-0 libpango-1.0-0 libpangocairo-1.0-0 libcairo2 libgdk-pixbuf2.0-0
+weasyprint
+
+# xhtml2pdf — fallback for Windows dev (no native deps needed)
+# _render_pdf() in views_reports.py tries WeasyPrint first, falls back to this
+xhtml2pdf

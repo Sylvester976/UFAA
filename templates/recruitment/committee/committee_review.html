@@ -2,652 +2,1017 @@
 {% block title %}Review Applicants — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root {
-    --navy: #262561; --gold: #F9E6A1; --gold-dk: #C39545;
-    --green: #1a7a45; --red: #c0392b; --amber: #b7770d;
-}
-a { text-decoration: none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-/* ── Banner ── */
-.page-banner {
-    background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
-    border-radius: 1rem; padding: 1.1rem 1.5rem; color: #fff;
-    display: flex; align-items: center;
-    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-.banner-title { font-size: 1rem; font-weight: 700; color: var(--gold); margin: 0; }
-.banner-sub   { font-size: 0.76rem; color: rgba(255,255,255,0.7); margin: 0; }
-.banner-ref   {
-    font-family: monospace; font-size: 0.7rem;
-    background: rgba(249,230,161,0.15); color: var(--gold);
-    padding: 0.2rem 0.6rem; border-radius: 0.35rem;
-}
-.back-link {
-    color: rgba(255,255,255,0.65); font-size: 0.76rem;
-    display: flex; align-items: center; gap: 0.35rem;
-}
-.back-link:hover { color: var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-/* ── Stat pills ── */
-.stat-pill {
-    background: #fff; border-radius: 0.75rem;
-    padding: 0.7rem 1rem; box-shadow: 0 2px 10px rgba(38,37,97,0.07);
-    display: flex; align-items: center; gap: 0.6rem; flex: 1; min-width: 100px;
-}
-.sp-icon { width: 36px; height: 36px; border-radius: 0.45rem;
-           display: flex; align-items: center; justify-content: center;
-           font-size: 0.85rem; flex-shrink: 0; }
-.sp-val  { font-size: 1.2rem; font-weight: 800; color: var(--navy); line-height: 1; }
-.sp-lbl  { font-size: 0.6rem; color: #8392ab; font-weight: 600;
-           text-transform: uppercase; letter-spacing: .04em; }
-.sp-total   .sp-icon { background: #eef0fb; color: var(--navy); }
-.sp-done    .sp-icon { background: #d4f5e2; color: var(--green); }
-.sp-pending .sp-icon { background: #fff3cd; color: var(--amber); }
+        /* ── Banner ── */
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.1rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
 
-/* ── Progress bar ── */
-.overall-progress {
-    background: #fff; border-radius: 0.75rem;
-    padding: 0.85rem 1.25rem;
-    box-shadow: 0 2px 10px rgba(38,37,97,0.07);
-    margin-bottom: 1rem;
-}
-.prog-header {
-    display: flex; justify-content: space-between;
-    font-size: 0.78rem; font-weight: 600; color: var(--navy); margin-bottom: 0.5rem;
-}
-.prog-track {
-    height: 8px; background: #f0f2f8; border-radius: 99px; overflow: hidden;
-}
-.prog-fill {
-    height: 100%; border-radius: 99px;
-    background: linear-gradient(90deg, var(--navy), #3949ab);
-    transition: width 0.4s ease;
-}
-.prog-fill.complete { background: linear-gradient(90deg, var(--green), #2e8b57); }
+        .banner-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-/* ── Submit all bar ── */
-.submit-bar {
-    background: linear-gradient(135deg, #1a5c38, #1a7a45);
-    border-radius: 0.75rem; padding: 1rem 1.25rem;
-    display: flex; align-items: center;
-    justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
-    margin-bottom: 1rem;
-}
-.submit-bar-text { color: #fff; font-size: 0.82rem; font-weight: 600; }
-.submit-bar-sub  { color: rgba(255,255,255,0.75); font-size: 0.73rem; }
-.btn-submit-all {
-    background: var(--gold); color: var(--navy) !important;
-    border: none; padding: 0.55rem 1.4rem; border-radius: 0.45rem;
-    font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 0.45rem;
-    transition: opacity 0.15s; flex-shrink: 0;
-}
-.btn-submit-all:hover { opacity: 0.85; }
-.btn-submit-all:disabled { opacity: 0.5; cursor: not-allowed; }
+        .banner-sub {
+            font-size: 0.76rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin: 0;
+        }
 
-/* ── Applicant cards ── */
-.applicant-card {
-    background: #fff; border-radius: 0.85rem;
-    box-shadow: 0 2px 10px rgba(38,37,97,0.07);
-    margin-bottom: 0.85rem; overflow: hidden;
-    border-left: 4px solid #e0e4ef;
-    transition: box-shadow 0.15s;
-}
-.applicant-card.voted-approve  { border-left-color: var(--green); }
-.applicant-card.voted-reject   { border-left-color: var(--red); }
-.applicant-card.draft-approve  { border-left-color: #a5d6a7; }
-.applicant-card.draft-reject   { border-left-color: #ef9a9a; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: 0.7rem;
+            background: rgba(249, 230, 161, 0.15);
+            color: var(--gold);
+            padding: 0.2rem 0.6rem;
+            border-radius: 0.35rem;
+        }
 
-.app-header {
-    padding: 0.85rem 1.25rem; display: flex;
-    align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.5rem;
-    cursor: pointer; user-select: none;
-}
-.app-num  { font-size: 0.68rem; font-weight: 700; color: #8392ab;
-            font-family: monospace; }
-.app-name { font-size: 0.88rem; font-weight: 700; color: var(--navy); }
-.app-meta { font-size: 0.72rem; color: #8392ab; }
+        .back-link {
+            color: rgba(255, 255, 255, 0.65);
+            font-size: 0.76rem;
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
 
-.vote-chip {
-    font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.65rem;
-    border-radius: 99px; display: inline-flex; align-items: center; gap: 0.3rem;
-    white-space: nowrap;
-}
-.vc-none    { background: #f0f2f8; color: #8392ab; }
-.vc-draft   { background: #fff3cd; color: #856404; }
-.vc-approve { background: #d4f5e2; color: #1a5c38; }
-.vc-reject  { background: #fde8e8; color: var(--red); }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-.app-collapse { display: none; }
-.app-collapse.open { display: block; }
+        /* ── Stat pills ── */
+        .stat-pill {
+            background: #fff;
+            border-radius: 0.75rem;
+            padding: 0.7rem 1rem;
+            box-shadow: 0 2px 10px rgba(38, 37, 97, 0.07);
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            flex: 1;
+            min-width: 100px;
+        }
 
-.app-body { padding: 0 1.25rem 1.25rem; }
+        .sp-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 0.45rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            flex-shrink: 0;
+        }
 
-/* Dossier preview */
-.dossier-strip {
-    background: #f8f9ff; border: 1px solid #e8ebf8;
-    border-radius: 0.55rem; padding: 0.75rem 1rem;
-    margin-bottom: 1rem; font-size: 0.78rem; color: #344767;
-    display: flex; align-items: center; justify-content: space-between;
-    flex-wrap: wrap; gap: 0.5rem;
-}
-.dossier-strip a {
-    font-size: 0.75rem; font-weight: 600; color: var(--navy);
-    display: inline-flex; align-items: center; gap: 0.35rem;
-}
-.dossier-strip a:hover { color: var(--gold-dk); }
+        .sp-val {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
 
-/* Vote form */
-.vote-form { border-top: 1px solid #f0f2f8; padding-top: 1rem; }
-.vote-label { font-size: 0.72rem; font-weight: 700; color: #8392ab;
-              text-transform: uppercase; letter-spacing: .05em; margin-bottom: 0.5rem; }
+        .sp-lbl {
+            font-size: 0.6rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
 
-.decision-toggle { display: flex; gap: 0.5rem; margin-bottom: 0.85rem; }
-.decision-btn {
-    flex: 1; padding: 0.6rem 0.5rem; border-radius: 0.45rem;
-    border: 2px solid #e0e4ef; background: #fafbff;
-    font-size: 0.8rem; font-weight: 700; cursor: pointer;
-    transition: all 0.15s; display: flex; align-items: center;
-    justify-content: center; gap: 0.4rem; color: #8392ab;
-}
-.decision-btn:hover { border-color: #b0bac9; }
-.decision-btn.approve-active {
-    border-color: var(--green); background: #d4f5e2; color: var(--green);
-}
-.decision-btn.reject-active {
-    border-color: var(--red); background: #fde8e8; color: var(--red);
-}
+        .sp-total .sp-icon {
+            background: #eef0fb;
+            color: var(--navy);
+        }
 
-.vote-comment {
-    width: 100%; padding: 0.6rem 0.85rem;
-    border: 1px solid #e0e4ef; border-radius: 0.45rem;
-    font-size: 0.8rem; color: #344767; resize: vertical;
-    min-height: 80px; transition: border-color 0.15s;
-    background: #fafbff; font-family: inherit;
-}
-.vote-comment:focus { outline: none; border-color: var(--navy);
-                      box-shadow: 0 0 0 3px rgba(38,37,97,0.07); }
+        .sp-done .sp-icon {
+            background: #d4f5e2;
+            color: var(--green);
+        }
 
-.vote-actions { display: flex; gap: 0.5rem; margin-top: 0.65rem; justify-content: flex-end; }
-.btn-vote {
-    font-size: 0.76rem; font-weight: 600; padding: 0.42rem 1rem;
-    border-radius: 0.4rem; border: none; cursor: pointer;
-    display: inline-flex; align-items: center; gap: 0.35rem;
-    transition: all 0.15s;
-}
-.btn-draft  {
-    background: #fff; border: 1px solid #e0e4ef; color: #344767;
-}
-.btn-draft:hover { background: #f8f9ff; border-color: #b0bac9; }
-.btn-submit-vote {
-    background: var(--navy); color: #fff;
-}
-.btn-submit-vote:hover { background: #1a1f5c; }
-.btn-vote:disabled { opacity: 0.45; cursor: not-allowed; }
+        .sp-pending .sp-icon {
+            background: #fff3cd;
+            color: var(--amber);
+        }
 
-/* Submitted view */
-.submitted-view { padding-top: 1rem; border-top: 1px solid #f0f2f8; }
-.my-vote-box {
-    background: #f8f9ff; border-radius: 0.55rem;
-    padding: 0.85rem 1rem; margin-bottom: 0.75rem;
-}
-.mv-label { font-size: 0.68rem; font-weight: 700; color: #8392ab;
-            text-transform: uppercase; letter-spacing: .04em; }
-.mv-decision {
-    font-size: 0.85rem; font-weight: 700; margin: 0.3rem 0 0.4rem;
-    display: flex; align-items: center; gap: 0.4rem;
-}
-.mv-decision.approve { color: var(--green); }
-.mv-decision.reject  { color: var(--red); }
-.mv-comment { font-size: 0.78rem; color: #344767; }
+        /* ── Progress bar ── */
+        .overall-progress {
+            background: #fff;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.25rem;
+            box-shadow: 0 2px 10px rgba(38, 37, 97, 0.07);
+            margin-bottom: 1rem;
+        }
 
-.other-votes-header {
-    font-size: 0.72rem; font-weight: 700; color: #8392ab;
-    text-transform: uppercase; letter-spacing: .04em;
-    margin-bottom: 0.5rem;
-}
-.other-vote-row {
-    display: flex; gap: 0.75rem; align-items: flex-start;
-    padding: 0.55rem 0; border-bottom: 1px solid #f7f8fc;
-    font-size: 0.78rem;
-}
-.other-vote-row:last-child { border-bottom: none; }
-.ov-name { font-weight: 600; color: #344767; min-width: 140px; flex-shrink: 0; }
-.ov-dec  { font-weight: 700; margin-right: 0.5rem; }
-.ov-dec.approve { color: var(--green); }
-.ov-dec.reject  { color: var(--red); }
-.ov-comment { color: #67748e; flex: 1; }
-.waiting-note { font-size: 0.76rem; color: #b0bac9; font-style: italic; }
+        .prog-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--navy);
+            margin-bottom: 0.5rem;
+        }
 
-.spin { animation: spin 0.6s linear infinite; display: inline-block; }
-@keyframes spin { to { transform: rotate(360deg); } }
+        .prog-track {
+            height: 8px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+        }
 
-.toast-wrap {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    z-index: 9999; display: flex; flex-direction: column; gap: 0.5rem;
-    pointer-events: none;
-}
-.toast-msg {
-    background: #344767; color: #fff; padding: 0.6rem 1rem;
-    border-radius: 0.5rem; font-size: 0.8rem;
-    box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-    display: flex; align-items: center; gap: 0.5rem;
-    animation: slideUp 0.2s ease-out; pointer-events: auto;
-}
-.toast-msg.success { background: #1a7a45; }
-.toast-msg.error   { background: #c0392b; }
-@keyframes slideUp {
-    from { transform: translateY(10px); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-</style>
+        .prog-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--navy), #3949ab);
+            transition: width 0.4s ease;
+        }
+
+        .prog-fill.complete {
+            background: linear-gradient(90deg, var(--green), #2e8b57);
+        }
+
+        /* ── Submit all bar ── */
+        .submit-bar {
+            background: linear-gradient(135deg, #1a5c38, #1a7a45);
+            border-radius: 0.75rem;
+            padding: 1rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .submit-bar-text {
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+
+        .submit-bar-sub {
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.73rem;
+        }
+
+        .btn-submit-all {
+            background: var(--gold);
+            color: var(--navy) !important;
+            border: none;
+            padding: 0.55rem 1.4rem;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: opacity 0.15s;
+            flex-shrink: 0;
+        }
+
+        .btn-submit-all:hover {
+            opacity: 0.85;
+        }
+
+        .btn-submit-all:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* ── Applicant cards ── */
+        .applicant-card {
+            background: #fff;
+            border-radius: 0.85rem;
+            box-shadow: 0 2px 10px rgba(38, 37, 97, 0.07);
+            margin-bottom: 0.85rem;
+            overflow: hidden;
+            border-left: 4px solid #e0e4ef;
+            transition: box-shadow 0.15s;
+        }
+
+        .applicant-card.voted-approve {
+            border-left-color: var(--green);
+        }
+
+        .applicant-card.voted-reject {
+            border-left-color: var(--red);
+        }
+
+        .applicant-card.draft-approve {
+            border-left-color: #a5d6a7;
+        }
+
+        .applicant-card.draft-reject {
+            border-left-color: #ef9a9a;
+        }
+
+        .app-header {
+            padding: 0.85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .app-num {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #8392ab;
+            font-family: monospace;
+        }
+
+        .app-name {
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .app-meta {
+            font-size: 0.72rem;
+            color: #8392ab;
+        }
+
+        .vote-chip {
+            font-size: 0.7rem;
+            font-weight: 700;
+            padding: 0.2rem 0.65rem;
+            border-radius: 99px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            white-space: nowrap;
+        }
+
+        .vc-none {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .vc-draft {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .vc-approve {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .vc-reject {
+            background: #fde8e8;
+            color: var(--red);
+        }
+
+        .app-collapse {
+            display: none;
+        }
+
+        .app-collapse.open {
+            display: block;
+        }
+
+        .app-body {
+            padding: 0 1.25rem 1.25rem;
+        }
+
+        /* Dossier preview */
+        .dossier-strip {
+            background: #f8f9ff;
+            border: 1px solid #e8ebf8;
+            border-radius: 0.55rem;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.78rem;
+            color: #344767;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .dossier-strip a {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--navy);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+        }
+
+        .dossier-strip a:hover {
+            color: var(--gold-dk);
+        }
+
+        /* Vote form */
+        .vote-form {
+            border-top: 1px solid #f0f2f8;
+            padding-top: 1rem;
+        }
+
+        .vote-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            margin-bottom: 0.5rem;
+        }
+
+        .decision-toggle {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.85rem;
+        }
+
+        .decision-btn {
+            flex: 1;
+            padding: 0.6rem 0.5rem;
+            border-radius: 0.45rem;
+            border: 2px solid #e0e4ef;
+            background: #fafbff;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            color: #8392ab;
+        }
+
+        .decision-btn:hover {
+            border-color: #b0bac9;
+        }
+
+        .decision-btn.approve-active {
+            border-color: var(--green);
+            background: #d4f5e2;
+            color: var(--green);
+        }
+
+        .decision-btn.reject-active {
+            border-color: var(--red);
+            background: #fde8e8;
+            color: var(--red);
+        }
+
+        .vote-comment {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border: 1px solid #e0e4ef;
+            border-radius: 0.45rem;
+            font-size: 0.8rem;
+            color: #344767;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.15s;
+            background: #fafbff;
+            font-family: inherit;
+        }
+
+        .vote-comment:focus {
+            outline: none;
+            border-color: var(--navy);
+            box-shadow: 0 0 0 3px rgba(38, 37, 97, 0.07);
+        }
+
+        .vote-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.65rem;
+            justify-content: flex-end;
+        }
+
+        .btn-vote {
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 0.42rem 1rem;
+            border-radius: 0.4rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: all 0.15s;
+        }
+
+        .btn-draft {
+            background: #fff;
+            border: 1px solid #e0e4ef;
+            color: #344767;
+        }
+
+        .btn-draft:hover {
+            background: #f8f9ff;
+            border-color: #b0bac9;
+        }
+
+        .btn-submit-vote {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-submit-vote:hover {
+            background: #1a1f5c;
+        }
+
+        .btn-vote:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        /* Submitted view */
+        .submitted-view {
+            padding-top: 1rem;
+            border-top: 1px solid #f0f2f8;
+        }
+
+        .my-vote-box {
+            background: #f8f9ff;
+            border-radius: 0.55rem;
+            padding: 0.85rem 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .mv-label {
+            font-size: 0.68rem;
+            font-weight: 700;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .mv-decision {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin: 0.3rem 0 0.4rem;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .mv-decision.approve {
+            color: var(--green);
+        }
+
+        .mv-decision.reject {
+            color: var(--red);
+        }
+
+        .mv-comment {
+            font-size: 0.78rem;
+            color: #344767;
+        }
+
+        .other-votes-header {
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+            margin-bottom: 0.5rem;
+        }
+
+        .other-vote-row {
+            display: flex;
+            gap: 0.75rem;
+            align-items: flex-start;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid #f7f8fc;
+            font-size: 0.78rem;
+        }
+
+        .other-vote-row:last-child {
+            border-bottom: none;
+        }
+
+        .ov-name {
+            font-weight: 600;
+            color: #344767;
+            min-width: 140px;
+            flex-shrink: 0;
+        }
+
+        .ov-dec {
+            font-weight: 700;
+            margin-right: 0.5rem;
+        }
+
+        .ov-dec.approve {
+            color: var(--green);
+        }
+
+        .ov-dec.reject {
+            color: var(--red);
+        }
+
+        .ov-comment {
+            color: #67748e;
+            flex: 1;
+        }
+
+        .waiting-note {
+            font-size: 0.76rem;
+            color: #b0bac9;
+            font-style: italic;
+        }
+
+        .spin {
+            animation: spin 0.6s linear infinite;
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .toast-wrap {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            pointer-events: none;
+        }
+
+        .toast-msg {
+            background: #344767;
+            color: #fff;
+            padding: 0.6rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            animation: slideUp 0.2s ease-out;
+            pointer-events: auto;
+        }
+
+        .toast-msg.success {
+            background: #1a7a45;
+        }
+
+        .toast-msg.error {
+            background: #c0392b;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(10px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- Banner -->
-    <div class="page-banner mb-3">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-clipboard-list me-2"></i>Review Applicants
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        <!-- Banner -->
+        <div class="page-banner mb-3">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-clipboard-list me-2"></i>Review Applicants
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'committee_dashboard' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> My Assignments
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'committee_dashboard' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> My Assignments
-            </a>
-        </div>
-    </div>
 
-    <!-- Stats -->
-    <div class="d-flex flex-wrap gap-3 mb-3">
-        <div class="stat-pill sp-total">
-            <div class="sp-icon"><i class="fas fa-users"></i></div>
-            <div><div class="sp-val">{{ app_count }}</div><div class="sp-lbl">Applicants</div></div>
-        </div>
-        <div class="stat-pill sp-done">
-            <div class="sp-icon"><i class="fas fa-check-circle"></i></div>
-            <div>
-                <div class="sp-val" id="submitted-count">{{ submitted_count }}</div>
-                <div class="sp-lbl">Votes Submitted</div>
-            </div>
-        </div>
-        <div class="stat-pill sp-pending">
-            <div class="sp-icon"><i class="fas fa-hourglass-half"></i></div>
-            <div>
-                <div class="sp-val" id="remaining-count">{{ remaining }}</div>
-                <div class="sp-lbl">Remaining</div>
-            </div>
-        </div>
-        <div class="stat-pill" style="background:#fff8e1;">
-            <div class="sp-icon" style="background:#fff3cd;color:var(--amber);">
-                <i class="fas fa-calendar"></i>
-            </div>
-            <div>
-                <div class="sp-val" style="font-size:0.85rem;
-                    {% if days_remaining <= 0 %}color:var(--red);
-                    {% elif days_remaining <= 5 %}color:var(--amber);{% endif %}">
-                    {{ deadline|date:"d M Y" }}
-                </div>
-                <div class="sp-lbl">
-                    {% if days_remaining <= 0 %}OVERDUE
-                    {% else %}{{ days_remaining }}d remaining{% endif %}
+        <!-- Stats -->
+        <div class="d-flex flex-wrap gap-3 mb-3">
+            <div class="stat-pill sp-total">
+                <div class="sp-icon"><i class="fas fa-users"></i></div>
+                <div>
+                    <div class="sp-val">{{ app_count }}</div>
+                    <div class="sp-lbl">Applicants</div>
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- Progress -->
-    <div class="overall-progress">
-        <div class="prog-header">
-            <span>Your progress</span>
-            <span id="prog-label">{{ submitted_count }} / {{ app_count }} submitted</span>
-        </div>
-        <div class="prog-track">
-            <div class="prog-fill {% if all_submitted %}complete{% endif %}"
-                 id="prog-fill"
-                 style="width:{% if app_count %}{% widthratio submitted_count app_count 100 %}{% else %}0{% endif %}%">
+            <div class="stat-pill sp-done">
+                <div class="sp-icon"><i class="fas fa-check-circle"></i></div>
+                <div>
+                    <div class="sp-val" id="submitted-count">{{ submitted_count }}</div>
+                    <div class="sp-lbl">Votes Submitted</div>
+                </div>
+            </div>
+            <div class="stat-pill sp-pending">
+                <div class="sp-icon"><i class="fas fa-hourglass-half"></i></div>
+                <div>
+                    <div class="sp-val" id="remaining-count">{{ remaining }}</div>
+                    <div class="sp-lbl">Remaining</div>
+                </div>
+            </div>
+            <div class="stat-pill" style="background:#fff8e1;">
+                <div class="sp-icon" style="background:#fff3cd;color:var(--amber);">
+                    <i class="fas fa-calendar"></i>
+                </div>
+                <div>
+                    <div class="sp-val" style="font-size:0.85rem;
+                            {% if days_remaining <= 0 %}color:var(--red);
+                            {% elif days_remaining <= 5 %}color:var(--amber);{% endif %}">
+                        {{ deadline|date:"d M Y" }}
+                    </div>
+                    <div class="sp-lbl">
+                        {% if days_remaining <= 0 %}OVERDUE
+                            {% else %}{{ days_remaining }}d remaining{% endif %}
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- Submit all bar (shown when all voted) -->
-    <div class="submit-bar {% if not all_submitted %}d-none{% endif %}" id="submit-bar">
-        <div>
-            <div class="submit-bar-text">
-                <i class="fas fa-check-circle me-1"></i>
-                All {{ app_count }} votes completed
+        <!-- Progress -->
+        <div class="overall-progress">
+            <div class="prog-header">
+                <span>Your progress</span>
+                <span id="prog-label">{{ submitted_count }} / {{ app_count }} submitted</span>
             </div>
-            <div class="submit-bar-sub">
-                Review your decisions below, then submit your votes to finalise.
+            <div class="prog-track">
+                <div class="prog-fill {% if all_submitted %}complete{% endif %}"
+                     id="prog-fill"
+                     style="width:
+                             {% if app_count %}{% widthratio submitted_count app_count 100 %}{% else %}0{% endif %}%">
+                </div>
             </div>
         </div>
-        <button class="btn-submit-all" id="btn-submit-all" onclick="submitAll()">
-            <i class="fas fa-paper-plane"></i> Submit All Votes
-        </button>
-    </div>
 
-    <!-- Applicant cards -->
-    {% for row in app_rows %}
-    <div class="applicant-card
+        <!-- Submit all bar (shown when all voted) -->
+        <div class="submit-bar {% if not all_submitted %}d-none{% endif %}" id="submit-bar">
+            <div>
+                <div class="submit-bar-text">
+                    <i class="fas fa-check-circle me-1"></i>
+                    All {{ app_count }} votes completed
+                </div>
+                <div class="submit-bar-sub">
+                    Review your decisions below, then submit your votes to finalise.
+                </div>
+            </div>
+            <button class="btn-submit-all" id="btn-submit-all" onclick="submitAll()">
+                <i class="fas fa-paper-plane"></i> Submit All Votes
+            </button>
+        </div>
+
+        <!-- Applicant cards -->
+        {% for row in app_rows %}
+            <div class="applicant-card
         {% if row.my_vote and not row.my_vote.is_draft %}
             {% if row.my_vote.approve %}voted-approve{% else %}voted-reject{% endif %}
         {% elif row.my_vote and row.my_vote.is_draft %}
             {% if row.my_vote.approve %}draft-approve{% else %}draft-reject{% endif %}
         {% endif %}"
-        id="card-{{ row.app.id }}">
+                 id="card-{{ row.app.id }}">
 
-        <!-- Card header — clickable to expand -->
-        <div class="app-header" onclick="toggleCard({{ row.app.id }})">
-            <div>
-                <div class="app-num">{{ row.app.application_number }}</div>
-                <div class="app-name">
-                    {{ row.app.user.first_name }} {{ row.app.user.last_name }}
-                </div>
-                <div class="app-meta">
-                    Applied {{ row.app.submitted_at|date:"d M Y" }}
-                </div>
-            </div>
-            <div class="d-flex align-items-center gap-2">
-                {% if row.is_submitted %}
-                    <span class="vote-chip vc-approve" id="chip-{{ row.app.id }}" {% if not row.my_vote.approve %}style="display:none"{% endif %}>
+                <!-- Card header — clickable to expand -->
+                <div class="app-header" onclick="toggleCard({{ row.app.id }})">
+                    <div>
+                        <div class="app-num">{{ row.app.application_number }}</div>
+                        <div class="app-name">
+                            {{ row.app.user.first_name }} {{ row.app.user.last_name }}
+                        </div>
+                        <div class="app-meta">
+                            Applied {{ row.app.submitted_at|date:"d M Y" }}
+                        </div>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        {% if row.is_submitted %}
+                            <span class="vote-chip vc-approve" id="chip-{{ row.app.id }}"
+                                  {% if not row.my_vote.approve %}style="display:none"{% endif %}>
                         <i class="fas fa-check"></i> Approved
                     </span>
-                    <span class="vote-chip vc-reject" id="chip-reject-{{ row.app.id }}" {% if row.my_vote.approve %}style="display:none"{% endif %}>
+                            <span class="vote-chip vc-reject" id="chip-reject-{{ row.app.id }}"
+                                  {% if row.my_vote.approve %}style="display:none"{% endif %}>
                         <i class="fas fa-times"></i> Disapproved
                     </span>
-                {% elif row.my_vote %}
-                    <span class="vote-chip vc-draft" id="chip-{{ row.app.id }}">
+                        {% elif row.my_vote %}
+                            <span class="vote-chip vc-draft" id="chip-{{ row.app.id }}">
                         <i class="fas fa-save"></i>
-                        {% if row.my_vote.approve %}Draft: Approve{% else %}Draft: Disapprove{% endif %}
+                                {% if row.my_vote.approve %}Draft: Approve{% else %}Draft: Disapprove{% endif %}
                     </span>
-                {% else %}
-                    <span class="vote-chip vc-none" id="chip-{{ row.app.id }}">
+                        {% else %}
+                            <span class="vote-chip vc-none" id="chip-{{ row.app.id }}">
                         <i class="fas fa-minus"></i> Not Voted
                     </span>
-                {% endif %}
-                <i class="fas fa-chevron-down" id="chevron-{{ row.app.id }}"
-                   style="color:#b0bac9;font-size:0.75rem;transition:transform 0.2s;"></i>
-            </div>
-        </div>
+                        {% endif %}
+                        <i class="fas fa-chevron-down" id="chevron-{{ row.app.id }}"
+                           style="color:#b0bac9;font-size:0.75rem;transition:transform 0.2s;"></i>
+                    </div>
+                </div>
 
-        <!-- Expandable body -->
-        <div class="app-collapse {% if not row.is_submitted and forloop.first %}open{% endif %}"
-             id="collapse-{{ row.app.id }}">
-            <div class="app-body">
+                <!-- Expandable body -->
+                <div class="app-collapse {% if not row.is_submitted and forloop.first %}open{% endif %}"
+                     id="collapse-{{ row.app.id }}">
+                    <div class="app-body">
 
-                <!-- Dossier link -->
-                <div class="dossier-strip">
+                        <!-- Dossier link -->
+                        <div class="dossier-strip">
                     <span>
                         <i class="fas fa-folder-open me-1" style="color:var(--gold-dk);"></i>
                         <strong>{{ row.app.user.first_name }} {{ row.app.user.last_name }}</strong>
                         — full application dossier
                     </span>
-                    <a href="/recruitment/hr/application/{{ row.app.id }}/" target="_blank">
-                        <i class="fas fa-external-link-alt"></i> Open Dossier
-                    </a>
-                    {% comment %}                     
+                            <a href="/recruitment/hr/application/{{ row.app.id }}/" target="_blank">
+                                <i class="fas fa-external-link-alt"></i> Open Dossier
+                            </a>
+                            {% comment %}
                     {% for app in applications %}
                     <a href="{% url 'hr_view_applications' row.app.id %}" target="_blank">
                         <i class="fas fa-external-link-alt"></i> Open Applicant details
                     </a>
                     {% endfor %} {% endcomment %}
-                </div>
-
-                {% if row.is_submitted %}
-                <!-- ── Submitted view ── -->
-                <div class="submitted-view">
-                    <div class="my-vote-box">
-                        <div class="mv-label">Your vote</div>
-                        <div class="mv-decision {% if row.my_vote.approve %}approve{% else %}reject{% endif %}">
-                            {% if row.my_vote.approve %}
-                                <i class="fas fa-check-circle"></i> Approved
-                            {% else %}
-                                <i class="fas fa-times-circle"></i> Disapproved
-                            {% endif %}
                         </div>
-                        <div class="mv-comment">{{ row.my_vote.comment }}</div>
-                    </div>
 
-                    {% if row.other_votes %}
-                    <div>
-                        <div class="other-votes-header">
-                            <i class="fas fa-users me-1"></i>
-                            Other members' votes
-                        </div>
-                        {% for ov in row.other_votes %}
-                        <div class="other-vote-row">
+                        {% if row.is_submitted %}
+                            <!-- ── Submitted view ── -->
+                            <div class="submitted-view">
+                                <div class="my-vote-box">
+                                    <div class="mv-label">Your vote</div>
+                                    <div class="mv-decision {% if row.my_vote.approve %}approve{% else %}reject{% endif %}">
+                                        {% if row.my_vote.approve %}
+                                            <i class="fas fa-check-circle"></i> Approved
+                                        {% else %}
+                                            <i class="fas fa-times-circle"></i> Disapproved
+                                        {% endif %}
+                                    </div>
+                                    <div class="mv-comment">{{ row.my_vote.comment }}</div>
+                                </div>
+
+                                {% if row.other_votes %}
+                                    <div>
+                                        <div class="other-votes-header">
+                                            <i class="fas fa-users me-1"></i>
+                                            Other members' votes
+                                        </div>
+                                        {% for ov in row.other_votes %}
+                                            <div class="other-vote-row">
                             <span class="ov-name">
                                 {{ ov.member.first_name }} {{ ov.member.last_name }}
                             </span>
-                            <span class="ov-dec {% if ov.approve %}approve{% else %}reject{% endif %}">
+                                                <span class="ov-dec {% if ov.approve %}approve{% else %}reject{% endif %}">
                                 {% if ov.approve %}Approved{% else %}Disapproved{% endif %}
                             </span>
-                            <span class="ov-comment">{{ ov.comment }}</span>
-                        </div>
-                        {% endfor %}
+                                                <span class="ov-comment">{{ ov.comment }}</span>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="waiting-note">
+                                        <i class="fas fa-eye-slash me-1"></i>
+                                        Other members' votes will appear here once they submit theirs.
+                                    </p>
+                                {% endif %}
+                            </div>
+
+                        {% else %}
+                            <!-- ── Vote form ── -->
+                            <div class="vote-form" id="form-{{ row.app.id }}">
+                                <div class="vote-label">Your decision</div>
+                                <div class="decision-toggle">
+                                    <button type="button"
+                                            class="decision-btn {% if row.my_vote and row.my_vote.approve %}approve-active{% endif %}"
+                                            id="btn-approve-{{ row.app.id }}"
+                                            onclick="setDecision({{ row.app.id }}, true)">
+                                        <i class="fas fa-check-circle"></i> Approve
+                                    </button>
+                                    <button type="button"
+                                            class="decision-btn {% if row.my_vote and not row.my_vote.approve %}reject-active{% endif %}"
+                                            id="btn-reject-{{ row.app.id }}"
+                                            onclick="setDecision({{ row.app.id }}, false)">
+                                        <i class="fas fa-times-circle"></i> Disapprove
+                                    </button>
+                                </div>
+
+                                <div class="vote-label">Comment <span style="color:var(--red);">*</span> (required to
+                                    submit)
+                                </div>
+                                <textarea class="vote-comment"
+                                          id="comment-{{ row.app.id }}"
+                                          placeholder="State your reasons for approving or disapproving this applicant…"
+                                >{% if row.my_vote %}{{ row.my_vote.comment }}{% endif %}</textarea>
+
+                                <div id="vote-error-{{ row.app.id }}"
+                                     style="color:var(--red);font-size:0.75rem;margin-top:0.3rem;display:none;"></div>
+
+                                <div class="vote-actions">
+                                    <button type="button" class="btn-vote btn-draft"
+                                            id="btn-draft-{{ row.app.id }}"
+                                            onclick="saveVote({{ row.app.id }}, 'draft')">
+                                        <i class="fas fa-save"></i> Save Draft
+                                    </button>
+                                    <button type="button" class="btn-vote btn-submit-vote"
+                                            id="btn-submit-{{ row.app.id }}"
+                                            onclick="saveVote({{ row.app.id }}, 'submit')">
+                                        <i class="fas fa-check"></i> Submit Vote
+                                    </button>
+                                </div>
+                            </div>
+                        {% endif %}
+
                     </div>
-                    {% else %}
-                    <p class="waiting-note">
-                        <i class="fas fa-eye-slash me-1"></i>
-                        Other members' votes will appear here once they submit theirs.
-                    </p>
-                    {% endif %}
                 </div>
-
-                {% else %}
-                <!-- ── Vote form ── -->
-                <div class="vote-form" id="form-{{ row.app.id }}">
-                    <div class="vote-label">Your decision</div>
-                    <div class="decision-toggle">
-                        <button type="button"
-                                class="decision-btn {% if row.my_vote and row.my_vote.approve %}approve-active{% endif %}"
-                                id="btn-approve-{{ row.app.id }}"
-                                onclick="setDecision({{ row.app.id }}, true)">
-                            <i class="fas fa-check-circle"></i> Approve
-                        </button>
-                        <button type="button"
-                                class="decision-btn {% if row.my_vote and not row.my_vote.approve %}reject-active{% endif %}"
-                                id="btn-reject-{{ row.app.id }}"
-                                onclick="setDecision({{ row.app.id }}, false)">
-                            <i class="fas fa-times-circle"></i> Disapprove
-                        </button>
-                    </div>
-
-                    <div class="vote-label">Comment <span style="color:var(--red);">*</span> (required to submit)</div>
-                    <textarea class="vote-comment"
-                              id="comment-{{ row.app.id }}"
-                              placeholder="State your reasons for approving or disapproving this applicant…"
-                              >{% if row.my_vote %}{{ row.my_vote.comment }}{% endif %}</textarea>
-
-                    <div id="vote-error-{{ row.app.id }}"
-                         style="color:var(--red);font-size:0.75rem;margin-top:0.3rem;display:none;"></div>
-
-                    <div class="vote-actions">
-                        <button type="button" class="btn-vote btn-draft"
-                                id="btn-draft-{{ row.app.id }}"
-                                onclick="saveVote({{ row.app.id }}, 'draft')">
-                            <i class="fas fa-save"></i> Save Draft
-                        </button>
-                        <button type="button" class="btn-vote btn-submit-vote"
-                                id="btn-submit-{{ row.app.id }}"
-                                onclick="saveVote({{ row.app.id }}, 'submit')">
-                            <i class="fas fa-check"></i> Submit Vote
-                        </button>
-                    </div>
-                </div>
-                {% endif %}
-
             </div>
-        </div>
-    </div>
-    {% empty %}
-    <div style="text-align:center;padding:3rem;color:#b0bac9;font-size:0.85rem;">
-        No applicants to review for this vacancy.
-    </div>
-    {% endfor %}
+        {% empty %}
+            <div style="text-align:center;padding:3rem;color:#b0bac9;font-size:0.85rem;">
+                No applicants to review for this vacancy.
+            </div>
+        {% endfor %}
 
-</div>
+    </div>
 
-<div class="toast-wrap" id="toast-wrap"></div>
+    <div class="toast-wrap" id="toast-wrap"></div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const CSRF_TOKEN   = '{{ csrf_token }}';
-const VOTE_URL     = "{% url 'committee_vote_save'  vacancy.id %}";
-const SUBMIT_URL   = "{% url 'committee_submit_all' vacancy.id %}";
-const RESULTS_URL  = "{% url 'committee_results'    vacancy.id %}";
-const APP_COUNT    = {{ app_count }};
+    <script>
+        const CSRF_TOKEN = '{{ csrf_token }}';
+        const VOTE_URL = "{% url 'committee_vote_save'  vacancy.id %}";
+        const SUBMIT_URL = "{% url 'committee_submit_all' vacancy.id %}";
+        const RESULTS_URL = "{% url 'committee_results'    vacancy.id %}";
+        const APP_COUNT = {{ app_count }};
 
-// Track per-card state
-const decisions = {};
-{% for row in app_rows %}
-{% if row.my_vote %}
-decisions[{{ row.app.id }}] = {{ row.my_vote.approve|lower }};
-{% endif %}
-{% endfor %}
+        // Track per-card state
+        const decisions = {};
+        {% for row in app_rows %}
+            {% if row.my_vote %}
+                decisions[{{ row.app.id }}] = {{ row.my_vote.approve|lower }};
+            {% endif %}
+        {% endfor %}
 
-let submittedCount = {{ submitted_count }};
+        let submittedCount = {{ submitted_count }};
 
-// ── Toast ─────────────────────────────────────────────────────────
-function toast(msg, type = 'success') {
-    const el = document.createElement('div');
-    el.className = `toast-msg ${type}`;
-    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${msg}`;
-    document.getElementById('toast-wrap').appendChild(el);
-    setTimeout(() => el.remove(), 4000);
-}
-
-// ── Toggle card open/close ────────────────────────────────────────
-function toggleCard(appId) {
-    const collapse = document.getElementById(`collapse-${appId}`);
-    const chevron  = document.getElementById(`chevron-${appId}`);
-    const isOpen   = collapse.classList.contains('open');
-    collapse.classList.toggle('open', !isOpen);
-    chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
-}
-
-// ── Set approve/reject decision ───────────────────────────────────
-function setDecision(appId, approve) {
-    decisions[appId] = approve;
-    const btnA = document.getElementById(`btn-approve-${appId}`);
-    const btnR = document.getElementById(`btn-reject-${appId}`);
-    btnA.classList.toggle('approve-active', approve === true);
-    btnR.classList.toggle('reject-active',  approve === false);
-}
-
-// ── Save or submit a vote ─────────────────────────────────────────
-async function saveVote(appId, action) {
-    const approve  = decisions[appId];
-    const comment  = document.getElementById(`comment-${appId}`).value.trim();
-    const errEl    = document.getElementById(`vote-error-${appId}`);
-    errEl.style.display = 'none';
-
-    if (approve === undefined) {
-        errEl.textContent   = 'Please select Approve or Disapprove.';
-        errEl.style.display = 'block';
-        return;
-    }
-    if (action === 'submit' && !comment) {
-        errEl.textContent   = 'A comment is required before submitting.';
-        errEl.style.display = 'block';
-        return;
-    }
-
-    const btnD = document.getElementById(`btn-draft-${appId}`);
-    const btnS = document.getElementById(`btn-submit-${appId}`);
-    btnD.disabled = true;
-    btnS.disabled = true;
-    if (action === 'submit') {
-        btnS.innerHTML = '<i class="fas fa-circle-notch spin"></i> Submitting…';
-    } else {
-        btnD.innerHTML = '<i class="fas fa-circle-notch spin"></i> Saving…';
-    }
-
-    try {
-        const fd = new FormData();
-        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
-        fd.append('application_id', appId);
-        fd.append('approve',        approve.toString());
-        fd.append('comment',        comment);
-        fd.append('action',         action);
-
-        const resp = await fetch(VOTE_URL, { method: 'POST', body: fd });
-        const data = await resp.json();
-
-        if (!resp.ok || data.error) {
-            errEl.textContent   = data.error || 'Failed to save vote.';
-            errEl.style.display = 'block';
-        } else if (action === 'draft') {
-            // Update chip
-            const chip = document.getElementById(`chip-${appId}`);
-            chip.className  = 'vote-chip vc-draft';
-            chip.innerHTML  = `<i class="fas fa-save"></i> Draft: ${approve ? 'Approve' : 'Disapprove'}`;
-            // Update card border
-            const card = document.getElementById(`card-${appId}`);
-            card.classList.remove('voted-approve','voted-reject','draft-approve','draft-reject');
-            card.classList.add(approve ? 'draft-approve' : 'draft-reject');
-            toast('Draft saved.', 'success');
-        } else {
-            // Submitted — replace form with submitted view
-            submittedCount++;
-            updateProgress();
-            renderSubmittedView(appId, approve, comment, data.revealed_votes);
-            toast('Vote submitted.', 'success');
-
-            // Auto-open next unvoted card
-            setTimeout(() => autoOpenNext(), 400);
+        // ── Toast ─────────────────────────────────────────────────────────
+        function toast(msg, type = 'success') {
+            const el = document.createElement('div');
+            el.className = `toast-msg ${type}`;
+            el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${msg}`;
+            document.getElementById('toast-wrap').appendChild(el);
+            setTimeout(() => el.remove(), 4000);
         }
-    } catch(e) {
-        errEl.textContent   = 'Network error. Please try again.';
-        errEl.style.display = 'block';
-    }
 
-    btnD.disabled = false;
-    btnS.disabled = false;
-    btnD.innerHTML = '<i class="fas fa-save"></i> Save Draft';
-    btnS.innerHTML = '<i class="fas fa-check"></i> Submit Vote';
-}
+        // ── Toggle card open/close ────────────────────────────────────────
+        function toggleCard(appId) {
+            const collapse = document.getElementById(`collapse-${appId}`);
+            const chevron = document.getElementById(`chevron-${appId}`);
+            const isOpen = collapse.classList.contains('open');
+            collapse.classList.toggle('open', !isOpen);
+            chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+        }
 
-function renderSubmittedView(appId, approve, comment, revealedVotes) {
-    const card = document.getElementById(`card-${appId}`);
-    card.classList.remove('voted-approve','voted-reject','draft-approve','draft-reject');
-    card.classList.add(approve ? 'voted-approve' : 'voted-reject');
+        // ── Set approve/reject decision ───────────────────────────────────
+        function setDecision(appId, approve) {
+            decisions[appId] = approve;
+            const btnA = document.getElementById(`btn-approve-${appId}`);
+            const btnR = document.getElementById(`btn-reject-${appId}`);
+            btnA.classList.toggle('approve-active', approve === true);
+            btnR.classList.toggle('reject-active', approve === false);
+        }
 
-    // Update chip
-    const chipA = document.getElementById(`chip-${appId}`);
-    const chipR = document.getElementById(`chip-reject-${appId}`);
-    if (chipA) {
-        if (approve) {
-            chipA.className = 'vote-chip vc-approve';
-            chipA.innerHTML = '<i class="fas fa-check"></i> Approved';
-            chipA.style.display = '';
-            if (chipR) chipR.style.display = 'none';
-        } else {
-            if (chipR) {
-                chipR.className = 'vote-chip vc-reject';
-                chipR.innerHTML = '<i class="fas fa-times"></i> Disapproved';
-                chipR.style.display = '';
+        // ── Save or submit a vote ─────────────────────────────────────────
+        async function saveVote(appId, action) {
+            const approve = decisions[appId];
+            const comment = document.getElementById(`comment-${appId}`).value.trim();
+            const errEl = document.getElementById(`vote-error-${appId}`);
+            errEl.style.display = 'none';
+
+            if (approve === undefined) {
+                errEl.textContent = 'Please select Approve or Disapprove.';
+                errEl.style.display = 'block';
+                return;
             }
-            chipA.style.display = 'none';
-        }
-    }
+            if (action === 'submit' && !comment) {
+                errEl.textContent = 'A comment is required before submitting.';
+                errEl.style.display = 'block';
+                return;
+            }
 
-    // Build revealed votes HTML
-    let otherHtml = '';
-    if (revealedVotes && revealedVotes.length > 0) {
-        otherHtml = `<div class="other-votes-header">
+            const btnD = document.getElementById(`btn-draft-${appId}`);
+            const btnS = document.getElementById(`btn-submit-${appId}`);
+            btnD.disabled = true;
+            btnS.disabled = true;
+            if (action === 'submit') {
+                btnS.innerHTML = '<i class="fas fa-circle-notch spin"></i> Submitting…';
+            } else {
+                btnD.innerHTML = '<i class="fas fa-circle-notch spin"></i> Saving…';
+            }
+
+            try {
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+                fd.append('application_id', appId);
+                fd.append('approve', approve.toString());
+                fd.append('comment', comment);
+                fd.append('action', action);
+
+                const resp = await fetch(VOTE_URL, {method: 'POST', body: fd});
+                const data = await resp.json();
+
+                if (!resp.ok || data.error) {
+                    errEl.textContent = data.error || 'Failed to save vote.';
+                    errEl.style.display = 'block';
+                } else if (action === 'draft') {
+                    // Update chip
+                    const chip = document.getElementById(`chip-${appId}`);
+                    chip.className = 'vote-chip vc-draft';
+                    chip.innerHTML = `<i class="fas fa-save"></i> Draft: ${approve ? 'Approve' : 'Disapprove'}`;
+                    // Update card border
+                    const card = document.getElementById(`card-${appId}`);
+                    card.classList.remove('voted-approve', 'voted-reject', 'draft-approve', 'draft-reject');
+                    card.classList.add(approve ? 'draft-approve' : 'draft-reject');
+                    toast('Draft saved.', 'success');
+                } else {
+                    // Submitted — replace form with submitted view
+                    submittedCount++;
+                    updateProgress();
+                    renderSubmittedView(appId, approve, comment, data.revealed_votes);
+                    toast('Vote submitted.', 'success');
+
+                    // Auto-open next unvoted card
+                    setTimeout(() => autoOpenNext(), 400);
+                }
+            } catch (e) {
+                errEl.textContent = 'Network error. Please try again.';
+                errEl.style.display = 'block';
+            }
+
+            btnD.disabled = false;
+            btnS.disabled = false;
+            btnD.innerHTML = '<i class="fas fa-save"></i> Save Draft';
+            btnS.innerHTML = '<i class="fas fa-check"></i> Submit Vote';
+        }
+
+        function renderSubmittedView(appId, approve, comment, revealedVotes) {
+            const card = document.getElementById(`card-${appId}`);
+            card.classList.remove('voted-approve', 'voted-reject', 'draft-approve', 'draft-reject');
+            card.classList.add(approve ? 'voted-approve' : 'voted-reject');
+
+            // Update chip
+            const chipA = document.getElementById(`chip-${appId}`);
+            const chipR = document.getElementById(`chip-reject-${appId}`);
+            if (chipA) {
+                if (approve) {
+                    chipA.className = 'vote-chip vc-approve';
+                    chipA.innerHTML = '<i class="fas fa-check"></i> Approved';
+                    chipA.style.display = '';
+                    if (chipR) chipR.style.display = 'none';
+                } else {
+                    if (chipR) {
+                        chipR.className = 'vote-chip vc-reject';
+                        chipR.innerHTML = '<i class="fas fa-times"></i> Disapproved';
+                        chipR.style.display = '';
+                    }
+                    chipA.style.display = 'none';
+                }
+            }
+
+            // Build revealed votes HTML
+            let otherHtml = '';
+            if (revealedVotes && revealedVotes.length > 0) {
+                otherHtml = `<div class="other-votes-header">
             <i class="fas fa-users me-1"></i>Other members' votes
         </div>`;
-        revealedVotes.forEach(v => {
-            otherHtml += `
+                revealedVotes.forEach(v => {
+                    otherHtml += `
             <div class="other-vote-row">
                 <span class="ov-name">${v.name}</span>
                 <span class="ov-dec ${v.approve ? 'approve' : 'reject'}">
@@ -655,15 +1020,15 @@ function renderSubmittedView(appId, approve, comment, revealedVotes) {
                 </span>
                 <span class="ov-comment">${v.comment}</span>
             </div>`;
-        });
-    } else {
-        otherHtml = `<p class="waiting-note">
+                });
+            } else {
+                otherHtml = `<p class="waiting-note">
             <i class="fas fa-eye-slash me-1"></i>
             Other members' votes will appear here once they submit theirs.
         </p>`;
-    }
+            }
 
-    document.getElementById(`form-${appId}`).outerHTML = `
+            document.getElementById(`form-${appId}`).outerHTML = `
         <div class="submitted-view">
             <div class="my-vote-box">
                 <div class="mv-label">Your vote</div>
@@ -675,88 +1040,90 @@ function renderSubmittedView(appId, approve, comment, revealedVotes) {
             </div>
             ${otherHtml}
         </div>`;
-}
+        }
 
-function updateProgress() {
-    const pct = APP_COUNT ? Math.round(submittedCount / APP_COUNT * 100) : 0;
-    document.getElementById('submitted-count').textContent = submittedCount;
-    document.getElementById('remaining-count').textContent = APP_COUNT - submittedCount;
-    document.getElementById('prog-label').textContent = `${submittedCount} / ${APP_COUNT} submitted`;
-    const fill = document.getElementById('prog-fill');
-    fill.style.width = pct + '%';
-    if (submittedCount === APP_COUNT) {
-        fill.classList.add('complete');
-        document.getElementById('submit-bar').classList.remove('d-none');
-    }
-}
-
-function autoOpenNext() {
-    // Find first card that still has a vote form (not yet submitted)
-    const nextForm = document.querySelector('.vote-form');
-    if (!nextForm) return;
-    const nextCard = nextForm.closest('.applicant-card');
-    if (!nextCard) return;
-    const appId = nextCard.id.replace('card-', '');
-    const collapse = document.getElementById(`collapse-${appId}`);
-    if (collapse && !collapse.classList.contains('open')) {
-        toggleCard(appId);
-        nextCard.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-}
-
-// ── Submit all votes ──────────────────────────────────────────────
-async function submitAll() {
-    const ok = await Swal.fire({
-        title:             'Submit All Votes?',
-        html:              'This will finalise your vote on all applicants for this vacancy.<br>This action cannot be undone.',
-        icon:              'question',
-        showCancelButton:  true,
-        confirmButtonText: 'Yes, Submit All',
-        confirmButtonColor: '#262561',
-        cancelButtonText:  'Review Again',
-    });
-    if (!ok.isConfirmed) return;
-
-    const btn = document.getElementById('btn-submit-all');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch spin"></i> Submitting…';
-
-    try {
-        const fd = new FormData();
-        fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
-        const resp = await fetch(SUBMIT_URL, { method: 'POST', body: fd });
-        const data = await resp.json();
-
-        if (!resp.ok || data.error) {
-            toast(data.error || 'Submission failed.', 'error');
-            btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit All Votes';
-        } else {
-            if (data.shortlist_generated) {
-                toast('All votes submitted. Shortlist has been generated!', 'success');
-            } else {
-                toast('Your votes have been submitted successfully.', 'success');
+        function updateProgress() {
+            const pct = APP_COUNT ? Math.round(submittedCount / APP_COUNT * 100) : 0;
+            document.getElementById('submitted-count').textContent = submittedCount;
+            document.getElementById('remaining-count').textContent = APP_COUNT - submittedCount;
+            document.getElementById('prog-label').textContent = `${submittedCount} / ${APP_COUNT} submitted`;
+            const fill = document.getElementById('prog-fill');
+            fill.style.width = pct + '%';
+            if (submittedCount === APP_COUNT) {
+                fill.classList.add('complete');
+                document.getElementById('submit-bar').classList.remove('d-none');
             }
-            setTimeout(() => { window.location.href = RESULTS_URL; }, 1500);
         }
-    } catch(e) {
-        toast('Network error. Please try again.', 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit All Votes';
-    }
-}
 
-// Open first unvoted card on load
-document.addEventListener('DOMContentLoaded', () => {
-    const first = document.querySelector('.applicant-card:not(.voted-approve):not(.voted-reject)');
-    if (first) {
-        const id = first.id.replace('card-', '');
-        const collapse = document.getElementById(`collapse-${id}`);
-        if (collapse && !collapse.classList.contains('open')) {
-            collapse.classList.add('open');
-            document.getElementById(`chevron-${id}`).style.transform = 'rotate(180deg)';
+        function autoOpenNext() {
+            // Find first card that still has a vote form (not yet submitted)
+            const nextForm = document.querySelector('.vote-form');
+            if (!nextForm) return;
+            const nextCard = nextForm.closest('.applicant-card');
+            if (!nextCard) return;
+            const appId = nextCard.id.replace('card-', '');
+            const collapse = document.getElementById(`collapse-${appId}`);
+            if (collapse && !collapse.classList.contains('open')) {
+                toggleCard(appId);
+                nextCard.scrollIntoView({behavior: 'smooth', block: 'start'});
+            }
         }
-    }
-});
-</script>
+
+        // ── Submit all votes ──────────────────────────────────────────────
+        async function submitAll() {
+            const ok = await Swal.fire({
+                title: 'Submit All Votes?',
+                html: 'This will finalise your vote on all applicants for this vacancy.<br>This action cannot be undone.',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, Submit All',
+                confirmButtonColor: '#262561',
+                cancelButtonText: 'Review Again',
+            });
+            if (!ok.isConfirmed) return;
+
+            const btn = document.getElementById('btn-submit-all');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch spin"></i> Submitting…';
+
+            try {
+                const fd = new FormData();
+                fd.append('csrfmiddlewaretoken', CSRF_TOKEN);
+                const resp = await fetch(SUBMIT_URL, {method: 'POST', body: fd});
+                const data = await resp.json();
+
+                if (!resp.ok || data.error) {
+                    toast(data.error || 'Submission failed.', 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit All Votes';
+                } else {
+                    if (data.shortlist_generated) {
+                        toast('All votes submitted. Shortlist has been generated!', 'success');
+                    } else {
+                        toast('Your votes have been submitted successfully.', 'success');
+                    }
+                    setTimeout(() => {
+                        window.location.href = RESULTS_URL;
+                    }, 1500);
+                }
+            } catch (e) {
+                toast('Network error. Please try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit All Votes';
+            }
+        }
+
+        // Open first unvoted card on load
+        document.addEventListener('DOMContentLoaded', () => {
+            const first = document.querySelector('.applicant-card:not(.voted-approve):not(.voted-reject)');
+            if (first) {
+                const id = first.id.replace('card-', '');
+                const collapse = document.getElementById(`collapse-${id}`);
+                if (collapse && !collapse.classList.contains('open')) {
+                    collapse.classList.add('open');
+                    document.getElementById(`chevron-${id}`).style.transform = 'rotate(180deg)';
+                }
+            }
+        });
+    </script>
 {% endblock %}

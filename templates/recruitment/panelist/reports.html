@@ -2,86 +2,86 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
-My Interview Reports
-</h4>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
+                My Interview Reports
+            </h4>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="ufaa-table-wrapper">
+            <div class="ufaa-table-wrapper">
 
-<table class="table brand-table mb-0">
+                <table class="table brand-table mb-0">
 
-<thead>
-<tr>
-<th>#</th>
-<th>Vacancy</th>
-<th>Candidates Interviewed</th>
-<th>Date Submitted</th>
-<th>Action</th>
-</tr>
-</thead>
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Vacancy</th>
+                        <th>Candidates Interviewed</th>
+                        <th>Date Submitted</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
 
-<tbody>
+                    <tbody>
 
-{% for report in reports %}
+                    {% for report in reports %}
 
-<tr>
+                        <tr>
 
-<td>{{ forloop.counter }}</td>
+                            <td>{{ forloop.counter }}</td>
 
-<td class="vacancy-title-cell">
-{{ report.vacancy.title }}
-</td>
+                            <td class="vacancy-title-cell">
+                                {{ report.vacancy.title }}
+                            </td>
 
-<td>{{ report.candidates_interviewed }}</td>
+                            <td>{{ report.candidates_interviewed }}</td>
 
-<td>{{ report.submitted_at }}</td>
+                            <td>{{ report.submitted_at }}</td>
 
-<td>
+                            <td>
 
-<a href="{% url 'submit_panel_report' report.vacancy.id %}"
-class="btn-open">
+                                <a href="{% url 'submit_panel_report' report.vacancy.id %}"
+                                   class="btn-open">
 
-<i class="fas fa-eye me-1"></i>
-View
+                                    <i class="fas fa-eye me-1"></i>
+                                    View
 
-</a>
+                                </a>
 
-</td>
+                            </td>
 
-</tr>
+                        </tr>
 
-{% empty %}
+                    {% empty %}
 
-<tr>
-<td colspan="5">
+                        <tr>
+                            <td colspan="5">
 
-<div class="empty-state">
-<i class="fas fa-file-alt"></i>
-<p>No reports submitted yet.</p>
-</div>
+                                <div class="empty-state">
+                                    <i class="fas fa-file-alt"></i>
+                                    <p>No reports submitted yet.</p>
+                                </div>
 
-</td>
-</tr>
+                            </td>
+                        </tr>
 
-{% endfor %}
+                    {% endfor %}
 
-</tbody>
+                    </tbody>
 
-</table>
+                </table>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

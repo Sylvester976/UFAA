@@ -1,0 +1,779 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}HR Analytics{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+            --purple: #5b21b6;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .18);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+            pointer-events: none;
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .btn-refresh {
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            border: 1px solid rgba(249, 230, 161, .3);
+            border-radius: .5rem;
+            font-size: .75rem;
+            font-weight: 700;
+            padding: .4rem 1rem;
+            cursor: pointer;
+            transition: all .15s;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+        }
+
+        .btn-refresh:hover {
+            background: rgba(249, 230, 161, .25);
+        }
+
+        /* ── KPI cards ── */
+        .kpi-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform .2s, box-shadow .2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 24px rgba(38, 37, 97, .13);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .kpi-sub {
+            font-size: .72rem;
+            margin-top: .25rem;
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        .kpi-up {
+            color: var(--green);
+        }
+
+        .kpi-warn {
+            color: var(--amber);
+        }
+
+        .kpi-down {
+            color: var(--red);
+        }
+
+        /* ── Chart card ── */
+        .chart-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            height: 100%;
+        }
+
+        .chart-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .chart-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .chart-sub {
+            font-size: .7rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        .chart-body {
+            padding: 1rem;
+        }
+
+        /* ── Compliance flags ── */
+        .flag-card {
+            background: #fff8dc;
+            border: 1px solid #ffe082;
+            border-radius: .65rem;
+            padding: .75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            margin-bottom: .5rem;
+        }
+
+        .flag-card.red {
+            background: #fde8e8;
+            border-color: #f5c6c6;
+        }
+
+        .flag-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        /* ── Top vacancies table ── */
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .mini-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .5rem .8rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .mini-table td {
+            padding: .5rem .8rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: middle;
+        }
+
+        .mini-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mini-table tr:hover td {
+            background: #fafbff;
+        }
+
+        /* ── Status pills ── */
+        .s-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .25rem;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+            font-size: .63rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .s-pill::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+        .sp-open {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .sp-closed {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .sp-inter {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .sp-ceo {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .sp-done {
+            background: #d4f5e2;
+            color: #0d6830;
+        }
+
+        .sp-other {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+
+        .section-label {
+            font-size: .72rem;
+            font-weight: 800;
+            color: #8392ab;
+            text-transform: uppercase;
+            letter-spacing: .07em;
+            margin: 1.25rem 0 .65rem;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid py-2">
+
+        <!-- Banner -->
+        <div class="page-banner mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="banner-title mb-0">
+                        <i class="fas fa-chart-bar me-2" style="color:var(--gold-dk);"></i>HR Analytics
+                    </p>
+                    <p class="banner-sub mb-0">Pipeline metrics across all recruitment activity</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'analytics:hr_reports_index' %}"
+                       style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);
+                  border-radius:.5rem;font-size:.75rem;font-weight:700;padding:.4rem 1rem;
+                  display:inline-flex;align-items:center;gap:.4rem;">
+                        <i class="fas fa-file-alt"></i> Reports
+                    </a>
+                    <button class="btn-refresh" onclick="refreshSnapshots()" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i> Refresh Data
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="gold-divider"></div>
+
+        <!-- KPI strip -->
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Vacancies</div>
+                        <div class="kpi-val">{{ total_vacancies }}</div>
+                        <div class="kpi-sub kpi-up"><i class="fas fa-briefcase" style="font-size:.6rem;"></i>Total
+                            created
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-lt));">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Applications</div>
+                        <div class="kpi-val">{{ total_apps }}</div>
+                        <div class="kpi-sub kpi-up"><i class="fas fa-users" style="font-size:.6rem;"></i>Total submitted
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,#1a6fa8,#2E86C1);">
+                        <i class="fas fa-users"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Appointed</div>
+                        <div class="kpi-val">{{ total_appointed }}</div>
+                        <div class="kpi-sub kpi-up"><i class="fas fa-check-circle" style="font-size:.6rem;"></i>Successfully
+                            placed
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--green),#22a05a);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Avg Cycle</div>
+                        <div class="kpi-val">{{ avg_cycle_days }}<span style="font-size:.9rem;color:#8392ab;">d</span>
+                        </div>
+                        <div class="kpi-sub kpi-up"><i class="fas fa-clock" style="font-size:.6rem;"></i>Open to
+                            appointed
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--gold-dk),#e8cc7a);">
+                        <i class="fas fa-clock" style="color:var(--navy);"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">COI Declared</div>
+                        <div class="kpi-val">{{ coi_total }}</div>
+                        <div class="kpi-sub {% if coi_total > 0 %}kpi-warn{% else %}kpi-up{% endif %}">
+                            <i class="fas fa-exclamation-triangle" style="font-size:.6rem;"></i>Conflicts of interest
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--amber),#e0a020);">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-6 col-md-4 col-xl-2">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">PWD Applicants</div>
+                        <div class="kpi-val">{{ pwd_total }}</div>
+                        <div class="kpi-sub kpi-up"><i class="fas fa-accessible-icon" style="font-size:.6rem;"></i>Across
+                            all vacancies
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--purple),#7c3aed);">
+                        <i class="fas fa-accessible-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Compliance flags -->
+        {% if stuck_count > 0 %}
+            <div class="flag-card red mb-3">
+                <span class="flag-icon text-danger"><i class="fas fa-exclamation-circle"></i></span>
+                <div>
+                    <strong style="font-size:.82rem;color:#c0392b;">{{ stuck_count }}
+                        vacanc{{ stuck_count|pluralize:"y,ies" }} stuck</strong>
+                    <div style="font-size:.74rem;color:#7d3030;">
+                        Vacancies in longlisting, committee, shortlisting, interview, or CEO review stages for over 30
+                        days.
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if override_total > 0 %}
+            <div class="flag-card mb-3">
+                <span class="flag-icon" style="color:var(--amber);"><i class="fas fa-undo"></i></span>
+                <div>
+                    <strong style="font-size:.82rem;color:var(--amber);">{{ override_total }} shortlist
+                        override{{ override_total|pluralize }}</strong>
+                    <div style="font-size:.74rem;color:#8a6500;">
+                        HR overrides applied during shortlisting.
+                        <a href="{% url 'analytics:report_r09' %}" style="color:var(--amber);font-weight:700;">View
+                            override report →</a>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+
+        <!-- Row 1: Funnel + Monthly trend -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-5">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-filter me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Recruitment
+                                Funnel</p>
+                            <p class="chart-sub mb-0">Applications through each stage</p>
+                        </div>
+                    </div>
+                    <div class="chart-body" style="height:260px;">
+                        <canvas id="funnelChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-chart-line me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Monthly
+                                Application Trend</p>
+                            <p class="chart-sub mb-0">Submissions over time</p>
+                        </div>
+                    </div>
+                    <div class="chart-body" style="height:260px;">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 2: Cycle time + Gender + County -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-clock me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Avg Cycle Time
+                            </p>
+                            <p class="chart-sub mb-0">Days per stage (average)</p>
+                        </div>
+                    </div>
+                    <div class="chart-body" style="height:220px;">
+                        <canvas id="cycleChart"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-venus-mars me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Gender Breakdown
+                            </p>
+                            <p class="chart-sub mb-0">All applicants</p>
+                        </div>
+                    </div>
+                    <div class="chart-body"
+                         style="height:220px;display:flex;align-items:center;justify-content:center;">
+                        <canvas id="genderChart" style="max-width:200px;max-height:200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-map-marker-alt me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Top Counties</p>
+                            <p class="chart-sub mb-0">Applicants by home county</p>
+                        </div>
+                    </div>
+                    <div class="chart-body" style="height:220px;">
+                        <canvas id="countyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Row 3: Top vacancies + Scoring stats -->
+        <div class="row g-3 mb-3">
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-trophy me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Top Vacancies by
+                                Applications</p>
+                            <p class="chart-sub mb-0">Most applied-for positions</p>
+                        </div>
+                    </div>
+                    <div style="overflow-x:auto;">
+                        <table class="mini-table">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Position</th>
+                                <th>Reference</th>
+                                <th>Status</th>
+                                <th class="text-end">Apps</th>
+                                <th></th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for v in top_vacancies %}
+                                <tr>
+                                    <td style="color:#adb5bd;font-size:.72rem;">{{ forloop.counter }}</td>
+                                    <td style="font-weight:600;color:var(--navy);">{{ v.title }}</td>
+                                    <td style="font-family:monospace;font-size:.72rem;color:#67748e;">{{ v.reference_number }}</td>
+                                    <td>
+                  <span class="s-pill
+                    {% if v.status == 'open' %}sp-open
+                    {% elif v.status == 'appointed' %}sp-done
+                    {% elif v.status == 'interviews' or v.status == 'interview_scheduling' %}sp-inter
+                    {% elif v.status == 'ceo_review' or v.status == 'ceo_approved' %}sp-ceo
+                    {% else %}sp-other{% endif %}">
+                    {{ v.status|title }}
+                  </span>
+                                    </td>
+                                    <td class="text-end"
+                                        style="font-weight:700;color:var(--navy);">{{ v.app_count }}</td>
+                                    <td>
+                                        <a href="{% url 'analytics:hr_vacancy_analytics' v.id %}"
+                                           style="font-size:.7rem;color:var(--navy);font-weight:700;">
+                                            <i class="fas fa-arrow-right"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="6" style="text-align:center;color:#b0bac9;padding:1.5rem;">
+                                        No data yet
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-5">
+                <div class="chart-card h-100">
+                    <div class="chart-header">
+                        <div>
+                            <p class="chart-title mb-0"><i class="fas fa-star me-2"
+                                                           style="color:var(--gold-dk);opacity:.7;"></i>Interview
+                                Scoring</p>
+                            <p class="chart-sub mb-0">Across all scored vacancies</p>
+                        </div>
+                    </div>
+                    <div class="chart-body">
+                        {% if score_stats.avg %}
+                            <div class="row g-2 mb-3">
+                                <div class="col-4">
+                                    <div style="text-align:center;padding:.75rem;background:#f8f9ff;border-radius:.65rem;">
+                                        <div style="font-size:1.4rem;font-weight:800;color:var(--navy);">{{ score_stats.avg|floatformat:1 }}%</div>
+                                        <div style="font-size:.65rem;color:#8392ab;text-transform:uppercase;font-weight:700;">
+                                            Average
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div style="text-align:center;padding:.75rem;background:#d4f5e2;border-radius:.65rem;">
+                                        <div style="font-size:1.4rem;font-weight:800;color:var(--green);">{{ score_stats.mx|floatformat:1 }}%</div>
+                                        <div style="font-size:.65rem;color:#52906b;text-transform:uppercase;font-weight:700;">
+                                            Highest
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div style="text-align:center;padding:.75rem;background:#fde8e8;border-radius:.65rem;">
+                                        <div style="font-size:1.4rem;font-weight:800;color:var(--red);">{{ score_stats.mn|floatformat:1 }}%</div>
+                                        <div style="font-size:.65rem;color:#7d3030;text-transform:uppercase;font-weight:700;">
+                                            Lowest
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <div style="text-align:center;padding:2rem;color:#b0bac9;font-size:.8rem;">
+                                <i class="fas fa-chart-bar"
+                                   style="font-size:1.8rem;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+                                No interview scores recorded yet
+                            </div>
+                        {% endif %}
+
+                        <!-- Vacancy status breakdown -->
+                        <div style="font-size:.7rem;font-weight:700;color:#8392ab;text-transform:uppercase;
+                      letter-spacing:.05em;margin-bottom:.5rem;">Pipeline Status
+                        </div>
+                        {% for status, count in status_counts.items %}
+                            {% if count > 0 %}
+                                <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.35rem;font-size:.78rem;">
+                                    <span style="min-width:110px;color:#344767;">{{ status|title }}</span>
+                                    <div style="flex:1;height:6px;background:#f0f2f8;border-radius:99px;overflow:hidden;">
+                                        <div style="height:100%;background:var(--navy);border-radius:99px;
+                                                width:{% widthratio count total_vacancies 100 %}%;"></div>
+                                    </div>
+                                    <span style="font-weight:700;color:var(--navy);min-width:20px;text-align:right;">{{ count }}</span>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const NAVY = '#262561';
+        const GOLD = '#C39545';
+        const GREEN = '#1a7a45';
+        const RED = '#c0392b';
+        const PURPLE = '#5b21b6';
+        const BLUE = '#1a6fa8';
+
+        const PALETTE = [NAVY, GOLD, GREEN, '#1a6fa8', PURPLE, '#b7770d',
+            '#0d6e63', '#c0392b', '#2E86C1', '#8e44ad'];
+
+        function makeChart(id, type, labels, values, opts = {}) {
+            const ctx = document.getElementById(id);
+            if (!ctx) return;
+            return new Chart(ctx, {
+                type,
+                data: {
+                    labels,
+                    datasets: [{
+                        data: values,
+                        backgroundColor: opts.colors || (type === 'doughnut' ? PALETTE : NAVY),
+                        borderColor: opts.border || (type === 'bar' ? NAVY : undefined),
+                        borderWidth: type === 'bar' ? 0 : 2,
+                        borderRadius: type === 'bar' ? 4 : undefined,
+                        fill: opts.fill ?? false,
+                        tension: 0.35,
+                        pointRadius: type === 'line' ? 3 : undefined,
+                        pointBackgroundColor: type === 'line' ? NAVY : undefined,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: opts.legend ?? (type === 'doughnut'),
+                            position: 'bottom',
+                            labels: {font: {size: 10}, padding: 12}
+                        },
+                        tooltip: {callbacks: opts.tooltip || {}},
+                    },
+                    scales: type !== 'doughnut' ? {
+                        x: {grid: {display: false}, ticks: {font: {size: 10}}},
+                        y: {grid: {color: 'rgba(0,0,0,.05)'}, ticks: {font: {size: 10}}, beginAtZero: true},
+                    } : {},
+                    ...opts.extra,
+                }
+            });
+        }
+
+        // Funnel (horizontal bar)
+        const funnel = {{ funnel_json|safe }};
+        makeChart('funnelChart', 'bar', funnel.labels, funnel.values, {
+            colors: [NAVY, BLUE, GREEN, PURPLE, GOLD],
+            extra: {indexAxis: 'y'},
+        });
+
+        // Monthly trend (line)
+        const monthly = {{ monthly_json|safe }};
+        makeChart('monthlyChart', 'line', monthly.labels, monthly.values, {
+            colors: NAVY, fill: true, border: NAVY,
+            extra: {
+                plugins: {legend: {display: false}},
+                elements: {line: {backgroundColor: 'rgba(38,37,97,.08)'}},
+            },
+        });
+
+        // Cycle time (bar)
+        const cycle = {{ cycle_json|safe }};
+        makeChart('cycleChart', 'bar', cycle.labels, cycle.values, {
+            colors: [NAVY, BLUE, GREEN, PURPLE, GOLD],
+            tooltip: {label: ctx => `${ctx.raw} days`},
+        });
+
+        // Gender (doughnut)
+        const gender = {{ gender_json|safe }};
+        makeChart('genderChart', 'doughnut', gender.labels, gender.values, {
+            legend: true,
+            colors: [NAVY, GOLD, GREEN, BLUE, PURPLE],
+        });
+
+        // County (bar)
+        const county = {{ county_json|safe }};
+        makeChart('countyChart', 'bar', county.labels, county.values, {
+            colors: NAVY,
+            extra: {plugins: {legend: {display: false}}},
+        });
+
+        // ── Manual refresh ────────────────────────────────────────────────────────────
+        async function refreshSnapshots() {
+            const btn = document.getElementById('refreshBtn');
+            const icon = btn.querySelector('i');
+            btn.disabled = true;
+            icon.className = 'fas fa-circle-notch fa-spin';
+
+            try {
+                const res = await fetch("{% url 'analytics:hr_analytics_refresh' %}", {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': document.cookie.match(/csrftoken=([^;]+)/)?.[1] || ''},
+                });
+                const data = await res.json();
+                if (data.success) {
+                    icon.className = 'fas fa-check';
+                    btn.style.color = '#2dce89';
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    icon.className = 'fas fa-times';
+                    btn.style.color = '#f5365c';
+                }
+            } catch (e) {
+                icon.className = 'fas fa-times';
+            } finally {
+                setTimeout(() => {
+                    btn.disabled = false;
+                    icon.className = 'fas fa-sync-alt';
+                    btn.style.color = '';
+                }, 3000);
+            }
+        }
+    </script>
+{% endblock %}

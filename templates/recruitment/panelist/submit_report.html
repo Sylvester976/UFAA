@@ -2,65 +2,65 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
-Panelist Interview Report
-</h4>
-<p>{{ vacancy.title }}</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-file-alt me-2" style="color:var(--gold-dark);"></i>
+                Panelist Interview Report
+            </h4>
+            <p>{{ vacancy.title }}</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="card-body">
+            <div class="card-body">
 
-<p>
-<strong>Candidates Interviewed:</strong>
-{{ interviews_done }}
-</p>
+                <p>
+                    <strong>Candidates Interviewed:</strong>
+                    {{ interviews_done }}
+                </p>
 
-<form method="POST">
+                <form method="POST">
 
-{% csrf_token %}
+                    {% csrf_token %}
 
-<div class="mb-3">
+                    <div class="mb-3">
 
-<label>Interview Summary</label>
+                        <label>Interview Summary</label>
 
-<textarea name="summary"
-class="form-control"
-rows="5"></textarea>
+                        <textarea name="summary"
+                                  class="form-control"
+                                  rows="5"></textarea>
 
-</div>
+                    </div>
 
-<div class="mb-3">
+                    <div class="mb-3">
 
-<label>Recommendations</label>
+                        <label>Recommendations</label>
 
-<textarea name="recommendations"
-class="form-control"
-rows="4"></textarea>
+                        <textarea name="recommendations"
+                                  class="form-control"
+                                  rows="4"></textarea>
 
-</div>
+                    </div>
 
-<button class="btn btn-brand">
+                    <button class="btn btn-brand">
 
-<i class="fas fa-paper-plane me-1"></i>
+                        <i class="fas fa-paper-plane me-1"></i>
 
-Submit Report
+                        Submit Report
 
-</button>
+                    </button>
 
-</form>
+                </form>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

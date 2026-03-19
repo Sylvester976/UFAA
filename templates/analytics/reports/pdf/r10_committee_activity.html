@@ -1,0 +1,44 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ rows|length }}</div>
+            <div class="stat-label">Committee Members</div>
+        </div>
+    </div>
+
+    <h2>Committee Activity</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Member</th>
+            <th>Votes Approved</th>
+            <th>Votes Rejected</th>
+            <th>Total Votes</th>
+            <th>Approval Rate</th>
+            <th>COI</th>
+            <th>Submitted</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="bold">{{ row.name }}</td>
+                <td class="green bold text-center">{{ row.approved }}</td>
+                <td class="red bold text-center">{{ row.rejected }}</td>
+                <td class="bold text-center">{{ row.total }}</td>
+                <td class="text-center">{{ row.rate }}%</td>
+                <td>{% if row.entry.has_conflict %}<span class="badge badge-amber">Declared</span>{% else %}
+                    None{% endif %}</td>
+                <td>{% if row.entry.votes_submitted %}<span class="badge badge-green">Yes</span>{% else %}
+                    <span class="badge badge-red">No</span>{% endif %}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="7" class="text-center text-muted">No committee records</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

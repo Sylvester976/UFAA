@@ -1,0 +1,341 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}CEO Analytics{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --amber: #b7770d;
+            --red: #c0392b;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .18);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+            pointer-events: none;
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: transform .2s;
+        }
+
+        .kpi-card:hover {
+            transform: translateY(-3px);
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .kpi-sub {
+            font-size: .72rem;
+            margin-top: .25rem;
+        }
+
+        .chart-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .chart-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .chart-sub {
+            font-size: .7rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .mini-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .5rem .9rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .mini-table td {
+            padding: .55rem .9rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: middle;
+        }
+
+        .mini-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mini-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .chip {
+            font-size: .63rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+        }
+
+        .chip-amber {
+            background: #fff3cd;
+            color: var(--amber);
+        }
+
+        .chip-green {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="banner-title mb-0"><i class="fas fa-chart-pie me-2" style="color:var(--gold-dk);"></i>CEO
+                        Analytics</p>
+                    <p class="banner-sub mb-0">Selection decisions and pipeline overview</p>
+                </div>
+                <a href="{% url 'analytics:ceo_reports_index' %}"
+                   style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.25);border-radius:.5rem;font-size:.75rem;font-weight:700;padding:.4rem 1rem;display:inline-flex;align-items:center;gap:.4rem;">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </div>
+        </div>
+        <div class="gold-divider"></div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Reviewed</div>
+                        <div class="kpi-val">{{ total_reviewed }}</div>
+                        <div class="kpi-sub" style="color:#8392ab;">Total vacancies reviewed</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-lt));"><i
+                            class="fas fa-briefcase"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Overrides</div>
+                        <div class="kpi-val">{{ total_overrides }}</div>
+                        <div class="kpi-sub"
+                             style="color:{% if total_overrides > 0 %}var(--amber){% else %}#8392ab{% endif %};">
+                            {{ override_rate }}% override rate
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--amber),#e0a020);"><i
+                            class="fas fa-undo"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Avg Selected Rank</div>
+                        <div class="kpi-val">{{ avg_selected_rank }}</div>
+                        <div class="kpi-sub" style="color:#8392ab;">1 = always top ranked</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--gold-dk),#e8cc7a);"><i
+                            class="fas fa-medal" style="color:var(--navy);"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Pending Review</div>
+                        <div class="kpi-val">{{ pending|length }}</div>
+                        <div class="kpi-sub"
+                             style="color:{% if pending|length > 0 %}var(--amber){% else %}var(--green){% endif %};">
+                            {% if pending|length > 0 %}Action required{% else %}All clear{% endif %}
+                        </div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--green),#22a05a);"><i
+                            class="fas fa-clock"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-5">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <p class="chart-title mb-0"><i class="fas fa-chart-pie me-2"
+                                                       style="color:var(--gold-dk);opacity:.7;"></i>Selection Breakdown
+                        </p>
+                        <p class="chart-sub mb-0">Override vs within top 3</p>
+                    </div>
+                    <div style="padding:1rem;height:260px;display:flex;align-items:center;justify-content:center;">
+                        <canvas id="overrideChart" style="max-width:220px;max-height:220px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="chart-card">
+                    <div class="chart-header">
+                        <p class="chart-title mb-0"><i class="fas fa-hourglass-half me-2"
+                                                       style="color:var(--gold-dk);opacity:.7;"></i>Pending Your Review
+                        </p>
+                        <p class="chart-sub mb-0">Vacancies awaiting CEO selection</p>
+                    </div>
+                    {% if pending %}
+                        <div style="overflow-x:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Position</th>
+                                    <th>Reference</th>
+                                    <th>Candidates</th>
+                                    <th></th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for v in pending %}
+                                    <tr>
+                                        <td style="font-weight:600;color:var(--navy);">{{ v.title }}</td>
+                                        <td style="font-family:monospace;font-size:.72rem;color:#67748e;">{{ v.reference_number }}</td>
+                                        <td><span
+                                                class="chip chip-amber">{{ v.candidate_count }} candidate{{ v.candidate_count|pluralize }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'ceo_vacancy_review' v.id %}"
+                                               style="font-size:.75rem;font-weight:700;color:var(--navy);display:inline-flex;align-items:center;gap:.3rem;">
+                                                Review <i class="fas fa-arrow-right"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:2.5rem;color:#b0bac9;font-size:.82rem;">
+                            <i class="fas fa-check-circle"
+                               style="font-size:1.8rem;display:block;margin-bottom:.5rem;color:#d0d5e8;"></i>
+                            No vacancies pending review
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const od = {{ override_json|safe }};
+        new Chart(document.getElementById('overrideChart'), {
+            type: 'doughnut',
+            data: {
+                labels: od.labels,
+                datasets: [{
+                    data: od.values,
+                    backgroundColor: ['#262561', '#C39545'],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '68%',
+                plugins: {legend: {position: 'bottom', labels: {font: {size: 10}, padding: 14}}}
+            }
+        });
+    </script>
+{% endblock %}

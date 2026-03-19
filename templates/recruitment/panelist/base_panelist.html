@@ -3,16 +3,16 @@
 {% block sidebar %}
 
 
-<li class="nav-item mt-3">
-    <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
-        Panelist
-    </h6>
-</li>
-            
+    <li class="nav-item mt-3">
+        <h6 class="ps-3 text-uppercase text-xs font-weight-bolder opacity-6">
+            Panelist
+        </h6>
+    </li>
+
     <!-- Panelist / Interview Dashboard -->
     <li class="nav-item">
         <a class="nav-link {% if request.resolver_match.url_name == 'panelist_dashboard' %}active{% endif %}"
-        href="{% url 'panelist_dashboard' %}">
+           href="{% url 'panelist_dashboard' %}">
             <i class="fas fa-comments me-1"></i>
             <span class="nav-link-text ms-1">Dashboard</span>
         </a>
@@ -21,13 +21,13 @@
     <li class="nav-item">
         <a class="nav-link" href="#">
             <i class="fas fa-briefcase me-2"></i>
-        Assigned Vacancies
+            Assigned Vacancies
         </a>
     </li>
 
     <li class="nav-item">
         <a class="nav-link {% if request.resolver_match.url_name == 'panelist_reports' %}active{% endif %}"
-        href="{% url 'panelist_reports' %}">
+           href="{% url 'panelist_reports' %}">
             <i class="fas fa-chart-line me-2"></i>
             Reports
         </a>

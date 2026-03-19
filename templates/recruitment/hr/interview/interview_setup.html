@@ -2,612 +2,987 @@
 {% block title %}Interview Setup — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root {
-    --navy:#262561; --navy-lt:#1a1f5c;
-    --gold:#F9E6A1; --gold-dk:#C39545;
-    --green:#1a7a45; --red:#c0392b; --amber:#b7770d;
-}
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #1a1f5c;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-/* ── Banner ──────────────────────────────────────── */
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,var(--navy-lt) 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link { color:rgba(255,255,255,.65); font-size:.78rem;
-             display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-/* ── Step bar ─────────────────────────────────────── */
-.step-bar { display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:1.25rem; }
-.step-pill {
-    font-size:.7rem; font-weight:700; padding:.3rem .75rem;
-    border-radius:99px; display:flex; align-items:center; gap:.3rem;
-}
-.step-ok    { background:#d4f5e2; color:#1a5c38; }
-.step-warn  { background:#fff3cd; color:#7d5500; }
-.step-muted { background:#f0f2f8; color:#8392ab; }
+        /* ── Banner ──────────────────────────────────────── */
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-lt) 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-/* ── Tabs ─────────────────────────────────────────── */
-.setup-tabs {
-    display:flex; border-bottom:2px solid #e8ecf4; margin-bottom:1.5rem;
-}
-.tab-btn {
-    padding:.65rem 1.35rem; border:none; background:none;
-    font-size:.82rem; font-weight:700; color:#8392ab; cursor:pointer;
-    display:flex; align-items:center; gap:.45rem;
-    border-bottom:3px solid transparent; margin-bottom:-2px;
-    transition:color .15s, border-color .15s; white-space:nowrap;
-}
-.tab-btn:hover { color:var(--navy); }
-.tab-btn.active { color:var(--navy); border-bottom-color:var(--navy); }
-.tab-badge {
-    background:#e8ecf4; color:#67748e;
-    font-size:.62rem; font-weight:800;
-    padding:.12rem .45rem; border-radius:99px; min-width:20px; text-align:center;
-}
-.tab-btn.active .tab-badge { background:var(--navy); color:#fff; }
-.tab-pane { display:none; }
-.tab-pane.active { display:block; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-/* ── Section card ────────────────────────────────── */
-.section-card {
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-    overflow:hidden; margin-bottom:1.25rem;
-}
-.section-header {
-    padding:.85rem 1.25rem; border-bottom:1px solid #f0f2f8;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.5rem;
-}
-.section-title {
-    font-size:.82rem; font-weight:800; color:var(--navy);
-    display:flex; align-items:center; gap:.5rem; margin:0;
-}
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-/* ── Panel members table (left col) ──────────────── */
-.panel-table { width:100%; border-collapse:collapse; font-size:.8rem; }
-.panel-table th {
-    background:#f8f9ff; color:#8392ab; font-size:.62rem; font-weight:700;
-    text-transform:uppercase; letter-spacing:.05em;
-    padding:.6rem .9rem; border-bottom:1px solid #f0f2f8; text-align:left;
-}
-.panel-table td {
-    padding:.55rem .9rem; border-bottom:1px solid #f7f8fc; vertical-align:middle;
-}
-.panel-table tr:last-child td { border-bottom:none; }
-.panel-table tr:hover td { background:#fafbff; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-.p-avatar {
-    width:30px; height:30px; border-radius:50%;
-    background:linear-gradient(135deg,var(--navy),#4f46e5);
-    color:var(--gold); font-size:.66rem; font-weight:800;
-    display:flex; align-items:center; justify-content:center; flex-shrink:0;
-}
-.p-name  { font-size:.8rem; font-weight:700; color:var(--navy); }
-.p-email { font-size:.68rem; color:#8392ab; }
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-.btn-remove {
-    background:none; border:none; color:#dc3545; cursor:pointer;
-    font-size:.8rem; padding:.2rem .4rem; border-radius:.3rem;
-    transition:background .15s;
-}
-.btn-remove:hover { background:#fde8e8; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-.empty-panel {
-    text-align:center; padding:2.5rem 1rem; color:#b0bac9; font-size:.78rem;
-}
-.empty-panel i { font-size:1.8rem; display:block; margin-bottom:.5rem; color:#d0d5e8; }
+        /* ── Step bar ─────────────────────────────────────── */
+        .step-bar {
+            display: flex;
+            gap: .5rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
 
-/* ── Staff list (right col) ──────────────────────── */
-.staff-filter-bar { padding:.7rem .9rem; border-bottom:1px solid #f0f2f8; }
-.staff-filter-input {
-    width:100%; padding:.5rem .85rem; border:1.5px solid #e0e4ef;
-    border-radius:.5rem; font-size:.8rem; color:#344767; box-sizing:border-box;
-}
-.staff-filter-input:focus { outline:none; border-color:var(--navy); }
+        .step-pill {
+            font-size: .7rem;
+            font-weight: 700;
+            padding: .3rem .75rem;
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
 
-.staff-list-wrap { max-height:420px; overflow-y:auto; }
-.staff-list-wrap::-webkit-scrollbar { width:5px; }
-.staff-list-wrap::-webkit-scrollbar-track { background:#f0f2f8; }
-.staff-list-wrap::-webkit-scrollbar-thumb { background:#c5c8dc; border-radius:99px; }
+        .step-ok {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
 
-.staff-row {
-    display:flex; align-items:center; gap:.75rem;
-    padding:.6rem .9rem; border-bottom:1px solid #f0f2f8;
-    cursor:pointer; transition:background .1s;
-}
-.staff-row:last-child { border-bottom:none; }
-.staff-row:hover { background:#f8f9ff; }
-.staff-row.on-panel { opacity:.45; cursor:default; pointer-events:none; }
-.staff-row.hidden   { display:none; }
+        .step-warn {
+            background: #fff3cd;
+            color: #7d5500;
+        }
 
-.s-avatar {
-    width:30px; height:30px; border-radius:50%; flex-shrink:0;
-    background:linear-gradient(135deg,var(--navy),#4f46e5);
-    color:var(--gold); font-size:.66rem; font-weight:800;
-    display:flex; align-items:center; justify-content:center;
-}
-.s-name  { font-size:.8rem; font-weight:600; color:#344767; }
-.s-email { font-size:.7rem; color:#8392ab; }
+        .step-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
 
-.staff-tag-added {
-    margin-left:auto; flex-shrink:0;
-    font-size:.63rem; font-weight:700;
-    background:#d4f5e2; color:#1a5c38;
-    padding:.18rem .55rem; border-radius:99px;
-    display:flex; align-items:center; gap:.25rem;
-}
-.btn-add-staff {
-    margin-left:auto; flex-shrink:0;
-    font-size:.72rem; font-weight:700;
-    padding:.25rem .65rem; border-radius:.35rem;
-    border:1.5px solid #d0d7f0; background:#fff; color:var(--navy);
-    cursor:pointer; transition:all .15s;
-    display:flex; align-items:center; gap:.3rem;
-}
-.btn-add-staff:hover   { background:var(--navy); color:#fff; border-color:var(--navy); }
-.btn-add-staff:disabled { opacity:.4; cursor:not-allowed; }
+        /* ── Tabs ─────────────────────────────────────────── */
+        .setup-tabs {
+            display: flex;
+            border-bottom: 2px solid #e8ecf4;
+            margin-bottom: 1.5rem;
+        }
 
-/* ── Chips ───────────────────────────────────────── */
-.chip { font-size:.65rem; font-weight:700; padding:.15rem .55rem;
-        border-radius:99px; white-space:nowrap; }
-.chip-done    { background:#d4f5e2; color:#1a5c38; }
-.chip-pending { background:#fff3cd; color:#7d5500; }
-.chip-no      { background:#f0f2f8; color:#8392ab; }
+        .tab-btn {
+            padding: .65rem 1.35rem;
+            border: none;
+            background: none;
+            font-size: .82rem;
+            font-weight: 700;
+            color: #8392ab;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: .45rem;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color .15s, border-color .15s;
+            white-space: nowrap;
+        }
 
-/* ── Criteria ────────────────────────────────────── */
-.criterion-row {
-    display:grid; grid-template-columns:1fr 110px 36px;
-    gap:.5rem; align-items:center; margin-bottom:.4rem;
-}
-.criterion-row input {
-    padding:.45rem .7rem; border:1.5px solid #e0e4ef;
-    border-radius:.45rem; font-size:.8rem; color:#344767;
-}
-.criterion-row input:focus { outline:none; border-color:var(--navy); }
-.btn-del-crit {
-    background:none; border:none; color:#dc3545; cursor:pointer;
-    font-size:.85rem; padding:.2rem .4rem; border-radius:.3rem;
-}
-.btn-del-crit:hover { background:#fde8e8; }
-.max-total {
-    font-size:.78rem; font-weight:700; color:var(--navy);
-    background:#f0f2f8; padding:.35rem .75rem; border-radius:.4rem;
-}
+        .tab-btn:hover {
+            color: var(--navy);
+        }
 
-/* ── Slots ───────────────────────────────────────── */
-.field-input {
-    width:100%; padding:.5rem .85rem; border:1.5px solid #e0e4ef;
-    border-radius:.5rem; font-size:.8rem; color:#344767;
-}
-.field-input:focus { outline:none; border-color:var(--navy); }
-.slot-table { width:100%; border-collapse:collapse; font-size:.8rem; }
-.slot-table th {
-    background:#f8f9ff; color:#8392ab; font-size:.62rem;
-    font-weight:700; text-transform:uppercase; letter-spacing:.05em;
-    padding:.6rem .9rem; border-bottom:1px solid #f0f2f8;
-}
-.slot-table td { padding:.55rem .9rem; border-bottom:1px solid #f7f8fc; vertical-align:middle; }
-.slot-table tr:last-child td { border-bottom:none; }
-.slot-table input[type=date],
-.slot-table input[type=time],
-.slot-table input[type=text] {
-    padding:.35rem .6rem; border:1.5px solid #e0e4ef;
-    border-radius:.4rem; font-size:.78rem; color:#344767;
-    width:100%; box-sizing:border-box;
-}
-.slot-table input:focus { outline:none; border-color:var(--navy); }
+        .tab-btn.active {
+            color: var(--navy);
+            border-bottom-color: var(--navy);
+        }
 
-/* ── Action buttons ──────────────────────────────── */
-.btn-act {
-    font-size:.78rem; font-weight:700; padding:.45rem 1.1rem;
-    border-radius:.45rem; border:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.4rem;
-    transition:opacity .15s;
-}
-.btn-act:hover { opacity:.88; }
-.btn-navy   { background:var(--navy);  color:#fff; }
-.btn-green  { background:var(--green); color:#fff; }
-.btn-amber  { background:var(--amber); color:#fff; }
-.btn-outline {
-    background:#fff; border:1.5px solid #d0d7f0 !important;
-    color:var(--navy) !important;
-}
+        .tab-badge {
+            background: #e8ecf4;
+            color: #67748e;
+            font-size: .62rem;
+            font-weight: 800;
+            padding: .12rem .45rem;
+            border-radius: 99px;
+            min-width: 20px;
+            text-align: center;
+        }
 
-/* ── Toast ───────────────────────────────────────── */
-.toast-wrap {
-    position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
-    display:flex; flex-direction:column; gap:.4rem; pointer-events:none;
-}
-.toast-msg {
-    background:var(--navy); color:#fff;
-    padding:.65rem 1.2rem; border-radius:.5rem; font-size:.8rem; font-weight:600;
-    box-shadow:0 4px 16px rgba(0,0,0,.2);
-    display:flex; align-items:center; gap:.5rem;
-    animation:slideUp .22s ease-out; pointer-events:auto;
-}
-.toast-msg.success { background:var(--green); }
-.toast-msg.error   { background:var(--red); }
-@keyframes slideUp {
-    from { transform:translateY(14px); opacity:0; }
-    to   { transform:translateY(0); opacity:1; }
-}
-</style>
+        .tab-btn.active .tab-badge {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .tab-pane {
+            display: none;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        /* ── Section card ────────────────────────────────── */
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header {
+            padding: .85rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .5rem;
+        }
+
+        .section-title {
+            font-size: .82rem;
+            font-weight: 800;
+            color: var(--navy);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            margin: 0;
+        }
+
+        /* ── Panel members table (left col) ──────────────── */
+        .panel-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+
+        .panel-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .6rem .9rem;
+            border-bottom: 1px solid #f0f2f8;
+            text-align: left;
+        }
+
+        .panel-table td {
+            padding: .55rem .9rem;
+            border-bottom: 1px solid #f7f8fc;
+            vertical-align: middle;
+        }
+
+        .panel-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .panel-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .p-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--navy), #4f46e5);
+            color: var(--gold);
+            font-size: .66rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .p-name {
+            font-size: .8rem;
+            font-weight: 700;
+            color: var(--navy);
+        }
+
+        .p-email {
+            font-size: .68rem;
+            color: #8392ab;
+        }
+
+        .btn-remove {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: .8rem;
+            padding: .2rem .4rem;
+            border-radius: .3rem;
+            transition: background .15s;
+        }
+
+        .btn-remove:hover {
+            background: #fde8e8;
+        }
+
+        .empty-panel {
+            text-align: center;
+            padding: 2.5rem 1rem;
+            color: #b0bac9;
+            font-size: .78rem;
+        }
+
+        .empty-panel i {
+            font-size: 1.8rem;
+            display: block;
+            margin-bottom: .5rem;
+            color: #d0d5e8;
+        }
+
+        /* ── Staff list (right col) ──────────────────────── */
+        .staff-filter-bar {
+            padding: .7rem .9rem;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+        .staff-filter-input {
+            width: 100%;
+            padding: .5rem .85rem;
+            border: 1.5px solid #e0e4ef;
+            border-radius: .5rem;
+            font-size: .8rem;
+            color: #344767;
+            box-sizing: border-box;
+        }
+
+        .staff-filter-input:focus {
+            outline: none;
+            border-color: var(--navy);
+        }
+
+        .staff-list-wrap {
+            max-height: 420px;
+            overflow-y: auto;
+        }
+
+        .staff-list-wrap::-webkit-scrollbar {
+            width: 5px;
+        }
+
+        .staff-list-wrap::-webkit-scrollbar-track {
+            background: #f0f2f8;
+        }
+
+        .staff-list-wrap::-webkit-scrollbar-thumb {
+            background: #c5c8dc;
+            border-radius: 99px;
+        }
+
+        .staff-row {
+            display: flex;
+            align-items: center;
+            gap: .75rem;
+            padding: .6rem .9rem;
+            border-bottom: 1px solid #f0f2f8;
+            cursor: pointer;
+            transition: background .1s;
+        }
+
+        .staff-row:last-child {
+            border-bottom: none;
+        }
+
+        .staff-row:hover {
+            background: #f8f9ff;
+        }
+
+        .staff-row.on-panel {
+            opacity: .45;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        .staff-row.hidden {
+            display: none;
+        }
+
+        .s-avatar {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, var(--navy), #4f46e5);
+            color: var(--gold);
+            font-size: .66rem;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .s-name {
+            font-size: .8rem;
+            font-weight: 600;
+            color: #344767;
+        }
+
+        .s-email {
+            font-size: .7rem;
+            color: #8392ab;
+        }
+
+        .staff-tag-added {
+            margin-left: auto;
+            flex-shrink: 0;
+            font-size: .63rem;
+            font-weight: 700;
+            background: #d4f5e2;
+            color: #1a5c38;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+        }
+
+        .btn-add-staff {
+            margin-left: auto;
+            flex-shrink: 0;
+            font-size: .72rem;
+            font-weight: 700;
+            padding: .25rem .65rem;
+            border-radius: .35rem;
+            border: 1.5px solid #d0d7f0;
+            background: #fff;
+            color: var(--navy);
+            cursor: pointer;
+            transition: all .15s;
+            display: flex;
+            align-items: center;
+            gap: .3rem;
+        }
+
+        .btn-add-staff:hover {
+            background: var(--navy);
+            color: #fff;
+            border-color: var(--navy);
+        }
+
+        .btn-add-staff:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        /* ── Chips ───────────────────────────────────────── */
+        .chip {
+            font-size: .65rem;
+            font-weight: 700;
+            padding: .15rem .55rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .chip-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .chip-pending {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .chip-no {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        /* ── Criteria ────────────────────────────────────── */
+        .criterion-row {
+            display: grid;
+            grid-template-columns:1fr 110px 36px;
+            gap: .5rem;
+            align-items: center;
+            margin-bottom: .4rem;
+        }
+
+        .criterion-row input {
+            padding: .45rem .7rem;
+            border: 1.5px solid #e0e4ef;
+            border-radius: .45rem;
+            font-size: .8rem;
+            color: #344767;
+        }
+
+        .criterion-row input:focus {
+            outline: none;
+            border-color: var(--navy);
+        }
+
+        .btn-del-crit {
+            background: none;
+            border: none;
+            color: #dc3545;
+            cursor: pointer;
+            font-size: .85rem;
+            padding: .2rem .4rem;
+            border-radius: .3rem;
+        }
+
+        .btn-del-crit:hover {
+            background: #fde8e8;
+        }
+
+        .max-total {
+            font-size: .78rem;
+            font-weight: 700;
+            color: var(--navy);
+            background: #f0f2f8;
+            padding: .35rem .75rem;
+            border-radius: .4rem;
+        }
+
+        /* ── Slots ───────────────────────────────────────── */
+        .field-input {
+            width: 100%;
+            padding: .5rem .85rem;
+            border: 1.5px solid #e0e4ef;
+            border-radius: .5rem;
+            font-size: .8rem;
+            color: #344767;
+        }
+
+        .field-input:focus {
+            outline: none;
+            border-color: var(--navy);
+        }
+
+        .slot-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+
+        .slot-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .6rem .9rem;
+            border-bottom: 1px solid #f0f2f8;
+        }
+
+        .slot-table td {
+            padding: .55rem .9rem;
+            border-bottom: 1px solid #f7f8fc;
+            vertical-align: middle;
+        }
+
+        .slot-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .slot-table input[type=date],
+        .slot-table input[type=time],
+        .slot-table input[type=text] {
+            padding: .35rem .6rem;
+            border: 1.5px solid #e0e4ef;
+            border-radius: .4rem;
+            font-size: .78rem;
+            color: #344767;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .slot-table input:focus {
+            outline: none;
+            border-color: var(--navy);
+        }
+
+        /* ── Action buttons ──────────────────────────────── */
+        .btn-act {
+            font-size: .78rem;
+            font-weight: 700;
+            padding: .45rem 1.1rem;
+            border-radius: .45rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: opacity .15s;
+        }
+
+        .btn-act:hover {
+            opacity: .88;
+        }
+
+        .btn-navy {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-green {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn-amber {
+            background: var(--amber);
+            color: #fff;
+        }
+
+        .btn-outline {
+            background: #fff;
+            border: 1.5px solid #d0d7f0 !important;
+            color: var(--navy) !important;
+        }
+
+        /* ── Toast ───────────────────────────────────────── */
+        .toast-wrap {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            pointer-events: none;
+        }
+
+        .toast-msg {
+            background: var(--navy);
+            color: #fff;
+            padding: .65rem 1.2rem;
+            border-radius: .5rem;
+            font-size: .8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            animation: slideUp .22s ease-out;
+            pointer-events: auto;
+        }
+
+        .toast-msg.success {
+            background: var(--green);
+        }
+
+        .toast-msg.error {
+            background: var(--red);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(14px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- ── Banner ── -->
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-calendar-alt me-2"></i>Interview Setup
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+        <!-- ── Banner ── -->
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-calendar-alt me-2"></i>Interview Setup
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'hr_interview_progress' vacancy.id %}"
+                   class="btn-act btn-outline" style="font-size:.74rem;padding:.3rem .85rem;">
+                    <i class="fas fa-chart-bar"></i> Progress
+                </a>
+                <a href="{% url 'vacancy_interviews' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Back
+                </a>
+            </div>
         </div>
-        <div class="d-flex align-items-center gap-3 flex-wrap">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'hr_interview_progress' vacancy.id %}"
-               class="btn-act btn-outline" style="font-size:.74rem;padding:.3rem .85rem;">
-                <i class="fas fa-chart-bar"></i> Progress
-            </a>
-            <a href="{% url 'vacancy_interviews' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Back
-            </a>
-        </div>
-    </div>
 
-    <!-- ── Step bar ── -->
-    <div class="step-bar">
+        <!-- ── Step bar ── -->
+        <div class="step-bar">
         <span class="step-pill {% if panel_count >= 1 %}step-ok{% else %}step-warn{% endif %}">
             <i class="fas fa-{% if panel_count >= 1 %}check-circle{% else %}exclamation-circle{% endif %}"></i>
             Panel: {{ panel_count }} member{{ panel_count|pluralize }}
         </span>
-        <span class="step-pill {% if criteria|length >= 1 %}step-ok{% else %}step-warn{% endif %}">
+            <span class="step-pill {% if criteria|length >= 1 %}step-ok{% else %}step-warn{% endif %}">
             <i class="fas fa-{% if criteria|length >= 1 %}check-circle{% else %}exclamation-circle{% endif %}"></i>
             Criteria: {{ criteria|length }} defined
         </span>
-        <span class="step-pill {% if all_slotted %}step-ok{% elif slots %}step-warn{% else %}step-muted{% endif %}">
+            <span class="step-pill {% if all_slotted %}step-ok{% elif slots %}step-warn{% else %}step-muted{% endif %}">
             <i class="fas fa-{% if all_slotted %}check-circle{% elif slots %}clock{% else %}circle{% endif %}"></i>
             Slots: {% if all_slotted %}All assigned{% elif slots %}Partial{% else %}Not set{% endif %}
         </span>
-    </div>
+        </div>
 
-    <!-- ── Tabs ── -->
-    <div class="setup-tabs">
-        <button class="tab-btn active" onclick="switchTab('panel',this)">
-            <i class="fas fa-users"></i> Panel Members
-            <span class="tab-badge" id="badge-panel">{{ panel_count }}</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab('criteria',this)">
-            <i class="fas fa-star"></i> Scoring Criteria
-            <span class="tab-badge" id="badge-criteria">{{ criteria|length }}</span>
-        </button>
-        <button class="tab-btn" onclick="switchTab('slots',this)">
-            <i class="fas fa-calendar-check"></i> Interview Slots
-            <span class="tab-badge" id="badge-slots">{{ total_shortlisted }}</span>
-        </button>
-    </div>
+        <!-- ── Tabs ── -->
+        <div class="setup-tabs">
+            <button class="tab-btn active" onclick="switchTab('panel',this)">
+                <i class="fas fa-users"></i> Panel Members
+                <span class="tab-badge" id="badge-panel">{{ panel_count }}</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('criteria',this)">
+                <i class="fas fa-star"></i> Scoring Criteria
+                <span class="tab-badge" id="badge-criteria">{{ criteria|length }}</span>
+            </button>
+            <button class="tab-btn" onclick="switchTab('slots',this)">
+                <i class="fas fa-calendar-check"></i> Interview Slots
+                <span class="tab-badge" id="badge-slots">{{ total_shortlisted }}</span>
+            </button>
+        </div>
 
 
-    <!-- ════════════════════════════════════════════
-         TAB 1 — PANEL MEMBERS
-         ════════════════════════════════════════════ -->
-    <div class="tab-pane active" id="tab-panel">
-        <div class="row g-3">
+        <!-- ════════════════════════════════════════════
+             TAB 1 — PANEL MEMBERS
+             ════════════════════════════════════════════ -->
+        <div class="tab-pane active" id="tab-panel">
+            <div class="row g-3">
 
-            <!-- ── Left: Current panel ── -->
-            <div class="col-lg-7">
-                <div class="section-card">
-                    <div class="section-header">
-                        <h6 class="section-title">
-                            <i class="fas fa-users-cog" style="color:var(--gold-dk);"></i>
-                            Interview Panel
-                            <span class="tab-badge" id="panel-count-badge">{{ panel_count }}</span>
-                        </h6>
-                        {% if panel_count > 0 and schedule %}
-                            {% if schedule.panel_notified %}
-                                <span class="chip chip-done">
+                <!-- ── Left: Current panel ── -->
+                <div class="col-lg-7">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-users-cog" style="color:var(--gold-dk);"></i>
+                                Interview Panel
+                                <span class="tab-badge" id="panel-count-badge">{{ panel_count }}</span>
+                            </h6>
+                            {% if panel_count > 0 and schedule %}
+                                {% if schedule.panel_notified %}
+                                    <span class="chip chip-done">
                                     <i class="fas fa-check me-1"></i>Panel Notified
                                 </span>
-                            {% else %}
-                                <button class="btn-act btn-navy"
-                                        style="font-size:.74rem;padding:.35rem .9rem;"
-                                        onclick="notifyPanel()">
-                                    <i class="fas fa-paper-plane"></i> Notify All
-                                </button>
+                                {% else %}
+                                    <button class="btn-act btn-navy"
+                                            style="font-size:.74rem;padding:.35rem .9rem;"
+                                            onclick="notifyPanel()">
+                                        <i class="fas fa-paper-plane"></i> Notify All
+                                    </button>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                    </div>
+                        </div>
 
-                    <div id="panelTableWrap">
-                        {% if panel %}
-                        <table class="panel-table">
-                            <thead>
-                                <tr>
-                                    <th>Member</th>
-                                    <th>Status</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="panelTbody">
-                                {% for entry in panel %}
-                                <tr id="pm-{{ entry.member.pk }}">
-                                    <td>
-                                        <div class="d-flex align-items-center gap-2">
-                                            <div class="p-avatar">
-                                                {{ entry.member.first_name|first|upper }}
-                                            </div>
-                                            <div>
-                                                <div class="p-name">
-                                                    {{ entry.member.first_name }} {{ entry.member.last_name }}
+                        <div id="panelTableWrap">
+                            {% if panel %}
+                                <table class="panel-table">
+                                    <thead>
+                                    <tr>
+                                        <th>Member</th>
+                                        <th>Status</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody id="panelTbody">
+                                    {% for entry in panel %}
+                                        <tr id="pm-{{ entry.member.pk }}">
+                                            <td>
+                                                <div class="d-flex align-items-center gap-2">
+                                                    <div class="p-avatar">
+                                                        {{ entry.member.first_name|first|upper }}
+                                                    </div>
+                                                    <div>
+                                                        <div class="p-name">
+                                                            {{ entry.member.first_name }} {{ entry.member.last_name }}
+                                                        </div>
+                                                        <div class="p-email">{{ entry.member.email }}</div>
+                                                    </div>
                                                 </div>
-                                                <div class="p-email">{{ entry.member.email }}</div>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        {% if entry.acknowledged %}
-                                            <span class="chip chip-done">
+                                            </td>
+                                            <td>
+                                                {% if entry.acknowledged %}
+                                                    <span class="chip chip-done">
                                                 <i class="fas fa-check me-1"></i>Active
                                             </span>
-                                        {% else %}
-                                            <span class="chip chip-pending">Pending</span>
-                                        {% endif %}
-                                    </td>
-                                    <td style="text-align:right;">
-                                        <button class="btn-remove"
-                                                onclick="removePanel('{{ entry.member.pk }}','{{ entry.member.first_name|escapejs }} {{ entry.member.last_name|escapejs }}')">
-                                            <i class="fas fa-user-minus"></i>
-                                        </button>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                        {% else %}
-                        <div class="empty-panel" id="emptyPanel">
-                            <i class="fas fa-user-plus"></i>
-                            No panel members yet.<br>
-                            <span style="font-size:.72rem;">
+                                                {% else %}
+                                                    <span class="chip chip-pending">Pending</span>
+                                                {% endif %}
+                                            </td>
+                                            <td style="text-align:right;">
+                                                <button class="btn-remove"
+                                                        onclick="removePanel('{{ entry.member.pk }}','{{ entry.member.first_name|escapejs }} {{ entry.member.last_name|escapejs }}')">
+                                                    <i class="fas fa-user-minus"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                    </tbody>
+                                </table>
+                            {% else %}
+                                <div class="empty-panel" id="emptyPanel">
+                                    <i class="fas fa-user-plus"></i>
+                                    No panel members yet.<br>
+                                    <span style="font-size:.72rem;">
                                 Select staff from the list on the right to appoint members.
                             </span>
-                        </div>
-                        {% endif %}
-                    </div>
-                </div>
-
-                <!-- Tip -->
-                <div class="section-card">
-                    <div style="padding:.85rem 1.25rem;">
-                        <p style="font-size:.72rem;color:#67748e;margin:0;">
-                            <i class="fas fa-lightbulb me-1" style="color:var(--gold-dk);"></i>
-                            <strong>Tip:</strong> Appoint at least 3 panel members. An appointment
-                            notification email is sent immediately on selection. Members cannot be
-                            removed once they have started scoring.
-                        </p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ── Right: Staff picker ── -->
-            <div class="col-lg-5">
-                <div class="section-card">
-                    <div class="section-header">
-                        <h6 class="section-title">
-                            <i class="fas fa-user-plus" style="color:var(--gold-dk);"></i>
-                            All Staff
-                        </h6>
-                        <span style="font-size:.72rem;color:#8392ab;">
-                            {{ all_staff|length }} staff member{{ all_staff|length|pluralize }}
-                        </span>
-                    </div>
-
-                    <div class="staff-filter-bar">
-                        <input type="text" id="staffFilter" class="staff-filter-input"
-                               placeholder="Search by name or email…"
-                               oninput="filterStaff(this.value)">
-                    </div>
-
-                    <div class="staff-list-wrap" id="staffList">
-                        {% for u in all_staff %}
-                        <div class="staff-row {% if u.already_on_panel %}on-panel{% endif %}"
-                             id="sr-{{ u.id }}"
-                             data-name="{{ u.name|lower }}"
-                             data-email="{{ u.email|escapejs }}"
-                             {% if not u.already_on_panel %}
-                             onclick="addPanel('{{ u.id }}','{{ u.name|escapejs }}','{{ u.email|escapejs }}')"
-                             {% endif %}>
-                            <div class="s-avatar">{{ u.name|first|upper }}</div>
-                            <div>
-                                <div class="s-name">{{ u.name }}</div>
-                                <div class="s-email">{{ u.email }}</div>
-                            </div>
-                            {% if u.already_on_panel %}
-                                <span class="staff-tag-added">
-                                    <i class="fas fa-check"></i> Added
-                                </span>
-                            {% else %}
-                                <button class="btn-add-staff" id="addbtn-{{ u.id }}"
-                                        onclick="event.stopPropagation();addPanel('{{ u.id }}','{{ u.name|escapejs }}','{{ u.email|escapejs }}')">
-                                    <i class="fas fa-plus"></i> Add
-                                </button>
+                                </div>
                             {% endif %}
                         </div>
-                        {% empty %}
-                        <div style="padding:2rem;text-align:center;color:#b0bac9;font-size:.8rem;">
-                            <i class="fas fa-users"
-                               style="font-size:1.8rem;display:block;margin-bottom:.5rem;"></i>
-                            No staff users found.
-                        </div>
-                        {% endfor %}
                     </div>
 
-                    <div style="padding:.6rem .9rem;border-top:1px solid #f0f2f8;">
-                        <p style="font-size:.7rem;color:#adb5bd;margin:0;">
-                            <i class="fas fa-info-circle me-1" style="color:var(--gold-dk);"></i>
-                            Applicants for this vacancy are excluded automatically.
-                        </p>
+                    <!-- Tip -->
+                    <div class="section-card">
+                        <div style="padding:.85rem 1.25rem;">
+                            <p style="font-size:.72rem;color:#67748e;margin:0;">
+                                <i class="fas fa-lightbulb me-1" style="color:var(--gold-dk);"></i>
+                                <strong>Tip:</strong> Appoint at least 3 panel members. An appointment
+                                notification email is sent immediately on selection. Members cannot be
+                                removed once they have started scoring.
+                            </p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-        </div>
-    </div><!-- /tab-panel -->
-
-
-    <!-- ════════════════════════════════════════════
-         TAB 2 — SCORING CRITERIA
-         ════════════════════════════════════════════ -->
-    <div class="tab-pane" id="tab-criteria">
-        <div class="row g-3">
-            <div class="col-lg-7">
-                <div class="section-card">
-                    <div class="section-header">
-                        <h6 class="section-title">
-                            <i class="fas fa-star" style="color:var(--gold-dk);"></i>
-                            Scoring Criteria
-                        </h6>
-                        <span class="max-total">
-                            Total: <span id="maxTotal">{{ max_possible }}</span> marks
+                <!-- ── Right: Staff picker ── -->
+                <div class="col-lg-5">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-user-plus" style="color:var(--gold-dk);"></i>
+                                All Staff
+                            </h6>
+                            <span style="font-size:.72rem;color:#8392ab;">
+                            {{ all_staff|length }} staff member{{ all_staff|length|pluralize }}
                         </span>
-                    </div>
-                    <div style="padding:1.25rem;">
-                        <div id="criteriaList">
-                            {% for c in criteria %}
-                            <div class="criterion-row" data-id="{{ c.id }}">
-                                <input type="text" value="{{ c.name }}"
-                                       placeholder="Criterion name" class="crit-name">
-                                <input type="number" value="{{ c.max_score }}"
-                                       placeholder="Max" min="1" class="crit-max">
-                                <button class="btn-del-crit" onclick="removeCriterion(this)">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
+                        </div>
+
+                        <div class="staff-filter-bar">
+                            <input type="text" id="staffFilter" class="staff-filter-input"
+                                   placeholder="Search by name or email…"
+                                   oninput="filterStaff(this.value)">
+                        </div>
+
+                        <div class="staff-list-wrap" id="staffList">
+                            {% for u in all_staff %}
+                                <div class="staff-row {% if u.already_on_panel %}on-panel{% endif %}"
+                                     id="sr-{{ u.id }}"
+                                     data-name="{{ u.name|lower }}"
+                                     data-email="{{ u.email|escapejs }}"
+                                        {% if not u.already_on_panel %}
+                                     onclick="addPanel('{{ u.id }}','{{ u.name|escapejs }}','{{ u.email|escapejs }}')"
+                                        {% endif %}>
+                                    <div class="s-avatar">{{ u.name|first|upper }}</div>
+                                    <div>
+                                        <div class="s-name">{{ u.name }}</div>
+                                        <div class="s-email">{{ u.email }}</div>
+                                    </div>
+                                    {% if u.already_on_panel %}
+                                        <span class="staff-tag-added">
+                                    <i class="fas fa-check"></i> Added
+                                </span>
+                                    {% else %}
+                                        <button class="btn-add-staff" id="addbtn-{{ u.id }}"
+                                                onclick="event.stopPropagation();addPanel('{{ u.id }}','{{ u.name|escapejs }}','{{ u.email|escapejs }}')">
+                                            <i class="fas fa-plus"></i> Add
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            {% empty %}
+                                <div style="padding:2rem;text-align:center;color:#b0bac9;font-size:.8rem;">
+                                    <i class="fas fa-users"
+                                       style="font-size:1.8rem;display:block;margin-bottom:.5rem;"></i>
+                                    No staff users found.
+                                </div>
                             {% endfor %}
                         </div>
-                        <div class="d-flex gap-2 mt-2 flex-wrap">
-                            <button class="btn-act btn-outline" onclick="addCriterion()"
-                                    style="font-size:.74rem;padding:.35rem .85rem;">
-                                <i class="fas fa-plus"></i> Add Criterion
-                            </button>
-                            <button class="btn-act btn-navy" onclick="saveCriteria()"
-                                    style="font-size:.74rem;padding:.35rem .85rem;">
-                                <i class="fas fa-save"></i> Save Criteria
-                            </button>
+
+                        <div style="padding:.6rem .9rem;border-top:1px solid #f0f2f8;">
+                            <p style="font-size:.7rem;color:#adb5bd;margin:0;">
+                                <i class="fas fa-info-circle me-1" style="color:var(--gold-dk);"></i>
+                                Applicants for this vacancy are excluded automatically.
+                            </p>
                         </div>
                     </div>
                 </div>
+
             </div>
-            <div class="col-lg-5">
-                <div class="section-card">
-                    <div style="padding:.85rem 1.25rem;">
-                        <p style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:.5rem;">
-                            <i class="fas fa-info-circle me-1" style="color:var(--gold-dk);"></i>
-                            Guidelines
-                        </p>
-                        <ul style="font-size:.75rem;color:#67748e;margin:0;
+        </div><!-- /tab-panel -->
+
+
+        <!-- ════════════════════════════════════════════
+             TAB 2 — SCORING CRITERIA
+             ════════════════════════════════════════════ -->
+        <div class="tab-pane" id="tab-criteria">
+            <div class="row g-3">
+                <div class="col-lg-7">
+                    <div class="section-card">
+                        <div class="section-header">
+                            <h6 class="section-title">
+                                <i class="fas fa-star" style="color:var(--gold-dk);"></i>
+                                Scoring Criteria
+                            </h6>
+                            <span class="max-total">
+                            Total: <span id="maxTotal">{{ max_possible }}</span> marks
+                        </span>
+                        </div>
+                        <div style="padding:1.25rem;">
+                            <div id="criteriaList">
+                                {% for c in criteria %}
+                                    <div class="criterion-row" data-id="{{ c.id }}">
+                                        <input type="text" value="{{ c.name }}"
+                                               placeholder="Criterion name" class="crit-name">
+                                        <input type="number" value="{{ c.max_score }}"
+                                               placeholder="Max" min="1" class="crit-max">
+                                        <button class="btn-del-crit" onclick="removeCriterion(this)">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="d-flex gap-2 mt-2 flex-wrap">
+                                <button class="btn-act btn-outline" onclick="addCriterion()"
+                                        style="font-size:.74rem;padding:.35rem .85rem;">
+                                    <i class="fas fa-plus"></i> Add Criterion
+                                </button>
+                                <button class="btn-act btn-navy" onclick="saveCriteria()"
+                                        style="font-size:.74rem;padding:.35rem .85rem;">
+                                    <i class="fas fa-save"></i> Save Criteria
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-5">
+                    <div class="section-card">
+                        <div style="padding:.85rem 1.25rem;">
+                            <p style="font-size:.8rem;font-weight:700;color:var(--navy);margin-bottom:.5rem;">
+                                <i class="fas fa-info-circle me-1" style="color:var(--gold-dk);"></i>
+                                Guidelines
+                            </p>
+                            <ul style="font-size:.75rem;color:#67748e;margin:0;
                                    padding-left:1.1rem;line-height:1.8;">
-                            <li>Each criterion appears on the panel member's score sheet.</li>
-                            <li>Set a maximum mark per criterion (e.g. 20, 30).</li>
-                            <li>The total becomes the maximum possible score per candidate.</li>
-                            <li>Criteria can be updated until panel members begin scoring.</li>
-                        </ul>
-                        <div class="mt-3 p-2 rounded"
-                             style="background:#f8f9ff;border:1px solid #eef0fb;">
+                                <li>Each criterion appears on the panel member's score sheet.</li>
+                                <li>Set a maximum mark per criterion (e.g. 20, 30).</li>
+                                <li>The total becomes the maximum possible score per candidate.</li>
+                                <li>Criteria can be updated until panel members begin scoring.</li>
+                            </ul>
+                            <div class="mt-3 p-2 rounded"
+                                 style="background:#f8f9ff;border:1px solid #eef0fb;">
                             <span style="font-size:.72rem;color:#67748e;">
                                 <strong>Current total:</strong>
                                 <span id="maxTotalSide">{{ max_possible }}</span> marks per candidate.
                             </span>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div><!-- /tab-criteria -->
+        </div><!-- /tab-criteria -->
 
 
-    <!-- ════════════════════════════════════════════
-         TAB 3 — INTERVIEW SLOTS
-         ════════════════════════════════════════════ -->
-    <div class="tab-pane" id="tab-slots">
+        <!-- ════════════════════════════════════════════
+             TAB 3 — INTERVIEW SLOTS
+             ════════════════════════════════════════════ -->
+        <div class="tab-pane" id="tab-slots">
 
-        <div class="section-card">
-            <div class="section-header">
-                <h6 class="section-title">
-                    <i class="fas fa-map-marker-alt" style="color:var(--gold-dk);"></i>
-                    Schedule Settings
-                </h6>
-            </div>
-            <div style="padding:1.25rem;">
-                <div class="row g-2">
-                    <div class="col-sm-4">
-                        <label class="form-label"
-                               style="font-size:.72rem;font-weight:700;color:var(--navy);">
-                            Venue Type
-                        </label>
-                        <select id="venueType" class="field-input" style="padding:.45rem .7rem;">
-                            <option value="physical"
-                                {% if schedule and schedule.venue_type == 'physical' %}selected{% endif %}>
-                                Physical
-                            </option>
-                            <option value="online"
-                                {% if schedule and schedule.venue_type == 'online' %}selected{% endif %}>
-                                Online
-                            </option>
-                        </select>
-                    </div>
-                    <div class="col-sm-8">
-                        <label class="form-label"
-                               style="font-size:.72rem;font-weight:700;color:var(--navy);">
-                            Venue / Meeting Link
-                        </label>
-                        <input type="text" id="venueValue" class="field-input"
-                               value="{{ schedule.venue|default:'' }}"
-                               placeholder="Address or https://meet.google.com/…">
-                    </div>
-                    <div class="col-12">
-                        <label class="form-label"
-                               style="font-size:.72rem;font-weight:700;color:var(--navy);">
-                            Preparatory Instructions
-                            <span style="font-weight:400;color:#adb5bd;">(optional)</span>
-                        </label>
-                        <textarea id="instructions" class="field-input" rows="2"
-                                  placeholder="e.g. Please bring original certificates and a valid ID.">{{ schedule.instructions|default:'' }}</textarea>
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-map-marker-alt" style="color:var(--gold-dk);"></i>
+                        Schedule Settings
+                    </h6>
+                </div>
+                <div style="padding:1.25rem;">
+                    <div class="row g-2">
+                        <div class="col-sm-4">
+                            <label class="form-label"
+                                   style="font-size:.72rem;font-weight:700;color:var(--navy);">
+                                Venue Type
+                            </label>
+                            <select id="venueType" class="field-input" style="padding:.45rem .7rem;">
+                                <option value="physical"
+                                        {% if schedule and schedule.venue_type == 'physical' %}selected{% endif %}>
+                                    Physical
+                                </option>
+                                <option value="online"
+                                        {% if schedule and schedule.venue_type == 'online' %}selected{% endif %}>
+                                    Online
+                                </option>
+                            </select>
+                        </div>
+                        <div class="col-sm-8">
+                            <label class="form-label"
+                                   style="font-size:.72rem;font-weight:700;color:var(--navy);">
+                                Venue / Meeting Link
+                            </label>
+                            <input type="text" id="venueValue" class="field-input"
+                                   value="{{ schedule.venue|default:'' }}"
+                                   placeholder="Address or https://meet.google.com/…">
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label"
+                                   style="font-size:.72rem;font-weight:700;color:var(--navy);">
+                                Preparatory Instructions
+                                <span style="font-weight:400;color:#adb5bd;">(optional)</span>
+                            </label>
+                            <textarea id="instructions" class="field-input" rows="2"
+                                      placeholder="e.g. Please bring original certificates and a valid ID.">{{ schedule.instructions|default:'' }}</textarea>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="section-card">
-            <div class="section-header">
-                <h6 class="section-title">
-                    <i class="fas fa-calendar-check" style="color:var(--gold-dk);"></i>
-                    Candidate Slots
-                </h6>
-                <span style="font-size:.72rem;color:#8392ab;">
+            <div class="section-card">
+                <div class="section-header">
+                    <h6 class="section-title">
+                        <i class="fas fa-calendar-check" style="color:var(--gold-dk);"></i>
+                        Candidate Slots
+                    </h6>
+                    <span style="font-size:.72rem;color:#8392ab;">
                     {{ total_shortlisted }} candidate{{ total_shortlisted|pluralize }}
-                    {% if all_slotted %}
-                        &nbsp;·&nbsp;
-                        <span style="color:var(--green);font-weight:700;">All slotted ✓</span>
-                    {% endif %}
+                        {% if all_slotted %}
+                            &nbsp;·&nbsp;
+                            <span style="color:var(--green);font-weight:700;">All slotted ✓</span>
+                        {% endif %}
                 </span>
-            </div>
-            <div>
-                <div class="table-responsive">
-                    <table class="slot-table">
-                        <thead>
+                </div>
+                <div>
+                    <div class="table-responsive">
+                        <table class="slot-table">
+                            <thead>
                             <tr>
                                 <th>Candidate</th>
                                 <th>App No.</th>
@@ -616,185 +991,196 @@ a { text-decoration:none !important; }
                                 <th>Venue Override</th>
                                 <th style="text-align:center;">Notified</th>
                             </tr>
-                        </thead>
-                        <tbody id="slotBody">
+                            </thead>
+                            <tbody id="slotBody">
                             {% for slot in slots %}
-                            <tr data-app-id="{{ slot.application.id }}">
-                                <td style="font-weight:600;color:var(--navy);">
-                                    {{ slot.application.user.name }}
-                                </td>
-                                <td style="font-family:monospace;font-size:.72rem;color:#67748e;">
-                                    {{ slot.application.application_number }}
-                                </td>
-                                <td>
-                                    <input type="date" class="slot-date"
-                                           value="{{ slot.interview_date|date:'Y-m-d' }}">
-                                </td>
-                                <td>
-                                    <input type="time" class="slot-time"
-                                           value="{{ slot.interview_time|time:'H:i' }}">
-                                </td>
-                                <td>
-                                    <input type="text" class="slot-venue"
-                                           value="{{ slot.venue_override }}"
-                                           placeholder="(uses default)">
-                                </td>
-                                <td style="text-align:center;">
-                                    {% if slot.notified %}
-                                        <span class="chip chip-done">Sent</span>
-                                    {% else %}
-                                        <span class="chip chip-no">Pending</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
+                                <tr data-app-id="{{ slot.application.id }}">
+                                    <td style="font-weight:600;color:var(--navy);">
+                                        {{ slot.application.user.name }}
+                                    </td>
+                                    <td style="font-family:monospace;font-size:.72rem;color:#67748e;">
+                                        {{ slot.application.application_number }}
+                                    </td>
+                                    <td>
+                                        <input type="date" class="slot-date"
+                                               value="{{ slot.interview_date|date:'Y-m-d' }}">
+                                    </td>
+                                    <td>
+                                        <input type="time" class="slot-time"
+                                               value="{{ slot.interview_time|time:'H:i' }}">
+                                    </td>
+                                    <td>
+                                        <input type="text" class="slot-venue"
+                                               value="{{ slot.venue_override }}"
+                                               placeholder="(uses default)">
+                                    </td>
+                                    <td style="text-align:center;">
+                                        {% if slot.notified %}
+                                            <span class="chip chip-done">Sent</span>
+                                        {% else %}
+                                            <span class="chip chip-no">Pending</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
                             {% endfor %}
                             {% for app in unslotted %}
-                            <tr data-app-id="{{ app.id }}">
-                                <td style="font-weight:600;color:var(--navy);">
-                                    {{ app.user.name }}
-                                </td>
-                                <td style="font-family:monospace;font-size:.72rem;color:#67748e;">
-                                    {{ app.application_number }}
-                                </td>
-                                <td><input type="date" class="slot-date"></td>
-                                <td><input type="time" class="slot-time"></td>
-                                <td><input type="text" class="slot-venue" placeholder="(uses default)"></td>
-                                <td style="text-align:center;">
-                                    <span class="chip chip-no">—</span>
-                                </td>
-                            </tr>
+                                <tr data-app-id="{{ app.id }}">
+                                    <td style="font-weight:600;color:var(--navy);">
+                                        {{ app.user.name }}
+                                    </td>
+                                    <td style="font-family:monospace;font-size:.72rem;color:#67748e;">
+                                        {{ app.application_number }}
+                                    </td>
+                                    <td><input type="date" class="slot-date"></td>
+                                    <td><input type="time" class="slot-time"></td>
+                                    <td><input type="text" class="slot-venue" placeholder="(uses default)"></td>
+                                    <td style="text-align:center;">
+                                        <span class="chip chip-no">—</span>
+                                    </td>
+                                </tr>
                             {% endfor %}
-                        </tbody>
-                    </table>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
-            <div class="d-flex gap-2 justify-content-between align-items-center p-3 flex-wrap"
-                 style="border-top:1px solid #f0f2f8;">
-                <button class="btn-act btn-amber" onclick="saveSlots()">
-                    <i class="fas fa-save"></i> Save Slots
-                </button>
-                <div class="d-flex gap-2 align-items-center">
-                    {% if can_notify_candidates %}
-                    <button class="btn-act btn-green" onclick="notifyCandidates()">
-                        <i class="fas fa-envelope"></i> Email All Candidates
+                <div class="d-flex gap-2 justify-content-between align-items-center p-3 flex-wrap"
+                     style="border-top:1px solid #f0f2f8;">
+                    <button class="btn-act btn-amber" onclick="saveSlots()">
+                        <i class="fas fa-save"></i> Save Slots
                     </button>
-                    {% elif schedule and schedule.candidates_notified %}
-                    <span class="chip chip-done" style="font-size:.72rem;padding:.3rem .75rem;">
+                    <div class="d-flex gap-2 align-items-center">
+                        {% if can_notify_candidates %}
+                            <button class="btn-act btn-green" onclick="notifyCandidates()">
+                                <i class="fas fa-envelope"></i> Email All Candidates
+                            </button>
+                        {% elif schedule and schedule.candidates_notified %}
+                            <span class="chip chip-done" style="font-size:.72rem;padding:.3rem .75rem;">
                         <i class="fas fa-check me-1"></i>Candidates Notified
                     </span>
-                    <button class="btn-act btn-outline" onclick="resendCandidates()"
-                            style="font-size:.72rem;padding:.3rem .85rem;"
-                            title="Use after rescheduling to resend updated slot details">
-                        <i class="fas fa-redo"></i> Resend
-                    </button>
-                    {% else %}
-                    <span style="font-size:.72rem;color:#adb5bd;">
+                            <button class="btn-act btn-outline" onclick="resendCandidates()"
+                                    style="font-size:.72rem;padding:.3rem .85rem;"
+                                    title="Use after rescheduling to resend updated slot details">
+                                <i class="fas fa-redo"></i> Resend
+                            </button>
+                        {% else %}
+                            <span style="font-size:.72rem;color:#adb5bd;">
                         <i class="fas fa-info-circle me-1"></i>
                         Save all slots first to enable notifications
                     </span>
-                    {% endif %}
+                        {% endif %}
+                    </div>
                 </div>
             </div>
-        </div>
 
-    </div><!-- /tab-slots -->
+        </div><!-- /tab-slots -->
 
-</div><!-- /container -->
+    </div><!-- /container -->
 
-<div class="toast-wrap" id="toastWrap"></div>
+    <div class="toast-wrap" id="toastWrap"></div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const VACANCY_ID = {{ vacancy.id }};
+    <script>
+        const VACANCY_ID = {{ vacancy.id }};
 
-function csrfToken() {
-    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-}
+        function csrfToken() {
+            return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+        }
 
-function showToast(msg, type = '') {
-    const el   = document.createElement('div');
-    el.className = 'toast-msg ' + type;
-    const icon = type === 'success' ? 'check-circle'
-               : type === 'error'   ? 'times-circle' : 'info-circle';
-    el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
-    document.getElementById('toastWrap').appendChild(el);
-    setTimeout(() => el.remove(), 3500);
-}
+        function showToast(msg, type = '') {
+            const el = document.createElement('div');
+            el.className = 'toast-msg ' + type;
+            const icon = type === 'success' ? 'check-circle'
+                : type === 'error' ? 'times-circle' : 'info-circle';
+            el.innerHTML = `<i class="fas fa-${icon}"></i> ${msg}`;
+            document.getElementById('toastWrap').appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
 
-// ── Tabs ───────────────────────────────────────────────────────────────────
-function switchTab(name, btn) {
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    btn.classList.add('active');
-}
+        // ── Tabs ───────────────────────────────────────────────────────────────────
+        function switchTab(name, btn) {
+            document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + name).classList.add('active');
+            btn.classList.add('active');
+        }
 
-// ── Staff filter ───────────────────────────────────────────────────────────
-function filterStaff(q) {
-    q = q.toLowerCase().trim();
-    document.querySelectorAll('#staffList .staff-row').forEach(el => {
-        el.classList.toggle('hidden',
-            q && !el.dataset.name.includes(q) && !el.dataset.email.includes(q));
-    });
-}
+        // ── Staff filter ───────────────────────────────────────────────────────────
+        function filterStaff(q) {
+            q = q.toLowerCase().trim();
+            document.querySelectorAll('#staffList .staff-row').forEach(el => {
+                el.classList.toggle('hidden',
+                    q && !el.dataset.name.includes(q) && !el.dataset.email.includes(q));
+            });
+        }
 
-// ── Panel: Add ─────────────────────────────────────────────────────────────
-async function addPanel(userId, name, email) {
-    const row = document.getElementById('sr-' + userId);
-    const btn = document.getElementById('addbtn-' + userId);
+        // ── Panel: Add ─────────────────────────────────────────────────────────────
+        async function addPanel(userId, name, email) {
+            const row = document.getElementById('sr-' + userId);
+            const btn = document.getElementById('addbtn-' + userId);
 
-    if (row) { row.onclick = null; row.style.pointerEvents = 'none'; }
-    if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>'; }
-
-    try {
-        const res  = await fetch(
-            `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/add/`,
-            {
-                method:  'POST',
-                headers: { 'X-CSRFToken': csrfToken(),
-                           'Content-Type': 'application/x-www-form-urlencoded' },
-                body: `user_id=${userId}&send_email=1`,
-            }
-        );
-        const data = await res.json();
-
-        if (data.error) {
-            showToast(data.error, 'error');
             if (row) {
-                row.onclick = () => addPanel(userId, name, email);
-                row.style.pointerEvents = '';
+                row.onclick = null;
+                row.style.pointerEvents = 'none';
             }
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Add'; }
-            return;
-        }
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+            }
 
-        // Mark staff row as added
-        if (row) {
-            row.classList.add('on-panel');
-            row.style.pointerEvents = '';
-            if (btn) btn.replaceWith(Object.assign(document.createElement('span'), {
-                className: 'staff-tag-added',
-                innerHTML: '<i class="fas fa-check"></i> Added',
-            }));
-        }
+            try {
+                const res = await fetch(
+                    `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/add/`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': csrfToken(),
+                            'Content-Type': 'application/x-www-form-urlencoded'
+                        },
+                        body: `user_id=${userId}&send_email=1`,
+                    }
+                );
+                const data = await res.json();
 
-        // Build table if it doesn't exist yet
-        const wrap  = document.getElementById('panelTableWrap');
-        let   tbody = document.getElementById('panelTbody');
+                if (data.error) {
+                    showToast(data.error, 'error');
+                    if (row) {
+                        row.onclick = () => addPanel(userId, name, email);
+                        row.style.pointerEvents = '';
+                    }
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                    }
+                    return;
+                }
 
-        if (!tbody) {
-            wrap.innerHTML = `
+                // Mark staff row as added
+                if (row) {
+                    row.classList.add('on-panel');
+                    row.style.pointerEvents = '';
+                    if (btn) btn.replaceWith(Object.assign(document.createElement('span'), {
+                        className: 'staff-tag-added',
+                        innerHTML: '<i class="fas fa-check"></i> Added',
+                    }));
+                }
+
+                // Build table if it doesn't exist yet
+                const wrap = document.getElementById('panelTableWrap');
+                let tbody = document.getElementById('panelTbody');
+
+                if (!tbody) {
+                    wrap.innerHTML = `
                 <table class="panel-table">
                     <thead>
                         <tr><th>Member</th><th>Status</th><th></th></tr>
                     </thead>
                     <tbody id="panelTbody"></tbody>
                 </table>`;
-            tbody = document.getElementById('panelTbody');
-        }
+                    tbody = document.getElementById('panelTbody');
+                }
 
-        tbody.insertAdjacentHTML('beforeend', `
+                tbody.insertAdjacentHTML('beforeend', `
             <tr id="pm-${userId}">
                 <td>
                     <div class="d-flex align-items-center gap-2">
@@ -814,44 +1200,52 @@ async function addPanel(userId, name, email) {
                 </td>
             </tr>`);
 
-        updatePanelCount(1);
-        showToast(
-            data.email_sent
-                ? `${name} appointed — notification email sent.`
-                : `${name} appointed.`,
-            'success'
-        );
+                updatePanelCount(1);
+                showToast(
+                    data.email_sent
+                        ? `${name} appointed — notification email sent.`
+                        : `${name} appointed.`,
+                    'success'
+                );
 
-    } catch (e) {
-        showToast('Network error. Please try again.', 'error');
-        if (row) {
-            row.onclick = () => addPanel(userId, name, email);
-            row.style.pointerEvents = '';
+            } catch (e) {
+                showToast('Network error. Please try again.', 'error');
+                if (row) {
+                    row.onclick = () => addPanel(userId, name, email);
+                    row.style.pointerEvents = '';
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                }
+            }
         }
-        if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Add'; }
-    }
-}
 
-// ── Panel: Remove ──────────────────────────────────────────────────────────
-async function removePanel(userId, name) {
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/remove/`,
-        {
-            method:  'POST',
-            headers: { 'X-CSRFToken': csrfToken(),
-                       'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `user_id=${userId}`,
-        }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
+        // ── Panel: Remove ──────────────────────────────────────────────────────────
+        async function removePanel(userId, name) {
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/remove/`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': csrfToken(),
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `user_id=${userId}`,
+                }
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
 
-    document.getElementById(`pm-${userId}`)?.remove();
+            document.getElementById(`pm-${userId}`)?.remove();
 
-    // Restore empty state if no rows remain
-    const tbody = document.getElementById('panelTbody');
-    if (tbody && !tbody.querySelector('tr')) {
-        document.getElementById('panelTableWrap').innerHTML = `
+            // Restore empty state if no rows remain
+            const tbody = document.getElementById('panelTbody');
+            if (tbody && !tbody.querySelector('tr')) {
+                document.getElementById('panelTableWrap').innerHTML = `
             <div class="empty-panel">
                 <i class="fas fa-user-plus"></i>
                 No panel members yet.<br>
@@ -859,160 +1253,185 @@ async function removePanel(userId, name) {
                     Select staff from the list on the right.
                 </span>
             </div>`;
-    }
+            }
 
-    // Re-enable staff row
-    const row = document.getElementById('sr-' + userId);
-    if (row) {
-        row.classList.remove('on-panel');
-        row.onclick = () => addPanel(userId, name, row.dataset.email);
-        const tag = row.querySelector('.staff-tag-added');
-        if (tag) {
-            const newBtn      = document.createElement('button');
-            newBtn.className  = 'btn-add-staff';
-            newBtn.id         = `addbtn-${userId}`;
-            newBtn.innerHTML  = '<i class="fas fa-plus"></i> Add';
-            newBtn.onclick    = e => {
-                e.stopPropagation();
-                addPanel(userId, name, row.dataset.email);
-            };
-            tag.replaceWith(newBtn);
+            // Re-enable staff row
+            const row = document.getElementById('sr-' + userId);
+            if (row) {
+                row.classList.remove('on-panel');
+                row.onclick = () => addPanel(userId, name, row.dataset.email);
+                const tag = row.querySelector('.staff-tag-added');
+                if (tag) {
+                    const newBtn = document.createElement('button');
+                    newBtn.className = 'btn-add-staff';
+                    newBtn.id = `addbtn-${userId}`;
+                    newBtn.innerHTML = '<i class="fas fa-plus"></i> Add';
+                    newBtn.onclick = e => {
+                        e.stopPropagation();
+                        addPanel(userId, name, row.dataset.email);
+                    };
+                    tag.replaceWith(newBtn);
+                }
+            }
+
+            updatePanelCount(-1);
+            showToast(`${name} removed from panel.`, 'success');
         }
-    }
 
-    updatePanelCount(-1);
-    showToast(`${name} removed from panel.`, 'success');
-}
+        // ── Panel count ────────────────────────────────────────────────────────────
+        function updatePanelCount(delta) {
+            ['badge-panel', 'panel-count-badge'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = parseInt(el.textContent) + delta;
+            });
+        }
 
-// ── Panel count ────────────────────────────────────────────────────────────
-function updatePanelCount(delta) {
-    ['badge-panel', 'panel-count-badge'].forEach(id => {
-        const el = document.getElementById(id);
-        if (el) el.textContent = parseInt(el.textContent) + delta;
-    });
-}
+        // ── Notify panel (bulk — requires schedule + slots) ────────────────────────
+        async function notifyPanel() {
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/notify/`,
+                {method: 'POST', headers: {'X-CSRFToken': csrfToken()}}
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            showToast(`${data.sent} panel member(s) notified.`, 'success');
+            setTimeout(() => location.reload(), 1400);
+        }
 
-// ── Notify panel (bulk — requires schedule + slots) ────────────────────────
-async function notifyPanel() {
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/panel/notify/`,
-        { method: 'POST', headers: { 'X-CSRFToken': csrfToken() } }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast(`${data.sent} panel member(s) notified.`, 'success');
-    setTimeout(() => location.reload(), 1400);
-}
+        // ── Criteria ───────────────────────────────────────────────────────────────
+        function updateMaxTotal() {
+            const total = [...document.querySelectorAll('.crit-max')]
+                .reduce((s, el) => s + (parseInt(el.value) || 0), 0);
+            document.getElementById('maxTotal').textContent = total;
+            document.getElementById('maxTotalSide').textContent = total;
+        }
 
-// ── Criteria ───────────────────────────────────────────────────────────────
-function updateMaxTotal() {
-    const total = [...document.querySelectorAll('.crit-max')]
-        .reduce((s, el) => s + (parseInt(el.value) || 0), 0);
-    document.getElementById('maxTotal').textContent     = total;
-    document.getElementById('maxTotalSide').textContent = total;
-}
-document.addEventListener('input', e => {
-    if (e.target.classList.contains('crit-max')) updateMaxTotal();
-});
+        document.addEventListener('input', e => {
+            if (e.target.classList.contains('crit-max')) updateMaxTotal();
+        });
 
-function addCriterion() {
-    const row      = document.createElement('div');
-    row.className  = 'criterion-row';
-    row.innerHTML  = `
+        function addCriterion() {
+            const row = document.createElement('div');
+            row.className = 'criterion-row';
+            row.innerHTML = `
         <input type="text"   placeholder="Criterion name" class="crit-name">
         <input type="number" placeholder="Max" min="1"    class="crit-max">
         <button class="btn-del-crit" onclick="removeCriterion(this)">
             <i class="fas fa-trash"></i>
         </button>`;
-    document.getElementById('criteriaList').appendChild(row);
-    row.querySelector('.crit-name').focus();
-}
-
-function removeCriterion(btn) {
-    btn.closest('.criterion-row').remove();
-    updateMaxTotal();
-    document.getElementById('badge-criteria').textContent =
-        document.querySelectorAll('.criterion-row').length;
-}
-
-async function saveCriteria() {
-    const criteria = [...document.querySelectorAll('.criterion-row')]
-        .map((r, i) => ({
-            name:      r.querySelector('.crit-name').value.trim(),
-            max_score: parseInt(r.querySelector('.crit-max').value) || 0,
-            order: i,
-        })).filter(c => c.name);
-
-    if (!criteria.length) { showToast('Add at least one criterion.', 'error'); return; }
-
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/criteria/save/`,
-        {
-            method:  'POST',
-            headers: { 'X-CSRFToken': csrfToken(), 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ criteria }),
+            document.getElementById('criteriaList').appendChild(row);
+            row.querySelector('.crit-name').focus();
         }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast('Criteria saved.', 'success');
-    updateMaxTotal();
-    document.getElementById('badge-criteria').textContent = criteria.length;
-}
 
-// ── Slots ──────────────────────────────────────────────────────────────────
-async function saveSlots() {
-    const venueType    = document.getElementById('venueType').value;
-    const venue        = document.getElementById('venueValue').value.trim();
-    const instructions = document.getElementById('instructions').value.trim();
-
-    if (!venue) { showToast('Please enter a venue or meeting link.', 'error'); return; }
-
-    const slots = [...document.querySelectorAll('#slotBody tr')]
-        .map(r => ({
-            application_id: r.dataset.appId,
-            date:           r.querySelector('.slot-date').value,
-            time:           r.querySelector('.slot-time').value,
-            venue_override: r.querySelector('.slot-venue').value.trim(),
-        })).filter(s => s.date && s.time);
-
-    if (!slots.length) { showToast('Fill in at least one date and time.', 'error'); return; }
-
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/slots/save/`,
-        {
-            method:  'POST',
-            headers: { 'X-CSRFToken': csrfToken(), 'Content-Type': 'application/json' },
-            body:    JSON.stringify({ venue_type: venueType, venue, instructions, slots }),
+        function removeCriterion(btn) {
+            btn.closest('.criterion-row').remove();
+            updateMaxTotal();
+            document.getElementById('badge-criteria').textContent =
+                document.querySelectorAll('.criterion-row').length;
         }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast(`${data.saved} slot(s) saved.`, 'success');
-    setTimeout(() => location.reload(), 1500);
-}
 
-async function notifyCandidates() {
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`,
-        { method: 'POST', headers: { 'X-CSRFToken': csrfToken() } }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast(`${data.sent} candidate(s) notified.`, 'success');
-    setTimeout(() => location.reload(), 1500);
-}
+        async function saveCriteria() {
+            const criteria = [...document.querySelectorAll('.criterion-row')]
+                .map((r, i) => ({
+                    name: r.querySelector('.crit-name').value.trim(),
+                    max_score: parseInt(r.querySelector('.crit-max').value) || 0,
+                    order: i,
+                })).filter(c => c.name);
 
-async function resendCandidates() {
-    if (!confirm('Resend updated interview details to all candidates whose slots have changed?')) return;
-    const res  = await fetch(
-        `/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`,
-        { method: 'POST', headers: { 'X-CSRFToken': csrfToken() } }
-    );
-    const data = await res.json();
-    if (data.error) { showToast(data.error, 'error'); return; }
-    showToast(`${data.sent} candidate(s) notified with updated details.`, 'success');
-    setTimeout(() => location.reload(), 1500);
-}
-</script>
+            if (!criteria.length) {
+                showToast('Add at least one criterion.', 'error');
+                return;
+            }
+
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/criteria/save/`,
+                {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken(), 'Content-Type': 'application/json'},
+                    body: JSON.stringify({criteria}),
+                }
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            showToast('Criteria saved.', 'success');
+            updateMaxTotal();
+            document.getElementById('badge-criteria').textContent = criteria.length;
+        }
+
+        // ── Slots ──────────────────────────────────────────────────────────────────
+        async function saveSlots() {
+            const venueType = document.getElementById('venueType').value;
+            const venue = document.getElementById('venueValue').value.trim();
+            const instructions = document.getElementById('instructions').value.trim();
+
+            if (!venue) {
+                showToast('Please enter a venue or meeting link.', 'error');
+                return;
+            }
+
+            const slots = [...document.querySelectorAll('#slotBody tr')]
+                .map(r => ({
+                    application_id: r.dataset.appId,
+                    date: r.querySelector('.slot-date').value,
+                    time: r.querySelector('.slot-time').value,
+                    venue_override: r.querySelector('.slot-venue').value.trim(),
+                })).filter(s => s.date && s.time);
+
+            if (!slots.length) {
+                showToast('Fill in at least one date and time.', 'error');
+                return;
+            }
+
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/slots/save/`,
+                {
+                    method: 'POST',
+                    headers: {'X-CSRFToken': csrfToken(), 'Content-Type': 'application/json'},
+                    body: JSON.stringify({venue_type: venueType, venue, instructions, slots}),
+                }
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            showToast(`${data.saved} slot(s) saved.`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        async function notifyCandidates() {
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`,
+                {method: 'POST', headers: {'X-CSRFToken': csrfToken()}}
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            showToast(`${data.sent} candidate(s) notified.`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+
+        async function resendCandidates() {
+            if (!confirm('Resend updated interview details to all candidates whose slots have changed?')) return;
+            const res = await fetch(
+                `/recruitment/hr/vacancy/${VACANCY_ID}/interview/notify/`,
+                {method: 'POST', headers: {'X-CSRFToken': csrfToken()}}
+            );
+            const data = await res.json();
+            if (data.error) {
+                showToast(data.error, 'error');
+                return;
+            }
+            showToast(`${data.sent} candidate(s) notified with updated details.`, 'success');
+            setTimeout(() => location.reload(), 1500);
+        }
+    </script>
 {% endblock %}

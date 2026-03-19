@@ -1,0 +1,325 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}My Committee Analytics{% endblock %}
+
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --amber: #b7770d;
+            --red: #c0392b;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-lt));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .18);
+        }
+
+        .page-banner::before {
+            content: '';
+            position: absolute;
+            top: -40px;
+            right: -40px;
+            width: 180px;
+            height: 180px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .07);
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .kpi-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .kpi-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: .75rem;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+
+        .kpi-val {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-label {
+            font-size: .7rem;
+            color: #8392ab;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+
+        .kpi-sub {
+            font-size: .72rem;
+            margin-top: .25rem;
+            color: #8392ab;
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.1rem;
+        }
+
+        .section-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .mini-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .8rem;
+        }
+
+        .mini-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .55rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .mini-table td {
+            padding: .6rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: middle;
+        }
+
+        .mini-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .mini-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .rate-bar-wrap {
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+        }
+
+        .rate-bar-bg {
+            flex: 1;
+            height: 6px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .rate-bar-fill {
+            height: 100%;
+            border-radius: 99px;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <p class="banner-title mb-0"><i class="fas fa-chart-bar me-2" style="color:var(--gold-dk);"></i>My Committee
+                Analytics</p>
+            <p class="banner-sub mb-0">Your shortlisting voting record across all assignments</p>
+        </div>
+        <div class="gold-divider"></div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Assignments</div>
+                        <div class="kpi-val">{{ total_assignments }}</div>
+                        <div class="kpi-sub">Total vacancies</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--navy),var(--navy-lt));"><i
+                            class="fas fa-tasks"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Total Votes</div>
+                        <div class="kpi-val">{{ overall_approved|add:overall_rejected }}</div>
+                        <div class="kpi-sub">Submitted votes</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,#1a6fa8,#2E86C1);"><i
+                            class="fas fa-vote-yea"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Approved</div>
+                        <div class="kpi-val" style="color:var(--green);">{{ overall_approved }}</div>
+                        <div class="kpi-sub">Candidates approved</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--green),#22a05a);"><i
+                            class="fas fa-check"></i></div>
+                </div>
+            </div>
+            <div class="col-6 col-md-3">
+                <div class="kpi-card">
+                    <div>
+                        <div class="kpi-label">Approval Rate</div>
+                        <div class="kpi-val">{{ overall_rate }}%</div>
+                        <div class="kpi-sub">Overall approval %</div>
+                    </div>
+                    <div class="kpi-icon" style="background:linear-gradient(135deg,var(--gold-dk),#e8cc7a);"><i
+                            class="fas fa-percentage" style="color:var(--navy);"></i></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3">
+            <div class="col-lg-4">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-chart-pie me-2"
+                                                                             style="color:var(--gold-dk);opacity:.7;"></i>Vote
+                        Breakdown</h6></div>
+                    <div style="padding:1rem;height:240px;display:flex;align-items:center;justify-content:center;">
+                        <canvas id="voteChart" style="max-width:200px;max-height:200px;"></canvas>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <div class="section-card">
+                    <div class="section-header"><h6 class="section-title"><i class="fas fa-list me-2"
+                                                                             style="color:var(--gold-dk);opacity:.7;"></i>Per
+                        Vacancy Breakdown</h6></div>
+                    {% if rows %}
+                        <div style="overflow-x:auto;">
+                            <table class="mini-table">
+                                <thead>
+                                <tr>
+                                    <th>Vacancy</th>
+                                    <th>Apps</th>
+                                    <th>Voted</th>
+                                    <th>Approved</th>
+                                    <th>Rejected</th>
+                                    <th>Approval Rate</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for row in rows %}
+                                    <tr>
+                                        <td>
+                                            <div style="font-weight:600;color:var(--navy);font-size:.82rem;">{{ row.vacancy.title }}</div>
+                                            <div style="font-size:.7rem;color:#8392ab;font-family:monospace;">{{ row.vacancy.reference_number }}</div>
+                                        </td>
+                                        <td style="font-weight:700;">{{ row.app_count }}</td>
+                                        <td>{{ row.voted }}</td>
+                                        <td style="color:var(--green);font-weight:700;">{{ row.approved }}</td>
+                                        <td style="color:var(--red);font-weight:700;">{{ row.rejected }}</td>
+                                        <td>
+                                            <div class="rate-bar-wrap">
+                                                <div class="rate-bar-bg">
+                                                    <div class="rate-bar-fill"
+                                                         style="width:{{ row.approval_rate }}%;"></div>
+                                                </div>
+                                                <span style="font-size:.75rem;font-weight:700;color:var(--navy);min-width:36px;">{{ row.approval_rate }}%</span>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div style="text-align:center;padding:2.5rem;color:#b0bac9;font-size:.82rem;">
+                            <i class="fas fa-inbox"
+                               style="font-size:1.8rem;display:block;margin-bottom:.5rem;opacity:.3;"></i>
+                            No committee assignments yet
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script>
+        const vd = {{ vote_json|safe }};
+        new Chart(document.getElementById('voteChart'), {
+            type: 'doughnut',
+            data: {
+                labels: vd.labels,
+                datasets: [{
+                    data: vd.values,
+                    backgroundColor: ['#1a7a45', '#c0392b'],
+                    borderWidth: 3,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false, cutout: '68%',
+                plugins: {legend: {position: 'bottom', labels: {font: {size: 10}, padding: 14}}}
+            }
+        });
+    </script>
+{% endblock %}

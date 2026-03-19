@@ -2,325 +2,659 @@
 {% block title %}Applications — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<style>
-    :root {
-        --navy:      #262561;
-        --navy-light:#2E3A7A;
-        --gold:      #F9E6A1;
-        --gold-dark: #C39545;
-    }
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-light: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dark: #C39545;
+        }
 
-    /* ── PAGE HEADER ───────────────────────── */
-    .page-header-banner {
-        background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
-        border-radius: 0.85rem;
-        padding: 1rem 1.5rem;
-        margin-bottom: 1rem;
-        position: relative;
-        overflow: hidden;
-        box-shadow: 0 6px 20px rgba(38,37,97,0.18);
-    }
-    .page-header-banner::before {
-        content:''; position:absolute;
-        top:-30px; right:-30px; width:130px; height:130px;
-        border-radius:50%; background:rgba(249,230,161,0.07); pointer-events:none;
-    }
-    .page-header-banner h5 { color:#fff; font-weight:700; font-size:1.05rem; margin:0; }
-    .page-header-banner p  { color:rgba(249,230,161,0.7); font-size:0.78rem; margin:0; }
-    .btn-back {
-        background:rgba(255,255,255,0.12); color:#fff !important;
-        border:1px solid rgba(255,255,255,0.2); border-radius:0.5rem;
-        font-size:0.75rem; font-weight:600; padding:0.4rem 0.9rem;
-        text-decoration:none; transition:all 0.18s;
-    }
-    .btn-back:hover { background:rgba(255,255,255,0.22); }
+        /* ── PAGE HEADER ───────────────────────── */
+        .page-header-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 100%);
+            border-radius: 0.85rem;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, 0.18);
+        }
 
-    /* ── VACANCY META STRIP ────────────────── */
-    .vacancy-meta-strip { display:flex; flex-wrap:wrap; gap:0.5rem; margin-bottom:1rem; }
-    .meta-pill {
-        display:inline-flex; align-items:center; gap:0.35rem;
-        padding:0.3rem 0.75rem;
-        background:#fff; border:1px solid rgba(38,37,97,0.1);
-        border-radius:2rem; font-size:0.72rem; color:#344767;
-        box-shadow:0 2px 8px rgba(38,37,97,0.05);
-    }
-    .meta-pill i { color:var(--navy); opacity:0.6; font-size:0.68rem; }
-    .meta-pill strong { color:var(--navy); }
+        .page-header-banner::before {
+            content: '';
+            position: absolute;
+            top: -30px;
+            right: -30px;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, 0.07);
+            pointer-events: none;
+        }
 
-    /* ── KPI MINI CARDS ────────────────────── */
-    .kpi-mini {
-        background:#fff; border-radius:0.75rem; border:none;
-        box-shadow:0 3px 12px rgba(38,37,97,0.08);
-        padding:0.9rem 1.1rem;
-        border-left:3px solid var(--navy);
-        transition:transform 0.18s ease;
-    }
-    .kpi-mini:hover { transform:translateY(-2px); }
-    .kpi-mini .km-label { font-size:0.65rem; font-weight:700; text-transform:uppercase; letter-spacing:0.06em; color:#8392ab; margin-bottom:0.15rem; }
-    .kpi-mini .km-value { font-size:1.5rem; font-weight:800; color:var(--navy); line-height:1; }
-    .kpi-mini .km-sub   { font-size:0.65rem; color:#adb5bd; margin-top:0.15rem; }
+        .page-header-banner h5 {
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.05rem;
+            margin: 0;
+        }
 
-    /* ── ACTION BANNER ─────────────────────── */
-    .action-banner {
-        background:linear-gradient(135deg,#fff8e1,#fffde7);
-        border:1px solid #F9E6A1; border-radius:0.75rem;
-        padding:0.85rem 1.2rem; margin-bottom:1rem;
-        display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;
-    }
-    .action-banner p { margin:0; font-size:0.8rem; color:#664d03; }
-    .btn-action-banner {
-        background:linear-gradient(135deg,var(--navy),var(--navy-light));
-        color:var(--gold) !important; border:none; border-radius:0.5rem;
-        font-size:0.78rem; font-weight:700; padding:0.45rem 1rem;
-        text-decoration:none; transition:all 0.2s; display:inline-block;
-    }
-    .btn-action-banner:hover { transform:translateY(-1px); box-shadow:0 4px 12px rgba(38,37,97,0.28); }
+        .page-header-banner p {
+            color: rgba(249, 230, 161, 0.7);
+            font-size: 0.78rem;
+            margin: 0;
+        }
 
-    /* ── TABLE CARD ────────────────────────── */
-    .table-card {
-        background:#fff; border-radius:1rem; border:none;
-        box-shadow:0 4px 24px rgba(38,37,97,0.08); overflow:hidden;
-    }
-    .table-card-header {
-        padding:0.9rem 1.4rem;
-        border-bottom:1px solid rgba(38,37,97,0.07);
-        display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;
-    }
-    .table-card-header h6 { font-size:0.9rem; font-weight:700; color:var(--navy); margin:0; }
-    .table-card-header p  { font-size:0.71rem; color:#8392ab; margin:0; }
+        .btn-back {
+            background: rgba(255, 255, 255, 0.12);
+            color: #fff !important;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.4rem 0.9rem;
+            text-decoration: none;
+            transition: all 0.18s;
+        }
 
-    /* ── DATATABLE STYLES ──────────────────── */
-    #appsTable { font-size:0.8rem; }
-    #appsTable thead th {
-        background:var(--navy); color:#fff;
-        font-size:0.65rem; font-weight:700;
-        text-transform:uppercase; letter-spacing:0.06em;
-        padding:0.8rem 1rem; border:none; white-space:nowrap;
-    }
-    #appsTable tbody td {
-        padding:0.7rem 1rem; vertical-align:middle;
-        border-bottom:1px solid rgba(38,37,97,0.05); color:#344767;
-    }
-    #appsTable tbody tr:last-child td { border-bottom:none; }
-    #appsTable tbody tr:hover td { background:#fbf6e0; cursor:pointer; }
+        .btn-back:hover {
+            background: rgba(255, 255, 255, 0.22);
+        }
 
-    .cell-name  { font-weight:600; color:var(--navy) !important; }
-    .cell-appno { font-family:monospace; font-size:0.74rem; color:#67748e; }
-    .cell-date  { font-size:0.75rem; color:#8392ab; white-space:nowrap; }
-    .cell-email { font-size:0.75rem; color:#67748e; }
+        /* ── VACANCY META STRIP ────────────────── */
+        .vacancy-meta-strip {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
 
-    /* ── STATUS BADGES ─────────────────────── */
-    .app-status {
-        display:inline-flex; align-items:center; gap:0.28rem;
-        padding:0.22rem 0.6rem; border-radius:2rem;
-        font-size:0.63rem; font-weight:700; letter-spacing:0.04em;
-        text-transform:uppercase; white-space:nowrap;
-    }
-    .app-status::before {
-        content:''; width:5px; height:5px; border-radius:50%;
-        display:inline-block; background:currentColor; flex-shrink:0;
-    }
-    .as-submitted         { background:#e8f4fd; color:#1a6fa8; }
-    .as-shortlisted       { background:#d4f5e2; color:#1a7a45; }
-    .as-interviewed       { background:#ede9fe; color:#5b21b6; }
-    .as-selected_top_three{ background:#fef9e7; color:#7d6608; }
-    .as-selected_top_five { background:#fef9e7; color:#7d6608; }
-    .as-board_review      { background:#fef3e2; color:#b7770d; }
-    .as-ceo_review        { background:#fef9e7; color:#7d6608; }
-    .as-ceo_approved      { background:#d4f5e2; color:#1a7a45; }
-    .as-hr_appoints       { background:#d4f5e2; color:#1a7a45; }
-    .as-appointed         { background:#d4f5e2; color:#0d6830; }
-    .as-not_selected      { background:#fde8e8; color:#c0392b; }
+        .meta-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            background: #fff;
+            border: 1px solid rgba(38, 37, 97, 0.1);
+            border-radius: 2rem;
+            font-size: 0.72rem;
+            color: #344767;
+            box-shadow: 0 2px 8px rgba(38, 37, 97, 0.05);
+        }
 
-    /* ── LONGLIST DECISION BADGES ──────────── */
-    .ld-badge {
-        display:inline-flex; align-items:center; gap:0.28rem;
-        padding:0.22rem 0.6rem; border-radius:2rem;
-        font-size:0.63rem; font-weight:700; letter-spacing:0.04em;
-        text-transform:uppercase; white-space:nowrap;
-    }
-    .ld-accepted { background:#d4f5e2; color:#1a7a45; }
-    .ld-rejected { background:#fde8e8; color:#c0392b; }
-    .ld-pending  { background:#f0f2f8; color:#8392ab; }
+        .meta-pill i {
+            color: var(--navy);
+            opacity: 0.6;
+            font-size: 0.68rem;
+        }
 
-    /* ── ACTION BUTTON ─────────────────────── */
-    .act-btn {
-        display:inline-flex; align-items:center;
-        padding:0.22rem 0.65rem; border-radius:0.4rem;
-        font-size:0.68rem; font-weight:600; text-decoration:none;
-        transition:all 0.16s ease; border:1px solid transparent; white-space:nowrap;
-    }
-    .ab-view { background:#e8f4fd; color:#1a6fa8; border-color:#b8ddf5; }
-    .ab-view:hover { background:#1a6fa8; color:#fff; }
+        .meta-pill strong {
+            color: var(--navy);
+        }
 
-    /* ── DATATABLE OVERRIDES ───────────────── */
-    #appsTable_wrapper .dataTables_filter input {
-        border:1px solid #e0e4ef; border-radius:0.5rem;
-        padding:0.35rem 0.75rem; font-size:0.8rem; color:#344767; outline:none;
-    }
-    #appsTable_wrapper .dataTables_filter input:focus {
-        border-color:var(--navy); box-shadow:0 0 0 2px rgba(38,37,97,0.08);
-    }
-    #appsTable_wrapper .dataTables_length select {
-        border:1px solid #e0e4ef; border-radius:0.5rem;
-        padding:0.3rem 0.5rem; font-size:0.8rem; color:#344767;
-    }
-    #appsTable_wrapper .dataTables_info,
-    #appsTable_wrapper .dataTables_length label,
-    #appsTable_wrapper .dataTables_filter label { font-size:0.75rem; color:#8392ab; }
-    #appsTable_wrapper .dataTables_paginate .paginate_button {
-        font-size:0.75rem !important; border-radius:0.4rem !important; padding:0.3rem 0.65rem !important;
-    }
-    #appsTable_wrapper .dataTables_paginate .paginate_button.current {
-        background:var(--navy) !important; border-color:var(--navy) !important; color:#fff !important;
-    }
+        /* ── KPI MINI CARDS ────────────────────── */
+        .kpi-mini {
+            background: #fff;
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 3px 12px rgba(38, 37, 97, 0.08);
+            padding: 0.9rem 1.1rem;
+            border-left: 3px solid var(--navy);
+            transition: transform 0.18s ease;
+        }
 
-    /* ── DOC ICON BUTTONS ──────────────────── */
-    .doc-icon-btn {
-        display:inline-flex; align-items:center; justify-content:center;
-        width:24px; height:24px; border-radius:0.35rem;
-        font-size:0.65rem; font-weight:700; text-decoration:none;
-        transition:all 0.15s; border:1px solid transparent;
-        vertical-align:middle;
-    }
-    .dib-cv   { background:#fff5f5; color:#c0392b; border-color:#fecaca; }
-    .dib-cv:hover { background:#c0392b; color:#fff; }
-    .dib-cl   { background:#eef2ff; color:#2b579a; border-color:#c7d2fe; }
-    .dib-cl:hover { background:#2b579a; color:#fff; }
-    .dib-docs { background:#f0f2f8; color:#67748e; border-color:#dde0ee; }
-    .dib-docs:hover { background:#262561; color:#F9E6A1; }
-    .doc-none { font-size:0.68rem; color:#d1d5db; }
+        .kpi-mini:hover {
+            transform: translateY(-2px);
+        }
 
-    /* ── QUAL DOC LINKS (matches dossier) ──── */
-    .qual-doc-btn {
-        display:inline-flex; align-items:center; gap:0.3rem;
-        padding:0.18rem 0.5rem; border-radius:0.35rem;
-        font-size:0.65rem; font-weight:600;
-        background:#fff5f5; color:#c0392b;
-        border:1px solid #fecaca; transition:all .15s;
-        text-decoration:none !important; white-space:nowrap;
-        margin:0.15rem 0.15rem 0 0;
-    }
-    .qual-doc-btn:hover { background:#c0392b; color:#fff; border-color:#c0392b; }
-    .qual-doc-btn.acad  { background:#f0fdf4; color:#1a7a45; border-color:#bbf7d0; }
-    .qual-doc-btn.acad:hover { background:#1a7a45; color:#fff; border-color:#1a7a45; }
-    .qual-doc-btn.prof  { background:#fef3e2; color:#b7770d; border-color:#fde68a; }
-    .qual-doc-btn.prof:hover { background:#b7770d; color:#fff; border-color:#b7770d; }
-    .doc-section-label {
-        font-size:0.6rem; font-weight:700; text-transform:uppercase;
-        letter-spacing:0.05em; color:#adb5bd; display:block;
-        margin-top:0.35rem; margin-bottom:0.1rem;
-    }
-    .doc-section-label:first-child { margin-top:0; }
+        .kpi-mini .km-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #8392ab;
+            margin-bottom: 0.15rem;
+        }
+
+        .kpi-mini .km-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1;
+        }
+
+        .kpi-mini .km-sub {
+            font-size: 0.65rem;
+            color: #adb5bd;
+            margin-top: 0.15rem;
+        }
+
+        /* ── ACTION BANNER ─────────────────────── */
+        .action-banner {
+            background: linear-gradient(135deg, #fff8e1, #fffde7);
+            border: 1px solid #F9E6A1;
+            border-radius: 0.75rem;
+            padding: 0.85rem 1.2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .action-banner p {
+            margin: 0;
+            font-size: 0.8rem;
+            color: #664d03;
+        }
+
+        .btn-action-banner {
+            background: linear-gradient(135deg, var(--navy), var(--navy-light));
+            color: var(--gold) !important;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            padding: 0.45rem 1rem;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-action-banner:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(38, 37, 97, 0.28);
+        }
+
+        /* ── TABLE CARD ────────────────────────── */
+        .table-card {
+            background: #fff;
+            border-radius: 1rem;
+            border: none;
+            box-shadow: 0 4px 24px rgba(38, 37, 97, 0.08);
+            overflow: hidden;
+        }
+
+        .table-card-header {
+            padding: 0.9rem 1.4rem;
+            border-bottom: 1px solid rgba(38, 37, 97, 0.07);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+        }
+
+        .table-card-header h6 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .table-card-header p {
+            font-size: 0.71rem;
+            color: #8392ab;
+            margin: 0;
+        }
+
+        /* ── DATATABLE STYLES ──────────────────── */
+        #appsTable {
+            font-size: 0.8rem;
+        }
+
+        #appsTable thead th {
+            background: var(--navy);
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            padding: 0.8rem 1rem;
+            border: none;
+            white-space: nowrap;
+        }
+
+        #appsTable tbody td {
+            padding: 0.7rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(38, 37, 97, 0.05);
+            color: #344767;
+        }
+
+        #appsTable tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        #appsTable tbody tr:hover td {
+            background: #fbf6e0;
+            cursor: pointer;
+        }
+
+        .cell-name {
+            font-weight: 600;
+            color: var(--navy) !important;
+        }
+
+        .cell-appno {
+            font-family: monospace;
+            font-size: 0.74rem;
+            color: #67748e;
+        }
+
+        .cell-date {
+            font-size: 0.75rem;
+            color: #8392ab;
+            white-space: nowrap;
+        }
+
+        .cell-email {
+            font-size: 0.75rem;
+            color: #67748e;
+        }
+
+        /* ── STATUS BADGES ─────────────────────── */
+        .app-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+            padding: 0.22rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .app-status::before {
+            content: '';
+            width: 5px;
+            height: 5px;
+            border-radius: 50%;
+            display: inline-block;
+            background: currentColor;
+            flex-shrink: 0;
+        }
+
+        .as-submitted {
+            background: #e8f4fd;
+            color: #1a6fa8;
+        }
+
+        .as-shortlisted {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .as-interviewed {
+            background: #ede9fe;
+            color: #5b21b6;
+        }
+
+        .as-selected_top_three {
+            background: #fef9e7;
+            color: #7d6608;
+        }
+
+        .as-selected_top_five {
+            background: #fef9e7;
+            color: #7d6608;
+        }
+
+        .as-board_review {
+            background: #fef3e2;
+            color: #b7770d;
+        }
+
+        .as-ceo_review {
+            background: #fef9e7;
+            color: #7d6608;
+        }
+
+        .as-ceo_approved {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .as-hr_appoints {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .as-appointed {
+            background: #d4f5e2;
+            color: #0d6830;
+        }
+
+        .as-not_selected {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        /* ── LONGLIST DECISION BADGES ──────────── */
+        .ld-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.28rem;
+            padding: 0.22rem 0.6rem;
+            border-radius: 2rem;
+            font-size: 0.63rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .ld-accepted {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .ld-rejected {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .ld-pending {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        /* ── ACTION BUTTON ─────────────────────── */
+        .act-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 0.22rem 0.65rem;
+            border-radius: 0.4rem;
+            font-size: 0.68rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.16s ease;
+            border: 1px solid transparent;
+            white-space: nowrap;
+        }
+
+        .ab-view {
+            background: #e8f4fd;
+            color: #1a6fa8;
+            border-color: #b8ddf5;
+        }
+
+        .ab-view:hover {
+            background: #1a6fa8;
+            color: #fff;
+        }
+
+        /* ── DATATABLE OVERRIDES ───────────────── */
+        #appsTable_wrapper .dataTables_filter input {
+            border: 1px solid #e0e4ef;
+            border-radius: 0.5rem;
+            padding: 0.35rem 0.75rem;
+            font-size: 0.8rem;
+            color: #344767;
+            outline: none;
+        }
+
+        #appsTable_wrapper .dataTables_filter input:focus {
+            border-color: var(--navy);
+            box-shadow: 0 0 0 2px rgba(38, 37, 97, 0.08);
+        }
+
+        #appsTable_wrapper .dataTables_length select {
+            border: 1px solid #e0e4ef;
+            border-radius: 0.5rem;
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+            color: #344767;
+        }
+
+        #appsTable_wrapper .dataTables_info,
+        #appsTable_wrapper .dataTables_length label,
+        #appsTable_wrapper .dataTables_filter label {
+            font-size: 0.75rem;
+            color: #8392ab;
+        }
+
+        #appsTable_wrapper .dataTables_paginate .paginate_button {
+            font-size: 0.75rem !important;
+            border-radius: 0.4rem !important;
+            padding: 0.3rem 0.65rem !important;
+        }
+
+        #appsTable_wrapper .dataTables_paginate .paginate_button.current {
+            background: var(--navy) !important;
+            border-color: var(--navy) !important;
+            color: #fff !important;
+        }
+
+        /* ── DOC ICON BUTTONS ──────────────────── */
+        .doc-icon-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.15s;
+            border: 1px solid transparent;
+            vertical-align: middle;
+        }
+
+        .dib-cv {
+            background: #fff5f5;
+            color: #c0392b;
+            border-color: #fecaca;
+        }
+
+        .dib-cv:hover {
+            background: #c0392b;
+            color: #fff;
+        }
+
+        .dib-cl {
+            background: #eef2ff;
+            color: #2b579a;
+            border-color: #c7d2fe;
+        }
+
+        .dib-cl:hover {
+            background: #2b579a;
+            color: #fff;
+        }
+
+        .dib-docs {
+            background: #f0f2f8;
+            color: #67748e;
+            border-color: #dde0ee;
+        }
+
+        .dib-docs:hover {
+            background: #262561;
+            color: #F9E6A1;
+        }
+
+        .doc-none {
+            font-size: 0.68rem;
+            color: #d1d5db;
+        }
+
+        /* ── QUAL DOC LINKS (matches dossier) ──── */
+        .qual-doc-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.18rem 0.5rem;
+            border-radius: 0.35rem;
+            font-size: 0.65rem;
+            font-weight: 600;
+            background: #fff5f5;
+            color: #c0392b;
+            border: 1px solid #fecaca;
+            transition: all .15s;
+            text-decoration: none !important;
+            white-space: nowrap;
+            margin: 0.15rem 0.15rem 0 0;
+        }
+
+        .qual-doc-btn:hover {
+            background: #c0392b;
+            color: #fff;
+            border-color: #c0392b;
+        }
+
+        .qual-doc-btn.acad {
+            background: #f0fdf4;
+            color: #1a7a45;
+            border-color: #bbf7d0;
+        }
+
+        .qual-doc-btn.acad:hover {
+            background: #1a7a45;
+            color: #fff;
+            border-color: #1a7a45;
+        }
+
+        .qual-doc-btn.prof {
+            background: #fef3e2;
+            color: #b7770d;
+            border-color: #fde68a;
+        }
+
+        .qual-doc-btn.prof:hover {
+            background: #b7770d;
+            color: #fff;
+            border-color: #b7770d;
+        }
+
+        .doc-section-label {
+            font-size: 0.6rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #adb5bd;
+            display: block;
+            margin-top: 0.35rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .doc-section-label:first-child {
+            margin-top: 0;
+        }
 
 
-    #appsTable_wrapper .dataTables_processing {
-        background:rgba(255,255,255,0.9);
-        border:1px solid rgba(38,37,97,0.1);
-        border-radius:0.5rem;
-        color:var(--navy);
-        font-size:0.78rem;
-        font-weight:600;
-        box-shadow:0 4px 16px rgba(38,37,97,0.1);
-    }
-</style>
+        #appsTable_wrapper .dataTables_processing {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid rgba(38, 37, 97, 0.1);
+            border-radius: 0.5rem;
+            color: var(--navy);
+            font-size: 0.78rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(38, 37, 97, 0.1);
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- ── PAGE HEADER ─────────────────────── -->
-    <div class="page-header-banner mb-3">
-        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-            <div>
-                <h5>
-                    <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
-                    Applications — {{ vacancy.title }}
-                </h5>
-                <p>{{ vacancy.reference_number }} &nbsp;·&nbsp; {{ total }} application{{ total|pluralize }}</p>
+        <!-- ── PAGE HEADER ─────────────────────── -->
+        <div class="page-header-banner mb-3">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <h5>
+                        <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+                        Applications — {{ vacancy.title }}
+                    </h5>
+                    <p>{{ vacancy.reference_number }} &nbsp;·&nbsp; {{ total }} application{{ total|pluralize }}</p>
+                </div>
+                <a href="{% url 'vacancy_list' %}" class="btn-back">
+                    <i class="fas fa-arrow-left me-1"></i> Back
+                </a>
             </div>
-            <a href="{% url 'vacancy_list' %}" class="btn-back">
-                <i class="fas fa-arrow-left me-1"></i> Back
-            </a>
         </div>
-    </div>
 
-    <!-- ── VACANCY META STRIP ───────────────── -->
-    <div class="vacancy-meta-strip">
+        <!-- ── VACANCY META STRIP ───────────────── -->
+        <div class="vacancy-meta-strip">
         <span class="meta-pill">
             <i class="fas fa-hashtag"></i>
             <strong>Ref:</strong> {{ vacancy.reference_number }}
         </span>
-        <span class="meta-pill">
+            <span class="meta-pill">
             <i class="fas fa-tag"></i>
             <strong>Status:</strong> {{ vacancy.get_status_display }}
         </span>
-        <span class="meta-pill">
+            <span class="meta-pill">
             <i class="fas fa-{% if vacancy.vacancy_type == 'internal' %}lock{% else %}globe{% endif %}"></i>
             {{ vacancy.get_vacancy_type_display }}
         </span>
-        <span class="meta-pill">
+            <span class="meta-pill">
             <i class="fas fa-calendar-times"></i>
             <strong>Closed:</strong> {{ vacancy.end_date|date:"d M Y" }}
         </span>
-        <span class="meta-pill">
+            <span class="meta-pill">
             <i class="fas fa-layer-group"></i>
             {{ vacancy.get_grade_category_display }}
         </span>
-    </div>
-
-    <!-- ── ACTION BANNER (context-aware) ────── -->
-    {% if vacancy.status == 'closed' %}
-    <div class="action-banner">
-        <p><i class="fas fa-info-circle me-2"></i>
-           This vacancy is closed. You can now begin the longlisting process.</p>
-        <a href="{% url 'start_longlisting' vacancy.id %}" class="btn-action-banner">
-            <i class="fas fa-list me-1"></i> Start Longlisting
-        </a>
-    </div>
-    {% elif vacancy.status == 'longlisting' %}
-    <div class="action-banner">
-        <p><i class="fas fa-list me-2"></i>
-           Longlisting in progress. Appoint a shortlisting committee to proceed.</p>
-        <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}" class="btn-action-banner">
-            <i class="fas fa-user-plus me-1"></i> Appoint Committee
-        </a>
-    </div>
-    {% endif %}
-
-    <!-- ── KPI MINI CARDS ───────────────────── -->
-    <div class="row g-2 mb-3">
-        <div class="col-md-2 col-6">
-            <div class="kpi-mini">
-                <div class="km-label">Total</div>
-                <div class="km-value">{{ total }}</div>
-                <div class="km-sub">applications received</div>
-            </div>
-        </div>
-        {% for sc in status_counts %}
-        <div class="col-md-2 col-6">
-            <div class="kpi-mini">
-                <div class="km-label">{{ sc.status__name }}</div>
-                <div class="km-value">{{ sc.count }}</div>
-                <div class="km-sub">applicants</div>
-            </div>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- ── APPLICATIONS TABLE ───────────────── -->
-    <div class="table-card">
-        <div class="table-card-header">
-            <div>
-                <h6><i class="fas fa-table me-2" style="opacity:0.5;"></i>Applicant Register</h6>
-            </div>
         </div>
 
-        <div class="p-3">
-            <div class="table-responsive">
-                <table id="appsTable" class="table w-100">
-                    <thead>
+        <!-- ── ACTION BANNER (context-aware) ────── -->
+        {% if vacancy.status == 'closed' %}
+            <div class="action-banner">
+                <p><i class="fas fa-info-circle me-2"></i>
+                    This vacancy is closed. You can now begin the longlisting process.</p>
+                <a href="{% url 'start_longlisting' vacancy.id %}" class="btn-action-banner">
+                    <i class="fas fa-list me-1"></i> Start Longlisting
+                </a>
+            </div>
+        {% elif vacancy.status == 'longlisting' %}
+            <div class="action-banner">
+                <p><i class="fas fa-list me-2"></i>
+                    Longlisting in progress. Appoint a shortlisting committee to proceed.</p>
+                <a href="{% url 'appoint_shortlisting_committee' vacancy.id %}" class="btn-action-banner">
+                    <i class="fas fa-user-plus me-1"></i> Appoint Committee
+                </a>
+            </div>
+        {% endif %}
+
+        <!-- ── KPI MINI CARDS ───────────────────── -->
+        <div class="row g-2 mb-3">
+            <div class="col-md-2 col-6">
+                <div class="kpi-mini">
+                    <div class="km-label">Total</div>
+                    <div class="km-value">{{ total }}</div>
+                    <div class="km-sub">applications received</div>
+                </div>
+            </div>
+            {% for sc in status_counts %}
+                <div class="col-md-2 col-6">
+                    <div class="kpi-mini">
+                        <div class="km-label">{{ sc.status__name }}</div>
+                        <div class="km-value">{{ sc.count }}</div>
+                        <div class="km-sub">applicants</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- ── APPLICATIONS TABLE ───────────────── -->
+        <div class="table-card">
+            <div class="table-card-header">
+                <div>
+                    <h6><i class="fas fa-table me-2" style="opacity:0.5;"></i>Applicant Register</h6>
+                </div>
+            </div>
+
+            <div class="p-3">
+                <div class="table-responsive">
+                    <table id="appsTable" class="table w-100">
+                        <thead>
                         <tr>
                             <th>#</th>
                             <th>App No.</th>
@@ -333,139 +667,139 @@
                             <th>Longlist</th>
                             <th>Action</th>
                         </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
 
-</div>
+    </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
-<script>
-$(document).ready(function () {
+    <script>
+        $(document).ready(function () {
 
-    const table = $('#appsTable').DataTable({
-        serverSide:  true,
-        processing:  true,
-        ajax: {
-            url:  '{% url "hr_applications_json" vacancy.id %}',
-            type: 'GET',
-            error: function (xhr, error, thrown) {
-                Swal.fire({
-                    icon:               'error',
-                    title:              'Failed to load',
-                    text:               'Could not fetch applications. Please refresh the page.',
-                    confirmButtonColor: '#262561',
+            const table = $('#appsTable').DataTable({
+                serverSide: true,
+                processing: true,
+                ajax: {
+                    url: '{% url "hr_applications_json" vacancy.id %}',
+                    type: 'GET',
+                    error: function (xhr, error, thrown) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Failed to load',
+                            text: 'Could not fetch applications. Please refresh the page.',
+                            confirmButtonColor: '#262561',
+                        });
+                    }
+                },
+                pageLength: 25,
+                lengthMenu: [10, 25, 50, 100],
+                columns: [
+                    {
+                        data: 'row_num',
+                        orderable: false,
+                        searchable: false,
+                        render: (d) => `<span style="color:#adb5bd;font-size:0.72rem;">${d}</span>`
+                    },
+                    {
+                        data: 'application_number',
+                        render: (d) => `<span class="cell-appno">${d}</span>`
+                    },
+                    {
+                        data: 'full_name',
+                        orderable: false,
+                        render: (d) => `<span class="cell-name">${d}</span>`
+                    },
+                    {
+                        data: 'id_no',
+                        orderable: false,
+                        render: (d) => `<span style="font-size:0.78rem;">${d}</span>`
+                    },
+                    {
+                        data: 'email',
+                        orderable: false,
+                        render: (d) => `<span class="cell-email">${d}</span>`
+                    },
+                    {
+                        data: 'phone',
+                        orderable: false,
+                        render: (d) => `<span style="font-size:0.76rem;color:#8392ab;">${d}</span>`
+                    },
+                    {
+                        data: 'submitted_at',
+                        render: (d) => `<span class="cell-date"><i class="fas fa-clock me-1" style="font-size:0.65rem;"></i>${d}</span>`
+                    },
+                    {
+                        data: 'status_code',
+                        orderable: true,
+                        render: (d, t, row) =>
+                            `<span class="app-status as-${d}">${row.status_name}</span>`
+                    },
+                    {
+                        data: 'longlist_decision',
+                        orderable: true,
+                        searchable: false,
+                        render: (d) => {
+                            if (d === 'accepted') return `<span class="ld-badge ld-accepted"><i class="fas fa-check" style="font-size:0.55rem;"></i> Accepted</span>`;
+                            if (d === 'rejected') return `<span class="ld-badge ld-rejected"><i class="fas fa-times" style="font-size:0.55rem;"></i> Rejected</span>`;
+                            return `<span class="ld-badge ld-pending"><i class="fas fa-clock" style="font-size:0.55rem;"></i> Pending</span>`;
+                        }
+                    },
+                    {
+                        data: 'detail_url',
+                        orderable: false,
+                        searchable: false,
+                        render: (d) =>
+                            `<a href="${d}" class="act-btn ab-view"><i class="fas fa-eye me-1"></i>View</a>`
+                    },
+                ],
+                language: {
+                    search: '',
+                    searchPlaceholder: 'Search name, email, ID, app no...',
+                    lengthMenu: 'Show _MENU_',
+                    info: 'Showing _START_–_END_ of _TOTAL_ applicants',
+                    infoEmpty: 'No applicants found',
+                    zeroRecords: 'No matching applicants',
+                    processing: '<i class="fas fa-spinner fa-spin me-2"></i>Loading...',
+                    paginate: {
+                        previous: '<i class="fas fa-chevron-left"></i>',
+                        next: '<i class="fas fa-chevron-right"></i>',
+                    }
+                },
+                dom: '<"d-flex justify-content-between align-items-center mb-3 px-1"lf>t<"d-flex justify-content-between align-items-center mt-3 px-1"ip>',
+            });
+
+            // Click anywhere on row to open application
+            $('#appsTable tbody').on('click', 'tr', function () {
+                const data = table.row(this).data();
+                if (data && data.detail_url) window.location = data.detail_url;
+            });
+
+            // ── Django messages → Swal ──────────────
+            {% if messages %}
+                const msgs = [
+                    {% for message in messages %}
+                        {level: "{{ message.tags }}", text: "{{ message|escapejs }}"},
+                    {% endfor %}
+                ];
+                msgs.forEach(m => {
+                    Swal.fire({
+                        icon: m.level.includes('error') ? 'error' : m.level.includes('warning') ? 'warning' : 'success',
+                        title: m.level.includes('error') ? 'Error' : m.level.includes('warning') ? 'Notice' : 'Done',
+                        text: m.text,
+                        confirmButtonColor: '#262561',
+                        timer: (m.level.includes('error') || m.level.includes('warning')) ? undefined : 2500,
+                        showConfirmButton: (m.level.includes('error') || m.level.includes('warning')),
+                    });
                 });
-            }
-        },
-        pageLength: 25,
-        lengthMenu: [10, 25, 50, 100],
-        columns: [
-            {
-                data: 'row_num',
-                orderable: false,
-                searchable: false,
-                render: (d) => `<span style="color:#adb5bd;font-size:0.72rem;">${d}</span>`
-            },
-            {
-                data: 'application_number',
-                render: (d) => `<span class="cell-appno">${d}</span>`
-            },
-            {
-                data: 'full_name',
-                orderable: false,
-                render: (d) => `<span class="cell-name">${d}</span>`
-            },
-            {
-                data: 'id_no',
-                orderable: false,
-                render: (d) => `<span style="font-size:0.78rem;">${d}</span>`
-            },
-            {
-                data: 'email',
-                orderable: false,
-                render: (d) => `<span class="cell-email">${d}</span>`
-            },
-            {
-                data: 'phone',
-                orderable: false,
-                render: (d) => `<span style="font-size:0.76rem;color:#8392ab;">${d}</span>`
-            },
-            {
-                data: 'submitted_at',
-                render: (d) => `<span class="cell-date"><i class="fas fa-clock me-1" style="font-size:0.65rem;"></i>${d}</span>`
-            },
-            {
-                data: 'status_code',
-                orderable: true,
-                render: (d, t, row) =>
-                    `<span class="app-status as-${d}">${row.status_name}</span>`
-            },
-            {
-                data: 'longlist_decision',
-                orderable: true,
-                searchable: false,
-                render: (d) => {
-                    if (d === 'accepted') return `<span class="ld-badge ld-accepted"><i class="fas fa-check" style="font-size:0.55rem;"></i> Accepted</span>`;
-                    if (d === 'rejected') return `<span class="ld-badge ld-rejected"><i class="fas fa-times" style="font-size:0.55rem;"></i> Rejected</span>`;
-                    return `<span class="ld-badge ld-pending"><i class="fas fa-clock" style="font-size:0.55rem;"></i> Pending</span>`;
-                }
-            },
-            {
-                data: 'detail_url',
-                orderable: false,
-                searchable: false,
-                render: (d) =>
-                    `<a href="${d}" class="act-btn ab-view"><i class="fas fa-eye me-1"></i>View</a>`
-            },
-        ],
-        language: {
-            search:            '',
-            searchPlaceholder: 'Search name, email, ID, app no...',
-            lengthMenu:        'Show _MENU_',
-            info:              'Showing _START_–_END_ of _TOTAL_ applicants',
-            infoEmpty:         'No applicants found',
-            zeroRecords:       'No matching applicants',
-            processing:        '<i class="fas fa-spinner fa-spin me-2"></i>Loading...',
-            paginate: {
-                previous: '<i class="fas fa-chevron-left"></i>',
-                next:     '<i class="fas fa-chevron-right"></i>',
-            }
-        },
-        dom: '<"d-flex justify-content-between align-items-center mb-3 px-1"lf>t<"d-flex justify-content-between align-items-center mt-3 px-1"ip>',
-    });
-
-    // Click anywhere on row to open application
-    $('#appsTable tbody').on('click', 'tr', function () {
-        const data = table.row(this).data();
-        if (data && data.detail_url) window.location = data.detail_url;
-    });
-
-    // ── Django messages → Swal ──────────────
-    {% if messages %}
-    const msgs = [
-        {% for message in messages %}
-        { level: "{{ message.tags }}", text: "{{ message|escapejs }}" },
-        {% endfor %}
-    ];
-    msgs.forEach(m => {
-        Swal.fire({
-            icon:               m.level.includes('error') ? 'error' : m.level.includes('warning') ? 'warning' : 'success',
-            title:              m.level.includes('error') ? 'Error' : m.level.includes('warning') ? 'Notice' : 'Done',
-            text:               m.text,
-            confirmButtonColor: '#262561',
-            timer:              (m.level.includes('error') || m.level.includes('warning')) ? undefined : 2500,
-            showConfirmButton:  (m.level.includes('error') || m.level.includes('warning')),
+            {% endif %}
         });
-    });
-    {% endif %}
-});
-</script>
+    </script>
 {% endblock %}

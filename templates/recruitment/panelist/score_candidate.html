@@ -3,88 +3,88 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-star me-2" style="color:var(--gold-dark);"></i>
-Score Candidate
-</h4>
-<p>{{ application.applicant.get_full_name }}</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-star me-2" style="color:var(--gold-dark);"></i>
+                Score Candidate
+            </h4>
+            <p>{{ application.applicant.get_full_name }}</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="card-body">
+            <div class="card-body">
 
-<form method="POST">
-{% csrf_token %}
+                <form method="POST">
+                    {% csrf_token %}
 
-<table class="table brand-table">
+                    <table class="table brand-table">
 
-<thead>
-<tr>
-<th>Section</th>
-<th>Max Score</th>
-<th>Your Score</th>
-</tr>
-</thead>
+                        <thead>
+                        <tr>
+                            <th>Section</th>
+                            <th>Max Score</th>
+                            <th>Your Score</th>
+                        </tr>
+                        </thead>
 
-<tbody>
+                        <tbody>
 
-{% for section in sections %}
+                        {% for section in sections %}
 
-<tr>
+                            <tr>
 
-<td>{{ section.name }}</td>
+                                <td>{{ section.name }}</td>
 
-<td>{{ section.max_score }}</td>
+                                <td>{{ section.max_score }}</td>
 
-<td>
-<input type="number"
-name="section_{{ section.id }}"
-class="form-control"
-max="{{ section.max_score }}"
-step="0.01"
-value="{{ existing_scores|get_item:section.id }}">
-</td>
+                                <td>
+                                    <input type="number"
+                                           name="section_{{ section.id }}"
+                                           class="form-control"
+                                           max="{{ section.max_score }}"
+                                           step="0.01"
+                                           value="{{ existing_scores|get_item:section.id }}">
+                                </td>
 
-</tr>
+                            </tr>
 
-{% endfor %}
+                        {% endfor %}
 
-</tbody>
+                        </tbody>
 
-</table>
+                    </table>
 
-<div class="mb-3">
+                    <div class="mb-3">
 
-<label>Remarks</label>
+                        <label>Remarks</label>
 
-<textarea name="remarks" class="form-control">
+                        <textarea name="remarks" class="form-control">
 {{ score_obj.remarks }}
 </textarea>
 
-</div>
+                    </div>
 
-<button class="btn btn-brand">
-<i class="fas fa-save me-1"></i>
-Save Score
-</button>
+                    <button class="btn btn-brand">
+                        <i class="fas fa-save me-1"></i>
+                        Save Score
+                    </button>
 
-<a href="{% url 'panelist_interview_list' application.vacancy.id %}"
-class="btn btn-outline-brand">
-Back
-</a>
+                    <a href="{% url 'panelist_interview_list' application.vacancy.id %}"
+                       class="btn btn-outline-brand">
+                        Back
+                    </a>
 
-</form>
+                </form>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

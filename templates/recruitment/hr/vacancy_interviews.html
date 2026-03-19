@@ -3,105 +3,105 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- HEADER BANNER -->
-    <div class="dash-header-banner mb-2">
-        <div>
-            <h4>
-                <i class="fas fa-comments me-2" style="color:var(--gold-dark);"></i>
-                Interview Stage
-            </h4>
-            <p>Vacancies currently undergoing candidate interviews</p>
-        </div>
-    </div>
-
-    <div class="gold-divider"></div>
-
-    <!-- INTERVIEWS TABLE -->
-    <div class="card dash-card brand-card">
-
-        <div class="card-header">
-            <h6 class="mb-0">
-                <i class="fas fa-user-tie me-2" style="opacity:0.5;"></i>
-                Vacancies – Interview Stage
-            </h6>
-            <p>Panelists conducting candidate interviews</p>
+        <!-- HEADER BANNER -->
+        <div class="dash-header-banner mb-2">
+            <div>
+                <h4>
+                    <i class="fas fa-comments me-2" style="color:var(--gold-dark);"></i>
+                    Interview Stage
+                </h4>
+                <p>Vacancies currently undergoing candidate interviews</p>
+            </div>
         </div>
 
-        <div class="ufaa-table-wrapper">
+        <div class="gold-divider"></div>
 
-            <table class="table brand-table mb-0">
+        <!-- INTERVIEWS TABLE -->
+        <div class="card dash-card brand-card">
 
-                <thead>
+            <div class="card-header">
+                <h6 class="mb-0">
+                    <i class="fas fa-user-tie me-2" style="opacity:0.5;"></i>
+                    Vacancies – Interview Stage
+                </h6>
+                <p>Panelists conducting candidate interviews</p>
+            </div>
+
+            <div class="ufaa-table-wrapper">
+
+                <table class="table brand-table mb-0">
+
+                    <thead>
                     <tr>
                         <th>Vacancy</th>
                         <th>Reference</th>
                         <th>Panelists</th>
                         <th>Status</th>
                     </tr>
-                </thead>
+                    </thead>
 
-                <tbody>
+                    <tbody>
 
-                {% for vacancy in vacancies %}
+                    {% for vacancy in vacancies %}
 
-                <tr>
+                        <tr>
 
-                    <td class="vacancy-title-cell">
-                        <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
-                        {{ vacancy.title }}
-                    </td>
+                            <td class="vacancy-title-cell">
+                                <i class="fas fa-briefcase me-2" style="opacity:.25;font-size:.7rem;"></i>
+                                {{ vacancy.title }}
+                            </td>
 
-                    <td class="vacancy-ref-cell">
-                        {{ vacancy.reference_number }}
-                    </td>
+                            <td class="vacancy-ref-cell">
+                                {{ vacancy.reference_number }}
+                            </td>
 
-                    <td>
+                            <td>
 
-                        {% for assignment in vacancy.panelassignment_set.all %}
-                            <span class="vacancy-status vacancy-status-interviews">
+                                {% for assignment in vacancy.panelassignment_set.all %}
+                                    <span class="vacancy-status vacancy-status-interviews">
                                 {{ assignment.panelist.get_full_name }}
                             </span>
-                        {% empty %}
-                            <span class="vacancy-status vacancy-status-draft">
+                                {% empty %}
+                                    <span class="vacancy-status vacancy-status-draft">
                                 No panelists assigned
                             </span>
-                        {% endfor %}
+                                {% endfor %}
 
-                    </td>
+                            </td>
 
-                    <td>
+                            <td>
                         <span class="vacancy-status vacancy-status-interviews">
                             {{ vacancy.get_status_display }}
                         </span>
-                    </td>
+                            </td>
 
-                </tr>
+                        </tr>
 
-                {% empty %}
+                    {% empty %}
 
-                <tr>
-                    <td colspan="4">
+                        <tr>
+                            <td colspan="4">
 
-                        <div class="empty-state">
-                            <i class="fas fa-comments"></i>
-                            <p>No vacancies currently in the interview stage.</p>
-                        </div>
+                                <div class="empty-state">
+                                    <i class="fas fa-comments"></i>
+                                    <p>No vacancies currently in the interview stage.</p>
+                                </div>
 
-                    </td>
-                </tr>
+                            </td>
+                        </tr>
 
-                {% endfor %}
+                    {% endfor %}
 
-                </tbody>
+                    </tbody>
 
-            </table>
+                </table>
+
+            </div>
 
         </div>
 
     </div>
-
-</div>
 
 {% endblock %}

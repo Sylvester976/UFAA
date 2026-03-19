@@ -3,82 +3,82 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-key me-2" style="color:var(--gold-dark);"></i>
-Permissions
-</h4>
-<p>Manage system permissions</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-key me-2" style="color:var(--gold-dark);"></i>
+                Permissions
+            </h4>
+            <p>Manage system permissions</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center">
 
-<h6 class="mb-0">Permission List</h6>
+                <h6 class="mb-0">Permission List</h6>
 
-<a href="{% url 'permission_create' %}" class="btn btn-brand btn-sm">
-<i class="fas fa-plus me-1"></i>
-Create Permission
-</a>
+                <a href="{% url 'permission_create' %}" class="btn btn-brand btn-sm">
+                    <i class="fas fa-plus me-1"></i>
+                    Create Permission
+                </a>
 
-</div>
+            </div>
 
-<div class="card-body">
+            <div class="card-body">
 
-<ul class="list-group">
+                <ul class="list-group">
 
-{% for permission in permissions %}
+                    {% for permission in permissions %}
 
-<li class="list-group-item d-flex justify-content-between align-items-center">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
 
-<div>
-<strong>{{ permission.name }}</strong>
-<div class="text-muted small">
-Code: {{ permission.code }}
-</div>
-</div>
+                            <div>
+                                <strong>{{ permission.name }}</strong>
+                                <div class="text-muted small">
+                                    Code: {{ permission.code }}
+                                </div>
+                            </div>
 
-<div class="table-actions">
+                            <div class="table-actions">
 
-<a href="{% url 'permission_update' permission.pk %}"
-class="btn btn-sm btn-outline-brand">
-Edit
-</a>
+                                <a href="{% url 'permission_update' permission.pk %}"
+                                   class="btn btn-sm btn-outline-brand">
+                                    Edit
+                                </a>
 
-<form action="{% url 'permission_delete' permission.pk %}"
-method="POST">
-{% csrf_token %}
+                                <form action="{% url 'permission_delete' permission.pk %}"
+                                      method="POST">
+                                    {% csrf_token %}
 
-<button class="btn btn-sm btn-danger"
-onclick="return confirm('Delete this permission?');">
-Delete
-</button>
+                                    <button class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Delete this permission?');">
+                                        Delete
+                                    </button>
 
-</form>
+                                </form>
 
-</div>
+                            </div>
 
-</li>
+                        </li>
 
-{% empty %}
+                    {% empty %}
 
-<li class="list-group-item text-muted">
-No permissions found.
-</li>
+                        <li class="list-group-item text-muted">
+                            No permissions found.
+                        </li>
 
-{% endfor %}
+                    {% endfor %}
 
-</ul>
+                </ul>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

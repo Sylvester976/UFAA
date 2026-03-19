@@ -3,58 +3,58 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <!-- HEADER -->
-    <div class="dash-header-banner mb-2">
+        <!-- HEADER -->
+        <div class="dash-header-banner mb-2">
 
-        <div>
-            <h4>
-                <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
-                Appoint Shortlisting Committee
-            </h4>
+            <div>
+                <h4>
+                    <i class="fas fa-users me-2" style="color:var(--gold-dark);"></i>
+                    Appoint Shortlisting Committee
+                </h4>
 
-            <p>
-                Vacancy: <strong>{{ vacancy.title }}</strong>
-            </p>
+                <p>
+                    Vacancy: <strong>{{ vacancy.title }}</strong>
+                </p>
+            </div>
+
         </div>
 
-    </div>
+        <div class="gold-divider"></div>
 
-    <div class="gold-divider"></div>
+        <!-- FORM CARD -->
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
 
-    <!-- FORM CARD -->
-    <div class="row justify-content-center">
-        <div class="col-lg-6">
+                <div class="card dash-card brand-card">
 
-            <div class="card dash-card brand-card">
+                    <div class="card-header">
+                        <h6 class="mb-0">
+                            <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
+                            Select Committee Members
+                        </h6>
+                        <p>Choose one or more members for the shortlisting committee</p>
+                    </div>
 
-                <div class="card-header">
-                    <h6 class="mb-0">
-                        <i class="fas fa-user-check me-2" style="opacity:.5;"></i>
-                        Select Committee Members
-                    </h6>
-                    <p>Choose one or more members for the shortlisting committee</p>
-                </div>
+                    <div class="card-body">
 
-                <div class="card-body">
+                        <form method="POST" id="committeeForm">
+                            {% csrf_token %}
 
-                    <form method="POST" id="committeeForm">
-                        {% csrf_token %}
+                            <div class="list-group mb-3">
 
-                        <div class="list-group mb-3">
+                                {% for panelist in panelists %}
 
-                            {% for panelist in panelists %}
+                                    <label class="list-group-item d-flex align-items-center">
 
-                            <label class="list-group-item d-flex align-items-center">
+                                        <input class="form-check-input me-2 panelist-checkbox"
+                                               type="checkbox"
+                                               name="panelists"
+                                               value="{{ panelist.id }}"
+                                               {% if panelist in assigned_panelists %}checked{% endif %}>
 
-                                <input class="form-check-input me-2 panelist-checkbox"
-                                       type="checkbox"
-                                       name="panelists"
-                                       value="{{ panelist.id }}"
-                                       {% if panelist in assigned_panelists %}checked{% endif %}>
-
-                                <span>
+                                        <span>
                                     <i class="fas fa-user me-2" style="opacity:.3;"></i>
                                     {{ panelist.first_name }} {{ panelist.last_name }}
 
@@ -63,56 +63,56 @@
                                     </small>
                                 </span>
 
-                            </label>
+                                    </label>
 
-                            {% empty %}
+                                {% empty %}
 
-                            <div class="empty-state">
-                                <i class="fas fa-users"></i>
-                                <p>No panelists available.</p>
+                                    <div class="empty-state">
+                                        <i class="fas fa-users"></i>
+                                        <p>No panelists available.</p>
+                                    </div>
+
+                                {% endfor %}
+
                             </div>
 
-                            {% endfor %}
+                            <button type="submit"
+                                    id="submitBtn"
+                                    class="btn btn-brand"
+                                    disabled>
 
-                        </div>
+                                <i class="fas fa-user-plus me-1"></i>
+                                Appoint Committee
 
-                        <button type="submit"
-                                id="submitBtn"
-                                class="btn btn-brand"
-                                disabled>
+                            </button>
 
-                            <i class="fas fa-user-plus me-1"></i>
-                            Appoint Committee
+                        </form>
 
-                        </button>
-
-                    </form>
+                    </div>
 
                 </div>
 
             </div>
-
         </div>
+
     </div>
 
-</div>
+    <script>
 
-<script>
+        const checkboxes = document.querySelectorAll('.panelist-checkbox');
+        const submitBtn = document.getElementById('submitBtn');
 
-const checkboxes = document.querySelectorAll('.panelist-checkbox');
-const submitBtn = document.getElementById('submitBtn');
+        function toggleSubmit() {
+            const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
+            submitBtn.disabled = !atLeastOneChecked;
+        }
 
-function toggleSubmit() {
-    const atLeastOneChecked = Array.from(checkboxes).some(cb => cb.checked);
-    submitBtn.disabled = !atLeastOneChecked;
-}
+        toggleSubmit();
 
-toggleSubmit();
+        checkboxes.forEach(cb => {
+            cb.addEventListener('change', toggleSubmit);
+        });
 
-checkboxes.forEach(cb => {
-    cb.addEventListener('change', toggleSubmit);
-});
-
-</script>
+    </script>
 
 {% endblock %}

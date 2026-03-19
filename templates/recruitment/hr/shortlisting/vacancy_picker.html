@@ -2,216 +2,313 @@
 {% block title %}Shortlisting — Committee Stage{% endblock %}
 
 {% block extra_css %}
-<style>
-.sl-table thead th {
-    background:#262561; color:#fff;
-    font-size:0.64rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; padding:0.75rem 1rem; border:none; white-space:nowrap;
-}
-.sl-table tbody td {
-    padding:0.7rem 1rem; vertical-align:middle;
-    border-bottom:1px solid rgba(38,37,97,0.05); font-size:0.82rem; color:#344767;
-}
-.sl-table tbody tr:last-child td { border-bottom:none; }
-.sl-table tbody tr:hover td { background:#fbf6e0; }
+    <style>
+        .sl-table thead th {
+            background: #262561;
+            color: #fff;
+            font-size: 0.64rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 0.75rem 1rem;
+            border: none;
+            white-space: nowrap;
+        }
 
-.ct-pill {
-    display:inline-flex; align-items:center; justify-content:center;
-    min-width:28px; height:22px; border-radius:99px;
-    font-size:0.68rem; font-weight:700; padding:0 6px;
-}
-.ct-navy  { background:#eef0fb; color:#262561; }
-.ct-amber { background:#fff8e1; color:#b7770d; }
-.ct-green { background:#d4f5e2; color:#1a7a45; }
-.ct-red   { background:#fde8e8; color:#c0392b; }
+        .sl-table tbody td {
+            padding: 0.7rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(38, 37, 97, 0.05);
+            font-size: 0.82rem;
+            color: #344767;
+        }
 
-.stage-badge {
-    display:inline-flex; align-items:center; gap:0.3rem;
-    padding:0.2rem 0.65rem; border-radius:2rem;
-    font-size:0.64rem; font-weight:700; text-transform:uppercase;
-    white-space:nowrap;
-}
-.sb-no-committee  { background:#fde8e8; color:#c0392b; }
-.sb-pending-ack   { background:#e8f4fd; color:#1a6fa8; }
-.sb-voting        { background:#fff8e1; color:#b7770d; }
-.sb-generating    { background:#f3e8ff; color:#6f42c1; }
-.sb-ready         { background:#d4f5e2; color:#1a7a45; }
+        .sl-table tbody tr:last-child td {
+            border-bottom: none;
+        }
 
-.btn-action {
-    display:inline-flex; align-items:center; gap:0.3rem;
-    padding:0.3rem 0.85rem; border-radius:0.4rem;
-    font-size:0.74rem; font-weight:700; text-decoration:none !important;
-    white-space:nowrap; transition:all 0.15s;
-}
-.btn-appoint { background:#262561; color:#F9E6A1; }
-.btn-appoint:hover { background:#1a1b4b; color:#F9E6A1; }
-.btn-manage  { background:linear-gradient(135deg,#C39545,#e0b55a); color:#262561; }
-.btn-manage:hover  { opacity:0.9; color:#262561; }
+        .sl-table tbody tr:hover td {
+            background: #fbf6e0;
+        }
 
-.deadline-ok      { color:#1a7a45; font-size:0.74rem; }
-.deadline-warning { color:#b7770d; font-size:0.74rem; }
-.deadline-overdue { color:#c0392b; font-size:0.74rem; font-weight:700; }
-</style>
+        .ct-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 22px;
+            border-radius: 99px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0 6px;
+        }
+
+        .ct-navy {
+            background: #eef0fb;
+            color: #262561;
+        }
+
+        .ct-amber {
+            background: #fff8e1;
+            color: #b7770d;
+        }
+
+        .ct-green {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .ct-red {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .stage-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.2rem 0.65rem;
+            border-radius: 2rem;
+            font-size: 0.64rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .sb-no-committee {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .sb-pending-ack {
+            background: #e8f4fd;
+            color: #1a6fa8;
+        }
+
+        .sb-voting {
+            background: #fff8e1;
+            color: #b7770d;
+        }
+
+        .sb-generating {
+            background: #f3e8ff;
+            color: #6f42c1;
+        }
+
+        .sb-ready {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .btn-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 0.4rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-decoration: none !important;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .btn-appoint {
+            background: #262561;
+            color: #F9E6A1;
+        }
+
+        .btn-appoint:hover {
+            background: #1a1b4b;
+            color: #F9E6A1;
+        }
+
+        .btn-manage {
+            background: linear-gradient(135deg, #C39545, #e0b55a);
+            color: #262561;
+        }
+
+        .btn-manage:hover {
+            opacity: 0.9;
+            color: #262561;
+        }
+
+        .deadline-ok {
+            color: #1a7a45;
+            font-size: 0.74rem;
+        }
+
+        .deadline-warning {
+            color: #b7770d;
+            font-size: 0.74rem;
+        }
+
+        .deadline-overdue {
+            color: #c0392b;
+            font-size: 0.74rem;
+            font-weight: 700;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-3">
+    <div class="container-fluid py-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div>
-            <h5 class="mb-0 fw-bold" style="color:#262561;">
-                <i class="fas fa-user-check me-2" style="color:#C39545;"></i>Shortlisting
-            </h5>
-            <p class="text-sm text-muted mb-0">
-                Vacancies in committee stage — appoint members, review longlist, generate shortlist
-            </p>
-        </div>
-        <span class="badge rounded-pill px-3 py-2"
-              style="background:#262561;color:#F9E6A1;font-size:0.75rem;">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h5 class="mb-0 fw-bold" style="color:#262561;">
+                    <i class="fas fa-user-check me-2" style="color:#C39545;"></i>Shortlisting
+                </h5>
+                <p class="text-sm text-muted mb-0">
+                    Vacancies in committee stage — appoint members, review longlist, generate shortlist
+                </p>
+            </div>
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#262561;color:#F9E6A1;font-size:0.75rem;">
             {{ vacancies|length }} active
         </span>
-    </div>
+        </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius:0.85rem;overflow:hidden;">
-        {% if vacancies %}
-        <div class="table-responsive">
-            <table class="table sl-table mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Vacancy</th>
-                        <th>Reference</th>
-                        <th>Closed</th>
-                        <th>Deadline</th>
-                        <th style="text-align:center;">Applicants</th>
-                        <th style="text-align:center;">Committee</th>
-                        <th style="text-align:center;">Votes In</th>
-                        <th style="text-align:center;">Shortlist</th>
-                        <th>Stage</th>
-                        <th style="text-align:center;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for v in vacancies %}
-                    <tr>
-                        <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
+        <div class="card border-0 shadow-sm" style="border-radius:0.85rem;overflow:hidden;">
+            {% if vacancies %}
+                <div class="table-responsive">
+                    <table class="table sl-table mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vacancy</th>
+                            <th>Reference</th>
+                            <th>Closed</th>
+                            <th>Deadline</th>
+                            <th style="text-align:center;">Applicants</th>
+                            <th style="text-align:center;">Committee</th>
+                            <th style="text-align:center;">Votes In</th>
+                            <th style="text-align:center;">Shortlist</th>
+                            <th>Stage</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for v in vacancies %}
+                            <tr>
+                                <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
 
-                        <td>
-                            <div style="font-weight:700;color:#262561;font-size:0.84rem;">
-                                {{ v.vacancy.title }}
-                            </div>
-                            <div style="font-size:0.68rem;color:#8392ab;">
-                                {{ v.vacancy.get_vacancy_type_display }}
-                            </div>
-                        </td>
+                                <td>
+                                    <div style="font-weight:700;color:#262561;font-size:0.84rem;">
+                                        {{ v.vacancy.title }}
+                                    </div>
+                                    <div style="font-size:0.68rem;color:#8392ab;">
+                                        {{ v.vacancy.get_vacancy_type_display }}
+                                    </div>
+                                </td>
 
-                        <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
-                            {{ v.vacancy.reference_number }}
-                        </td>
+                                <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
+                                    {{ v.vacancy.reference_number }}
+                                </td>
 
-                        <td style="font-size:0.76rem;white-space:nowrap;">
-                            {{ v.vacancy.end_date|date:"d M Y" }}
-                        </td>
+                                <td style="font-size:0.76rem;white-space:nowrap;">
+                                    {{ v.vacancy.end_date|date:"d M Y" }}
+                                </td>
 
-                        <td style="white-space:nowrap;">
-                            {% if v.days_remaining < 0 %}
-                                <span class="deadline-overdue">
+                                <td style="white-space:nowrap;">
+                                    {% if v.days_remaining < 0 %}
+                                        <span class="deadline-overdue">
                                     <i class="fas fa-exclamation-circle me-1"></i>Overdue
                                 </span>
-                            {% elif v.days_remaining <= 5 %}
-                                <span class="deadline-warning">
+                                    {% elif v.days_remaining <= 5 %}
+                                        <span class="deadline-warning">
                                     <i class="fas fa-clock me-1"></i>{{ v.days_remaining }} day{{ v.days_remaining|pluralize }} left
                                 </span>
-                            {% else %}
-                                <span class="deadline-ok">
+                                    {% else %}
+                                        <span class="deadline-ok">
                                     <i class="fas fa-calendar me-1"></i>{{ v.deadline|date:"d M Y" }}
                                 </span>
-                            {% endif %}
-                        </td>
+                                    {% endif %}
+                                </td>
 
-                        <!-- Applicants -->
-                        <td style="text-align:center;">
-                            <span class="ct-pill ct-navy">{{ v.app_count }}</span>
-                        </td>
+                                <!-- Applicants -->
+                                <td style="text-align:center;">
+                                    <span class="ct-pill ct-navy">{{ v.app_count }}</span>
+                                </td>
 
-                        <!-- Committee size -->
-                        <td style="text-align:center;">
+                                <!-- Committee size -->
+                                <td style="text-align:center;">
                             <span class="ct-pill {% if v.committee_count > 0 %}ct-green{% else %}ct-red{% endif %}">
                                 {{ v.committee_count }}
                             </span>
-                        </td>
+                                </td>
 
-                        <!-- Votes submitted -->
-                        <td style="text-align:center;">
+                                <!-- Votes submitted -->
+                                <td style="text-align:center;">
                             <span class="ct-pill {% if v.all_voted %}ct-green{% else %}ct-amber{% endif %}"
                                   title="{{ v.voted_count }} of {{ v.committee_count }} members have submitted all votes">
                                 {{ v.voted_count }}/{{ v.committee_count }}
                             </span>
-                        </td>
+                                </td>
 
-                        <!-- Shortlist generated -->
-                        <td style="text-align:center;">
-                            {% if v.shortlist_generated %}
-                                <span class="ct-pill ct-green" title="Shortlist generated">
+                                <!-- Shortlist generated -->
+                                <td style="text-align:center;">
+                                    {% if v.shortlist_generated %}
+                                        <span class="ct-pill ct-green" title="Shortlist generated">
                                     <i class="fas fa-check"></i>
                                 </span>
-                            {% else %}
-                                <span class="ct-pill ct-amber" title="Pending all votes">
+                                    {% else %}
+                                        <span class="ct-pill ct-amber" title="Pending all votes">
                                     <i class="fas fa-hourglass-half"></i>
                                 </span>
-                            {% endif %}
-                        </td>
+                                    {% endif %}
+                                </td>
 
-                        <!-- Stage label -->
-                        <td>
-                            {% if v.committee_count == 0 %}
-                                <span class="stage-badge sb-no-committee">
+                                <!-- Stage label -->
+                                <td>
+                                    {% if v.committee_count == 0 %}
+                                        <span class="stage-badge sb-no-committee">
                                     <i class="fas fa-users"></i> No Committee
                                 </span>
-                            {% elif v.shortlist_generated %}
-                                <span class="stage-badge sb-ready">
+                                    {% elif v.shortlist_generated %}
+                                        <span class="stage-badge sb-ready">
                                     <i class="fas fa-check-circle"></i> Shortlisted
                                 </span>
-                            {% elif v.all_voted %}
-                                <span class="stage-badge sb-generating">
+                                    {% elif v.all_voted %}
+                                        <span class="stage-badge sb-generating">
                                     <i class="fas fa-cog"></i> Generating
                                 </span>
-                            {% else %}
-                                <span class="stage-badge sb-voting">
+                                    {% else %}
+                                        <span class="stage-badge sb-voting">
                                     <i class="fas fa-vote-yea"></i> Voting
                                 </span>
-                            {% endif %}
-                        </td>
+                                    {% endif %}
+                                </td>
 
-                        <!-- Action -->
-                        <td style="text-align:center;">
-                            {% if v.committee_count == 0 %}
-                                <a href="{% url 'hr_appoint_committee' v.vacancy.id %}"
-                                   class="btn-action btn-appoint">
-                                    <i class="fas fa-users-cog"></i> Appoint
-                                </a>
-                            {% else %}
-                                <a href="{% url 'hr_committee_progress' v.vacancy.id %}"
-                                   class="btn-action btn-manage">
-                                    <i class="fas fa-tasks"></i> Manage
-                                </a>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                <!-- Action -->
+                                <td style="text-align:center;">
+                                    {% if v.committee_count == 0 %}
+                                        <a href="{% url 'hr_appoint_committee' v.vacancy.id %}"
+                                           class="btn-action btn-appoint">
+                                            <i class="fas fa-users-cog"></i> Appoint
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'hr_committee_progress' v.vacancy.id %}"
+                                           class="btn-action btn-manage">
+                                            <i class="fas fa-tasks"></i> Manage
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x mb-3" style="color:#e0e4ef;display:block;"></i>
+                    <h6 style="color:#262561;">No vacancies in committee stage</h6>
+                    <p class="text-muted text-sm mb-0">
+                        Vacancies appear here after the longlist has been finalised.
+                    </p>
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-inbox fa-3x mb-3" style="color:#e0e4ef;display:block;"></i>
-            <h6 style="color:#262561;">No vacancies in committee stage</h6>
-            <p class="text-muted text-sm mb-0">
-                Vacancies appear here after the longlist has been finalised.
-            </p>
-        </div>
-        {% endif %}
+
     </div>
-
-</div>
 {% endblock %}

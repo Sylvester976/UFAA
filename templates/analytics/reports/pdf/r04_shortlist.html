@@ -1,0 +1,77 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+<div class="stat-row">
+  <div class="stat-box"><div class="stat-val">{{ rows|length }}</div><div class="stat-label">Candidates Reviewed</div></div>
+  <div class="stat-box"><div class="stat-val">{{ committee|length }}</div><div class="stat-label">Committee Members</div></div>
+</div>
+
+<h2>Committee Members</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Member</th>
+      <th>Appointed By</th>
+      <th>COI</th>
+      <th>Votes Submitted</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for entry in committee %}
+    <tr>
+      <td class="bold">{{ entry.member.get_full_name|default:entry.member.email }}</td>
+      <td>{% if entry.appointed_by %}{{ entry.appointed_by }}{% else %}—{% endif %}</td>
+      <td>
+        {% if entry.has_conflict %}
+          <span class="badge badge-amber">Declared</span>
+        {% else %}
+          None
+        {% endif %}
+      </td>
+      <td>
+        {% if entry.votes_submitted %}
+          <span class="badge badge-green">Yes</span>
+        {% else %}
+          <span class="badge badge-red">No</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="4" class="text-center text-muted">No committee members</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h2>Shortlist Results</h2>
+<table>
+  <thead>
+    <tr>
+      <th>App No.</th>
+      <th>Candidate</th>
+      <th>Approved</th>
+      <th>Rejected</th>
+      <th>Outcome</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr>
+      <td class="monospace">{{ row.result.application.application_number }}</td>
+      <td class="bold">{{ row.name }}</td>
+      <td class="green bold text-center">{{ row.result.approve_count }}</td>
+      <td class="red bold text-center">{{ row.result.reject_count }}</td>
+      <td>
+        {% if row.result.shortlisted %}
+          <span class="badge badge-green">Shortlisted</span>
+        {% else %}
+          <span class="badge badge-red">Not Shortlisted</span>
+        {% endif %}
+      </td>
+    </tr>
+    {% empty %}
+    <tr><td colspan="5" class="text-center text-muted">No shortlist results</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

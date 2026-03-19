@@ -2,262 +2,436 @@
 {% block title %}Acknowledge Appointment — {{ vacancy.title }}{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561; --gold:#F9E6A1; --gold-dk:#C39545;
-        --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
-.banner-ref   { font-family:monospace; font-size:.72rem;
-                background:rgba(249,230,161,.15); color:var(--gold);
-                padding:.25rem .65rem; border-radius:.4rem; }
-.back-link    { color:rgba(255,255,255,.65); font-size:.78rem;
-                display:flex; align-items:center; gap:.35rem; }
-.back-link:hover { color:var(--gold); }
+        a {
+            text-decoration: none !important;
+        }
 
-.ack-card {
-    background:#fff; border-radius:1rem;
-    box-shadow:0 2px 18px rgba(38,37,97,.1);
-    overflow:hidden; max-width:640px; margin:0 auto;
-}
-.ack-header {
-    background:linear-gradient(135deg,#4f46e5,var(--navy));
-    padding:2rem 2rem 1.5rem; text-align:center; color:#fff;
-}
-.ack-icon {
-    width:64px; height:64px; border-radius:50%;
-    background:rgba(249,230,161,.2); border:2px solid var(--gold);
-    display:flex; align-items:center; justify-content:center;
-    margin:0 auto 1rem; font-size:1.6rem; color:var(--gold);
-}
-.ack-title { font-size:1.05rem; font-weight:800; margin-bottom:.25rem; }
-.ack-subtitle { font-size:.8rem; color:rgba(255,255,255,.75); margin:0; }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-.ack-body { padding:1.75rem 2rem; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.detail-row {
-    display:flex; align-items:flex-start; gap:.75rem;
-    padding:.65rem 0; border-bottom:1px solid #f0f2f8;
-    font-size:.82rem;
-}
-.detail-row:last-of-type { border-bottom:none; }
-.detail-icon { color:var(--gold-dk); width:18px; flex-shrink:0; margin-top:.1rem; }
-.detail-label { color:#8392ab; font-size:.72rem; display:block; margin-bottom:.1rem; }
-.detail-value { color:#344767; font-weight:600; }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-.responsibility-box {
-    background:#f8f9ff; border:1px solid #e8ecf4; border-radius:.6rem;
-    padding:1rem 1.1rem; margin:1.25rem 0;
-}
-.responsibility-box p {
-    font-size:.78rem; color:#67748e; margin:0 0 .35rem; display:flex;
-    align-items:flex-start; gap:.5rem;
-}
-.responsibility-box p:last-child { margin-bottom:0; }
-.responsibility-box i { color:var(--navy); margin-top:.1rem; flex-shrink:0; }
+        .banner-ref {
+            font-family: monospace;
+            font-size: .72rem;
+            background: rgba(249, 230, 161, .15);
+            color: var(--gold);
+            padding: .25rem .65rem;
+            border-radius: .4rem;
+        }
 
-.steps-row {
-    display:flex; gap:.5rem; margin-bottom:1.5rem; flex-wrap:wrap;
-}
-.step-pill {
-    flex:1; min-width:100px; text-align:center; padding:.55rem .5rem;
-    border-radius:.5rem; font-size:.7rem; font-weight:700;
-    background:#f0f2f8; color:#8392ab; position:relative;
-}
-.step-pill.active { background:var(--navy); color:#fff; }
-.step-pill.done   { background:#d4f5e2; color:#1a5c38; }
-.step-num {
-    display:block; font-size:.62rem; font-weight:800;
-    opacity:.6; margin-bottom:.1rem;
-}
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
 
-.btn-ack {
-    width:100%; padding:.75rem; border:none; border-radius:.6rem;
-    background:var(--navy); color:#fff; font-size:.88rem; font-weight:700;
-    cursor:pointer; display:flex; align-items:center; justify-content:center;
-    gap:.5rem; transition:opacity .15s;
-}
-.btn-ack:hover    { opacity:.9; }
-.btn-ack:disabled { opacity:.5; cursor:not-allowed; }
+        .back-link:hover {
+            color: var(--gold);
+        }
 
-.toast-wrap {
-    position:fixed; bottom:1.5rem; right:1.5rem; z-index:9999;
-    display:flex; flex-direction:column; gap:.4rem; pointer-events:none;
-}
-.toast-msg {
-    background:var(--navy); color:#fff; padding:.65rem 1.2rem;
-    border-radius:.5rem; font-size:.8rem; font-weight:600;
-    box-shadow:0 4px 16px rgba(0,0,0,.2);
-    display:flex; align-items:center; gap:.5rem;
-    animation:slideUp .22s ease-out; pointer-events:auto;
-}
-.toast-msg.success { background:var(--green); }
-.toast-msg.error   { background:var(--red); }
-@keyframes slideUp {
-    from { transform:translateY(14px); opacity:0; }
-    to   { transform:translateY(0); opacity:1; }
-}
-</style>
+        .ack-card {
+            background: #fff;
+            border-radius: 1rem;
+            box-shadow: 0 2px 18px rgba(38, 37, 97, .1);
+            overflow: hidden;
+            max-width: 640px;
+            margin: 0 auto;
+        }
+
+        .ack-header {
+            background: linear-gradient(135deg, #4f46e5, var(--navy));
+            padding: 2rem 2rem 1.5rem;
+            text-align: center;
+            color: #fff;
+        }
+
+        .ack-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: rgba(249, 230, 161, .2);
+            border: 2px solid var(--gold);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1rem;
+            font-size: 1.6rem;
+            color: var(--gold);
+        }
+
+        .ack-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            margin-bottom: .25rem;
+        }
+
+        .ack-subtitle {
+            font-size: .8rem;
+            color: rgba(255, 255, 255, .75);
+            margin: 0;
+        }
+
+        .ack-body {
+            padding: 1.75rem 2rem;
+        }
+
+        .detail-row {
+            display: flex;
+            align-items: flex-start;
+            gap: .75rem;
+            padding: .65rem 0;
+            border-bottom: 1px solid #f0f2f8;
+            font-size: .82rem;
+        }
+
+        .detail-row:last-of-type {
+            border-bottom: none;
+        }
+
+        .detail-icon {
+            color: var(--gold-dk);
+            width: 18px;
+            flex-shrink: 0;
+            margin-top: .1rem;
+        }
+
+        .detail-label {
+            color: #8392ab;
+            font-size: .72rem;
+            display: block;
+            margin-bottom: .1rem;
+        }
+
+        .detail-value {
+            color: #344767;
+            font-weight: 600;
+        }
+
+        .responsibility-box {
+            background: #f8f9ff;
+            border: 1px solid #e8ecf4;
+            border-radius: .6rem;
+            padding: 1rem 1.1rem;
+            margin: 1.25rem 0;
+        }
+
+        .responsibility-box p {
+            font-size: .78rem;
+            color: #67748e;
+            margin: 0 0 .35rem;
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+        }
+
+        .responsibility-box p:last-child {
+            margin-bottom: 0;
+        }
+
+        .responsibility-box i {
+            color: var(--navy);
+            margin-top: .1rem;
+            flex-shrink: 0;
+        }
+
+        .steps-row {
+            display: flex;
+            gap: .5rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .step-pill {
+            flex: 1;
+            min-width: 100px;
+            text-align: center;
+            padding: .55rem .5rem;
+            border-radius: .5rem;
+            font-size: .7rem;
+            font-weight: 700;
+            background: #f0f2f8;
+            color: #8392ab;
+            position: relative;
+        }
+
+        .step-pill.active {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .step-pill.done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .step-num {
+            display: block;
+            font-size: .62rem;
+            font-weight: 800;
+            opacity: .6;
+            margin-bottom: .1rem;
+        }
+
+        .btn-ack {
+            width: 100%;
+            padding: .75rem;
+            border: none;
+            border-radius: .6rem;
+            background: var(--navy);
+            color: #fff;
+            font-size: .88rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: .5rem;
+            transition: opacity .15s;
+        }
+
+        .btn-ack:hover {
+            opacity: .9;
+        }
+
+        .btn-ack:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+
+        .toast-wrap {
+            position: fixed;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: .4rem;
+            pointer-events: none;
+        }
+
+        .toast-msg {
+            background: var(--navy);
+            color: #fff;
+            padding: .65rem 1.2rem;
+            border-radius: .5rem;
+            font-size: .8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .2);
+            display: flex;
+            align-items: center;
+            gap: .5rem;
+            animation: slideUp .22s ease-out;
+            pointer-events: auto;
+        }
+
+        .toast-msg.success {
+            background: var(--green);
+        }
+
+        .toast-msg.error {
+            background: var(--red);
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(14px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-hand-paper me-2"></i>Panel Appointment
-            </p>
-            <p class="banner-sub mb-0">{{ vacancy.title }}</p>
-        </div>
-        <div class="d-flex align-items-center gap-3">
-            <span class="banner-ref">{{ vacancy.reference_number }}</span>
-            <a href="{% url 'panel_dashboard' %}" class="back-link">
-                <i class="fas fa-arrow-left"></i> Dashboard
-            </a>
-        </div>
-    </div>
-
-    <!-- Step indicators -->
-    <div class="steps-row" style="max-width:640px;margin:0 auto 1.25rem;">
-        <div class="step-pill active">
-            <span class="step-num">STEP 1</span>
-            Acknowledge
-        </div>
-        <div class="step-pill">
-            <span class="step-num">STEP 2</span>
-            Declare COI
-        </div>
-        <div class="step-pill">
-            <span class="step-num">STEP 3</span>
-            Score
-        </div>
-    </div>
-
-    <div class="ack-card">
-        <div class="ack-header">
-            <div class="ack-icon"><i class="fas fa-user-tie"></i></div>
-            <p class="ack-title">You have been appointed to the Interview Panel</p>
-            <p class="ack-subtitle">Please review the details below and acknowledge your appointment</p>
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-hand-paper me-2"></i>Panel Appointment
+                </p>
+                <p class="banner-sub mb-0">{{ vacancy.title }}</p>
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <span class="banner-ref">{{ vacancy.reference_number }}</span>
+                <a href="{% url 'panel_dashboard' %}" class="back-link">
+                    <i class="fas fa-arrow-left"></i> Dashboard
+                </a>
+            </div>
         </div>
 
-        <div class="ack-body">
+        <!-- Step indicators -->
+        <div class="steps-row" style="max-width:640px;margin:0 auto 1.25rem;">
+            <div class="step-pill active">
+                <span class="step-num">STEP 1</span>
+                Acknowledge
+            </div>
+            <div class="step-pill">
+                <span class="step-num">STEP 2</span>
+                Declare COI
+            </div>
+            <div class="step-pill">
+                <span class="step-num">STEP 3</span>
+                Score
+            </div>
+        </div>
 
-            <!-- Vacancy details -->
-            <div style="margin-bottom:1.25rem;">
-                <div class="detail-row">
-                    <i class="fas fa-briefcase detail-icon"></i>
-                    <div>
-                        <span class="detail-label">Position</span>
-                        <span class="detail-value">{{ vacancy.title }}</span>
+        <div class="ack-card">
+            <div class="ack-header">
+                <div class="ack-icon"><i class="fas fa-user-tie"></i></div>
+                <p class="ack-title">You have been appointed to the Interview Panel</p>
+                <p class="ack-subtitle">Please review the details below and acknowledge your appointment</p>
+            </div>
+
+            <div class="ack-body">
+
+                <!-- Vacancy details -->
+                <div style="margin-bottom:1.25rem;">
+                    <div class="detail-row">
+                        <i class="fas fa-briefcase detail-icon"></i>
+                        <div>
+                            <span class="detail-label">Position</span>
+                            <span class="detail-value">{{ vacancy.title }}</span>
+                        </div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <i class="fas fa-hashtag detail-icon"></i>
-                    <div>
-                        <span class="detail-label">Reference Number</span>
-                        <span class="detail-value" style="font-family:monospace;">
+                    <div class="detail-row">
+                        <i class="fas fa-hashtag detail-icon"></i>
+                        <div>
+                            <span class="detail-label">Reference Number</span>
+                            <span class="detail-value" style="font-family:monospace;">
                             {{ vacancy.reference_number }}
                         </span>
+                        </div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <i class="fas fa-calendar-alt detail-icon"></i>
-                    <div>
-                        <span class="detail-label">Appointed On</span>
-                        <span class="detail-value">
+                    <div class="detail-row">
+                        <i class="fas fa-calendar-alt detail-icon"></i>
+                        <div>
+                            <span class="detail-label">Appointed On</span>
+                            <span class="detail-value">
                             {{ entry.appointed_at|date:"d M Y, H:i" }}
                         </span>
+                        </div>
                     </div>
-                </div>
-                <div class="detail-row">
-                    <i class="fas fa-user-plus detail-icon"></i>
-                    <div>
-                        <span class="detail-label">Appointed By</span>
-                        <span class="detail-value">
+                    <div class="detail-row">
+                        <i class="fas fa-user-plus detail-icon"></i>
+                        <div>
+                            <span class="detail-label">Appointed By</span>
+                            <span class="detail-value">
                             {{ entry.appointed_by.name|default:"HR Department" }}
                         </span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Responsibilities -->
-            <div class="responsibility-box">
-                <p style="font-weight:700;color:var(--navy);margin-bottom:.6rem !important;">
-                    <i class="fas fa-info-circle"></i>
-                    By acknowledging, you confirm that you:
+                <!-- Responsibilities -->
+                <div class="responsibility-box">
+                    <p style="font-weight:700;color:var(--navy);margin-bottom:.6rem !important;">
+                        <i class="fas fa-info-circle"></i>
+                        By acknowledging, you confirm that you:
+                    </p>
+                    <p><i class="fas fa-check"></i>
+                        Have received notice of this interview panel appointment.</p>
+                    <p><i class="fas fa-check"></i>
+                        Will complete a conflict of interest declaration before scoring begins.</p>
+                    <p><i class="fas fa-check"></i>
+                        Will score each candidate objectively, fairly and in confidence.</p>
+                    <p><i class="fas fa-check"></i>
+                        Understand that your scores are final once submitted.</p>
+                </div>
+
+                <!-- Acknowledge button -->
+                <button class="btn-ack" id="ackBtn" onclick="acknowledge()">
+                    <i class="fas fa-check-circle"></i>
+                    Acknowledge Appointment &amp; Continue
+                </button>
+
+                <p style="text-align:center;font-size:.72rem;color:#adb5bd;margin-top:.85rem;margin-bottom:0;">
+                    <i class="fas fa-lock me-1"></i>
+                    You will be taken to the Conflict of Interest declaration next.
                 </p>
-                <p><i class="fas fa-check"></i>
-                    Have received notice of this interview panel appointment.</p>
-                <p><i class="fas fa-check"></i>
-                    Will complete a conflict of interest declaration before scoring begins.</p>
-                <p><i class="fas fa-check"></i>
-                    Will score each candidate objectively, fairly and in confidence.</p>
-                <p><i class="fas fa-check"></i>
-                    Understand that your scores are final once submitted.</p>
+
             </div>
-
-            <!-- Acknowledge button -->
-            <button class="btn-ack" id="ackBtn" onclick="acknowledge()">
-                <i class="fas fa-check-circle"></i>
-                Acknowledge Appointment &amp; Continue
-            </button>
-
-            <p style="text-align:center;font-size:.72rem;color:#adb5bd;margin-top:.85rem;margin-bottom:0;">
-                <i class="fas fa-lock me-1"></i>
-                You will be taken to the Conflict of Interest declaration next.
-            </p>
-
         </div>
+
     </div>
 
-</div>
-
-<div class="toast-wrap" id="toastWrap"></div>
+    <div class="toast-wrap" id="toastWrap"></div>
 {% endblock %}
 
 {% block extra_js %}
-<script>
-const VACANCY_ID = {{ vacancy.id }};
+    <script>
+        const VACANCY_ID = {{ vacancy.id }};
 
-function showToast(msg, type = '') {
-    const el = document.createElement('div');
-    el.className = 'toast-msg ' + type;
-    el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${msg}`;
-    document.getElementById('toastWrap').appendChild(el);
-    setTimeout(() => el.remove(), 3500);
-}
+        function showToast(msg, type = '') {
+            const el = document.createElement('div');
+            el.className = 'toast-msg ' + type;
+            el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'times-circle'}"></i> ${msg}`;
+            document.getElementById('toastWrap').appendChild(el);
+            setTimeout(() => el.remove(), 3500);
+        }
 
-async function acknowledge() {
-    const btn = document.getElementById('ackBtn');
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
+        async function acknowledge() {
+            const btn = document.getElementById('ackBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Processing…';
 
-    const res  = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/acknowledge/`, {
-        method:  'POST',
-        headers: { 'X-CSRFToken': getCsrf() },
-    });
-    const data = await res.json();
+            const res = await fetch(`/recruitment/panel/vacancy/${VACANCY_ID}/acknowledge/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': getCsrf()},
+            });
+            const data = await res.json();
 
-    if (data.error) {
-        showToast(data.error, 'error');
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-check-circle"></i> Acknowledge Appointment & Continue';
-        return;
-    }
-    showToast('Acknowledged! Taking you to COI declaration…', 'success');
-    setTimeout(() => { window.location = data.redirect_url; }, 1200);
-}
+            if (data.error) {
+                showToast(data.error, 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-check-circle"></i> Acknowledge Appointment & Continue';
+                return;
+            }
+            showToast('Acknowledged! Taking you to COI declaration…', 'success');
+            setTimeout(() => {
+                window.location = data.redirect_url;
+            }, 1200);
+        }
 
-function getCsrf() {
-    return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
-}
-</script>
+        function getCsrf() {
+            return document.cookie.match(/csrftoken=([^;]+)/)?.[1] || '';
+        }
+    </script>
 {% endblock %}

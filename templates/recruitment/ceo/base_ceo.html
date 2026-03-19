@@ -3,113 +3,113 @@
 <html lang="en">
 
 <head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>{% block title %}CEO Dashboard{% endblock %}</title>
+    <title>{% block title %}CEO Dashboard{% endblock %}</title>
 
-<link href="{% static 'assets/css/google_font.css?family=Open+Sans:300,400,600,700' %}" rel="stylesheet"/>
-<link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet"/>
-<link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet"/>
-<link href="{% static 'assets/css/font-awesome/all.min.css' %}" rel="stylesheet">
-<link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
-<link href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/google_font.css?family=Open+Sans:300,400,600,700' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-icons.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/nucleo-svg.css' %}" rel="stylesheet"/>
+    <link href="{% static 'assets/css/font-awesome/all.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
+    <link href="{% static 'assets/css/soft-ui-dashboard.css' %}" rel="stylesheet"/>
 
-<style>
+    <style>
 
-/* ================================
-   UFAA Brand Colors
-================================ */
+        /* ================================
+           UFAA Brand Colors
+        ================================ */
 
-:root {
-    --ufaa-navy: #1D255B;
-    --ufaa-navy-deep: #141A45;
-    --ufaa-gold: #F9E6A1;
-    --ufaa-gold-dark: #C7B77F;
-    --ufaa-gold-mid: #E0CA7A;
-}
+        :root {
+            --ufaa-navy: #1D255B;
+            --ufaa-navy-deep: #141A45;
+            --ufaa-gold: #F9E6A1;
+            --ufaa-gold-dark: #C7B77F;
+            --ufaa-gold-mid: #E0CA7A;
+        }
 
-/* ================================
-   Sidebar
-================================ */
+        /* ================================
+           Sidebar
+        ================================ */
 
-.sidenav {
-    background: var(--ufaa-navy);
-}
+        .sidenav {
+            background: var(--ufaa-navy);
+        }
 
-.sidenav .nav-link {
-    color: rgba(255,255,255,0.85);
-}
+        .sidenav .nav-link {
+            color: rgba(255, 255, 255, 0.85);
+        }
 
-.sidenav .nav-link:hover {
-    background: rgba(255,255,255,0.08);
-}
+        .sidenav .nav-link:hover {
+            background: rgba(255, 255, 255, 0.08);
+        }
 
-.sidenav .nav-link.active {
-    background: linear-gradient(
-        135deg,
-        var(--ufaa-gold-mid),
-        var(--ufaa-gold)
-    );
-    color: var(--ufaa-navy);
-    font-weight: 600;
-}
+        .sidenav .nav-link.active {
+            background: linear-gradient(
+                    135deg,
+                    var(--ufaa-gold-mid),
+                    var(--ufaa-gold)
+            );
+            color: var(--ufaa-navy);
+            font-weight: 600;
+        }
 
-/* Sidebar Icons */
+        /* Sidebar Icons */
 
-.icon-shape {
-    background: rgba(255,255,255,0.08) !important;
-}
+        .icon-shape {
+            background: rgba(255, 255, 255, 0.08) !important;
+        }
 
-.nav-link.active .icon-shape {
-    background: var(--ufaa-navy) !important;
-}
+        .nav-link.active .icon-shape {
+            background: var(--ufaa-navy) !important;
+        }
 
-.nav-link.active i {
-    color: var(--ufaa-gold);
-}
+        .nav-link.active i {
+            color: var(--ufaa-gold);
+        }
 
-/* ================================
-   Navbar
-================================ */
+        /* ================================
+           Navbar
+        ================================ */
 
-.navbar-main {
-    background: white;
-}
+        .navbar-main {
+            background: white;
+        }
 
-/* ================================
-   Buttons
-================================ */
+        /* ================================
+           Buttons
+        ================================ */
 
-.btn-primary {
-    background: var(--ufaa-navy);
-    border: none;
-}
+        .btn-primary {
+            background: var(--ufaa-navy);
+            border: none;
+        }
 
-.btn-primary:hover {
-    background: var(--ufaa-navy-deep);
-}
+        .btn-primary:hover {
+            background: var(--ufaa-navy-deep);
+        }
 
-.btn-outline-danger {
-    border-color: var(--ufaa-navy);
-    color: var(--ufaa-navy);
-}
+        .btn-outline-danger {
+            border-color: var(--ufaa-navy);
+            color: var(--ufaa-navy);
+        }
 
-.btn-outline-danger:hover {
-    background: var(--ufaa-navy);
-    color: white;
-}
+        .btn-outline-danger:hover {
+            background: var(--ufaa-navy);
+            color: white;
+        }
 
-/* ================================
-   Cards
-================================ */
+        /* ================================
+           Cards
+        ================================ */
 
-.card {
-    border: none;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
-}
+        .card {
+            border: none;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+        }
 
-</style>
+    </style>
 
 </head>
 
@@ -133,7 +133,7 @@
             <li class="nav-item">
                 <a class="nav-link {% if request.resolver_match.url_name == 'ceo_dashboard' %}active{% endif %}"
                    href="{% url 'ceo_dashboard' %}">
-                   
+
                     <div class="icon icon-shape icon-sm border-radius-md text-center me-2 d-flex align-items-center justify-content-center">
                         <i class="fas fa-chart-line"></i>
                     </div>
@@ -162,55 +162,52 @@
 </aside>
 
 
-
 <!-- Main Content -->
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg">
 
 
-<!-- Navbar -->
-<nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl mt-4">
+    <!-- Navbar -->
+    <nav class="navbar navbar-main navbar-expand-lg px-0 mx-4 shadow-none border-radius-xl mt-4">
 
-<div class="container-fluid py-1 px-3">
+        <div class="container-fluid py-1 px-3">
 
-<h6 class="font-weight-bolder mb-0">
-CEO Dashboard
-</h6>
+            <h6 class="font-weight-bolder mb-0">
+                CEO Dashboard
+            </h6>
 
-<div class="collapse navbar-collapse mt-sm-0 mt-2">
+            <div class="collapse navbar-collapse mt-sm-0 mt-2">
 
-<ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav ms-auto">
 
-<li class="nav-item d-flex align-items-center">
+                    <li class="nav-item d-flex align-items-center">
 <span class="me-3 text-sm">
 Welcome, {{ request.user.first_name }}
 </span>
-</li>
+                    </li>
 
-<li class="nav-item d-flex align-items-center">
-<a href="{% url 'dashboard_logout' %}" class="btn btn-sm btn-outline-danger">
-Logout
-</a>
-</li>
+                    <li class="nav-item d-flex align-items-center">
+                        <a href="{% url 'dashboard_logout' %}" class="btn btn-sm btn-outline-danger">
+                            Logout
+                        </a>
+                    </li>
 
-</ul>
+                </ul>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</nav>
+    </nav>
 
 
+    <!-- Page Content -->
+    <div class="container-fluid py-4">
 
-<!-- Page Content -->
-<div class="container-fluid py-4">
+        {% block content %}{% endblock %}
 
-{% block content %}{% endblock %}
-
-</div>
+    </div>
 
 </main>
-
 
 
 <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
@@ -220,11 +217,11 @@ Logout
 <!-- SiennaAccessibility-->
 <script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.SiennaAccessibility) {
-        new SiennaAccessibility();
-    }
-});
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.SiennaAccessibility) {
+            new SiennaAccessibility();
+        }
+    });
 </script>
 
 </body>

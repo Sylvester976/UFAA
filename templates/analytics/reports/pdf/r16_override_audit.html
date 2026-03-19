@@ -1,0 +1,16 @@
+{% extends 'analytics/reports/pdf/base_report.html' %} {% block content %}
+{{ shortlist_overrides|length }}
+Shortlist Overrides
+{{ ceo_overrides|length }}
+CEO Overrides
+Shortlist Overrides
+{% for log in shortlist_overrides %} {% empty %} {% endfor %}
+Date	Vacancy	Reference	By	Notes
+{{ log.timestamp|date:"d M Y" }}	{{ log.vacancy.title|truncatechars:35 }}	{{ log.vacancy.reference_number }}	{{ log.performed_by_label|default:"System" }}	{{ log.notes|truncatechars:80|default:"—" }}
+No shortlist overrides
+CEO Selection Overrides
+{% for log in ceo_overrides %} {% empty %} {% endfor %}
+Date	Vacancy	Selected	Rank	Override Reason
+{{ log.timestamp|date:"d M Y" }}	{{ log.vacancy.title|truncatechars:30 }}	{{ log.metadata.selected_name|default:"—" }}	{{ log.metadata.rank|default:"—" }}	{{ log.metadata.override_reason|truncatechars:80|default:"—" }}
+No CEO overrides
+{% endblock %} {% block signature %}{% endblock %}

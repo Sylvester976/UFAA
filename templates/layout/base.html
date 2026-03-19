@@ -26,10 +26,12 @@
             user-select: none;
             white-space: nowrap;
         }
+
         .nav-group-toggle.open {
             font-weight: 600;
             color: #344767;
         }
+
         /* Chevron arrow pushed to far right */
         .nav-group-toggle .toggle-arrow {
             margin-left: auto;
@@ -38,6 +40,7 @@
             flex-shrink: 0;
             transition: transform 0.22s ease, opacity 0.22s ease;
         }
+
         .nav-group-toggle.open .toggle-arrow {
             transform: rotate(90deg);
             opacity: 0.65;
@@ -48,29 +51,40 @@
             display: none;
             padding-left: 0.5rem;
             margin-left: 1.6rem;
-            border-left: 2px solid rgba(29,37,91,0.1);
+            border-left: 2px solid rgba(29, 37, 91, 0.1);
             margin-bottom: 0.1rem;
         }
-        .nav-group-children.open { display: block; }
+
+        .nav-group-children.open {
+            display: block;
+        }
+
         .nav-group-children .nav-link {
             font-size: 0.82rem !important;
             padding: 0.4rem 0.75rem !important;
             color: #67748e !important;
         }
+
         .nav-group-children .nav-link.active,
-        .nav-group-children .nav-link:hover { color: #344767 !important; }
+        .nav-group-children .nav-link:hover {
+            color: #344767 !important;
+        }
 
         /* Notification unread/read states */
         .notif-unread {
-            background: rgba(29,37,91,0.05) !important;
+            background: rgba(29, 37, 91, 0.05) !important;
             border-left: 3px solid #1D255B !important;
         }
+
         .notif-item {
             border-left: 3px solid transparent;
             transition: background 0.2s ease;
             margin-bottom: 2px;
         }
-        .notif-item:hover { background: rgba(29,37,91,0.04) !important; }
+
+        .notif-item:hover {
+            background: rgba(29, 37, 91, 0.04) !important;
+        }
 
         /* Notification badge */
         .nav-group-badge {
@@ -85,39 +99,39 @@
             flex-shrink: 0;
         }
 
-                
+
         .logo {
-        display: flex;
-        align-items: center;        /* Vertical alignment */
-        justify-content: center;    /* Horizontal centering */
-        width: 100%;                /* Full width so centering works */
+            display: flex;
+            align-items: center; /* Vertical alignment */
+            justify-content: center; /* Horizontal centering */
+            width: 100%; /* Full width so centering works */
         }
 
         .logo-divider {
-        width: 3px;
-        height: 50px;               /* Match logo height */
-        background: linear-gradient(
-            to bottom,
-            #000000 0%, 
-            #000000 28%,
-            #ffffff 28%, 
-            #ffffff 34%, 
-            #BD272F 34%, 
-            #BD272F 62%, 
-            #ffffff 62%, 
-            #ffffff 68%, 
-            #136B38 68%, 
-            #136B38 100%
-        );
-        margin: 0 12px;
+            width: 3px;
+            height: 50px; /* Match logo height */
+            background: linear-gradient(
+                    to bottom,
+                    #000000 0%,
+                    #000000 28%,
+                    #ffffff 28%,
+                    #ffffff 34%,
+                    #BD272F 34%,
+                    #BD272F 62%,
+                    #ffffff 62%,
+                    #ffffff 68%,
+                    #136B38 68%,
+                    #136B38 100%
+            );
+            margin: 0 12px;
         }
 
         main.main-content {
-    overflow-y: auto !important;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
-}
+            overflow-y: auto !important;
+            overflow-x: hidden;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
+        }
 
     </style>
     {% block extra_css %}{% endblock %}
@@ -128,12 +142,12 @@
        id="sidenav-main">
     <div class="sidenav-header m-0">
         <i class="fas fa-times p-3 cursor-pointer text-secondary opacity-5 position-absolute end-0 top-0 d-none d-xl-none"
-        aria-hidden="true" id="iconSidenav"></i>
-        
+           aria-hidden="true" id="iconSidenav"></i>
+
         <a href="#" class="logo d-flex align-items-center justify-content-center w-100">
-        <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
-        <div class="logo-divider mx-2"></div>
-        <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
+            <img alt="Court of Arms" src="{% static 'assets/img/logos/court_of_arms.png' %}" style="max-height: 50px;">
+            <div class="logo-divider mx-2"></div>
+            <img alt="ufaa Logo" src="{% static 'assets/img/logos/ufaa_logo.png' %}" style="max-height: 50px;">
         </a>
     </div>
     <hr class="horizontal dark mt-0">
@@ -160,97 +174,115 @@
 
             {% with u=request.resolver_match.url_name %}
 
-            <!-- ══ PROFILE GROUP ══════════════════════════ -->
-            <li class="nav-item">
-                <div id="profileGroupToggle"
-                     class="nav-link nav-group-toggle {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}"
-                     onclick="toggleGroup('profileGroup','profileGroupToggle')">
-                    <i class="fas fa-id-card me-2"></i>
-                    Profile
-                    <i class="fas fa-chevron-right toggle-arrow"></i>
-                </div>
-            </li>
-            <li class="nav-item">
-                <div id="profileGroup"
-                     class="nav-group-children {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
-                                <i class="fas fa-user me-2"></i> Basic Details
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'academic_qualifications' %}active{% endif %}" href="{% url 'academic_qualifications' %}">
-                                <i class="fas fa-graduation-cap me-2"></i> Academic
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'professional_qualifications' %}active{% endif %}" href="{% url 'professional_qualifications' %}">
-                                <i class="fas fa-certificate me-2"></i> Professional
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'work_history' %}active{% endif %}" href="{% url 'work_history' %}">
-                                <i class="fas fa-briefcase me-2"></i> Work History
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'memberships' %}active{% endif %}" href="{% url 'memberships' %}">
-                                <i class="fas fa-users me-2"></i> Memberships
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'referees' %}active{% endif %}" href="{% url 'referees' %}">
-                                <i class="fas fa-user-tie me-2"></i> Referees
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'additional_details' %}active{% endif %}" href="{% url 'additional_details' %}">
-                                <i class="fas fa-info-circle me-2"></i> Additional Details
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+                <!-- ══ PROFILE GROUP ══════════════════════════ -->
+                <li class="nav-item">
+                    <div id="profileGroupToggle"
+                         class="nav-link nav-group-toggle {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}"
+                         onclick="toggleGroup('profileGroup','profileGroupToggle')">
+                        <i class="fas fa-id-card me-2"></i>
+                        Profile
+                        <i class="fas fa-chevron-right toggle-arrow"></i>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div id="profileGroup"
+                         class="nav-group-children {% if u == 'profile' or u == 'academic_qualifications' or u == 'professional_qualifications' or u == 'work_history' or u == 'memberships' or u == 'referees' or u == 'additional_details' %}open{% endif %}">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'profile' %}active{% endif %}" href="{% url 'profile' %}">
+                                    <i class="fas fa-user me-2"></i> Basic Details
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'academic_qualifications' %}active{% endif %}"
+                                   href="{% url 'academic_qualifications' %}">
+                                    <i class="fas fa-graduation-cap me-2"></i> Academic
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'professional_qualifications' %}active{% endif %}"
+                                   href="{% url 'professional_qualifications' %}">
+                                    <i class="fas fa-certificate me-2"></i> Professional
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'work_history' %}active{% endif %}"
+                                   href="{% url 'work_history' %}">
+                                    <i class="fas fa-briefcase me-2"></i> Work History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'memberships' %}active{% endif %}"
+                                   href="{% url 'memberships' %}">
+                                    <i class="fas fa-users me-2"></i> Memberships
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'referees' %}active{% endif %}"
+                                   href="{% url 'referees' %}">
+                                    <i class="fas fa-user-tie me-2"></i> Referees
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'additional_details' %}active{% endif %}"
+                                   href="{% url 'additional_details' %}">
+                                    <i class="fas fa-info-circle me-2"></i> Additional Details
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
 
-            <!-- ══ JOB APPLICATION GROUP ═════════════════ -->
-            <li class="nav-item">
-                <div id="jobGroupToggle"
-                     class="nav-link nav-group-toggle {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}"
-                     onclick="toggleGroup('jobGroup','jobGroupToggle')">
-                    <i class="fas fa-file-alt me-2"></i>
-                    Job Application
-                    <span id="sidebarGroupBadge" class="nav-group-badge" style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
-                    <i class="fas fa-chevron-right toggle-arrow"></i>
-                </div>
-            </li>
-            <li class="nav-item">
-                <div id="jobGroup"
-                     class="nav-group-children {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'apply_jobs' %}active{% endif %}" href="{% url 'apply_jobs' %}">
-                                <i class="fas fa-paper-plane me-2"></i> Apply for Jobs
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link {% if u == 'job_status' %}active{% endif %}" href="{% url 'job_status' %}">
-                                <i class="fas fa-tasks me-2"></i> Job Status
-                                <span id="sidebarChildBadge" class="nav-group-badge ms-1" style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </li>
+                <!-- ══ JOB APPLICATION GROUP ═════════════════ -->
+                <li class="nav-item">
+                    <div id="jobGroupToggle"
+                         class="nav-link nav-group-toggle {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}"
+                         onclick="toggleGroup('jobGroup','jobGroupToggle')">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Job Application
+                        <span id="sidebarGroupBadge" class="nav-group-badge"
+                              style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
+                        <i class="fas fa-chevron-right toggle-arrow"></i>
+                    </div>
+                </li>
+                <li class="nav-item">
+                    <div id="jobGroup"
+                         class="nav-group-children {% if u == 'apply_jobs' or u == 'job_status' %}open{% endif %}">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'apply_jobs' %}active{% endif %}"
+                                   href="{% url 'apply_jobs' %}">
+                                    <i class="fas fa-paper-plane me-2"></i> Apply for Jobs
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {% if u == 'job_status' %}active{% endif %}"
+                                   href="{% url 'job_status' %}">
+                                    <i class="fas fa-tasks me-2"></i> Job Status
+                                    <span id="sidebarChildBadge" class="nav-group-badge ms-1"
+                                          style="{% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">{{ unread_notif_count|default:0 }}</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                </li>
 
             {% endwith %}
 
         </ul>
-        <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
-        <div class="ps__rail-y" style="top:0;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:0;"></div></div>
+        <div class="ps__rail-x" style="left:0;bottom:0;">
+            <div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div>
+        </div>
+        <div class="ps__rail-y" style="top:0;right:0;">
+            <div class="ps__thumb-y" tabindex="0" style="top:0;height:0;"></div>
+        </div>
     </div>
-    <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
-    <div class="ps__rail-y" style="top:0;height:747px;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:510px;"></div></div>
+    <div class="ps__rail-x" style="left:0;bottom:0;">
+        <div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div>
+    </div>
+    <div class="ps__rail-y" style="top:0;height:747px;right:0;">
+        <div class="ps__thumb-y" tabindex="0" style="top:0;height:510px;"></div>
+    </div>
 </aside>
 
 <main class="main-content position-relative max-height-vh-100 h-100 mt-1 border-radius-lg ps ps--active-y">
@@ -308,9 +340,9 @@
                             <span id="bellBadge"
                                   class="position-absolute top-0 start-100 translate-middle badge rounded-pill"
                                   style="background:#1D255B; color:#F9E6A1;
-                                         font-size:0.55rem; padding:0.18rem 0.38rem;
-                                         min-width:16px; line-height:1.3;
-                                         {% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">
+                                          font-size:0.55rem; padding:0.18rem 0.38rem;
+                                          min-width:16px; line-height:1.3;
+                                          {% if not unread_notif_count or unread_notif_count == 0 %}display:none;{% endif %}">
                                 {{ unread_notif_count|default:0 }}
                             </span>
                             <span class="d-sm-inline d-none ms-1">Notifications</span>
@@ -321,36 +353,42 @@
                             style="min-width:320px; max-height:420px; overflow-y:auto;">
                             {% if notifications %}
                                 {% for notif in notifications %}
-                                <li>
-                                    <a class="dropdown-item border-radius-md py-2 notif-item {% if not notif.is_read %}notif-unread{% endif %}"
-                                       href="{% url 'job_status' %}"
-                                       data-notif-id="{{ notif.id }}"
-                                       style="{% if not notif.is_read %}background:rgba(29,37,91,0.05); border-left:3px solid #1D255B; border-radius:0.5rem;{% else %}border-left:3px solid transparent;{% endif %}">
-                                        <div class="d-flex gap-3 align-items-start">
-                                            <div class="avatar avatar-sm flex-shrink-0 my-auto"
-                                                 style="background:{% if not notif.is_read %}linear-gradient(135deg,#1D255B,#2E3A7A){% else %}#e9ecef{% endif %};border-radius:0.6rem;">
-                                                <i class="fas {% if notif.notification_type == 'application_submitted' %}fa-paper-plane{% else %}fa-chart-line{% endif %} {% if not notif.is_read %}text-white{% else %}text-secondary{% endif %}"
-                                                   style="font-size:0.65rem;"></i>
+                                    <li>
+                                        <a class="dropdown-item border-radius-md py-2 notif-item {% if not notif.is_read %}notif-unread{% endif %}"
+                                           href="{% url 'job_status' %}"
+                                           data-notif-id="{{ notif.id }}"
+                                           style="{% if not notif.is_read %}background:rgba(29,37,91,0.05); border-left:3px solid #1D255B; border-radius:0.5rem;{% else %}border-left:3px solid transparent;{% endif %}">
+                                            <div class="d-flex gap-3 align-items-start">
+                                                <div class="avatar avatar-sm flex-shrink-0 my-auto"
+                                                     style="background:{% if not notif.is_read %}linear-gradient(135deg,#1D255B,#2E3A7A){% else %}#e9ecef{% endif %};border-radius:0.6rem;">
+                                                    <i class="fas {% if notif.notification_type == 'application_submitted' %}fa-paper-plane{% else %}fa-chart-line{% endif %} {% if not notif.is_read %}text-white{% else %}text-secondary{% endif %}"
+                                                       style="font-size:0.65rem;"></i>
+                                                </div>
+                                                <div class="flex-grow-1 overflow-hidden">
+                                                    <h6 class="text-sm mb-0 notif-title"
+                                                        style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                                                                {% if not notif.is_read %}color:#1D255B;font-weight:700;{% else %}color:#67748e;font-weight:400;{% endif %}">
+                                                        {% if not notif.is_read %}<i class="fas fa-circle me-1"
+                                                                                     style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>{% endif %}
+                                                        {{ notif.title }}
+                                                    </h6>
+                                                    <p class="text-xs text-secondary mb-0 mt-1"
+                                                       style="white-space:normal;font-size:0.7rem;">
+                                                        {{ notif.message|truncatechars:60 }}
+                                                    </p>
+                                                    <p class="text-xs mb-0 mt-1"
+                                                       style="font-size:0.65rem;color:#adb5bd;">
+                                                        <i class="fa fa-clock me-1"></i>{{ notif.created_at|timesince }}
+                                                        ago
+                                                    </p>
+                                                </div>
                                             </div>
-                                            <div class="flex-grow-1 overflow-hidden">
-                                                <h6 class="text-sm mb-0 notif-title"
-                                                    style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-                                                           {% if not notif.is_read %}color:#1D255B;font-weight:700;{% else %}color:#67748e;font-weight:400;{% endif %}">
-                                                    {% if not notif.is_read %}<i class="fas fa-circle me-1" style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>{% endif %}
-                                                    {{ notif.title }}
-                                                </h6>
-                                                <p class="text-xs text-secondary mb-0 mt-1" style="white-space:normal;font-size:0.7rem;">
-                                                    {{ notif.message|truncatechars:60 }}
-                                                </p>
-                                                <p class="text-xs mb-0 mt-1" style="font-size:0.65rem;color:#adb5bd;">
-                                                    <i class="fa fa-clock me-1"></i>{{ notif.created_at|timesince }} ago
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </a>
-                                </li>
+                                        </a>
+                                    </li>
                                 {% endfor %}
-                                <li><hr class="dropdown-divider my-1"></li>
+                                <li>
+                                    <hr class="dropdown-divider my-1">
+                                </li>
                                 <li>
                                     <a class="dropdown-item text-center py-2" href="{% url 'job_status' %}"
                                        style="color:#1D255B;font-weight:600;font-size:0.78rem;">
@@ -392,8 +430,12 @@
             </div>
         </footer>
     </div>
-    <div class="ps__rail-x" style="left:0;bottom:0;"><div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div></div>
-    <div class="ps__rail-y" style="top:0;height:779px;right:0;"><div class="ps__thumb-y" tabindex="0" style="top:0;height:358px;"></div></div>
+    <div class="ps__rail-x" style="left:0;bottom:0;">
+        <div class="ps__thumb-x" tabindex="0" style="left:0;width:0;"></div>
+    </div>
+    <div class="ps__rail-y" style="top:0;height:779px;right:0;">
+        <div class="ps__thumb-y" tabindex="0" style="top:0;height:358px;"></div>
+    </div>
 </main>
 
 <script src="{% static 'assets/js/jquery-3.7.1.min.js' %}"></script>
@@ -408,24 +450,25 @@
 <script src="{% static 'assets/js/autologout.js' %}"></script>
 <script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.SiennaAccessibility) {
-        new SiennaAccessibility();
-    }
-});
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.SiennaAccessibility) {
+            new SiennaAccessibility();
+        }
+    });
 </script>
 <script>
     window.appConfig = {
         csrfToken: '{{ csrf_token }}',
         logoutUrl: '{% url "logout" %}',
-        loginUrl:  '{% url "index" %}',
+        loginUrl: '{% url "index" %}',
     };
     var win = navigator.platform.indexOf('Win') > -1;
     if (win && document.querySelector('#sidenav-scrollbar')) {
         Scrollbar.init(document.querySelector('#sidenav-scrollbar'), {damping: '0.5'});
     }
+
     function toggleGroup(groupId, toggleId) {
-        var group  = document.getElementById(groupId);
+        var group = document.getElementById(groupId);
         var toggle = document.getElementById(toggleId);
         var isOpen = group.classList.contains('open');
         group.classList.toggle('open', !isOpen);
@@ -433,126 +476,137 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 </script>
 <script>
-(function () {
-    const CSRF     = '{{ csrf_token }}';
-    const READ_URL = '{% url "mark_notification_read" %}';
+    (function () {
+        const CSRF = '{{ csrf_token }}';
+        const READ_URL = '{% url "mark_notification_read" %}';
 
-    function updateBadge(count) {
-        const bellBadge       = document.getElementById('bellBadge');
-        const sidebarGroup    = document.getElementById('sidebarGroupBadge');
-        const sidebarChild    = document.getElementById('sidebarChildBadge');
-        const unreadLabel     = document.getElementById('unreadLabel');
-        const markAllBtn      = document.getElementById('markAllReadBtn');
+        function updateBadge(count) {
+            const bellBadge = document.getElementById('bellBadge');
+            const sidebarGroup = document.getElementById('sidebarGroupBadge');
+            const sidebarChild = document.getElementById('sidebarChildBadge');
+            const unreadLabel = document.getElementById('unreadLabel');
+            const markAllBtn = document.getElementById('markAllReadBtn');
 
-        if (count > 0) {
-            [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
-                if (el) { el.textContent = count; el.style.display = ''; }
-            });
-            if (unreadLabel) unreadLabel.textContent = count + ' unread';
-        } else {
-            [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
-                if (el) el.style.display = 'none';
-            });
-            if (unreadLabel) unreadLabel.textContent = '';
-            if (markAllBtn)  markAllBtn.style.display = 'none';
-        }
-    }
-
-    function markRead(notifId) {
-        const body = new FormData();
-        body.append('csrfmiddlewaretoken', CSRF);
-        if (notifId) body.append('notif_id', notifId);
-        fetch(READ_URL, { method: 'POST', headers: { 'X-CSRFToken': CSRF }, body })
-            .then(r => r.json())
-            .then(data => { if (data.status === 'ok') updateBadge(data.unread_count); });
-    }
-
-    function resetItemStyle(item) {
-        item.classList.remove('notif-unread');
-        item.style.background = '';
-        item.style.borderLeft = '3px solid transparent';
-        // Icon back to grey
-        const avatar = item.querySelector('.avatar');
-        if (avatar) avatar.style.background = '#e9ecef';
-        const icon = item.querySelector('.avatar i');
-        if (icon) { icon.classList.remove('text-white'); icon.classList.add('text-secondary'); }
-        // Title back to grey normal weight
-        const title = item.querySelector('.notif-title');
-        if (title) { title.style.color = '#67748e'; title.style.fontWeight = '400'; }
-        // Remove the small dot circle before title
-        const dot = title ? title.querySelector('i.fa-circle') : null;
-        if (dot) dot.remove();
-    }
-
-    // Click individual notification → mark that one read
-    document.addEventListener('click', function (e) {
-        const item = e.target.closest('.notif-item');
-        if (!item) return;
-        if (item.classList.contains('notif-unread')) {
-            resetItemStyle(item);
-            markRead(item.dataset.notifId);
-        }
-    });
-
-    // Mark all read button
-    document.addEventListener('click', function (e) {
-        if (!e.target.closest('#markAllReadBtn')) return;
-        document.querySelectorAll('.notif-unread').forEach(resetItemStyle);
-        markRead(null);
-    });
-})();
-</script>
-<script>
-(function () {
-    const POLL_URL  = '{% url "notification_poll" %}';
-    const POLL_MS   = 30000;   // every 30 seconds
-    let   lastCount = {{ unread_notif_count|default:0 }};
-
-    function updateBadges(count) {
-        const bellBadge    = document.getElementById('bellBadge');
-        const sidebarGroup = document.getElementById('sidebarGroupBadge');
-        const sidebarChild = document.getElementById('sidebarChildBadge');
-
-        [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
-            if (!el) return;
             if (count > 0) {
-                el.textContent  = count;
-                el.style.display = '';
+                [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+                    if (el) {
+                        el.textContent = count;
+                        el.style.display = '';
+                    }
+                });
+                if (unreadLabel) unreadLabel.textContent = count + ' unread';
             } else {
-                el.style.display = 'none';
+                [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+                    if (el) el.style.display = 'none';
+                });
+                if (unreadLabel) unreadLabel.textContent = '';
+                if (markAllBtn) markAllBtn.style.display = 'none';
+            }
+        }
+
+        function markRead(notifId) {
+            const body = new FormData();
+            body.append('csrfmiddlewaretoken', CSRF);
+            if (notifId) body.append('notif_id', notifId);
+            fetch(READ_URL, {method: 'POST', headers: {'X-CSRFToken': CSRF}, body})
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'ok') updateBadge(data.unread_count);
+                });
+        }
+
+        function resetItemStyle(item) {
+            item.classList.remove('notif-unread');
+            item.style.background = '';
+            item.style.borderLeft = '3px solid transparent';
+            // Icon back to grey
+            const avatar = item.querySelector('.avatar');
+            if (avatar) avatar.style.background = '#e9ecef';
+            const icon = item.querySelector('.avatar i');
+            if (icon) {
+                icon.classList.remove('text-white');
+                icon.classList.add('text-secondary');
+            }
+            // Title back to grey normal weight
+            const title = item.querySelector('.notif-title');
+            if (title) {
+                title.style.color = '#67748e';
+                title.style.fontWeight = '400';
+            }
+            // Remove the small dot circle before title
+            const dot = title ? title.querySelector('i.fa-circle') : null;
+            if (dot) dot.remove();
+        }
+
+        // Click individual notification → mark that one read
+        document.addEventListener('click', function (e) {
+            const item = e.target.closest('.notif-item');
+            if (!item) return;
+            if (item.classList.contains('notif-unread')) {
+                resetItemStyle(item);
+                markRead(item.dataset.notifId);
             }
         });
-    }
 
-    function timeAgo(dateStr) {
-        const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
-        if (diff < 60)   return diff + 's ago';
-        if (diff < 3600) return Math.floor(diff/60) + 'm ago';
-        if (diff < 86400) return Math.floor(diff/3600) + 'h ago';
-        return Math.floor(diff/86400) + 'd ago';
-    }
+        // Mark all read button
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('#markAllReadBtn')) return;
+            document.querySelectorAll('.notif-unread').forEach(resetItemStyle);
+            markRead(null);
+        });
+    })();
+</script>
+<script>
+    (function () {
+        const POLL_URL = '{% url "notification_poll" %}';
+        const POLL_MS = 30000;   // every 30 seconds
+        let lastCount = {{ unread_notif_count|default:0 }};
 
-    function rebuildDropdown(notifs, unread) {
-        const list = document.getElementById('notifDropdownList');
-        if (!list) return;
+        function updateBadges(count) {
+            const bellBadge = document.getElementById('bellBadge');
+            const sidebarGroup = document.getElementById('sidebarGroupBadge');
+            const sidebarChild = document.getElementById('sidebarChildBadge');
 
-        if (!notifs.length) {
-            list.innerHTML = `
+            [bellBadge, sidebarGroup, sidebarChild].forEach(el => {
+                if (!el) return;
+                if (count > 0) {
+                    el.textContent = count;
+                    el.style.display = '';
+                } else {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        function timeAgo(dateStr) {
+            const diff = Math.floor((new Date() - new Date(dateStr)) / 1000);
+            if (diff < 60) return diff + 's ago';
+            if (diff < 3600) return Math.floor(diff / 60) + 'm ago';
+            if (diff < 86400) return Math.floor(diff / 3600) + 'h ago';
+            return Math.floor(diff / 86400) + 'd ago';
+        }
+
+        function rebuildDropdown(notifs, unread) {
+            const list = document.getElementById('notifDropdownList');
+            if (!list) return;
+
+            if (!notifs.length) {
+                list.innerHTML = `
                 <li>
                     <div class="text-center py-4 px-2">
                         <i class="fas fa-bell-slash text-secondary mb-2" style="font-size:1.5rem;opacity:0.25;"></i>
                         <p class="text-xs text-secondary mb-0">No notifications yet</p>
                     </div>
                 </li>`;
-            return;
-        }
+                return;
+            }
 
-        let html = '';
-        notifs.forEach(n => {
-            const isUnread  = !n.is_read;
-            const icon      = n.notification_type === 'application_submitted' ? 'fa-paper-plane' : 'fa-chart-line';
-            const dot       = isUnread ? '<i class="fas fa-circle me-1" style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>' : '';
-            html += `
+            let html = '';
+            notifs.forEach(n => {
+                const isUnread = !n.is_read;
+                const icon = n.notification_type === 'application_submitted' ? 'fa-paper-plane' : 'fa-chart-line';
+                const dot = isUnread ? '<i class="fas fa-circle me-1" style="font-size:0.45rem;color:#1D255B;vertical-align:middle;"></i>' : '';
+                html += `
             <li>
                 <a class="dropdown-item border-radius-md py-2 notif-item ${isUnread ? 'notif-unread' : ''}"
                    href="/recruitment/job-status/"
@@ -570,7 +624,7 @@ document.addEventListener("DOMContentLoaded", function() {
                                 ${dot}${n.title}
                             </h6>
                             <p class="text-xs text-secondary mb-0 mt-1" style="white-space:normal;font-size:0.7rem;">
-                                ${n.message.length > 60 ? n.message.substring(0,60)+'…' : n.message}
+                                ${n.message.length > 60 ? n.message.substring(0, 60) + '…' : n.message}
                             </p>
                             <p class="text-xs mb-0 mt-1" style="font-size:0.65rem;color:#adb5bd;">
                                 <i class="fa fa-clock me-1"></i>${n.created_at}
@@ -579,10 +633,10 @@ document.addEventListener("DOMContentLoaded", function() {
                     </div>
                 </a>
             </li>`;
-        });
+            });
 
-        if (unread > 0) {
-            html += `
+            if (unread > 0) {
+                html += `
             <li>
                 <div class="px-3 py-1 d-flex justify-content-between align-items-center">
                     <small class="text-secondary" style="font-size:0.68rem;" id="unreadLabel">${unread} unread</small>
@@ -592,9 +646,9 @@ document.addEventListener("DOMContentLoaded", function() {
                     </button>
                 </div>
             </li>`;
-        }
+            }
 
-        html += `
+            html += `
             <li><hr class="dropdown-divider my-1"></li>
             <li>
                 <a class="dropdown-item text-center py-2" href="/recruitment/job-status/"
@@ -603,43 +657,47 @@ document.addEventListener("DOMContentLoaded", function() {
                 </a>
             </li>`;
 
-        list.innerHTML = html;
-    }
+            list.innerHTML = html;
+        }
 
-    function poll() {
-        fetch(POLL_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-            .then(r => r.json())
-            .then(data => {
-                const newCount = data.unread_count;
+        function poll() {
+            fetch(POLL_URL, {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+                .then(r => r.json())
+                .then(data => {
+                    const newCount = data.unread_count;
 
-                // Flash bell if new notifications arrived
-                if (newCount > lastCount) {
-                    const bell = document.querySelector('#dropdownMenuButton i.fa-bell');
-                    if (bell) {
-                        bell.style.transition = 'color 0.3s';
-                        bell.style.color = '#F9E6A1';
-                        setTimeout(() => bell.style.color = '', 1000);
+                    // Flash bell if new notifications arrived
+                    if (newCount > lastCount) {
+                        const bell = document.querySelector('#dropdownMenuButton i.fa-bell');
+                        if (bell) {
+                            bell.style.transition = 'color 0.3s';
+                            bell.style.color = '#F9E6A1';
+                            setTimeout(() => bell.style.color = '', 1000);
+                        }
                     }
-                }
 
-                lastCount = newCount;
-                updateBadges(newCount);
-                rebuildDropdown(data.notifications, newCount);
-            })
-            .catch(() => {});  // fail silently
-    }
+                    lastCount = newCount;
+                    updateBadges(newCount);
+                    rebuildDropdown(data.notifications, newCount);
+                })
+                .catch(() => {
+                });  // fail silently
+        }
 
-    // Start polling after 5s delay, then every 30s
-    setTimeout(() => { poll(); setInterval(poll, POLL_MS); }, 5000);
-})();
+        // Start polling after 5s delay, then every 30s
+        setTimeout(() => {
+            poll();
+            setInterval(poll, POLL_MS);
+        }, 5000);
+    })();
 </script>
 <script>
-  if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-    var mainEl = document.querySelector('main.main-content');
-    if (mainEl && mainEl.__scrollbar) {
-      mainEl.__scrollbar.destroy();
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+        var mainEl = document.querySelector('main.main-content');
+        if (mainEl && mainEl.__scrollbar) {
+            mainEl.__scrollbar.destroy();
+        }
     }
-  }
 </script>
 
 {% block extra_js %}{% endblock %}

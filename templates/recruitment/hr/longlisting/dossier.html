@@ -648,6 +648,7 @@
                 {% if prev_id %}
                     <a href="
 
+
                             {% url 'hr_longlist_dossier' vacancy.id prev_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
                        class="nav-btn nb-prev"><i class="fas fa-chevron-left me-1"></i> Prev</a>
                 {% else %}
@@ -655,6 +656,7 @@
                 {% endif %}
                 {% if next_id %}
                     <a href="
+
 
                             {% url 'hr_longlist_dossier' vacancy.id next_id %}{% if filter_query %}?{{ filter_query }}{% endif %}"
                        class="nav-btn nb-next">Next <i class="fas fa-chevron-right ms-1"></i></a>

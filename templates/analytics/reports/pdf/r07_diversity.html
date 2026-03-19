@@ -1,0 +1,93 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ total_apps }}</div>
+            <div class="stat-label">Total Applicants</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ pwd_total }}</div>
+            <div class="stat-label">PWD Applicants</div>
+        </div>
+    </div>
+
+    <h2>Gender Breakdown</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Gender</th>
+            <th>Count</th>
+            <th>%</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for gender, count in gender_c.items %}
+            <tr>
+                <td class="bold">{{ gender }}</td>
+                <td>{{ count }}</td>
+                <td>{% if total_apps %}{{ count|floatformat:0 }}{% widthratio count total_apps 100 %}%{% endif %}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>County Distribution (Top 15)</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>County</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for county, count in county_c.items %}
+            <tr>
+                <td class="bold">{{ county }}</td>
+                <td>{{ count }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Education Level Breakdown</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Education Level</th>
+            <th>Count</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for level, count in edu_c.items %}
+            <tr>
+                <td class="bold">{{ level }}</td>
+                <td>{{ count }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Persons with Disabilities (PWD)</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Category</th>
+            <th>Count</th>
+            <th>% of Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td class="bold">PWD Applicants</td>
+            <td>{{ pwd_total }}</td>
+            <td>{% if total_apps %}{% widthratio pwd_total total_apps 100 %}%{% endif %}</td>
+        </tr>
+        <tr>
+            <td class="bold">Non-PWD</td>
+            <td>{{ total_apps|add:"-"|add:pwd_total }}</td>
+            <td>—</td>
+        </tr>
+        </tbody>
+    </table>
+{% endblock %}

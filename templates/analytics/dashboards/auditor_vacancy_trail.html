@@ -1,0 +1,321 @@
+{% extends 'recruitment/hr/base_hr.html' %}
+{% block title %}Audit Trail — {{ vacancy.reference_number }}{% endblock %}
+{% block extra_css %}
+    <style>
+        :root {
+            --navy: #262561;
+            --navy-lt: #2E3A7A;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --amber: #b7770d;
+            --red: #c0392b;
+        }
+
+        a {
+            text-decoration: none !important;
+        }
+
+        .page-banner {
+            background: linear-gradient(135deg, #1a1a45, var(--navy));
+            border-radius: .9rem;
+            padding: 1.1rem 1.5rem;
+            margin-bottom: 1.25rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 6px 20px rgba(38, 37, 97, .25);
+        }
+
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--gold);
+            margin: 0;
+        }
+
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .65);
+            margin: .15rem 0 0;
+        }
+
+        .back-link {
+            color: rgba(255, 255, 255, .65);
+            font-size: .78rem;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .back-link:hover {
+            color: var(--gold);
+        }
+
+        .section-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 4px 18px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.1rem;
+        }
+
+        .section-header {
+            padding: .85rem 1.2rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-title {
+            font-size: .85rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin: 0;
+        }
+
+        .log-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: .78rem;
+        }
+
+        .log-table th {
+            background: #f8f9ff;
+            color: #8392ab;
+            font-size: .62rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            padding: .55rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .06);
+        }
+
+        .log-table td {
+            padding: .55rem 1rem;
+            border-bottom: 1px solid rgba(38, 37, 97, .04);
+            vertical-align: top;
+        }
+
+        .log-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .log-table tr:hover td {
+            background: #fafbff;
+        }
+
+        .action-badge {
+            font-size: .63rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+            white-space: nowrap;
+        }
+
+        .ab-green {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .ab-amber {
+            background: #fff3cd;
+            color: var(--amber);
+        }
+
+        .ab-red {
+            background: #fde8e8;
+            color: var(--red);
+        }
+
+        .ab-navy {
+            background: rgba(38, 37, 97, .1);
+            color: var(--navy);
+        }
+
+        .ab-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+        }
+
+        .gold-divider {
+            height: 2px;
+            background: linear-gradient(90deg, var(--navy), var(--gold-dk), #F9E6A1, var(--gold-dk), var(--navy));
+            opacity: .4;
+            margin: .2rem 0 1.1rem;
+            border-radius: 2px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+    <div class="container-fluid py-2">
+        <div class="page-banner mb-2">
+            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                <div>
+                    <p class="banner-title mb-0"><i class="fas fa-history me-2" style="color:var(--gold-dk);"></i>Audit
+                        Trail</p>
+                    <p class="banner-sub mb-0">{{ vacancy.title }} — {{ vacancy.reference_number }}</p>
+                </div>
+                <a href="{% url 'analytics:auditor_analytics' %}" class="back-link"><i class="fas fa-arrow-left"></i>
+                    Back</a>
+            </div>
+        </div>
+        <div class="gold-divider"></div>
+
+        <!-- Status change log -->
+        <div class="section-card">
+            <div class="section-header"><h6 class="section-title"><i class="fas fa-exchange-alt me-2"
+                                                                     style="color:var(--gold-dk);opacity:.7;"></i>Application
+                Status Changes</h6><span style="font-size:.75rem;color:#8392ab;">{{ status_logs|length }} entries</span>
+            </div>
+            <div style="overflow-x:auto;max-height:320px;overflow-y:auto;">
+                <table class="log-table">
+                    <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Application</th>
+                        <th>From</th>
+                        <th>To</th>
+                        <th>By</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in status_logs %}
+                        <tr>
+                            <td style="white-space:nowrap;color:#8392ab;font-size:.72rem;">{{ log.changed_at|date:"d M Y H:i" }}</td>
+                            <td style="font-family:monospace;font-size:.74rem;font-weight:600;color:var(--navy);">{{ log.application.application_number|default:"—" }}</td>
+                            <td>{% if log.from_status %}
+                                <span class="action-badge ab-muted">{{ log.from_status.code }}</span>{% else %}
+                                <span style="color:#adb5bd;font-size:.72rem;">—</span>{% endif %}</td>
+                            <td><span
+                                    class="action-badge {% if log.to_status.code == 'appointed' %}ab-green{% elif log.to_status.code == 'not_selected' %}ab-red{% elif 'override' in log.to_status.code|lower %}ab-amber{% else %}ab-navy{% endif %}">{{ log.to_status.code|default:"—" }}</span>
+                            </td>
+                            <td style="font-size:.75rem;">{{ log.changed_by|default:"System" }}</td>
+                            <td style="font-size:.72rem;color:#67748e;max-width:200px;">{{ log.notes|truncatechars:80 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="6" style="text-align:center;color:#b0bac9;padding:1.5rem;">No status changes
+                                recorded
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Shortlist log -->
+        <div class="section-card">
+            <div class="section-header"><h6 class="section-title"><i class="fas fa-clipboard-list me-2"
+                                                                     style="color:var(--gold-dk);opacity:.7;"></i>Shortlist
+                Log</h6><span style="font-size:.75rem;color:#8392ab;">{{ shortlist_logs|length }} entries</span></div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+                <table class="log-table">
+                    <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Action</th>
+                        <th>By</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in shortlist_logs %}
+                        <tr>
+                            <td style="white-space:nowrap;color:#8392ab;font-size:.72rem;">{{ log.timestamp|date:"d M Y H:i" }}</td>
+                            <td><span
+                                    class="action-badge {% if 'override' in log.action %}ab-amber{% elif 'notif' in log.action %}ab-green{% else %}ab-navy{% endif %}">{{ log.action }}</span>
+                            </td>
+                            <td style="font-size:.75rem;">{{ log.performed_by_label|default:"System" }}</td>
+                            <td style="font-size:.72rem;color:#67748e;max-width:220px;">{{ log.notes|truncatechars:100 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;color:#b0bac9;padding:1.5rem;">No shortlist log
+                                entries
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Interview log -->
+        <div class="section-card">
+            <div class="section-header"><h6 class="section-title"><i class="fas fa-calendar-alt me-2"
+                                                                     style="color:var(--gold-dk);opacity:.7;"></i>Interview
+                Log</h6><span style="font-size:.75rem;color:#8392ab;">{{ interview_logs|length }} entries</span></div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+                <table class="log-table">
+                    <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Action</th>
+                        <th>By</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in interview_logs %}
+                        <tr>
+                            <td style="white-space:nowrap;color:#8392ab;font-size:.72rem;">{{ log.timestamp|date:"d M Y H:i" }}</td>
+                            <td><span
+                                    class="action-badge {% if 'override' in log.action or 'ceo_selection' in log.action %}ab-amber{% elif 'appointed' in log.action or 'all_scores' in log.action %}ab-green{% else %}ab-navy{% endif %}">{{ log.action }}</span>
+                            </td>
+                            <td style="font-size:.75rem;">{{ log.performed_by_label|default:"System" }}</td>
+                            <td style="font-size:.72rem;color:#67748e;max-width:220px;">{{ log.notes|truncatechars:100 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;color:#b0bac9;padding:1.5rem;">No interview log
+                                entries
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Longlist log -->
+        <div class="section-card">
+            <div class="section-header"><h6 class="section-title"><i class="fas fa-list me-2"
+                                                                     style="color:var(--gold-dk);opacity:.7;"></i>Longlist
+                Review Log</h6><span style="font-size:.75rem;color:#8392ab;">{{ longlist_logs|length }} entries</span>
+            </div>
+            <div style="overflow-x:auto;max-height:280px;overflow-y:auto;">
+                <table class="log-table">
+                    <thead>
+                    <tr>
+                        <th>When</th>
+                        <th>Action</th>
+                        <th>By</th>
+                        <th>Notes</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for log in longlist_logs %}
+                        <tr>
+                            <td style="white-space:nowrap;color:#8392ab;font-size:.72rem;">{{ log.actioned_at|date:"d M Y H:i" }}</td>
+                            <td><span
+                                    class="action-badge {% if 'reject' in log.action %}ab-red{% elif 'accept' in log.action or 'final' in log.action %}ab-green{% else %}ab-navy{% endif %}">{{ log.action }}</span>
+                            </td>
+                            <td style="font-size:.75rem;">{{ log.officer|default:"System" }}</td>
+                            <td style="font-size:.72rem;color:#67748e;max-width:220px;">{{ log.notes|truncatechars:100 }}</td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="4" style="text-align:center;color:#b0bac9;padding:1.5rem;">No longlist log
+                                entries
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}

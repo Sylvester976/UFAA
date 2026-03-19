@@ -1,0 +1,30 @@
+{% extends 'analytics/reports/pdf/base_report.html' %} {% block content %}
+{{ status_logs|length }}
+Status Changes
+{{ shortlist_logs|length }}
+Shortlist Actions
+{{ interview_logs|length }}
+Interview Actions
+{{ longlist_logs|length }}
+Longlist Actions
+Application Status Changes
+{% for log in status_logs %} {% empty %} {% endfor %}
+Timestamp	App No.	From	To	By	Notes
+{{ log.changed_at|date:"d M Y H:i" }}	{{ log.application.application_number|default:"—" }}	{{ log.from_status.code|default:"—" }}	{{ log.to_status.code|default:"—" }}	{{ log.changed_by|default:"System" }}	{{ log.notes|truncatechars:50|default:"—" }}
+No status changes
+Shortlist Log
+{% for log in shortlist_logs %} {% empty %} {% endfor %}
+Timestamp	Action	Performed By	Notes
+{{ log.timestamp|date:"d M Y H:i" }}	{{ log.action }}	{{ log.performed_by_label|default:"System" }}	{{ log.notes|truncatechars:80|default:"—" }}
+No shortlist log entries
+Interview Log
+{% for log in interview_logs %} {% empty %} {% endfor %}
+Timestamp	Action	Performed By	Notes
+{{ log.timestamp|date:"d M Y H:i" }}	{{ log.action }}	{{ log.performed_by_label|default:"System" }}	{{ log.notes|truncatechars:80|default:"—" }}
+No interview log entries
+Longlist Review Log
+{% for log in longlist_logs %} {% empty %} {% endfor %}
+Timestamp	Action	Officer	Notes
+{{ log.actioned_at|date:"d M Y H:i" }}	{{ log.action }}	{{ log.officer|default:"System" }}	{{ log.notes|truncatechars:80|default:"—" }}
+No longlist log entries
+{% endblock %} {% block signature %}{% endblock %}

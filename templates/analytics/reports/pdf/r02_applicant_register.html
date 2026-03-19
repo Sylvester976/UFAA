@@ -1,0 +1,46 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+<div class="stat-row">
+  <div class="stat-box"><div class="stat-val">{{ apps|length }}</div><div class="stat-label">Total Applicants</div></div>
+</div>
+
+<h2>Applicant Register</h2>
+<table>
+  <thead>
+    <tr>
+      <th>App No.</th><th>Full Name</th><th>ID No.</th><th>Gender</th>
+      <th>County</th><th>PWD</th><th>Status</th><th>Submitted</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for item in apps %}
+    {% with b=item.basic %}
+    <tr>
+      <td class="monospace">{{ item.app.application_number }}</td>
+      <td class="bold">
+        {% if b.first_name %}{{ b.first_name }}{% endif %}
+        {% if b.surname %} {{ b.surname }}{% endif %}
+      </td>
+      <td class="monospace">{% if b.id_no %}{{ b.id_no }}{% else %}—{% endif %}</td>
+      <td>{% if b.gender %}{{ b.gender }}{% else %}—{% endif %}</td>
+      <td>{% if b.home_county %}{{ b.home_county }}{% else %}—{% endif %}</td>
+      <td>
+        {% if b.disability_status %}
+          {% with ds=b.disability_status|lower %}
+          {% if ds == "none" or ds == "no" or ds == "false" or ds == "" %}—
+          {% else %}<span class="badge badge-purple">Yes</span>{% endif %}
+          {% endwith %}
+        {% else %}—{% endif %}
+      </td>
+      <td><span class="badge badge-muted">{{ item.app.status.name }}</span></td>
+      <td>{{ item.app.submitted_at|date:"d M Y" }}</td>
+    </tr>
+    {% endwith %}
+    {% empty %}
+    <tr><td colspan="8" class="text-center text-muted">No applicants found</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

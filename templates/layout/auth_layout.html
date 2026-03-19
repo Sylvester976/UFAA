@@ -15,8 +15,8 @@
     <link id="pagestyle" href="{% static 'assets/css/soft-ui-dashboard.css?v=1.0.3' %}" rel="stylesheet"/>
     <!-- Bootstrap CSS -->
     <link href="{% static 'assets/css/swal2/bootstrap.min.css' %}" rel="stylesheet">
-    
-    <link href="{% static 'assets/css/logo.css' %}" rel="stylesheet" />
+
+    <link href="{% static 'assets/css/logo.css' %}" rel="stylesheet"/>
 
     <!-- SweetAlert2 CSS -->
     <link rel="stylesheet" href="{% static 'assets/css/swal2/sweetalert2.min.css' %}">
@@ -136,11 +136,11 @@
 <!-- SiennaAccessibility-->
 <script src="{% static 'assets/js/Accessibility/sienna.min.js' %}" defer></script>
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-    if (window.SiennaAccessibility) {
-        new SiennaAccessibility();
-    }
-});
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.SiennaAccessibility) {
+            new SiennaAccessibility();
+        }
+    });
 </script>
 <script>
     var win = navigator.platform.indexOf('Win') > -1;
@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", function() {
 </script>
 
 {#REGISTER LOGIC#}
- <script>
+<script>
     document.getElementById('signupform').addEventListener('submit', function (e) {
         e.preventDefault();  // Prevent default form submission
 
@@ -306,7 +306,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         title: 'Account Registration Successful',
                         html: data.message
                     }).then(() => {
-                         window.location.href = "/login/";
+                        window.location.href = "/login/";
                     });
 
                 } else {
@@ -368,7 +368,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         title: 'Login Successful',
                         text: data.message
                     }).then(() => {
-                         window.location.href = "/recruitment/dashboard/";
+                        window.location.href = "/recruitment/dashboard/";
                     });
 
                 } else {

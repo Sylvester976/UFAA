@@ -2,216 +2,381 @@
 {% block title %}My Panel Assignments{% endblock %}
 
 {% block extra_css %}
-<style>
-:root { --navy:#262561; --gold:#F9E6A1; --gold-dk:#C39545;
-        --green:#1a7a45; --red:#c0392b; --amber:#b7770d; }
-a { text-decoration:none !important; }
+    <style>
+        :root {
+            --navy: #262561;
+            --gold: #F9E6A1;
+            --gold-dk: #C39545;
+            --green: #1a7a45;
+            --red: #c0392b;
+            --amber: #b7770d;
+        }
 
-.page-banner {
-    background:linear-gradient(135deg,var(--navy) 0%,#1a1f5c 100%);
-    border-radius:1rem; padding:1.25rem 1.5rem; color:#fff;
-    display:flex; align-items:center; justify-content:space-between;
-    flex-wrap:wrap; gap:.75rem; margin-bottom:1.5rem;
-}
-.banner-title { font-size:1.05rem; font-weight:700; color:var(--gold); margin:0; }
-.banner-sub   { font-size:.78rem; color:rgba(255,255,255,.7); margin:0; }
+        a {
+            text-decoration: none !important;
+        }
 
-/* ── Assignment card ── */
-.assignment-card {
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-    overflow:hidden; margin-bottom:1.1rem;
-    border-left:4px solid #e0e4ef;
-    transition:border-color .2s, box-shadow .2s;
-}
-.assignment-card:hover { box-shadow:0 4px 20px rgba(38,37,97,.13); }
-.assignment-card.step-acknowledge { border-left-color:#c7d2fe; }
-.assignment-card.step-coi         { border-left-color:var(--amber); }
-.assignment-card.step-score       { border-left-color:var(--navy); }
-.assignment-card.step-done        { border-left-color:var(--green); }
-.assignment-card.step-recused     { border-left-color:var(--red); }
+        .page-banner {
+            background: linear-gradient(135deg, var(--navy) 0%, #1a1f5c 100%);
+            border-radius: 1rem;
+            padding: 1.25rem 1.5rem;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: .75rem;
+            margin-bottom: 1.5rem;
+        }
 
-.card-head {
-    padding:.9rem 1.25rem; border-bottom:1px solid #f0f2f8;
-    display:flex; align-items:flex-start; gap:1rem; flex-wrap:wrap;
-}
-.vacancy-title { font-size:.9rem; font-weight:800; color:var(--navy); margin-bottom:.15rem; }
-.vacancy-ref   { font-family:monospace; font-size:.7rem; color:#adb5bd; }
+        .banner-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gold);
+            margin: 0;
+        }
 
-.card-body { padding:.85rem 1.25rem; display:flex; align-items:center;
-             gap:1rem; flex-wrap:wrap; }
-.meta-item { font-size:.75rem; color:#67748e;
-             display:flex; align-items:center; gap:.35rem; }
-.meta-item strong { color:var(--navy); }
+        .banner-sub {
+            font-size: .78rem;
+            color: rgba(255, 255, 255, .7);
+            margin: 0;
+        }
 
-/* Progress bar */
-.prog-wrap  { flex:1; min-width:140px; }
-.prog-label { font-size:.68rem; color:#8392ab; margin-bottom:.25rem; }
-.prog-track { height:7px; background:#f0f2f8; border-radius:99px; overflow:hidden; }
-.prog-fill  { height:100%; background:linear-gradient(90deg,var(--navy),#4f46e5);
-              border-radius:99px; transition:width .4s; }
+        /* ── Assignment card ── */
+        .assignment-card {
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+            overflow: hidden;
+            margin-bottom: 1.1rem;
+            border-left: 4px solid #e0e4ef;
+            transition: border-color .2s, box-shadow .2s;
+        }
 
-/* Action button */
-.btn-action {
-    font-size:.76rem; font-weight:700; padding:.42rem 1rem;
-    border-radius:.45rem; border:none; cursor:pointer;
-    display:inline-flex; align-items:center; gap:.4rem;
-    transition:opacity .15s; text-decoration:none !important;
-}
-.btn-action:hover { opacity:.88; }
-.btn-navy  { background:var(--navy);  color:#fff; }
-.btn-green { background:var(--green); color:#fff; }
-.btn-amber { background:var(--amber); color:#fff; }
-.btn-muted { background:#f0f2f8; color:#8392ab; pointer-events:none; }
-.btn-indigo { background:#4f46e5; color:#fff; }
+        .assignment-card:hover {
+            box-shadow: 0 4px 20px rgba(38, 37, 97, .13);
+        }
 
-/* Status chips */
-.s-chip { font-size:.64rem; font-weight:700; padding:.18rem .55rem;
-          border-radius:99px; white-space:nowrap; margin-left:auto; }
-.sc-pending  { background:#eef0fb; color:#4f46e5; }
-.sc-coi      { background:#fff3cd; color:#7d5500; }
-.sc-scoring  { background:#dbeafe; color:#1e40af; }
-.sc-done     { background:#d4f5e2; color:#1a5c38; }
-.sc-recused  { background:#fde8e8; color:#c0392b; }
+        .assignment-card.step-acknowledge {
+            border-left-color: #c7d2fe;
+        }
 
-/* Empty state */
-.empty-state {
-    text-align:center; padding:4rem 2rem; color:#b0bac9;
-    background:#fff; border-radius:.9rem;
-    box-shadow:0 2px 14px rgba(38,37,97,.08);
-}
-.empty-state i { font-size:2.5rem; display:block; margin-bottom:.75rem; color:#d0d5e8; }
-.empty-state h5 { color:#67748e; font-size:.95rem; margin-bottom:.4rem; }
-</style>
+        .assignment-card.step-coi {
+            border-left-color: var(--amber);
+        }
+
+        .assignment-card.step-score {
+            border-left-color: var(--navy);
+        }
+
+        .assignment-card.step-done {
+            border-left-color: var(--green);
+        }
+
+        .assignment-card.step-recused {
+            border-left-color: var(--red);
+        }
+
+        .card-head {
+            padding: .9rem 1.25rem;
+            border-bottom: 1px solid #f0f2f8;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .vacancy-title {
+            font-size: .9rem;
+            font-weight: 800;
+            color: var(--navy);
+            margin-bottom: .15rem;
+        }
+
+        .vacancy-ref {
+            font-family: monospace;
+            font-size: .7rem;
+            color: #adb5bd;
+        }
+
+        .card-body {
+            padding: .85rem 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            font-size: .75rem;
+            color: #67748e;
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+        }
+
+        .meta-item strong {
+            color: var(--navy);
+        }
+
+        /* Progress bar */
+        .prog-wrap {
+            flex: 1;
+            min-width: 140px;
+        }
+
+        .prog-label {
+            font-size: .68rem;
+            color: #8392ab;
+            margin-bottom: .25rem;
+        }
+
+        .prog-track {
+            height: 7px;
+            background: #f0f2f8;
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .prog-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--navy), #4f46e5);
+            border-radius: 99px;
+            transition: width .4s;
+        }
+
+        /* Action button */
+        .btn-action {
+            font-size: .76rem;
+            font-weight: 700;
+            padding: .42rem 1rem;
+            border-radius: .45rem;
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: .4rem;
+            transition: opacity .15s;
+            text-decoration: none !important;
+        }
+
+        .btn-action:hover {
+            opacity: .88;
+        }
+
+        .btn-navy {
+            background: var(--navy);
+            color: #fff;
+        }
+
+        .btn-green {
+            background: var(--green);
+            color: #fff;
+        }
+
+        .btn-amber {
+            background: var(--amber);
+            color: #fff;
+        }
+
+        .btn-muted {
+            background: #f0f2f8;
+            color: #8392ab;
+            pointer-events: none;
+        }
+
+        .btn-indigo {
+            background: #4f46e5;
+            color: #fff;
+        }
+
+        /* Status chips */
+        .s-chip {
+            font-size: .64rem;
+            font-weight: 700;
+            padding: .18rem .55rem;
+            border-radius: 99px;
+            white-space: nowrap;
+            margin-left: auto;
+        }
+
+        .sc-pending {
+            background: #eef0fb;
+            color: #4f46e5;
+        }
+
+        .sc-coi {
+            background: #fff3cd;
+            color: #7d5500;
+        }
+
+        .sc-scoring {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+
+        .sc-done {
+            background: #d4f5e2;
+            color: #1a5c38;
+        }
+
+        .sc-recused {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: #b0bac9;
+            background: #fff;
+            border-radius: .9rem;
+            box-shadow: 0 2px 14px rgba(38, 37, 97, .08);
+        }
+
+        .empty-state i {
+            font-size: 2.5rem;
+            display: block;
+            margin-bottom: .75rem;
+            color: #d0d5e8;
+        }
+
+        .empty-state h5 {
+            color: #67748e;
+            font-size: .95rem;
+            margin-bottom: .4rem;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-    <div class="page-banner">
-        <div>
-            <p class="banner-title mb-1">
-                <i class="fas fa-users-cog me-2"></i>My Panel Assignments
-            </p>
-            <p class="banner-sub mb-0">
-                Vacancies you have been appointed to interview
-            </p>
-        </div>
-        {% if assignments %}
-        <span style="font-size:.78rem;color:rgba(255,255,255,.65);">
+        <div class="page-banner">
+            <div>
+                <p class="banner-title mb-1">
+                    <i class="fas fa-users-cog me-2"></i>My Panel Assignments
+                </p>
+                <p class="banner-sub mb-0">
+                    Vacancies you have been appointed to interview
+                </p>
+            </div>
+            {% if assignments %}
+                <span style="font-size:.78rem;color:rgba(255,255,255,.65);">
             <i class="fas fa-clipboard-list me-1"></i>
             {{ assignments|length }} assignment{{ assignments|length|pluralize }}
         </span>
-        {% endif %}
-    </div>
+            {% endif %}
+        </div>
 
-    {% if not assignments %}
-    <div class="empty-state">
-        <i class="fas fa-user-clock"></i>
-        <h5>No assignments yet</h5>
-        <p style="font-size:.8rem;margin:0;">
-            You have not been appointed to any interview panel.
-            You will receive an email notification when you are appointed.
-        </p>
-    </div>
+        {% if not assignments %}
+            <div class="empty-state">
+                <i class="fas fa-user-clock"></i>
+                <h5>No assignments yet</h5>
+                <p style="font-size:.8rem;margin:0;">
+                    You have not been appointed to any interview panel.
+                    You will receive an email notification when you are appointed.
+                </p>
+            </div>
 
-    {% else %}
-    {% for row in assignments %}
-    {% with na=row.next_action %}
-    <div class="assignment-card
+        {% else %}
+            {% for row in assignments %}
+                {% with na=row.next_action %}
+                    <div class="assignment-card
         {% if na == 'acknowledge' %}step-acknowledge
         {% elif na == 'declare_coi' %}step-coi
         {% elif na == 'score' %}step-score
         {% elif na == 'done' %}step-done
         {% elif na == 'recused' %}step-recused{% endif %}">
 
-        <!-- Head -->
-        <div class="card-head">
-            <div style="flex:1;min-width:0;">
-                <div class="vacancy-title">{{ row.vacancy.title }}</div>
-                <div class="vacancy-ref">{{ row.vacancy.reference_number }}</div>
-            </div>
+                        <!-- Head -->
+                        <div class="card-head">
+                            <div style="flex:1;min-width:0;">
+                                <div class="vacancy-title">{{ row.vacancy.title }}</div>
+                                <div class="vacancy-ref">{{ row.vacancy.reference_number }}</div>
+                            </div>
 
-            <!-- Status chip -->
-            {% if na == 'acknowledge' %}
-                <span class="s-chip sc-pending">
+                            <!-- Status chip -->
+                            {% if na == 'acknowledge' %}
+                                <span class="s-chip sc-pending">
                     <i class="fas fa-bell me-1"></i>Awaiting Acknowledgement
                 </span>
-            {% elif na == 'declare_coi' %}
-                <span class="s-chip sc-coi">
+                            {% elif na == 'declare_coi' %}
+                                <span class="s-chip sc-coi">
                     <i class="fas fa-exclamation-triangle me-1"></i>COI Required
                 </span>
-            {% elif na == 'score' %}
-                <span class="s-chip sc-scoring">
+                            {% elif na == 'score' %}
+                                <span class="s-chip sc-scoring">
                     <i class="fas fa-star me-1"></i>Scoring Active
                 </span>
-            {% elif na == 'done' %}
-                <span class="s-chip sc-done">
+                            {% elif na == 'done' %}
+                                <span class="s-chip sc-done">
                     <i class="fas fa-check-circle me-1"></i>Completed
                 </span>
-            {% elif na == 'recused' %}
-                <span class="s-chip sc-recused">
+                            {% elif na == 'recused' %}
+                                <span class="s-chip sc-recused">
                     <i class="fas fa-ban me-1"></i>Recused
                 </span>
-            {% endif %}
-        </div>
+                            {% endif %}
+                        </div>
 
-        <!-- Body -->
-        <div class="card-body">
+                        <!-- Body -->
+                        <div class="card-body">
 
-            <div class="meta-item">
-                <i class="fas fa-users" style="color:var(--gold-dk);"></i>
-                <span><strong>{{ row.app_count }}</strong> candidate{{ row.app_count|pluralize }}</span>
-            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-users" style="color:var(--gold-dk);"></i>
+                                <span><strong>{{ row.app_count }}</strong> candidate{{ row.app_count|pluralize }}</span>
+                            </div>
 
-            {% if na == 'score' or na == 'done' %}
-            <div class="meta-item">
-                <i class="fas fa-check-circle" style="color:var(--green);"></i>
-                <span><strong>{{ row.submitted_count }}</strong> scored</span>
-            </div>
-            <div class="meta-item">
-                <i class="fas fa-clock" style="color:var(--amber);"></i>
-                <span><strong>{{ row.remaining }}</strong> remaining</span>
-            </div>
+                            {% if na == 'score' or na == 'done' %}
+                                <div class="meta-item">
+                                    <i class="fas fa-check-circle" style="color:var(--green);"></i>
+                                    <span><strong>{{ row.submitted_count }}</strong> scored</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class="fas fa-clock" style="color:var(--amber);"></i>
+                                    <span><strong>{{ row.remaining }}</strong> remaining</span>
+                                </div>
 
-            <div class="prog-wrap">
-                <div class="prog-label">{{ row.percent }}% complete</div>
-                <div class="prog-track">
-                    <div class="prog-fill" style="width:{{ row.percent }}%;"></div>
-                </div>
-            </div>
-            {% endif %}
+                                <div class="prog-wrap">
+                                    <div class="prog-label">{{ row.percent }}% complete</div>
+                                    <div class="prog-track">
+                                        <div class="prog-fill" style="width:{{ row.percent }}%;"></div>
+                                    </div>
+                                </div>
+                            {% endif %}
 
-            <!-- Action CTA -->
-            <div class="ms-auto">
-                {% if na == 'acknowledge' %}
-                <a href="{% url 'panel_score' row.vacancy.id %}" class="btn-action btn-indigo">
-                    <i class="fas fa-hand-paper"></i> View Appointment
-                </a>
-                {% elif na == 'declare_coi' %}
-                <a href="{% url 'panel_declare_coi' row.vacancy.id %}" class="btn-action btn-amber">
-                    <i class="fas fa-shield-alt"></i> Declare COI
-                </a>
-                {% elif na == 'score' %}
-                <a href="{% url 'panel_score' row.vacancy.id %}" class="btn-action btn-navy">
-                    <i class="fas fa-star"></i> Score Candidates
-                </a>
-                {% elif na == 'done' %}
-                <a href="{% url 'panel_results' row.vacancy.id %}" class="btn-action btn-green">
-                    <i class="fas fa-chart-bar"></i> View Results
-                </a>
-                {% elif na == 'recused' %}
-                <span class="btn-action btn-muted">
+                            <!-- Action CTA -->
+                            <div class="ms-auto">
+                                {% if na == 'acknowledge' %}
+                                    <a href="{% url 'panel_score' row.vacancy.id %}" class="btn-action btn-indigo">
+                                        <i class="fas fa-hand-paper"></i> View Appointment
+                                    </a>
+                                {% elif na == 'declare_coi' %}
+                                    <a href="{% url 'panel_declare_coi' row.vacancy.id %}" class="btn-action btn-amber">
+                                        <i class="fas fa-shield-alt"></i> Declare COI
+                                    </a>
+                                {% elif na == 'score' %}
+                                    <a href="{% url 'panel_score' row.vacancy.id %}" class="btn-action btn-navy">
+                                        <i class="fas fa-star"></i> Score Candidates
+                                    </a>
+                                {% elif na == 'done' %}
+                                    <a href="{% url 'panel_results' row.vacancy.id %}" class="btn-action btn-green">
+                                        <i class="fas fa-chart-bar"></i> View Results
+                                    </a>
+                                {% elif na == 'recused' %}
+                                    <span class="btn-action btn-muted">
                     <i class="fas fa-ban"></i> Recused
                 </span>
-                {% endif %}
-            </div>
+                                {% endif %}
+                            </div>
 
-        </div>
+                        </div>
+                    </div>
+                {% endwith %}
+            {% endfor %}
+        {% endif %}
+
     </div>
-    {% endwith %}
-    {% endfor %}
-    {% endif %}
-
-</div>
 {% endblock %}

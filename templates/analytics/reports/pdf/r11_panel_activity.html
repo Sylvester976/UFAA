@@ -1,0 +1,64 @@
+{% extends 'analytics/reports/pdf/base_report.html' %}
+{% block content %}
+
+    <div class="stat-row">
+        <div class="stat-box">
+            <div class="stat-val">{{ rows|length }}</div>
+            <div class="stat-label">Panel Members</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-val">{{ criteria|length }}</div>
+            <div class="stat-label">Scoring Criteria</div>
+        </div>
+    </div>
+
+    <h2>Panel Member Activity</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>Member</th>
+            <th>Email</th>
+            <th>Candidates Scored</th>
+            <th>Avg Score</th>
+            <th>COI</th>
+            <th>Reason</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for row in rows %}
+            <tr>
+                <td class="bold">{{ row.name }}</td>
+                <td>{{ row.entry.member.email }}</td>
+                <td class="text-center bold">{{ row.scored }}</td>
+                <td class="text-center">{{ row.avg }}</td>
+                <td>{% if row.coi %}<span class="badge badge-amber">Declared</span>{% else %}None{% endif %}</td>
+                <td>{{ row.reason|truncatechars:50|default:"—" }}</td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="6" class="text-center text-muted">No panel records</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <h2>Scoring Criteria</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Criterion</th>
+            <th>Max Score</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for c in criteria %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td class="bold">{{ c.name }}</td>
+                <td>{{ c.max_score }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+{% endblock %}

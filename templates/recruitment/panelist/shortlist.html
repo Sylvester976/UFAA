@@ -2,99 +2,99 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-list me-2" style="color:var(--gold-dark);"></i>
-Shortlisting
-</h4>
-<p>{{ vacancy.title }}</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-list me-2" style="color:var(--gold-dark);"></i>
+                Shortlisting
+            </h4>
+            <p>{{ vacancy.title }}</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<form method="POST">
+            <form method="POST">
 
-{% csrf_token %}
+                {% csrf_token %}
 
-<div class="ufaa-table-wrapper">
+                <div class="ufaa-table-wrapper">
 
-<table class="table brand-table mb-0">
+                    <table class="table brand-table mb-0">
 
-<thead>
-<tr>
-<th>Select</th>
-<th>Applicant</th>
-<th>Details</th>
-<th>Applied</th>
-</tr>
-</thead>
+                        <thead>
+                        <tr>
+                            <th>Select</th>
+                            <th>Applicant</th>
+                            <th>Details</th>
+                            <th>Applied</th>
+                        </tr>
+                        </thead>
 
-<tbody>
+                        <tbody>
 
-{% for app in applications %}
+                        {% for app in applications %}
 
-<tr>
+                            <tr>
 
-<td>
-<input type="checkbox"
-name="selected_applications"
-value="{{ app.id }}">
-</td>
+                                <td>
+                                    <input type="checkbox"
+                                           name="selected_applications"
+                                           value="{{ app.id }}">
+                                </td>
 
-<td class="vacancy-title-cell">
-{{ app.applicant.email }}
-</td>
+                                <td class="vacancy-title-cell">
+                                    {{ app.applicant.email }}
+                                </td>
 
-<td>
+                                <td>
 
-<a href="{{ app.cv.url }}"
-target="_blank"
-class="btn-open">
+                                    <a href="{{ app.cv.url }}"
+                                       target="_blank"
+                                       class="btn-open">
 
-<i class="fas fa-file-pdf me-1"></i>
-CV
+                                        <i class="fas fa-file-pdf me-1"></i>
+                                        CV
 
-</a>
+                                    </a>
 
-</td>
+                                </td>
 
-<td>
-{{ app.applied_at }}
-</td>
+                                <td>
+                                    {{ app.applied_at }}
+                                </td>
 
-</tr>
+                            </tr>
 
-{% endfor %}
+                        {% endfor %}
 
-</tbody>
+                        </tbody>
 
-</table>
+                    </table>
 
-</div>
+                </div>
 
-<div class="p-3">
+                <div class="p-3">
 
-<button type="submit" class="btn btn-brand">
-Submit My Shortlist
-</button>
+                    <button type="submit" class="btn btn-brand">
+                        Submit My Shortlist
+                    </button>
 
-<a href="{% url 'panelist_submit_report' vacancy.id %}"
-class="btn btn-outline-brand">
+                    <a href="{% url 'panelist_submit_report' vacancy.id %}"
+                       class="btn btn-outline-brand">
 
-Submit Interview Report
+                        Submit Interview Report
 
-</a>
+                    </a>
 
-</div>
+                </div>
 
-</form>
+            </form>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}

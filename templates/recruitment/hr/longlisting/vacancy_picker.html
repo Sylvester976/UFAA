@@ -2,149 +2,215 @@
 {% block title %}Longlisting{% endblock %}
 
 {% block extra_css %}
-<style>
-.ll-table thead th {
-    background:#262561; color:#fff;
-    font-size:0.64rem; font-weight:700; text-transform:uppercase;
-    letter-spacing:.06em; padding:0.75rem 1rem; border:none; white-space:nowrap;
-}
-.ll-table tbody td {
-    padding:0.7rem 1rem; vertical-align:middle;
-    border-bottom:1px solid rgba(38,37,97,0.05); font-size:0.82rem; color:#344767;
-}
-.ll-table tbody tr:last-child td { border-bottom:none; }
-.ll-table tbody tr:hover td { background:#fbf6e0; }
+    <style>
+        .ll-table thead th {
+            background: #262561;
+            color: #fff;
+            font-size: 0.64rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .06em;
+            padding: 0.75rem 1rem;
+            border: none;
+            white-space: nowrap;
+        }
 
-.prog-bar-wrap { background:#f0f2f8; border-radius:99px; height:5px; min-width:80px; }
-.prog-bar-fill { height:5px; border-radius:99px; }
+        .ll-table tbody td {
+            padding: 0.7rem 1rem;
+            vertical-align: middle;
+            border-bottom: 1px solid rgba(38, 37, 97, 0.05);
+            font-size: 0.82rem;
+            color: #344767;
+        }
 
-.ct-pill {
-    display:inline-flex; align-items:center; justify-content:center;
-    min-width:28px; height:22px; border-radius:99px;
-    font-size:0.68rem; font-weight:700; padding:0 6px;
-}
-.ct-total  { background:#eef0fb; color:#262561; }
-.ct-pend   { background:#fff8e1; color:#b7770d; }
-.ct-acc    { background:#d4f5e2; color:#1a7a45; }
-.ct-rej    { background:#fde8e8; color:#c0392b; }
+        .ll-table tbody tr:last-child td {
+            border-bottom: none;
+        }
 
-.btn-review {
-    display:inline-flex; align-items:center; gap:0.3rem;
-    padding:0.3rem 0.85rem; border-radius:0.4rem;
-    font-size:0.74rem; font-weight:700; text-decoration:none;
-    background:#262561; color:#F9E6A1; white-space:nowrap;
-    transition:all 0.15s;
-}
-.btn-review:hover { background:#1a1b4b; color:#F9E6A1; }
-.btn-review.ready { background:linear-gradient(135deg,#C39545,#e0b55a); color:#262561; }
-.btn-review.ready:hover { opacity:0.9; color:#262561; }
-</style>
+        .ll-table tbody tr:hover td {
+            background: #fbf6e0;
+        }
+
+        .prog-bar-wrap {
+            background: #f0f2f8;
+            border-radius: 99px;
+            height: 5px;
+            min-width: 80px;
+        }
+
+        .prog-bar-fill {
+            height: 5px;
+            border-radius: 99px;
+        }
+
+        .ct-pill {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 22px;
+            border-radius: 99px;
+            font-size: 0.68rem;
+            font-weight: 700;
+            padding: 0 6px;
+        }
+
+        .ct-total {
+            background: #eef0fb;
+            color: #262561;
+        }
+
+        .ct-pend {
+            background: #fff8e1;
+            color: #b7770d;
+        }
+
+        .ct-acc {
+            background: #d4f5e2;
+            color: #1a7a45;
+        }
+
+        .ct-rej {
+            background: #fde8e8;
+            color: #c0392b;
+        }
+
+        .btn-review {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.3rem 0.85rem;
+            border-radius: 0.4rem;
+            font-size: 0.74rem;
+            font-weight: 700;
+            text-decoration: none;
+            background: #262561;
+            color: #F9E6A1;
+            white-space: nowrap;
+            transition: all 0.15s;
+        }
+
+        .btn-review:hover {
+            background: #1a1b4b;
+            color: #F9E6A1;
+        }
+
+        .btn-review.ready {
+            background: linear-gradient(135deg, #C39545, #e0b55a);
+            color: #262561;
+        }
+
+        .btn-review.ready:hover {
+            opacity: 0.9;
+            color: #262561;
+        }
+    </style>
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid py-3">
+    <div class="container-fluid py-3">
 
-    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
-        <div>
-            <h5 class="mb-0 fw-bold" style="color:#262561;">
-                <i class="fas fa-list-ul me-2" style="color:#C39545;"></i>Longlisting
-            </h5>
-            <p class="text-sm text-muted mb-0">Vacancies awaiting manual longlist review</p>
-        </div>
-        <span class="badge rounded-pill px-3 py-2"
-              style="background:#262561;color:#F9E6A1;font-size:0.75rem;">
+        <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <div>
+                <h5 class="mb-0 fw-bold" style="color:#262561;">
+                    <i class="fas fa-list-ul me-2" style="color:#C39545;"></i>Longlisting
+                </h5>
+                <p class="text-sm text-muted mb-0">Vacancies awaiting manual longlist review</p>
+            </div>
+            <span class="badge rounded-pill px-3 py-2"
+                  style="background:#262561;color:#F9E6A1;font-size:0.75rem;">
             {{ vacancies|length }} active
         </span>
-    </div>
+        </div>
 
-    <div class="card border-0 shadow-sm" style="border-radius:0.85rem;overflow:hidden;">
-        {% if vacancies %}
-        <div class="table-responsive">
-            <table class="table ll-table mb-0">
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Vacancy</th>
-                        <th>Reference</th>
-                        <th>Closed</th>
-                        <th style="text-align:center;">Total</th>
-                        <th style="text-align:center;">Pending</th>
-                        <th style="text-align:center;">Accepted</th>
-                        <th style="text-align:center;">Rejected</th>
-                        <th>Progress</th>
-                        <th style="text-align:center;">Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for v in vacancies %}
-                    <tr>
-                        <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
-                        <td>
-                            <div style="font-weight:700;color:#262561;font-size:0.84rem;">
-                                {{ v.vacancy.title }}
-                            </div>
-                            <div style="font-size:0.68rem;color:#8392ab;">
-                                {{ v.vacancy.get_vacancy_type_display }}
-                            </div>
-                        </td>
-                        <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
-                            {{ v.vacancy.reference_number }}
-                        </td>
-                        <td style="font-size:0.76rem;white-space:nowrap;">
-                            {{ v.vacancy.end_date|date:"d M Y" }}
-                        </td>
-                        <td style="text-align:center;">
-                            <span class="ct-pill ct-total">{{ v.total }}</span>
-                        </td>
-                        <td style="text-align:center;">
-                            <span class="ct-pill ct-pend">{{ v.unreviewed }}</span>
-                        </td>
-                        <td style="text-align:center;">
-                            <span class="ct-pill ct-acc">{{ v.accepted }}</span>
-                        </td>
-                        <td style="text-align:center;">
-                            <span class="ct-pill ct-rej">{{ v.rejected }}</span>
-                        </td>
-                        <td style="min-width:100px;">
-                            <div class="d-flex align-items-center gap-2">
-                                <div class="prog-bar-wrap" style="flex:1;">
-                                    <div class="prog-bar-fill"
-                                         style="width:{{ v.pct }}%;
-                                                background:{% if v.pct == 100 %}#1a7a45{% else %}#262561{% endif %};">
+        <div class="card border-0 shadow-sm" style="border-radius:0.85rem;overflow:hidden;">
+            {% if vacancies %}
+                <div class="table-responsive">
+                    <table class="table ll-table mb-0">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Vacancy</th>
+                            <th>Reference</th>
+                            <th>Closed</th>
+                            <th style="text-align:center;">Total</th>
+                            <th style="text-align:center;">Pending</th>
+                            <th style="text-align:center;">Accepted</th>
+                            <th style="text-align:center;">Rejected</th>
+                            <th>Progress</th>
+                            <th style="text-align:center;">Action</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for v in vacancies %}
+                            <tr>
+                                <td style="color:#adb5bd;font-size:0.72rem;">{{ forloop.counter }}</td>
+                                <td>
+                                    <div style="font-weight:700;color:#262561;font-size:0.84rem;">
+                                        {{ v.vacancy.title }}
                                     </div>
-                                </div>
-                                <span style="font-size:0.68rem;color:#8392ab;white-space:nowrap;">
+                                    <div style="font-size:0.68rem;color:#8392ab;">
+                                        {{ v.vacancy.get_vacancy_type_display }}
+                                    </div>
+                                </td>
+                                <td style="font-family:monospace;font-size:0.74rem;color:#67748e;">
+                                    {{ v.vacancy.reference_number }}
+                                </td>
+                                <td style="font-size:0.76rem;white-space:nowrap;">
+                                    {{ v.vacancy.end_date|date:"d M Y" }}
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="ct-pill ct-total">{{ v.total }}</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="ct-pill ct-pend">{{ v.unreviewed }}</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="ct-pill ct-acc">{{ v.accepted }}</span>
+                                </td>
+                                <td style="text-align:center;">
+                                    <span class="ct-pill ct-rej">{{ v.rejected }}</span>
+                                </td>
+                                <td style="min-width:100px;">
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="prog-bar-wrap" style="flex:1;">
+                                            <div class="prog-bar-fill"
+                                                 style="width:{{ v.pct }}%;
+                                                         background:{% if v.pct == 100 %}#1a7a45{% else %}#262561{% endif %};">
+                                            </div>
+                                        </div>
+                                        <span style="font-size:0.68rem;color:#8392ab;white-space:nowrap;">
                                     {{ v.pct }}%
                                 </span>
-                            </div>
-                        </td>
-                        <td style="text-align:center;">
-                            <a href="{% url 'hr_longlist_dashboard' v.vacancy.id %}"
-                               class="btn-review {% if v.unreviewed == 0 and v.accepted > 0 %}ready{% endif %}">
-                                {% if v.unreviewed == 0 and v.accepted > 0 %}
-                                    <i class="fas fa-flag-checkered"></i> Finalise
-                                {% elif v.reviewed > 0 %}
-                                    <i class="fas fa-play"></i> Continue
-                                {% else %}
-                                    <i class="fas fa-play"></i> Start
-                                {% endif %}
-                            </a>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                                    </div>
+                                </td>
+                                <td style="text-align:center;">
+                                    <a href="{% url 'hr_longlist_dashboard' v.vacancy.id %}"
+                                       class="btn-review {% if v.unreviewed == 0 and v.accepted > 0 %}ready{% endif %}">
+                                        {% if v.unreviewed == 0 and v.accepted > 0 %}
+                                            <i class="fas fa-flag-checkered"></i> Finalise
+                                        {% elif v.reviewed > 0 %}
+                                            <i class="fas fa-play"></i> Continue
+                                        {% else %}
+                                            <i class="fas fa-play"></i> Start
+                                        {% endif %}
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x mb-3" style="color:#e0e4ef;display:block;"></i>
+                    <h6 style="color:#262561;">No vacancies in longlisting stage</h6>
+                    <p class="text-muted text-sm mb-0">
+                        Vacancies appear here after closing date passes and auto-screening runs.
+                    </p>
+                </div>
+            {% endif %}
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-inbox fa-3x mb-3" style="color:#e0e4ef;display:block;"></i>
-            <h6 style="color:#262561;">No vacancies in longlisting stage</h6>
-            <p class="text-muted text-sm mb-0">
-                Vacancies appear here after closing date passes and auto-screening runs.
-            </p>
-        </div>
-        {% endif %}
-    </div>
 
-</div>
+    </div>
 {% endblock %}

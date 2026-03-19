@@ -3,77 +3,77 @@
 
 {% block content %}
 
-<div class="container-fluid py-2">
+    <div class="container-fluid py-2">
 
-<div class="dash-header-banner mb-2">
-<h4>
-<i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
-Roles
-</h4>
-<p>Manage system roles</p>
-</div>
+        <div class="dash-header-banner mb-2">
+            <h4>
+                <i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
+                Roles
+            </h4>
+            <p>Manage system roles</p>
+        </div>
 
-<div class="gold-divider"></div>
+        <div class="gold-divider"></div>
 
-<div class="card dash-card brand-card">
+        <div class="card dash-card brand-card">
 
-<div class="card-header d-flex justify-content-between align-items-center">
+            <div class="card-header d-flex justify-content-between align-items-center">
 
-<h6 class="mb-0">Role List</h6>
+                <h6 class="mb-0">Role List</h6>
 
-<a href="{% url 'role_create' %}" class="btn btn-brand btn-sm">
-<i class="fas fa-plus me-1"></i>
-Create Role
-</a>
+                <a href="{% url 'role_create' %}" class="btn btn-brand btn-sm">
+                    <i class="fas fa-plus me-1"></i>
+                    Create Role
+                </a>
 
-</div>
+            </div>
 
-<div class="card-body">
+            <div class="card-body">
 
-<ul class="list-group">
+                <ul class="list-group">
 
-{% for role in roles %}
+                    {% for role in roles %}
 
-<li class="list-group-item d-flex justify-content-between align-items-center">
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
 
-<strong>{{ role.name }}</strong>
+                            <strong>{{ role.name }}</strong>
 
-<div class="table-actions">
+                            <div class="table-actions">
 
-<a href="{% url 'role_update' role.pk %}"
-class="btn btn-sm btn-outline-brand">
-Edit
-</a>
+                                <a href="{% url 'role_update' role.pk %}"
+                                   class="btn btn-sm btn-outline-brand">
+                                    Edit
+                                </a>
 
-<form action="{% url 'role_delete' role.pk %}"
-method="POST">
-{% csrf_token %}
+                                <form action="{% url 'role_delete' role.pk %}"
+                                      method="POST">
+                                    {% csrf_token %}
 
-<button class="btn btn-sm btn-danger"
-onclick="return confirm('Delete this role?');">
-Delete
-</button>
+                                    <button class="btn btn-sm btn-danger"
+                                            onclick="return confirm('Delete this role?');">
+                                        Delete
+                                    </button>
 
-</form>
+                                </form>
 
-</div>
+                            </div>
 
-</li>
+                        </li>
 
-{% empty %}
+                    {% empty %}
 
-<li class="list-group-item text-muted">
-No roles found.
-</li>
+                        <li class="list-group-item text-muted">
+                            No roles found.
+                        </li>
 
-{% endfor %}
+                    {% endfor %}
 
-</ul>
+                </ul>
 
-</div>
+            </div>
 
-</div>
+        </div>
 
-</div>
+    </div>
 
 {% endblock %}
