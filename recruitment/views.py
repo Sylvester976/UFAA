@@ -946,7 +946,11 @@ def work_history_view(request):
                 })
 
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error while updating work history entry for user %s", user.id)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred while updating work history. Please try again later.',
+                })
 
         # ── SAVE NEW ─────────────────────────────────────────
         try:
