@@ -1458,7 +1458,11 @@ def additional_details_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while saving additional details for user_id=%s", user.id if user else None)
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Something went wrong while saving your additional details. Please try again later.'
+            })
 
     context = {
         'profile': profile,
