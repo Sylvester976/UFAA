@@ -1194,7 +1194,7 @@
                 <td><span class="chip chip-pending">Pending</span></td>
                 <td style="text-align:right;">
                     <button class="btn-remove"
-                            onclick="removePanel('${userId}','${name.replace(/'/g, "\\'")}')">
+                            onclick="removePanel('${userId}','${name.replace(/\\/g, "\\\\").replace(/'/g, "\\'")}')">
                         <i class="fas fa-user-minus"></i>
                     </button>
                 </td>
