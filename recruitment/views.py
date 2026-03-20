@@ -1362,7 +1362,11 @@ def additional_details_view(request):
                     detail.save()
                 return JsonResponse({'status': 'success', 'message': 'CV removed successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error while deleting CV for user_id=%s", user.id if user else None)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Something went wrong while deleting your CV. Please try again later.'
+                })
 
         # ── DELETE COVER LETTER ───────────────────────────────────────
         if action == 'delete_cover_letter':
@@ -1374,7 +1378,11 @@ def additional_details_view(request):
                     detail.save()
                 return JsonResponse({'status': 'success', 'message': 'Cover letter removed successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error while deleting cover letter for user_id=%s", user.id if user else None)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'Something went wrong while deleting your cover letter. Please try again later.'
+                })
 
         # ── SAVE / UPDATE ─────────────────────────────────────────────
         try:
