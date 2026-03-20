@@ -259,15 +259,23 @@
 {% block extra_js %}
     <script>
         document.getElementById('vacancySelect').addEventListener('change', function () {
-            const id = this.value;
+            const rawId = this.value;
             const panel = document.getElementById('vacancyReports');
-            if (!id) {
+            if (!rawId) {
                 panel.style.display = 'none';
                 return;
             }
+            const parsedId = parseInt(rawId, 10);
+            if (!Number.isFinite(parsedId) || parsedId <= 0) {
+                panel.style.display = 'none';
+                return;
+            }
+            const id = String(parsedId);
             panel.style.display = '';
             document.querySelectorAll('.vacancy-link').forEach(a => {
-                a.href = a.dataset.url.replace('/0/', `/${id}/`).replace('vacancy=0', `vacancy=${id}`);
+                a.href = a.dataset.url
+                    .replace('/0/', `/${id}/`)
+                    .replace('vacancy=0', `vacancy=${id}`);
             });
         });
     </script>
