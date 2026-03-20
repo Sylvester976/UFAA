@@ -954,7 +954,8 @@
         function toast(msg, type = 'success') {
             const el = document.createElement('div');
             el.className = `toast-msg ${type}`;
-            el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i> ${msg}`;
+            el.innerHTML = `<i class="fas fa-${type === 'success' ? 'check' : 'times'}-circle"></i>`;
+            el.appendChild(document.createTextNode(' ' + msg));
             document.getElementById('toast-wrap').appendChild(el);
             setTimeout(() => el.remove(), 4000);
         }
