@@ -889,7 +889,11 @@ def work_history_view(request):
                 return JsonResponse({'status': 'success',
                                      'message': 'Work history deleted successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error deleting work history for user %s", user.id)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred while deleting the work history record.'
+                })
 
         # ── EDIT ─────────────────────────────────────────────
         if action == 'edit':
