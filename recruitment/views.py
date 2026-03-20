@@ -306,7 +306,11 @@ def profile_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while saving jobseeker profile for user %s", user.id)
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Something went wrong while saving your profile. Please try again later.',
+            })
 
     context = {
         'profile':          profile,
