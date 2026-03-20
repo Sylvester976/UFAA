@@ -1073,7 +1073,7 @@
         </td>
         <td style="text-align:right;">
             <button class="btn-remove"
-                    onclick="openRemoveModal('${member.id}', '${member.name.replace(/'/g, "\\'")}')">
+                    onclick="openRemoveModal('${member.id}', '${member.name.replace(/\\/g, '\\\\').replace(/'/g, '\\\'')}')">
                 <i class="fas fa-times"></i> Remove
             </button>
         </td>`;
