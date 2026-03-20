@@ -6453,8 +6453,13 @@ def hr_slots_save(request, vacancy_id):
             saved_count += 1
         except JobApplication.DoesNotExist:
             errors.append(f'Application {s["application_id"]} not found or not shortlisted.')
-        except Exception as e:
-            errors.append(str(e))
+        except Exception:
+            logger.exception(
+                "Unexpected error while assigning interview slot for vacancy %s and application %s",
+                vacancy_id,
+                s.get('application_id'),
+            )
+            errors.append('An unexpected error occurred while saving this slot.')
 
     return JsonResponse({'success': True, 'saved': saved_count, 'errors': errors})
 
