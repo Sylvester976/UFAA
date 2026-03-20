@@ -639,7 +639,13 @@ def professional_qualifications_view(request):
                 qual.delete()
                 return JsonResponse({'status': 'success', 'message': 'Qualification deleted successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error deleting professional qualification for user %s", user.id)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'An unexpected error occurred while deleting the qualification. Please try again later.',
+                    }
+                )
 
         # ── EDIT ─────────────────────────────────────────────
         if action == 'edit':
@@ -709,7 +715,13 @@ def professional_qualifications_view(request):
                 })
 
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error updating professional qualification for user %s", user.id)
+                return JsonResponse(
+                    {
+                        'status': 'error',
+                        'message': 'An unexpected error occurred while saving the qualification. Please try again later.',
+                    }
+                )
 
         # ── SAVE NEW ─────────────────────────────────────────
         try:
