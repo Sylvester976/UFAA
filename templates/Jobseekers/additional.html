@@ -673,10 +673,13 @@
 
                 const pill = document.createElement('span');
                 pill.className = 'lang-pill';
-                pill.innerHTML = `${lang.charAt(0).toUpperCase() + lang.slice(1)}
-            <button type="button" onclick="removeLang(this)">
-                <i class="fas fa-times"></i>
-            </button>`;
+                const label = lang.charAt(0).toUpperCase() + lang.slice(1);
+                pill.appendChild(document.createTextNode(label + ' '));
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.setAttribute('onclick', 'removeLang(this)');
+                button.innerHTML = '<i class="fas fa-times"></i>';
+                pill.appendChild(button);
                 document.getElementById('languagePills').appendChild(pill);
             });
 
