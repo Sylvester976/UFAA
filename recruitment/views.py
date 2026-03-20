@@ -1011,8 +1011,11 @@ def work_history_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error saving work history for user %s", user.id)
+            return JsonResponse({
+                'status': 'error',
+                'message': 'An unexpected error occurred while saving the work history records.'
+            })
 
     # ── GET ───────────────────────────────────────────────────
     existing = WorkHistory.objects.filter(user=user)
