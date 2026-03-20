@@ -203,9 +203,15 @@
                 panel.style.display = 'none';
                 return;
             }
+            // Allow only numeric IDs to be used in URLs to prevent injection.
+            const safeId = /^\d+$/.test(id) ? id : null;
+            if (!safeId) {
+                panel.style.display = 'none';
+                return;
+            }
             panel.style.display = '';
             document.querySelectorAll('.vacancy-link').forEach(a => {
-                a.href = a.dataset.url.replace('/0/', `/${id}/`);
+                a.href = a.dataset.url.replace('/0/', `/${safeId}/`);
             });
         });
     </script>
