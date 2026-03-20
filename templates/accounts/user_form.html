@@ -1,85 +1,192 @@
 {% extends 'recruitment/hr/base_hr.html' %}
 {% block title %}User Form{% endblock %}
 
+{% block extra_css %}
+<style>
+:root {
+    --navy:#262561; --navy-deep:#1a1a45; --navy-light:#2E3A7A;
+    --gold:#F9E6A1; --gold-dark:#C39545;
+}
+
+/* banner */
+.dash-header-banner{
+    background:linear-gradient(135deg,var(--navy-deep),var(--navy),var(--navy-light));
+    border-radius:1rem;
+    padding:1.2rem 1.5rem;
+    color:#fff;
+    box-shadow:0 8px 30px rgba(38,37,97,.25);
+}
+.dash-header-banner p{color:rgba(255,255,255,.7);font-size:.8rem;}
+
+/* divider */
+.gold-divider{
+    height:2px;
+    background:linear-gradient(90deg,var(--navy),var(--gold),var(--navy));
+    opacity:.4;
+    margin:.3rem 0 1.2rem;
+}
+
+/* card */
+.brand-card{
+    border-radius:1rem;
+    border:none;
+    box-shadow:0 4px 20px rgba(38,37,97,.08);
+}
+.brand-card .card-body{padding:1.4rem;}
+
+/* inputs */
+label{font-size:.72rem;font-weight:600;color:#8392ab;}
+.form-control{
+    border-radius:.6rem;
+    border:1.5px solid #e0e4ef;
+    font-size:.82rem;
+}
+.form-control:focus{
+    border-color:var(--navy);
+    box-shadow:0 0 0 3px rgba(38,37,97,.08);
+}
+
+/* buttons */
+.btn-brand{
+    background:var(--navy);
+    color:var(--gold);
+    border-radius:.6rem;
+    font-size:.78rem;
+}
+.btn-outline-brand{
+    border:1px solid #dee2e6;
+    border-radius:.6rem;
+    font-size:.78rem;
+}
+
+/* roles */
+.role-box{
+    border:1.5px solid #e0e4ef;
+    border-radius:.6rem;
+    padding:.5rem .7rem;
+    display:flex;
+    align-items:center;
+    gap:.4rem;
+    font-size:.78rem;
+    cursor:pointer;
+    transition:.2s;
+}
+.role-box:hover{
+    border-color:var(--navy);
+    background:#f8f9ff;
+}
+.btn-fixed{
+    height: 38px;
+    min-height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 14px;
+    line-height: 1;
+    border-radius: .6rem;
+    font-size: .78rem;
+}
+
+/* Ensure icon + text inside button aligns perfectly */
+.btn-content{
+    display: inline-flex;
+    align-items: center;
+    line-height: 1;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-    <div class="container-fluid py-2">
+<div class="container-fluid py-2">
 
-        <div class="dash-header-banner mb-2">
-            <h4>
-                <i class="fas fa-user-plus me-2" style="color:var(--gold-dark);"></i>
-                {% if user_obj %}Edit User{% else %}Create Internal User{% endif %}
-            </h4>
-            <p>Manage internal system users</p>
-        </div>
+    <div class="dash-header-banner mb-2 text-white">
+        <h4 class="text-white">
+            <i class="fas fa-user-plus me-2" style="color:var(--gold-dark);"></i>
+            {% if user_obj %}Edit User{% else %}Create Internal User{% endif %}
+        </h4>
+        <p class="text-white-50">Manage internal system users</p>
+    </div>
 
-        <div class="gold-divider"></div>
+    <div class="gold-divider"></div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-6">
+    <div class="row justify-content-center">
 
-                <div class="card dash-card brand-card">
+        <div class="col-xl-8 col-lg-10 mx-auto">
 
-                    <div class="card-body">
+            <div class="card brand-card">
+                <div class="card-body">
 
-                        <form method="POST">
-                            {% csrf_token %}
+                    <form method="POST">
+                        {% csrf_token %}
 
-                            <div class="mb-3">
-                                <label>Email (Ensure the email is valid to receive password setup via email)</label>
-                                <input type="email"
-                                       name="email"
-                                       class="form-control"
-                                       required
-                                       value="{{ user_obj.email|default_if_none:'' }}">
+                        <!-- EMAIL -->
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <input type="email" name="email" class="form-control"
+                                   value="{{ user_obj.email|default_if_none:'' }}" required>
+                        </div>
+
+                        <!-- NAMES -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label>First Name</label>
+                                <input type="text" name="first_name" class="form-control"
+                                       value="{{ user_obj.first_name|default_if_none:'' }}">
                             </div>
+                            <div class="col-md-6 mb-3">
+                                <label>Last Name</label>
+                                <input type="text" name="last_name" class="form-control"
+                                       value="{{ user_obj.last_name|default_if_none:'' }}">
+                            </div>
+                        </div>
+
+                        <!-- ROLES -->
+                        <div class="mb-3">
+                            <label class="mb-2">Assign Roles</label>
 
                             <div class="row">
-
-                                <div class="col-md-6 mb-3">
-                                    <label>First Name</label>
-                                    <input type="text"
-                                           name="first_name"
-                                           class="form-control"
-                                           value="{{ user_obj.first_name|default_if_none:'' }}">
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label>Last Name</label>
-                                    <input type="text"
-                                           name="last_name"
-                                           class="form-control"
-                                           value="{{ user_obj.last_name|default_if_none:'' }}">
-                                </div>
-
+                                {% for role in roles %}
+                                    <div class="col-md-6 mb-2">
+                                        <label class="role-box">
+                                            <input type="checkbox"
+                                                   name="role"
+                                                   value="{{ role.id }}"
+                                                   class="form-check-input me-2">
+                                            <i class="fas fa-user-shield" style="opacity:.3;"></i>
+                                            {{ role.name }}
+                                        </label>
+                                    </div>
+                                {% empty %}
+                                    <p class="text-muted">No roles available</p>
+                                {% endfor %}
                             </div>
+                        </div>
 
-                            {% comment %} <div class="mb-3">
-<label>Password (For new accounts leave blank user will receive password setup via email)</label>
-<input type="password"
-       name="password"
-       class="form-control"
-       required>
-</div> {% endcomment %}
+                        <!-- ACTIONS -->
+                    <div class="d-flex justify-content-end align-items-center gap-2 mt-4">
 
-                            <button type="submit" class="btn btn-brand">
+                        <a href="{% url 'user_list' %}" class="btn btn-outline-brand btn-fixed">
+                            Cancel
+                        </a>
+
+                        <button type="submit" class="btn btn-brand btn-fixed">
+                            <span class="btn-content">
                                 <i class="fas fa-save me-1"></i>
                                 Save User
-                            </button>
-
-                            <a href="{% url 'user_list' %}" class="btn btn-outline-brand">
-                                Cancel
-                            </a>
-
-                        </form>
+                            </span>
+                        </button>
 
                     </div>
 
+                    </form>
+
                 </div>
-
             </div>
-        </div>
 
+        </div>
     </div>
+
+</div>
 
 {% endblock %}

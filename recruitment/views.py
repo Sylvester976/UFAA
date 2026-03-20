@@ -3947,7 +3947,7 @@ def _send_appointment_email(member, vacancy, request):
     try:
         name = _display_name(member)
         deadline = vacancy.end_date + timedelta(days=21)
-        portal_url = request.build_absolute_uri('/hr/dashboard/')
+        portal_url = request.build_absolute_uri('/staff/')
 
         message_html = f"""
         <p>Dear <strong>{name}</strong>,</p>
@@ -4135,19 +4135,29 @@ def hr_committee_add(request, vacancy_id):
                 defaults={
                     'appointed_by': request.user,
                     'is_active': True,
-                    'coi_declared': False,  # ← add this
-                    'has_conflict': False,  # ← add this too while you're here
+                    'coi_declared': False,
+                    'has_conflict': False,
                 },
             )
+
             if not created:
                 if entry.is_active:
                     return JsonResponse({
                         'error': f'{_display_name(member)} is already on the committee.'
                     }, status=400)
+
                 entry.is_active = True
                 entry.appointed_by = request.user
                 entry.appointed_at = timezone.now()
                 entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
+
+            #  ASSIGN "committee" ROLE HERE
+            try:
+                committee_role = Role.objects.get(name="committee")
+                if not member.role.filter(id=committee_role.id).exists():
+                    member.role.add(committee_role)
+            except Role.DoesNotExist:
+                logger.error("Committee role does not exist.")
 
             ShortlistLog.objects.create(
                 vacancy=vacancy,
@@ -4158,6 +4168,7 @@ def hr_committee_add(request, vacancy_id):
                 metadata={'member_id': str(member.pk), 'member_email': member.email},
                 performed_by_label=_display_name(request.user),
             )
+
     except Exception as e:
         logger.error(f"Committee add error: {e}", exc_info=True)
         return JsonResponse({'error': 'Database error. Please try again.'}, status=500)
@@ -4624,7 +4635,11 @@ def hr_committee_remove(request, vacancy_id):
         return JsonResponse({'error': 'A reason for removal is required.'}, status=400)
 
     entry = get_object_or_404(
-        ShortlistingCommittee, vacancy=vacancy, member_id=member_id, is_active=True)
+        ShortlistingCommittee,
+        vacancy=vacancy,
+        member_id=member_id,
+        is_active=True
+    )
 
     # Cannot remove once they have submitted any votes
     if entry.votes_submitted:
@@ -4633,7 +4648,11 @@ def hr_committee_remove(request, vacancy_id):
         }, status=400)
 
     votes_count = CommitteeVote.objects.filter(
-        vacancy=vacancy, member_id=member_id, is_draft=False).count()
+        vacancy=vacancy,
+        member_id=member_id,
+        is_draft=False
+    ).count()
+
     if votes_count > 0:
         return JsonResponse({
             'error': f'Cannot remove — member has submitted {votes_count} vote(s).'
@@ -4642,6 +4661,14 @@ def hr_committee_remove(request, vacancy_id):
     with transaction.atomic():
         entry.is_active = False
         entry.save(update_fields=['is_active'])
+
+        # REMOVE "committee" ROLE
+        try:
+            committee_role = Role.objects.get(name="committee")
+            entry.member.role.remove(committee_role)
+        except Role.DoesNotExist:
+            logger.error("Committee role does not exist.")
+
         ShortlistLog.objects.create(
             vacancy=vacancy,
             application=None,
@@ -4652,7 +4679,11 @@ def hr_committee_remove(request, vacancy_id):
             performed_by_label=_display_name(request.user),
         )
 
-    new_count = ShortlistingCommittee.objects.filter(vacancy=vacancy, is_active=True).count()
+    new_count = ShortlistingCommittee.objects.filter(
+        vacancy=vacancy,
+        is_active=True
+    ).count()
+
     new_threshold = _threshold(new_count)
 
     return JsonResponse({
@@ -6161,18 +6192,21 @@ def _notify_panel_appointment(member, vacancy):
 def hr_panel_add(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     user_id = request.POST.get('user_id', '').strip()
+
     if not user_id:
         return JsonResponse({'error': 'No user selected.'}, status=400)
 
     from django.contrib.auth import get_user_model
     User = get_user_model()
+
     try:
         member = User.objects.get(pk=user_id)
     except User.DoesNotExist:
         return JsonResponse({'error': 'User not found.'}, status=404)
 
     entry, created = InterviewPanel.objects.get_or_create(
-        vacancy=vacancy, member=member,
+        vacancy=vacancy,
+        member=member,
         defaults={
             'appointed_by': request.user,
             'is_active': True,
@@ -6183,14 +6217,26 @@ def hr_panel_add(request, vacancy_id):
 
     if not created:
         if entry.is_active:
-            return JsonResponse({'error': f'{_display_name(member)} is already on the panel.'}, status=400)
+            return JsonResponse({
+                'error': f'{_display_name(member)} is already on the panel.'
+            }, status=400)
+
         entry.is_active = True
         entry.appointed_by = request.user
         entry.appointed_at = timezone.now()
         entry.save(update_fields=['is_active', 'appointed_by', 'appointed_at'])
 
+    # ASSIGN "panelist" ROLE
+    try:
+        panelist_role = Role.objects.get(name="panelist")
+        if not member.role.filter(id=panelist_role.id).exists():
+            member.role.add(panelist_role)
+    except Role.DoesNotExist:
+        logger.error("Panelist role does not exist.")
+
     InterviewLog.objects.create(
-        vacancy=vacancy, performed_by=request.user,
+        vacancy=vacancy,
+        performed_by=request.user,
         action='panel_appointed',
         notes=f'{_display_name(member)} added to interview panel.',
         metadata={'member_id': str(member.pk)},
@@ -6202,7 +6248,11 @@ def hr_panel_add(request, vacancy_id):
     return JsonResponse({
         'success': True,
         'email_sent': email_sent,
-        'member': {'id': str(member.pk), 'name': _display_name(member), 'email': member.email},
+        'member': {
+            'id': str(member.pk),
+            'name': _display_name(member),
+            'email': member.email
+        },
     })
 
 
@@ -6211,22 +6261,36 @@ def hr_panel_add(request, vacancy_id):
 def hr_panel_remove(request, vacancy_id):
     vacancy = get_object_or_404(Vacancy, id=vacancy_id)
     user_id = request.POST.get('user_id', '').strip()
-    entry = InterviewPanel.objects.filter(vacancy=vacancy, member_id=user_id, is_active=True).first()
+
+    entry = InterviewPanel.objects.filter(
+        vacancy=vacancy,
+        member_id=user_id,
+        is_active=True
+    ).first()
+
     if not entry:
         return JsonResponse({'error': 'Panel member not found.'}, status=404)
 
     entry.is_active = False
     entry.save(update_fields=['is_active'])
 
+    # REMOVE "panelist" ROLE
+    try:
+        panelist_role = Role.objects.get(name="panelist")
+        entry.member.role.remove(panelist_role)
+    except Role.DoesNotExist:
+        logger.error("Panelist role does not exist.")
+
     InterviewLog.objects.create(
-        vacancy=vacancy, performed_by=request.user,
+        vacancy=vacancy,
+        performed_by=request.user,
         action='panel_removed',
         notes=f'{_display_name(entry.member)} removed from interview panel.',
         metadata={'member_id': str(entry.member.pk)},
         performed_by_label=_display_name(request.user),
     )
-    return JsonResponse({'success': True})
 
+    return JsonResponse({'success': True})
 
 @login_required
 @require_POST

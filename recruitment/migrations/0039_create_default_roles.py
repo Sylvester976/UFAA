@@ -14,6 +14,7 @@ def seed_roles_and_admin(apps, schema_editor):
         "committee",
         "ceo",
         "admin",
+        "auditor",
     ]
 
     roles = []
@@ -35,7 +36,7 @@ def seed_roles_and_admin(apps, schema_editor):
         superadmin = User.objects.create(
             email=email,
             is_superadmin=True,
-            user_type=2,
+            user_type=1,
             is_active=True,
             password=make_password(password),
         )

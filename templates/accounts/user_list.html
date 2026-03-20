@@ -1,248 +1,314 @@
 {% extends 'recruitment/hr/base_hr.html' %}
 {% block title %}Manage Users{% endblock %}
 
+{% block extra_css %}
+
+<style>
+/* reuse SAME variables + components */
+:root {
+    --navy: #262561;
+    --navy-deep: #1a1a45;
+    --navy-light: #2E3A7A;
+    --gold: #F9E6A1;
+    --gold-dark: #C39545;
+    --green: #1a7a45;
+    --red: #c0392b;
+}
+
+/* Banner */
+.welcome-banner {
+    background: linear-gradient(135deg, var(--navy-deep), var(--navy));
+    border-radius: 1rem;
+    box-shadow: 0 8px 32px rgba(38,37,97,.3);
+    margin-bottom: 1.2rem;
+}
+.banner-body { padding: 1.2rem 1.5rem; }
+.banner-title { color:#fff; font-weight:700; }
+.banner-sub { color:rgba(255,255,255,.7); font-size:.8rem; }
+
+/* Divider */
+.gold-divider {
+    height:2px;
+    background:linear-gradient(90deg,var(--navy),var(--gold),var(--navy));
+    opacity:.4;
+    margin:.3rem 0 1rem;
+}
+
+/* Card */
+.table-card {
+    background:#fff;
+    border-radius:1rem;
+    box-shadow:0 4px 20px rgba(38,37,97,.07);
+}
+
+/* Header */
+.table-card-header {
+    padding:1rem 1.3rem;
+    border-bottom:1px solid rgba(0,0,0,.05);
+}
+.table-card-header h6 {
+    font-weight:700;
+    color:var(--navy);
+}
+.table-card-header p {
+    font-size:.75rem;
+    color:#8392ab;
+}
+
+/* Table */
+.table thead th {
+    background:var(--navy);
+    color:#fff;
+    font-size:.7rem;
+    text-transform:uppercase;
+}
+.table td { font-size:.82rem; }
+
+/* Status badges */
+.v-status {
+    padding:.25rem .6rem;
+    border-radius:2rem;
+    font-size:.65rem;
+    font-weight:700;
+}
+.vs-open { background:#d4f5e2; color:#1a7a45; }
+.vs-closed { background:#fde8e8; color:#c0392b; }
+
+/* Buttons */
+.act-btn {
+    padding:.25rem .6rem;
+    font-size:.7rem;
+    border-radius:.4rem;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    gap:.3rem;
+}
+
+.ab-grey { background:#f1f3f9; }
+.ab-red { background:#fde8e8; color:#c0392b; }
+.ab-green { background:#d4f5e2; color:#1a7a45; }
+.ab-purple { background:#ede9fe; color:#5b21b6; }
+
+.act-group {
+    display:flex;
+    flex-wrap:wrap;
+    gap:.2rem;
+}
+
+/* Empty */
+.empty-state {
+    padding:2rem;
+    text-align:center;
+    color:#adb5bd;
+}
+</style>
+
+{% endblock %}
+
 {% block content %}
 
-    <div class="container-fluid py-2">
+<div class="container-fluid py-2">
 
-        <!-- HEADER BANNER -->
-        <div class="dash-header-banner mb-2">
-            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                <div>
-                    <h4>
-                        <i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
-                        User Management
-                    </h4>
-                    <p>Manage system users and assign recruitment roles</p>
-                </div>
 
-                <div class="text-end">
-                <span class="header-date">
-                    <i class="fas fa-calendar-alt me-1"></i>{% now "l, d F Y" %}
-                </span>
+<!-- Banner (UPDATED ONLY STYLE) -->
+<div class="welcome-banner">
+    <div class="banner-body d-flex justify-content-between align-items-center flex-wrap gap-2">
 
-                    <a href="{% url 'user_create' %}" class="btn-create-user">
-                        <i class="fas fa-user-plus me-2"></i>
-                        <span>Create User</span>
-                    </a>
-                </div>
-            </div>
+        <div>
+            <h5 class="banner-title">
+                <i class="fas fa-users-cog me-2" style="color:var(--gold-dark);"></i>
+                User Management
+            </h5>
+            <p class="banner-sub">
+                Manage system users and assign recruitment roles
+            </p>
         </div>
 
-        <div class="gold-divider"></div>
+        <div class="text-end">
+            <span class="banner-sub d-block mb-1">
+                <i class="fas fa-calendar-alt me-1"></i>{% now "l, d F Y" %}
+            </span>
 
-        <!-- USERS TABLE -->
-        <div class="row">
-            <div class="col-12">
+            <a href="{% url 'user_create' %}" class="act-btn ab-green">
+                <i class="fas fa-user-plus"></i> Create User
+            </a>
+        </div>
 
-                <div class="card dash-card brand-card">
+    </div>
+</div>
 
-                    <div class="card-header">
-                        <h6 class="mb-0">
-                            <i class="fas fa-user-shield me-2" style="opacity:0.5;"></i>
-                            System Users
-                        </h6>
-                        <p>Users with access to the recruitment portal</p>
-                    </div>
+<div class="gold-divider"></div>
 
-                    <div class="ufaa-table-wrapper">
+<!-- SAME CONTENT, NEW WRAPPER -->
+<div class="table-card">
 
-                        <table class="table brand-table align-items-center mb-0">
+    <div class="table-card-header">
+        <h6>
+            <i class="fas fa-user-shield me-2" style="opacity:.5;"></i>
+            System Users
+        </h6>
+        <p>Users with access to the recruitment portal</p>
+    </div>
 
-                            <thead>
-                            <tr>
-                                <th>Name</th>
-                                <th>Email</th>
-                                <th>Roles</th>
-                                <th>Status</th>
-                                <th class="text-end pe-3">Actions</th>
-                            </tr>
-                            </thead>
+    <div class="p-3">
 
-                            <tbody>
+        <div class="table-responsive">
 
-                            {% for user in users %}
-                                <tr>
+            <!-- SAME TABLE -->
+            <table class="table align-items-center mb-0">
 
-                                    <td>
-                                <span class="vacancy-title-cell">
-                                    <i class="fas fa-user me-2" style="opacity:0.25;font-size:0.72rem;"></i>
-                                    {{ user.first_name }} {{ user.last_name }}
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th class="text-end pe-3">Actions</th>
+                </tr>
+                </thead>
+
+                <tbody>
+
+                {% for user in users %}
+                    <tr>
+
+                        <td>
+                            {{ user.first_name }} {{ user.last_name }}
+                        </td>
+
+                        <td style="color:#67748e;">
+                            {{ user.email }}
+                        </td>
+
+                        <!-- roles -->
+                        <td>
+                            {% if user.role.all %}
+                                {% for r in user.role.all %}
+                                    <span class="v-status vs-open">
+                                        {{ r.name }}
+                                    </span>
+                                {% endfor %}
+                            {% else %}
+                                <span class="v-status vs-closed">
+                                    No roles
                                 </span>
-                                    </td>
+                            {% endif %}
+                        </td>
 
-                                    <td style="font-size:0.82rem;color:#67748e;">
-                                        {{ user.email }}
-                                    </td>
+                        <!-- status -->
+                        <td>
+                            {% if user.is_active %}
+                                <span class="v-status vs-open">Active</span>
+                            {% else %}
+                                <span class="v-status vs-closed">Inactive</span>
+                            {% endif %}
+                        </td>
 
-                                    <td>
-                                        {% if user.role.all %}
-                                            {% for r in user.role.all %}
-                                                <span class="vacancy-status vacancy-status-open">
-                                            {{ r.name }}
-                                        </span>
-                                            {% endfor %}
-                                        {% else %}
-                                            <span class="vacancy-status vacancy-status-draft">
-                                        No roles
-                                    </span>
-                                        {% endif %}
-                                    </td>
+                        <!-- actions -->
+                        <td class="text-end pe-3">
+                            <div class="act-group">
 
-                                    <td>
-                                        {% if user.is_active %}
-                                            <span class="vacancy-status vacancy-status-open">
-                                        Active
-                                    </span>
-                                        {% else %}
-                                            <span class="vacancy-status vacancy-status-closed">
-                                        Inactive
-                                    </span>
-                                        {% endif %}
-                                    </td>
+                                <a href="{% url 'assign_role' user.id %}" class="act-btn ab-purple">
+                                    Assign
+                                </a>
 
-                                    <td class="text-end pe-3">
-                                        <div class="vacancy-actions">
+                                <a href="{% url 'user_update' user.pk %}" class="act-btn ab-grey">
+                                    Edit
+                                </a>
 
-                                            <a href="{% url 'assign_role' user.id %}" class="btn-shortlisting">
-                                                <i class="fas fa-user-tag me-1"></i> Assign
-                                            </a>
+                                {% if user.is_active %}
+                                    <a href="#"
+                                       class="act-btn ab-red open-user-modal"
+                                       data-url="{% url 'user_deactivate' user.id %}"
+                                       data-action="Deactivate"
+                                       data-name="{{ user.first_name }} {{ user.last_name }}"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#userActionModal">
+                                        Deactivate
+                                    </a>
+                                {% else %}
+                                    <a href="#"
+                                       class="act-btn ab-green open-user-modal"
+                                       data-url="{% url 'user_activate' user.id %}"
+                                       data-action="Activate"
+                                       data-name="{{ user.first_name }} {{ user.last_name }}"
+                                       data-bs-toggle="modal"
+                                       data-bs-target="#userActionModal">
+                                        Activate
+                                    </a>
+                                {% endif %}
 
-                                            <a href="{% url 'user_update' user.pk %}" class="btn-draft">
-                                                <i class="fas fa-edit me-1"></i> Edit
-                                            </a>
+                                <a href="{% url 'user_delete' user.id %}" class="act-btn ab-red">
+                                    Delete
+                                </a>
 
-                                            {% if user.is_active %}
+                            </div>
+                        </td>
 
-                                                <a href="#"
-                                                   class="btn-closed open-user-modal"
-                                                   data-url="{% url 'user_deactivate' user.id %}"
-                                                   data-action="Deactivate"
-                                                   data-name="{{ user.first_name }} {{ user.last_name }}"
-                                                   data-bs-toggle="modal"
-                                                   data-bs-target="#userActionModal">
+                    </tr>
 
-                                                    <i class="fas fa-user-slash me-1"></i> Deactivate
-                                                </a>
+                {% empty %}
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-state">
+                                <p>No users found.
+                                    <a href="{% url 'user_create' %}">
+                                        Create the first user
+                                    </a>
+                                </p>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
 
-                                            {% else %}
+                </tbody>
 
-                                                <a href="#"
-                                                   class="btn-shortlisting open-user-modal"
-                                                   data-url="{% url 'user_activate' user.id %}"
-                                                   data-action="Activate"
-                                                   data-name="{{ user.first_name }} {{ user.last_name }}"
-                                                   data-bs-toggle="modal"
-                                                   data-bs-target="#userActionModal">
+            </table>
 
-                                                    <i class="fas fa-user-check me-1"></i> Activate
-                                                </a>
-
-                                            {% endif %}
-
-                                            <a href="{% url 'user_delete' user.id %}" class="btn-closed">
-                                                <i class="fas fa-trash me-1"></i> Delete
-                                            </a>
-
-                                        </div>
-                                    </td>
-
-                                </tr>
-
-                            {% empty %}
-
-                                <tr>
-                                    <td colspan="5">
-
-                                        <div class="empty-state">
-                                            <i class="fas fa-users-slash"></i>
-                                            <p>No users found.
-                                                <a href="{% url 'user_create' %}">
-                                                    Create the first user
-                                                </a>
-                                            </p>
-                                        </div>
-
-                                    </td>
-                                </tr>
-
-                            {% endfor %}
-
-                            </tbody>
-
-                        </table>
-
-                    </div>
-
-                </div>
-
-            </div>
         </div>
 
     </div>
 
+</div>
 
-    <!-- USER ACTION MODAL -->
-    <div class="modal fade" id="userActionModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
 
-                <div class="modal-header">
-                    <h5 class="modal-title">
-                        <i class="fas fa-exclamation-triangle me-2 text-warning"></i>
-                        Confirm Action
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
+</div>
 
-                <div class="modal-body text-center">
+<!-- Modal (UNCHANGED) -->
 
-                    <p class="mb-1">Are you sure you want to</p>
-
-                    <h5 id="modalActionText" style="color:#003366;"></h5>
-
-                </div>
-
-                <div class="modal-footer justify-content-center">
-
-                    <button type="button"
-                            class="btn btn-secondary"
-                            data-bs-dismiss="modal">
-                        Cancel
-                    </button>
-
-                    <a id="confirmUserAction"
-                       href="#"
-                       class="btn btn-danger">
-                        Confirm
-                    </a>
-
-                </div>
-
+<div class="modal fade" id="userActionModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Confirm Action</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
+
+
+        <div class="modal-body text-center">
+            <p>Are you sure?</p>
+            <h5 id="modalActionText"></h5>
+        </div>
+
+        <div class="modal-footer justify-content-center">
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a id="confirmUserAction" href="#" class="btn btn-danger">Confirm</a>
         </div>
     </div>
+</div>
 
 
-    <script>
+</div>
 
-        document.querySelectorAll(".open-user-modal").forEach(button => {
-
-            button.addEventListener("click", function () {
-
-                const url = this.dataset.url
-                const action = this.dataset.action
-                const name = this.dataset.name
-
-                document.getElementById("confirmUserAction").href = url
-
-                document.getElementById("modalActionText").innerText =
-                    action + " account for " + name + "?"
-
-            })
-
-        })
-
-    </script>
+<script>
+document.querySelectorAll(".open-user-modal").forEach(btn => {
+    btn.addEventListener("click", function () {
+        document.getElementById("confirmUserAction").href = this.dataset.url;
+        document.getElementById("modalActionText").innerText =
+            this.dataset.action + " account for " + this.dataset.name + "?";
+    });
+});
+</script>
 
 {% endblock %}
