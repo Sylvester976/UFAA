@@ -335,12 +335,14 @@
     <script>
         const sel = document.getElementById('vacancySelect');
         sel.addEventListener('change', function () {
-            const id = this.value;
+            const rawId = (this.value || '').trim();
             const panel = document.getElementById('vacancyReports');
-            if (!id) {
+            // Allow only numeric vacancy IDs; hide panel if invalid or empty.
+            if (!rawId || !/^\d+$/.test(rawId)) {
                 panel.style.display = 'none';
                 return;
             }
+            const id = rawId;
             panel.style.display = '';
             document.querySelectorAll('.vacancy-link').forEach(a => {
                 a.href = a.dataset.url.replace('/0/', `/${id}/`);
