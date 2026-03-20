@@ -715,6 +715,11 @@ def professional_qualifications_view(request):
                 })
 
             except Exception as e:
+                logger.exception("Error while editing professional qualification")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred while updating the qualification. Please try again later.'
+                })
                 logger.exception("Error updating professional qualification for user %s", user.id)
                 return JsonResponse(
                     {
