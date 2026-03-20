@@ -516,7 +516,11 @@ def academic_qualifications_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while saving academic qualifications for user %s", user_id)
+            return JsonResponse({
+                'status': 'error',
+                'message': 'An error occurred while saving your qualifications. Please try again later.'
+            })
 
     # ── GET ───────────────────────────────────────────────────
     existing_qualifications = (
