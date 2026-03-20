@@ -1095,7 +1095,11 @@ def memberships_view(request):
                 return JsonResponse({'status': 'success',
                                      'message': 'Membership deleted successfully.'})
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error deleting ProfessionalBodyMembership for user %s", user.id)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred. Please try again later.'
+                })
 
         # ── EDIT ─────────────────────────────────────────────
         if action == 'edit':
@@ -1135,7 +1139,11 @@ def memberships_view(request):
                 })
 
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error editing ProfessionalBodyMembership %s for user %s", mem_id, user.id)
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred. Please try again later.'
+                })
 
         # ── SAVE NEW ─────────────────────────────────────────
         try:
