@@ -709,7 +709,11 @@ def professional_qualifications_view(request):
                 })
 
             except Exception as e:
-                return JsonResponse({'status': 'error', 'message': str(e)})
+                logger.exception("Error while editing professional qualification")
+                return JsonResponse({
+                    'status': 'error',
+                    'message': 'An unexpected error occurred while updating the qualification. Please try again later.'
+                })
 
         # ── SAVE NEW ─────────────────────────────────────────
         try:
