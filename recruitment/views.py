@@ -6305,8 +6305,15 @@ def hr_panel_notify(request, vacancy_id):
                 performed_by_label=_display_name(request.user),
             )
             sent += 1
-        except Exception as e:
-            errors.append(f'{_display_name(entry.member)}: {e}')
+        except Exception:
+            logger.exception(
+                "Failed to notify interview panel member %s for vacancy %s",
+                _display_name(entry.member),
+                vacancy_id,
+            )
+            errors.append(
+                f'Failed to notify panel member {_display_name(entry.member)}. Please try again later.'
+            )
 
     schedule.panel_notified = True
     schedule.panel_notified_at = timezone.now()
