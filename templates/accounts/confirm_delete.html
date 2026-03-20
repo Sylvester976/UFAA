@@ -1,62 +1,156 @@
 {% extends 'recruitment/hr/base_hr.html' %}
 {% block title %}Delete User{% endblock %}
 
+{% block extra_css %}
+<style>
+:root {
+    --navy:#262561; --navy-deep:#1a1a45; --navy-light:#2E3A7A;
+    --gold:#F9E6A1; --gold-dark:#C39545;
+    --red:#c0392b;
+}
+
+/* banner */
+.dash-header-banner{
+    background:linear-gradient(135deg,var(--navy-deep),var(--navy),var(--navy-light));
+    border-radius:1rem;
+    padding:1.2rem 1.5rem;
+    color:#fff;
+    box-shadow:0 8px 30px rgba(38,37,97,.25);
+}
+.dash-header-banner p{
+    color:rgba(255,255,255,.7);
+    font-size:.8rem;
+}
+
+/* divider */
+.gold-divider{
+    height:2px;
+    background:linear-gradient(90deg,var(--navy),var(--gold),var(--navy));
+    opacity:.4;
+    margin:.3rem 0 1.2rem;
+}
+
+/* card */
+.brand-card{
+    border-radius:1rem;
+    border:none;
+    box-shadow:0 4px 20px rgba(38,37,97,.08);
+}
+
+/* header inside card */
+.card-header{
+    background:#fff;
+    border-bottom:1px solid #eee;
+    padding:1rem 1.2rem;
+}
+
+/* warning icon */
+.warning-icon{
+    font-size:2rem;
+    color:var(--red);
+}
+
+/* buttons */
+.btn-brand{
+    background:var(--navy);
+    color:var(--gold);
+    border-radius:.6rem;
+    font-size:.78rem;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-danger-custom{
+    background:var(--red);
+    color:#fff;
+    border-radius:.6rem;
+    font-size:.78rem;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.btn-outline-brand{
+    border:1px solid #dee2e6;
+    border-radius:.6rem;
+    font-size:.78rem;
+    height:38px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+</style>
+{% endblock %}
+
 {% block content %}
 
-    <div class="container-fluid py-2">
+<div class="container-fluid py-2">
 
-        <div class="dash-header-banner mb-2">
-            <h4>
-                <i class="fas fa-trash me-2" style="color:var(--gold-dark);"></i>
-                Delete User
-            </h4>
-            <p>Confirm removal of this user account</p>
-        </div>
+    <div class="dash-header-banner mb-2 text-white">
+        <h4 class="text-white">
+            <i class="fas fa-trash me-2" style="color:var(--gold-dark);"></i>
+            Delete User
+        </h4>
+        <p class="text-white-50">Confirm removal of this user account</p>
+    </div>
 
-        <div class="gold-divider"></div>
+    <div class="gold-divider"></div>
 
-        <div class="row justify-content-center">
-            <div class="col-lg-4">
+    <div class="row justify-content-center">
+        <div class="col-xl-5 col-lg-6 col-md-8">
 
-                <div class="card dash-card brand-card">
+            <div class="card brand-card">
 
-                    <div class="card-header">
-                        <h6 class="mb-0 text-danger">
-                            <i class="fas fa-exclamation-triangle me-2"></i>
-                            Confirmation Required
-                        </h6>
-                        <p>This action cannot be undone</p>
+                <div class="card-header text-center">
+                    <div class="warning-icon mb-2">
+                        <i class="fas fa-exclamation-triangle"></i>
                     </div>
 
-                    <div class="card-body text-center">
+                    <h6 class="mb-1 text-danger fw-semibold">
+                        Confirmation Required
+                    </h6>
 
-                        <p>Are you sure you want to delete:</p>
+                    <small class="text-muted">
+                        This action cannot be undone
+                    </small>
+                </div>
 
-                        <h5 class="text-danger mb-3">
-                            {{ user.username }}
-                        </h5>
+                <div class="card-body text-center">
 
-                        <form method="post">
-                            {% csrf_token %}
+                    <p class="mb-2">You are about to permanently delete:</p>
 
-                            <button type="submit" class="btn btn-closed me-2">
-                                <i class="fas fa-trash me-1"></i>
-                                Yes, Delete
-                            </button>
+                    <h5 class="text-danger mb-3 fw-bold">
+                        {{ user.username }}
+                    </h5>
+
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="d-flex justify-content-center gap-2 mt-4">
 
                             <a href="{% url 'user_list' %}" class="btn btn-outline-brand">
                                 Cancel
                             </a>
 
-                        </form>
+                            <button type="submit" class="btn btn-danger-custom">
+                                <i class="fas fa-trash me-1"></i>
+                                Yes, Delete
+                            </button>
 
-                    </div>
+                        </div>
+
+                    </form>
 
                 </div>
 
             </div>
-        </div>
 
+        </div>
     </div>
+
+</div>
 
 {% endblock %}

@@ -26,6 +26,13 @@ from .models import JobseekerAccount
 from django.utils.decorators import method_decorator
 from core.decorators import role_required
 
+from django.shortcuts import render, redirect
+from django.views import View
+from django.contrib import messages
+from accounts.models import User
+from core.mixins import SuperAdminRequiredMixin
+
+from django.db.models import Q
 
 logger = logging.getLogger(__name__)
 
@@ -610,7 +617,7 @@ from django.contrib.auth.decorators import login_required
 @login_required
 def redirect_dashboard(request):
 
-    priority = ["admin", "hod_hr",  "committee", "panelist", "ceo"]
+    priority = ["admin", "hod_hr",  "committee", "panelist", "ceo", "auditor"]
 
     roles = request.user.role.values_list("name", flat=True)
 
@@ -632,23 +639,24 @@ def redirect_dashboard(request):
             
             if role == "admin":
                 return redirect("admin_dashboard")
+            
+            if role == "auditor":
+                return redirect("analytics:auditor_analytics")
 
     # fallback if user has no role
     return redirect("login")
     # return HttpResponse("User has no role")
 
 
-from django.shortcuts import render, redirect
-from django.views import View
-from django.contrib import messages
-from accounts.models import User
-from core.mixins import SuperAdminRequiredMixin
-
 class UserCreateView(SuperAdminRequiredMixin, View):
     template_name = "accounts/user_form.html"
 
     def get(self, request):
-        return render(request, self.template_name)
+        context = {
+            "roles": Role.objects.all(),
+            "page": "Admin Dashboard",
+        }
+        return render(request, self.template_name, context)
 
     def post(self, request):
 
@@ -657,12 +665,32 @@ class UserCreateView(SuperAdminRequiredMixin, View):
         last_name = request.POST.get("last_name")
         national_id = request.POST.get("national_id")
 
+        role_ids = request.POST.getlist("role")
+
         if not email:
             messages.error(request, "Email is required")
-            return render(request, self.template_name)
+            return render(request, self.template_name, {
+                "roles": Role.objects.all(),
+                "page": "Admin Dashboard",
+            })
+
+        # SPECIFIC DUPLICATE CHECKS
+
+        if User.objects.filter(email__iexact=email).exists():
+            messages.error(request, "A user with this email already exists.")
+            return render(request, self.template_name, {
+                "roles": Role.objects.all(),
+                "page": "Admin Dashboard",
+            })
+
+        if national_id and User.objects.filter(national_id=national_id).exists():
+            messages.error(request, "A user with this National ID already exists.")
+            return render(request, self.template_name, {
+                "roles": Role.objects.all(),
+                "page": "Admin Dashboard",
+            })
 
         try:
-
             user = User.objects.create_user(
                 email=email,
                 password=None,
@@ -672,6 +700,10 @@ class UserCreateView(SuperAdminRequiredMixin, View):
                 user_type=2,
                 is_active=True
             )
+
+            # assign roles
+            if role_ids:
+                user.role.set(role_ids)
 
             user.password_reset_token = uuid.uuid4()
             user.password_reset_expires_at = timezone.now() + timedelta(hours=24)
@@ -709,19 +741,17 @@ class UserCreateView(SuperAdminRequiredMixin, View):
 
             _send_branded_email(user.email, subject, html)
 
-            messages.success(request, "User created. Password setup email sent.")
+            messages.success(request, "User created successfully with roles assigned. Password setup email sent.")
+
             return redirect("user_list")
 
         except Exception as e:
             messages.error(request, f"Error creating user: {e}")
-            return render(request, self.template_name)
-        
-        
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["page"] = "Admin Dashboard"
-        return context
-
+            return render(request, self.template_name, {
+                "roles": Role.objects.all(),
+                "page": "Admin Dashboard",
+            })
+                        
 def staff_forgot_password(request):
     return render(request, "accounts/staff_forgot_password.html")
 
