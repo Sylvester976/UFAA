@@ -3074,7 +3074,11 @@ def apply_jobs_view(request):
                                  'application_number': application_number})
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while submitting application")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'An unexpected error occurred while submitting your application. Please try again later.'
+            })
 
     def _parse_vacancy_fields(description):
         """Parse vacancy description into structured fields for card display."""
