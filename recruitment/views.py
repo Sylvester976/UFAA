@@ -1190,8 +1190,11 @@ def memberships_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while saving professional body memberships")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'Something went wrong while saving memberships. Please try again later.'
+            })
 
     # ── GET ───────────────────────────────────────────────────
     existing = ProfessionalBodyMembership.objects.filter(user=user)
