@@ -1296,8 +1296,11 @@ def referee_view(request):
             })
 
         except Exception as e:
-            return JsonResponse({'status': 'error',
-                                 'message': f'Something went wrong: {str(e)}'})
+            logger.exception("Error while saving referee details")
+            return JsonResponse({
+                'status': 'error',
+                'message': 'An unexpected error occurred while saving referee details. Please try again later.',
+            })
 
     # ── GET ───────────────────────────────────────────────────────────
     ref1 = Referee.objects.filter(user=user, referee_no=1).first()
